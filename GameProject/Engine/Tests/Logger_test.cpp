@@ -10,7 +10,6 @@ TEST_CASE("Logger") {
 
     SECTION("Truncates logs file after first print") {
         logFile << "I should be truncated";
-        logFile.flush();
         logFile.close();
 
         Logger::init();
