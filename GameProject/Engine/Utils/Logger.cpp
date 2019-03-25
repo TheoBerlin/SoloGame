@@ -30,8 +30,7 @@ void Logger::log(unsigned short color, const std::string prefix, const std::stri
 
     std::cout << finalText;
 
-    // Reset console settings
-    //FlushConsoleInputBuffer(consoleHandle);
+    // Set console text color to white
     SetConsoleTextAttribute(consoleHandle, 15);
 
     // Write to file
