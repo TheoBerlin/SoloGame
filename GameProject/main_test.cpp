@@ -1,6 +1,5 @@
 #define CATCH_CONFIG_RUNNER
 
-#include <Engine/Utils/Logger.h>
 #include <catch/catch.hpp>
 
 int main(int argc, char* argv[])
