@@ -1,5 +1,5 @@
 #include <catch/catch.hpp>
-#include <Engine/Utils/Logger.h>
+#include <Engine/Utils/Logger.hpp>
 #include <fstream>
 
 TEST_CASE("Logger") {

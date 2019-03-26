@@ -1,4 +1,4 @@
-#include <Engine/Utils/Logger.h>
+#include <Engine/Utils/Logger.hpp>
 
 int main()
 {
