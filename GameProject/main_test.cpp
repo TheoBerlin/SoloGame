@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 
-#include <crtdbg.h>
 #include <catch/catch.hpp>
+#include <crtdbg.h>
 
 int main(int argc, char* argv[])
 {
