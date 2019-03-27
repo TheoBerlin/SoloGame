@@ -13,7 +13,7 @@ public:
     ~Logger();
 
     template<typename ... Args>
-    static void LOG_INFO(const std::string& format, Args&& ...args);
+    static void LOG_INFO(const std::string& format, Args&& ... args);
 
     template<typename ... Args>
     static void LOG_WARNING(const std::string& format, Args&& ... args);
