@@ -229,9 +229,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\DDSTextureLoader\DDSTextureLoader.cpp" />
+    <ClCompile Include="..\include\WICTextureLoader\WICTextureLoader.cpp" />
     <ClCompile Include="Engine\ECS\Component.cpp" />
     <ClCompile Include="Engine\ECS\Entity.cpp" />
     <ClCompile Include="Engine\ECS\EntityManager.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetContainers\Mesh.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetContainers\Model.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\Display.cpp" />
+    <ClCompile Include="Engine\Tests\AssetLoading_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Engine\Tests\ECS_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -255,9 +266,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\include\DDSTextureLoader\DDSTextureLoader.h" />
+    <ClInclude Include="..\include\WICTextureLoader\WICTextureLoader.h" />
     <ClInclude Include="Engine\ECS\Component.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
     <ClInclude Include="Engine\ECS\EntityManager.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetContainers\Mesh.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
