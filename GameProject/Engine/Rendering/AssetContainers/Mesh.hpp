@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/Rendering/AssetContainers/AssetResources.hpp>
+#include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <vector>
 
 class Mesh

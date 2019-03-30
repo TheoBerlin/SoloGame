@@ -11,7 +11,7 @@
 #include <vector>
 
 enum TX_TYPE {
-    // Indicates a texture failed to load
+    // Indicates a texture failed to load or has yet to be loaded
     NO_TEXTURE,
     DIFFUSE = aiTextureType_DIFFUSE,
     NORMAL = aiTextureType_NORMALS
@@ -21,15 +21,4 @@ struct Vertex {
     DirectX::XMFLOAT3 position;
     DirectX::XMFLOAT3 normal;
     DirectX::XMFLOAT2 txCoords;
-};
-
-struct Texture {
-    TX_TYPE txType;
-    ID3D11ShaderResourceView* srv;
-};
-
-struct Material {
-    DirectX::XMFLOAT4 diffuse;
-    DirectX::XMFLOAT4 specular;
-    std::vector<Texture> textures;
 };
