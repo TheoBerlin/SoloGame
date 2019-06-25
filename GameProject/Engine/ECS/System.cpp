@@ -10,12 +10,17 @@ System::System(SystemHandler* systemHandler)
 System::~System()
 {}
 
-void System::setID(size_t ID)
+const std::vector<std::type_index>& System::getComponentTypes() const
 {
-    this->systemID = ID;
+    return componentTypes;
 }
 
-ComponentHandler* System::getHandler(std::type_index componentType) const
+void System::subscribeToComponents()
+{
+    systemHandler->registerSystem(this->componentTypes, this);
+}
+
+ComponentHandler* System::getComponentHandler(std::type_index& componentType)
 {
     return this->systemHandler->getComponentHandler(componentType);
 }

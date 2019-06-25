@@ -1,0 +1,8 @@
+When a system registers itself to the system handler, the system handler should present all existing components the system is subscribing to
+Done?
+
+When a component handler is deleted, all components should be deregistered so that systems don't try to process deleted components
+Done?
+
+When a system is created, it attempts to get a pointer to a component handler. In case the component handler does not already exist, the
+system will receive a nullptr.

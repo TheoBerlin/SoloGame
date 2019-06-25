@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/ECS/Entity.hpp>
 #include <typeindex>
 #include <vector>
 
@@ -18,7 +19,15 @@ public:
     // Deregisters component handler and deletes components
     ~ComponentHandler();
 
+    // Returns which entities have a component of the given type
+    virtual std::vector<Entity> getEntities(std::type_index componentType) = 0;
+
 protected:
-    SystemHandler* systemHandler;
+    // Tell the system handler a component has been created
+    void registerComponent(std::type_index tid, Entity entityID);
+
     std::vector<std::type_index> handledTypes;
+
+private:
+    SystemHandler* systemHandler;
 };

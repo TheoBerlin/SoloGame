@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/ECS/Entity.hpp>
+#include <Engine/Utils/IDVector.hpp>
 #include <typeindex>
 #include <vector>
 
@@ -21,13 +23,23 @@ public:
 
     virtual void update(float dt) = 0;
 
-    std::vector<std::type_index>& getComponentTypes();
+    // Notify the system that a component of a subscribed type has been made
+    virtual void newComponent(Entity entityID, std::type_index componentType) = 0;
+    // Notify the system that a component of a subscribed type has been removed
+    virtual void removedComponent(Entity entityID, std::type_index componentType) = 0;
+
+    const std::vector<std::type_index>& getComponentTypes() const;
 
     size_t ID;
 
 protected:
-    // Retrieves a pointer to a function given a component type
-    ComponentHandler* getHandler(std::type_index componentType) const;
+    void subscribeToComponents();
+    ComponentHandler* getComponentHandler(std::type_index& componentType);
+
+    std::vector<std::type_index> componentTypes;
+
+    // Entities to handle in update function
+    IDVector<Entity> entityIDs;
 
 private:
     SystemHandler* systemHandler;

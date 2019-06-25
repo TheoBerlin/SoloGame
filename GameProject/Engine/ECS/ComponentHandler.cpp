@@ -17,3 +17,8 @@ ComponentHandler::~ComponentHandler()
         systemHandler->deregisterComponentHandler(handledTypes[i]);
     }
 }
+
+void ComponentHandler::registerComponent(std::type_index tid, Entity entityID)
+{
+    this->systemHandler->newComponent(entityID, tid);
+}

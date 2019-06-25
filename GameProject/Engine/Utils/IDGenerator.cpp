@@ -10,7 +10,7 @@ IDGenerator::~IDGenerator()
 size_t IDGenerator::genID()
 {
     if (!recycled.empty()) {
-        size_t newID = recycled.back();
+        size_t newID = recycled.front();
         recycled.pop();
 
         return newID;
