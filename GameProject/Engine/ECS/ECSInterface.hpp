@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Engine/ECS/SystemHandler.hpp>
+#include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
 
 struct ECSInterface {
-    SystemHandler systemHandler;
+    SystemSubscriber systemSubscriber;
     IDGenerator entityIDGen;
 };

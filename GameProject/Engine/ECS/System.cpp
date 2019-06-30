@@ -1,26 +1,25 @@
 #include "System.hpp"
 
-#include <Engine/ECS/SystemHandler.hpp>
+#include <Engine/ECS/SystemSubscriber.hpp>
 
-System::System(SystemHandler* systemHandler)
-{
-    this->systemHandler = systemHandler;
-}
+System::System(SystemSubscriber* systemSubscriber)
+    :systemSubscriber(systemSubscriber)
+{}
 
 System::~System()
 {}
 
-const std::vector<std::type_index>& System::getComponentTypes() const
+void System::subscribeToComponents(std::vector<ComponentSubReq>* subReqs)
 {
-    return componentTypes;
+    systemSubscriber->registerSystem(this, subReqs);
 }
 
-void System::subscribeToComponents()
+void System::unsubscribeFromComponents(std::vector<std::type_index> unsubTypes)
 {
-    systemHandler->registerSystem(this->componentTypes, this);
+    systemSubscriber->deregisterSystem(this, unsubTypes);
 }
 
 ComponentHandler* System::getComponentHandler(std::type_index& componentType)
 {
-    return this->systemHandler->getComponentHandler(componentType);
+    return this->systemSubscriber->getComponentHandler(componentType);
 }

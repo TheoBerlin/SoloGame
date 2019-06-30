@@ -70,7 +70,7 @@ public:
         ids.pop_back();
 
         // The indices vector might point at deleted elements, clean up the rear elements
-        while (ids[indices.back()] != indices.size() - 1) {
+        while (!indices.empty() && (ids.empty() || ids[indices.back()] != indices.size() - 1)) {
             indices.pop_back();
         }
     }

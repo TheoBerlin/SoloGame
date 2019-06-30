@@ -1,10 +1,18 @@
 #pragma once
 
 #include <Engine/ECS/Entity.hpp>
+#include <functional>
 #include <typeindex>
 #include <vector>
 
-class SystemHandler;
+class SystemSubscriber;
+
+struct ComponentRegistration {
+    std::type_index tid;
+    std::function<bool(Entity)> componentQuery;
+    // Vector of entities that have the given component type
+    const std::vector<size_t>* entities;
+};
 
 /*
     A component handler stores components and has functions for creating components and
@@ -13,21 +21,32 @@ class SystemHandler;
 class ComponentHandler
 {
 public:
-    // Registers the component handler's type of components it handles
-    ComponentHandler(std::vector<std::type_index> componentTypes, SystemHandler* systemHandler);
+    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* SystemSubscriber);
 
     // Deregisters component handler and deletes components
     ~ComponentHandler();
+
+
+    const std::vector<std::type_index>& getHandledTypes() const;
+    std::type_index getHandlerType() const;
 
     // Returns which entities have a component of the given type
     virtual std::vector<Entity> getEntities(std::type_index componentType) = 0;
 
 protected:
+    /**
+     * Registers the component handler's type of components it handles
+     * @param componentQueries Functions for asking if an entity has a component of a certain type
+     * @param entities Vectors containing the IDs of entities that have certain components
+     */
+    void registerHandler(std::vector<ComponentRegistration>* componentQueries);
+
     // Tell the system handler a component has been created
     void registerComponent(std::type_index tid, Entity entityID);
 
     std::vector<std::type_index> handledTypes;
 
 private:
-    SystemHandler* systemHandler;
+    std::type_index tid_handler;
+    SystemSubscriber* systemSubscriber;
 };

@@ -4,7 +4,7 @@
 #include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/ECS/Entity.hpp>
 #include <Engine/ECS/System.hpp>
-#include <Engine/ECS/SystemHandler.hpp>
+#include <Engine/ECS/SystemSubscriber.hpp>
 #include <DirectXMath.h>
 
 struct Position {
@@ -22,9 +22,19 @@ std::type_index tid_dir = std::type_index(typeid(Direction));
 class TransformHandler : public ComponentHandler
 {
 public:
-    TransformHandler(SystemHandler* sysHandler)
+    TransformHandler(SystemSubscriber* sysHandler)
         :ComponentHandler({tid_pos, tid_dir}, sysHandler)
-    {}
+    {
+        std::function<bool(Entity)> testFunc = [this](Entity entity) { return this->positions.hasElement(entity);};
+
+        testFunc(0);
+        std::vector<ComponentRegistration> compRegs = {
+            {tid_pos, [this](Entity entity) { return this->positions.hasElement(entity);}, &this->positions.getIDs()},
+            {tid_dir, [this](Entity entity) { return this->directions.hasElement(entity);}, &this->directions.getIDs()}
+        };
+
+        this->registerHandler(&compRegs);
+    }
 
     IDVector<Position> positions;
     IDVector<Direction> directions;
@@ -55,23 +65,31 @@ public:
 
 class ForwardMover : public System {
 public:
-    ForwardMover(SystemHandler* sysHandler)
-        :System(sysHandler)
+    ForwardMover(SystemSubscriber* sysSubscriber)
+        :System(sysSubscriber)
     {
-        this->componentTypes = {tid_pos, tid_dir};
-
         ComponentHandler* handler = this->getComponentHandler(tid_pos);
         this->transformHandler = static_cast<TransformHandler*>(handler);
 
-        this->subscribeToComponents();
+        // Subscribe to components
+        std::vector<ComponentSubReq> subRequests = {
+            {{tid_pos, tid_dir}, &entities}
+        };
+
+        this->subscribeToComponents(&subRequests);
+    }
+
+    ~ForwardMover()
+    {
+        this->unsubscribeFromComponents({tid_pos, tid_dir});
     }
 
     void update(float dt)
     {
-        for (size_t i = 0; i < entityIDs.size(); i += 1) {
-            Position& position = transformHandler->positions.indexID(entityIDs[i]);
-            DirectX::XMFLOAT3& pos = transformHandler->positions.indexID(entityIDs[i]).position;
-            DirectX::XMFLOAT3& dir = transformHandler->directions.indexID(entityIDs[i]).direction;
+        for (size_t i = 0; i < entities.size(); i += 1) {
+            Position& position = transformHandler->positions.indexID(entities[i]);
+            DirectX::XMFLOAT3& pos = transformHandler->positions.indexID(entities[i]).position;
+            DirectX::XMFLOAT3& dir = transformHandler->directions.indexID(entities[i]).direction;
 
             pos.x += dir.x * dt;
             pos.y += dir.y * dt;
@@ -79,24 +97,15 @@ public:
         }
     }
 
-    void newComponent(Entity entityID, std::type_index componentType)
-    {
-        if (transformHandler->positions.hasElement(entityID) && transformHandler->directions.hasElement(entityID)) {
-            entityIDs.push_back(entityID, entityID);
-        }
-    }
-
-    void removedComponent(Entity entityID, std::type_index componentType)
-    {
-        entityIDs.pop(entityID);
-    }
-
+    // Used for testing
     const IDVector<Entity>& getEntities() const
     {
-        return this->entityIDs;
+        return this->entities;
     }
 
 private:
+    IDVector<Entity> entities;
+
     TransformHandler* transformHandler;
 };
 
@@ -121,9 +130,9 @@ TEST_CASE("ECS") {
 
     SECTION("Component subscriptions") {
         // Component handlers must be registered before systems
-        TransformHandler transformHandler(&ecs.systemHandler);
+        TransformHandler transformHandler(&ecs.systemSubscriber);
 
-        ForwardMover sys(&ecs.systemHandler);
+        ForwardMover sys(&ecs.systemSubscriber);
 
         /*
             The forward mover system requires both a position and a direction component, require that
@@ -146,7 +155,7 @@ TEST_CASE("ECS") {
             Registering a system after registering components should lead to the system being notified about all existing components
             it's subscribing to
         */
-        TransformHandler transformHandler(&ecs.systemHandler);
+        TransformHandler transformHandler(&ecs.systemSubscriber);
 
         // With this setup, registering the forward mover system should lead to entities[0] being processed
         transformHandler.createPos(pos, entities[0]);
@@ -154,7 +163,7 @@ TEST_CASE("ECS") {
 
         transformHandler.createDir(dir, entities[1]);
 
-        ForwardMover forwardMover(&ecs.systemHandler);
+        ForwardMover forwardMover(&ecs.systemSubscriber);
 
         const IDVector<Entity>& sysEntities = forwardMover.getEntities();
 
