@@ -5,6 +5,31 @@
 #include <typeindex>
 #include <vector>
 
+enum ComponentPermissions {
+    R,
+    W,
+    RW
+};
+
+struct ComponentUpdateReg {
+    ComponentPermissions permissions;
+    std::type_index tid;
+};
+
+// A request for a system to subscribe to one or more component types
+struct ComponentSubReq {
+    std::vector<ComponentUpdateReg> componentTypes;
+    IDVector<Entity>* subscriber;
+};
+
+class System;
+
+struct SystemRegistration {
+    std::vector<ComponentSubReq> subReqs;
+    System* system;
+};
+
+struct ECSInterface;
 class SystemSubscriber;
 class ComponentHandler;
 struct ComponentSubReq;
@@ -17,7 +42,7 @@ class System
 {
 public:
     // Registers the system in the system handler
-    System(SystemSubscriber* SystemSubscriber);
+    System(ECSInterface* ecs);
 
     // Deregisters system
     ~System();
@@ -27,12 +52,14 @@ public:
     size_t ID;
 
 protected:
-    void subscribeToComponents(std::vector<ComponentSubReq>* subReqs);
+    void subscribeToComponents(SystemRegistration* sysReg);
+    void registerUpdate(SystemRegistration* sysReg);
+
     void unsubscribeFromComponents(std::vector<std::type_index> unsubTypes);
     ComponentHandler* getComponentHandler(std::type_index& componentType);
 
     std::vector<std::type_index> componentTypes;
 
 private:
-    SystemSubscriber* systemSubscriber;
+    ECSInterface* ecs;
 };

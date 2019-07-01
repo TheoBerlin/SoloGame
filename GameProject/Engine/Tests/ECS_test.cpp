@@ -65,18 +65,21 @@ public:
 
 class ForwardMover : public System {
 public:
-    ForwardMover(SystemSubscriber* sysSubscriber)
-        :System(sysSubscriber)
+    ForwardMover(ECSInterface* ecs)
+        :System(ecs)
     {
         ComponentHandler* handler = this->getComponentHandler(tid_pos);
         this->transformHandler = static_cast<TransformHandler*>(handler);
 
         // Subscribe to components
-        std::vector<ComponentSubReq> subRequests = {
-            {{tid_pos, tid_dir}, &entities}
+        SystemRegistration sysReg = {
+        {
+            {{{RW, tid_pos}, {R, tid_dir}}, &entities}
+        },
+        this
         };
 
-        this->subscribeToComponents(&subRequests);
+        this->subscribeToComponents(&sysReg);
     }
 
     ~ForwardMover()
@@ -132,7 +135,7 @@ TEST_CASE("ECS") {
         // Component handlers must be registered before systems
         TransformHandler transformHandler(&ecs.systemSubscriber);
 
-        ForwardMover sys(&ecs.systemSubscriber);
+        ForwardMover sys(&ecs);
 
         /*
             The forward mover system requires both a position and a direction component, require that
@@ -163,7 +166,7 @@ TEST_CASE("ECS") {
 
         transformHandler.createDir(dir, entities[1]);
 
-        ForwardMover forwardMover(&ecs.systemSubscriber);
+        ForwardMover forwardMover(&ecs);
 
         const IDVector<Entity>& sysEntities = forwardMover.getEntities();
 

@@ -234,6 +234,7 @@
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
+    <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
     <ClCompile Include="Engine\Rendering\AssetContainers\Mesh.cpp" />
     <ClCompile Include="Engine\Rendering\AssetContainers\Model.cpp" />
     <ClCompile Include="Engine\Rendering\AssetContainers\Texture.cpp" />
@@ -273,6 +274,7 @@
     <ClInclude Include="Engine\ECS\Entity.hpp" />
     <ClInclude Include="Engine\ECS\System.hpp" />
     <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
+    <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Mesh.hpp" />

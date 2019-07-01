@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/ECS/Entity.hpp>
+#include <Engine/ECS/System.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
@@ -10,15 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
-class System;
 class ComponentHandler;
 struct ComponentRegistration;
-
-// A request for a system to subscribe to one or more component types
-struct ComponentSubReq {
-    std::vector<std::type_index> componentTypes;
-    IDVector<Entity>* subscriber;
-};
 
 struct ComponentSubscriptions {
     // Pointer to a system's entity ID vector
@@ -34,6 +28,11 @@ struct ComponentResources {
     const std::vector<size_t>* entities;
 };
 
+struct SubscriptionStorageIndex {
+    size_t systemID;
+    size_t subIdx;
+};
+
 class SystemSubscriber
 {
 public:
@@ -46,7 +45,7 @@ public:
 
     ComponentHandler* getComponentHandler(std::type_index& handlerType);
 
-    void registerSystem(System* system, std::vector<ComponentSubReq>* subReqs);
+    void registerSystem(SystemRegistration* sysReg);//System* system, std::vector<ComponentSubReq>* subReqs);
     void deregisterSystem(System* system, std::vector<std::type_index>& componentTypes);
 
     // Notifies subscribed systems that a new component has been made
@@ -58,9 +57,10 @@ private:
     // Map component types to resources used when systems subscribe
     std::unordered_map<std::type_index, ComponentResources> componentResources;
     // Map component types to subscriptions. Deleted only when a subscribing system unsubscribes.
-    std::unordered_multimap<std::type_index, ComponentSubscriptions*> componentSubscriptions;
+    // TODO: When subscriptionStorage expands or deletes elements, its arrays are moved, these pointers are invalidated.
+    std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
 
-    // Each element stores all subscriptions for a given system
+    // Map systems' IDs to their subscriptions
     IDVector<std::vector<ComponentSubscriptions>> subscriptionStorage;
     IDGenerator systemIdGen;
 

@@ -1,25 +1,31 @@
 #include "System.hpp"
 
+#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/ECS/SystemSubscriber.hpp>
 
-System::System(SystemSubscriber* systemSubscriber)
-    :systemSubscriber(systemSubscriber)
+System::System(ECSInterface* ecs)
+    :ecs(ecs)
 {}
 
 System::~System()
 {}
 
-void System::subscribeToComponents(std::vector<ComponentSubReq>* subReqs)
+void System::subscribeToComponents(SystemRegistration* sysReg)
 {
-    systemSubscriber->registerSystem(this, subReqs);
+    ecs->systemSubscriber.registerSystem(sysReg);
+}
+
+void System::registerUpdate(SystemRegistration* sysReg)
+{
+    ecs->systemUpdater.registerSystem(sysReg);
 }
 
 void System::unsubscribeFromComponents(std::vector<std::type_index> unsubTypes)
 {
-    systemSubscriber->deregisterSystem(this, unsubTypes);
+    ecs->systemSubscriber.deregisterSystem(this, unsubTypes);
 }
 
 ComponentHandler* System::getComponentHandler(std::type_index& componentType)
 {
-    return this->systemSubscriber->getComponentHandler(componentType);
+    return this->ecs->systemSubscriber.getComponentHandler(componentType);
 }
