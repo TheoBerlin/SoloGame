@@ -57,9 +57,16 @@ void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
     componentHandlers.erase(handlerItr);
 }
 
-ComponentHandler* SystemSubscriber::getComponentHandler(std::type_index& componentType)
+ComponentHandler* SystemSubscriber::getComponentHandler(std::type_index& handlerType)
 {
-    return componentHandlers[componentType];
+    auto itr = componentHandlers.find(handlerType);
+
+    if (itr == componentHandlers.end()) {
+        Logger::LOG_WARNING("Failed to retrieve component handler: %s", handlerType.name());
+        return nullptr;
+    }
+
+    return itr->second;
 }
 
 void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
@@ -176,10 +183,9 @@ void SystemSubscriber::deregisterSystem(System* system, std::vector<std::type_in
                 continue;
             }
 
-            // Iterate through the unordered_map bucket
+            // Find the subscription and delete it
             while (subBucketItr != componentSubscriptions.end() && subBucketItr->first == componentTypes[j]) {
                 if (subBucketItr->second.systemID == system->ID) {
-                    // Found the subscription, erase it and move on to the next one
                     componentSubscriptions.erase(subBucketItr);
                     break;
                 }

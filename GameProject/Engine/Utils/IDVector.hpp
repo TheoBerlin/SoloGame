@@ -69,10 +69,22 @@ public:
         vec.pop_back();
         ids.pop_back();
 
+        // Pop the rear indices element if it points at the element was just deleted
+        if (indices.back() == vec.size()) {
+            indices.pop_back();
+        }
+
         // The indices vector might point at deleted elements, clean up the rear elements
         while (!indices.empty() && (ids.empty() || ids[indices.back()] != indices.size() - 1)) {
             indices.pop_back();
         }
+    }
+
+    void clear()
+    {
+        vec.clear();
+        ids.clear();
+        indices.clear();
     }
 
     inline bool hasElement(size_t ID) const

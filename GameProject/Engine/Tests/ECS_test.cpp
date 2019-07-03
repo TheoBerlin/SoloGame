@@ -5,6 +5,7 @@
 #include <Engine/ECS/Entity.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/ECS/SystemSubscriber.hpp>
+#include <chrono>
 #include <DirectXMath.h>
 
 struct Position {
@@ -23,11 +24,8 @@ class TransformHandler : public ComponentHandler
 {
 public:
     TransformHandler(SystemSubscriber* sysHandler)
-        :ComponentHandler({tid_pos, tid_dir}, sysHandler)
+        :ComponentHandler({tid_pos, tid_dir}, sysHandler, std::type_index(typeid(TransformHandler)))
     {
-        std::function<bool(Entity)> testFunc = [this](Entity entity) { return this->positions.hasElement(entity);};
-
-        testFunc(0);
         std::vector<ComponentRegistration> compRegs = {
             {tid_pos, [this](Entity entity) { return this->positions.hasElement(entity);}, &this->positions.getIDs()},
             {tid_dir, [this](Entity entity) { return this->directions.hasElement(entity);}, &this->directions.getIDs()}
@@ -68,7 +66,8 @@ public:
     ForwardMover(ECSInterface* ecs)
         :System(ecs)
     {
-        ComponentHandler* handler = this->getComponentHandler(tid_pos);
+        std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
+        ComponentHandler* handler = this->getComponentHandler(tid_transformHandler);
         this->transformHandler = static_cast<TransformHandler*>(handler);
 
         // Subscribe to components
@@ -112,7 +111,7 @@ private:
     TransformHandler* transformHandler;
 };
 
-TEST_CASE("ECS") {
+TEST_CASE("ECS Subscriptions") {
     /*
         This set of unit tests serves as a proof of concept and a handbook on how to use the ECS implementation
     */
@@ -131,7 +130,7 @@ TEST_CASE("ECS") {
     Direction dir;
     dir.direction = {0.0f, 0.0f, 1.0f};
 
-    SECTION("Component subscriptions") {
+    SECTION("Register system before components are created") {
         // Component handlers must be registered before systems
         TransformHandler transformHandler(&ecs.systemSubscriber);
 
@@ -153,7 +152,7 @@ TEST_CASE("ECS") {
         REQUIRE(sys.getEntities().size() == 2);
     }
 
-    SECTION("Register system after components") {
+    SECTION("Register system after components are created") {
         /*
             Registering a system after registering components should lead to the system being notified about all existing components
             it's subscribing to
@@ -173,4 +172,182 @@ TEST_CASE("ECS") {
         REQUIRE(sysEntities.size() == 1);
         REQUIRE(sysEntities[(size_t)0] == entities[(size_t)0]);
     }
+}
+
+// The classes and structs below are made for performance testing
+struct Power {
+    float base;
+    float exponent;
+};
+
+std::type_index tid_power = std::type_index(typeid(Power));
+
+struct Division {
+    float dividend;
+    float divisor;
+};
+
+std::type_index tid_division = std::type_index(typeid(Division));
+
+class MathComponentHandler : public ComponentHandler
+{
+public:
+    MathComponentHandler(SystemSubscriber* sysSubscriber)
+        :ComponentHandler({tid_power, tid_division}, sysSubscriber, std::type_index(typeid(MathComponentHandler)))
+    {
+        std::vector<ComponentRegistration> compRegs = {
+            {tid_power, [this](Entity entity) { return this->powers.hasElement(entity);}, &this->powers.getIDs()},
+            {tid_division, [this](Entity entity) { return this->divisions.hasElement(entity);}, &this->divisions.getIDs()}
+        };
+
+        this->registerHandler(&compRegs);
+    }
+
+    IDVector<Power> powers;
+    IDVector<Division> divisions;
+
+    void createPower(Power power, Entity entityID)
+    {
+        powers.push_back(power, entityID);
+
+        this->registerComponent(tid_power, entityID);
+    }
+
+    void createDivision(Division division, Entity entityID)
+    {
+        divisions.push_back(division, entityID);
+
+        this->registerComponent(tid_division, entityID);
+    }
+};
+
+// Does a lot of calculations per component to avoid memory bandwidth being the performance bottleneck
+class ExpensiveCalculator1 : public System {
+public:
+    ExpensiveCalculator1(ECSInterface* ecs)
+        :System(ecs)
+    {
+        std::type_index tid_mathCompHandler = std::type_index(typeid(MathComponentHandler));
+        ComponentHandler* handler = this->getComponentHandler(tid_mathCompHandler);
+        this->mathCompHandler = static_cast<MathComponentHandler*>(handler);
+
+        // Subscribe to components
+        SystemRegistration sysReg = {
+        {
+            {{{RW, tid_power}}, &entities}
+        },
+        this
+        };
+
+        this->subscribeToComponents(&sysReg);
+        this->registerUpdate(&sysReg);
+    }
+
+    ~ExpensiveCalculator1()
+    {
+        this->unsubscribeFromComponents({tid_power});
+    }
+
+    void update(float dt)
+    {
+        for (size_t i = 0; i < entities.size(); i += 1) {
+            Power& power = mathCompHandler->powers.indexID(entities[i]);
+
+            // Perform power calculations a bunch of times
+            for (size_t i = 0; i < 10000; i += 1) {
+                power.base += std::powf(power.base, power.exponent) * dt;
+            }
+        }
+    }
+
+private:
+    IDVector<Entity> entities;
+
+    MathComponentHandler* mathCompHandler;
+};
+
+class ExpensiveCalculator2 : public System {
+public:
+    ExpensiveCalculator2(ECSInterface* ecs)
+        :System(ecs)
+    {
+        std::type_index tid_mathCompHandler = std::type_index(typeid(MathComponentHandler));
+        ComponentHandler* handler = this->getComponentHandler(tid_mathCompHandler);
+        this->mathCompHandler = static_cast<MathComponentHandler*>(handler);
+
+        // Subscribe to components
+        SystemRegistration sysReg = {
+        {
+            {{{RW, tid_division}}, &entities}
+        },
+        this
+        };
+
+        this->subscribeToComponents(&sysReg);
+        this->registerUpdate(&sysReg);
+    }
+
+    ~ExpensiveCalculator2()
+    {
+        this->unsubscribeFromComponents({tid_division});
+    }
+
+    void update(float dt)
+    {
+        for (size_t i = 0; i < entities.size(); i += 1) {
+            Division& division = mathCompHandler->divisions.indexID(entities[i]);
+
+            // Perform power calculations a bunch of times
+            for (size_t i = 0; i < 10000; i += 1) {
+                division.dividend += dt * division.dividend / division.divisor;
+            }
+        }
+    }
+
+private:
+    IDVector<Entity> entities;
+
+    MathComponentHandler* mathCompHandler;
+};
+
+double testUpdate(bool multithreaded);
+
+TEST_CASE("ECS System Updates") {
+    // Compare the time elapsed when updating with one thread to updating with two threads
+    double timeMT = testUpdate(true);
+    double timeST = testUpdate(false);
+
+    CAPTURE("Duration multi threaded: %f", timeMT);
+    CAPTURE("Duration single threaded: %f", timeST);
+    REQUIRE(timeMT < timeST);
+}
+
+double testUpdate(bool multithreaded)
+{
+    ECSInterface ecs;
+
+    MathComponentHandler mathCompHandler(&ecs.systemSubscriber);
+
+    ExpensiveCalculator1 calcSys1(&ecs);
+    ExpensiveCalculator2 calcSys2(&ecs);
+
+    // Prepare lots of components for the systems
+    for (size_t i = 0; i < 10000; i += 1) {
+        Entity entity = ecs.entityIDGen.genID();
+
+        mathCompHandler.createPower({2.0f, 1.1f}, entity);
+        mathCompHandler.createDivision({200000.3f, 1.1f}, entity);
+    }
+
+    // TODO: Create a simpler interface for measuring and printing time with chrono
+    auto start = std::chrono::high_resolution_clock::now();
+    if (multithreaded) {
+        ecs.systemUpdater.updateMT(0.1f);
+    } else {
+        ecs.systemUpdater.updateST(0.1f);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsedTime = end - start;
+    return elapsedTime.count();
 }

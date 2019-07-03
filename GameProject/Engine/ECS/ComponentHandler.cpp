@@ -2,10 +2,10 @@
 
 #include <Engine/ECS/SystemSubscriber.hpp>
 
-ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* systemSubscriber)
+ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* systemSubscriber, std::type_index tid_handler)
     :handledTypes(handledTypes),
     systemSubscriber(systemSubscriber),
-    tid_handler(std::type_index(typeid(this)))
+    tid_handler(tid_handler)
 {}
 
 ComponentHandler::~ComponentHandler()

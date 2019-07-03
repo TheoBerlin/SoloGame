@@ -45,7 +45,7 @@ public:
 
     ComponentHandler* getComponentHandler(std::type_index& handlerType);
 
-    void registerSystem(SystemRegistration* sysReg);//System* system, std::vector<ComponentSubReq>* subReqs);
+    void registerSystem(SystemRegistration* sysReg);
     void deregisterSystem(System* system, std::vector<std::type_index>& componentTypes);
 
     // Notifies subscribed systems that a new component has been made
@@ -57,7 +57,6 @@ private:
     // Map component types to resources used when systems subscribe
     std::unordered_map<std::type_index, ComponentResources> componentResources;
     // Map component types to subscriptions. Deleted only when a subscribing system unsubscribes.
-    // TODO: When subscriptionStorage expands or deletes elements, its arrays are moved, these pointers are invalidated.
     std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
 
     // Map systems' IDs to their subscriptions

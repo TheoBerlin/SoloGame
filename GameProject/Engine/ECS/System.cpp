@@ -25,7 +25,7 @@ void System::unsubscribeFromComponents(std::vector<std::type_index> unsubTypes)
     ecs->systemSubscriber.deregisterSystem(this, unsubTypes);
 }
 
-ComponentHandler* System::getComponentHandler(std::type_index& componentType)
+ComponentHandler* System::getComponentHandler(std::type_index& handlerType)
 {
-    return this->ecs->systemSubscriber.getComponentHandler(componentType);
+    return this->ecs->systemSubscriber.getComponentHandler(handlerType);
 }

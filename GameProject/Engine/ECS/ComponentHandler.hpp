@@ -21,7 +21,7 @@ struct ComponentRegistration {
 class ComponentHandler
 {
 public:
-    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* SystemSubscriber);
+    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* SystemSubscriber, std::type_index tid_handler);
 
     // Deregisters component handler and deletes components
     ~ComponentHandler();
@@ -29,9 +29,6 @@ public:
 
     const std::vector<std::type_index>& getHandledTypes() const;
     std::type_index getHandlerType() const;
-
-    // Returns which entities have a component of the given type
-    virtual std::vector<Entity> getEntities(std::type_index componentType) = 0;
 
 protected:
     /**

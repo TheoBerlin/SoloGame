@@ -6,9 +6,8 @@
 #include <vector>
 
 enum ComponentPermissions {
-    R,
-    W,
-    RW
+    R = 0,
+    RW = 1
 };
 
 struct ComponentUpdateReg {
@@ -56,7 +55,7 @@ protected:
     void registerUpdate(SystemRegistration* sysReg);
 
     void unsubscribeFromComponents(std::vector<std::type_index> unsubTypes);
-    ComponentHandler* getComponentHandler(std::type_index& componentType);
+    ComponentHandler* getComponentHandler(std::type_index& handlerType);
 
     std::vector<std::type_index> componentTypes;
 
