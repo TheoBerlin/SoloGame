@@ -150,7 +150,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Debug|x64'">
@@ -162,7 +162,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Debug\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -206,7 +206,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -223,7 +223,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -241,6 +241,8 @@
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
+    <ClCompile Include="Engine\Rendering\Renderer.cpp" />
+    <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
     <ClCompile Include="Engine\Tests\AssetLoading_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -249,8 +251,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Engine\Tests\IDGenerator_test.cpp" />
-    <ClCompile Include="Engine\Tests\IDVector_test.cpp" />
+    <ClCompile Include="Engine\Tests\IDGenerator_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Engine\Tests\IDVector_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="main.cpp">
@@ -283,6 +291,8 @@
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
+    <ClInclude Include="Engine\Rendering\Renderer.hpp" />
+    <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />

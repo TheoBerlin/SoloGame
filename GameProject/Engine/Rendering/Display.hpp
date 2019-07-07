@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <d3d11.h>
 
+class Renderer;
+
 class Display
 {
 public:
@@ -26,6 +28,8 @@ private:
     static LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void printDisplayInfo() const;
+
+    Renderer* renderer;
 
     HINSTANCE hInstance;
     HWND hwnd;

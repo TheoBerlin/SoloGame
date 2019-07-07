@@ -1,12 +1,14 @@
 #include "Display.hpp"
 
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <combaseapi.h>
 #include <comdef.h>
 #include <roapi.h>
 
 Display::Display()
-    :hInstance(nullptr),
+    :renderer(nullptr),
+    hInstance(nullptr),
     hwnd(nullptr),
     device(nullptr),
     deviceContext(nullptr),
@@ -19,6 +21,9 @@ Display::Display()
 
 Display::~Display()
 {
+    if (this->renderer)
+        delete this->renderer;
+
     if (this->device)
         this->device->Release();
 
@@ -37,11 +42,15 @@ bool Display::init(unsigned int height, float aspectRatio, bool windowed)
 
     Logger::LOG_INFO("Creating window");
 
-    if (!this->initWindow()) {
+    if (!this->initWindow())
         return false;
-    }
 
-    return this->initDX();
+    if (!this->initDX())
+        return false;
+
+    this->renderer = new Renderer(this->device);
+
+    return true;
 }
 
 ID3D11Device* Display::getDevice()
