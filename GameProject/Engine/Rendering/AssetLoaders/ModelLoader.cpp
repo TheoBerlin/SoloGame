@@ -58,19 +58,17 @@ Model* ModelLoader::loadModel(const std::string& filePath, const std::vector<TX_
     loadNode(meshIndices, scene->mRootNode, scene);
 
     // Load meshes
-    loadedModel->allocateMeshes(meshIndices.size());
-    std::vector<Mesh>& meshes = loadedModel->getMeshes();
+    loadedModel->meshes.reserve(meshIndices.size());
 
     for (unsigned int i = 0; i < meshIndices.size(); i += 1) {
-        loadMesh(scene->mMeshes[meshIndices[i]], meshes[i]);
+        loadMesh(scene->mMeshes[meshIndices[i]], loadedModel->meshes);
     }
 
     // Load materials
-    loadedModel->allocateMaterials(scene->mNumMaterials);
-    std::vector<Material> materials = loadedModel->getMaterials();
+    loadedModel->materials.reserve(scene->mNumMaterials);
 
     for (unsigned int i = 0; i < scene->mNumMaterials; i += 1) {
-        loadMaterial(scene->mMaterials[i], materials[i], desiredTextures, directory);
+        loadMaterial(scene->mMaterials[i], loadedModel->materials, desiredTextures, directory);
     }
 
     // Store a pointer to the loaded model
@@ -88,7 +86,7 @@ void ModelLoader::deleteAllModels()
     models.clear();
 }
 
-void ModelLoader::loadMesh(const aiMesh* assimpMesh, Mesh& mesh)
+void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 {
     if (!assimpMesh->HasPositions()) {
         Logger::LOG_WARNING("Assimp mesh is missing vertex positions");
@@ -100,9 +98,11 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, Mesh& mesh)
         return;
     }
 
-    mesh.allocateVertices(assimpMesh->mNumVertices);
+    Mesh mesh;
 
-    std::vector<Vertex>& vertices = mesh.getVertices();
+    mesh.vertices.resize(assimpMesh->mNumVertices);
+
+    std::vector<Vertex>& vertices = mesh.vertices;
 
     // Loop through vertex data
     for (unsigned int i = 0; i < assimpMesh->mNumVertices; i += 1) {
@@ -118,12 +118,16 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, Mesh& mesh)
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
     }
 
-    mesh.setMaterialIndex(assimpMesh->mMaterialIndex);
+    mesh.materialIndex = assimpMesh->mMaterialIndex;
+
+    meshes.push_back(mesh);
 }
 
-void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, Material& material, const std::vector<TX_TYPE>& desiredTextures,
+void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::vector<TX_TYPE>& desiredTextures,
     const std::string& directory)
 {
+    Material material;
+
     for (size_t i = 0; i < desiredTextures.size(); i += 1) {
         aiString textureName;
 
@@ -152,6 +156,8 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, Material& mater
 
     material.diffuse = DirectX::XMFLOAT4(aiDiffuse.r, aiDiffuse.g, aiDiffuse.b, 1.0f);
     material.specular = DirectX::XMFLOAT4(aiSpecular.r, aiSpecular.g, aiSpecular.b, 1.0f);
+
+    materials.push_back(material);
 }
 
 void ModelLoader::loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene)

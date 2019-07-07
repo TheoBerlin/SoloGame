@@ -11,13 +11,13 @@ TEST_CASE("ModelLoader") {
     REQUIRE(umbrellaModel != nullptr);
 
     // Check that the model contains mesh
-    std::vector<Mesh>& meshes = umbrellaModel->getMeshes();
+    std::vector<Mesh>& meshes = umbrellaModel->meshes;
 
     REQUIRE(meshes.size() > 0);
 
     // Check that each mesh contains vertices
     for (size_t i = 0; i < meshes.size(); i += 1) {
-        REQUIRE(meshes[i].getVertices().size() > 0);
+        REQUIRE(meshes[i].vertices.size() > 0);
     }
 
     Model* duplicateAttempt = ModelLoader::loadModel("./Game/Assets/Models/untitled.dae",

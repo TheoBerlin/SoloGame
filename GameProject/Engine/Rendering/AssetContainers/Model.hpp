@@ -1,21 +1,14 @@
 #pragma once
 
-#include <Engine/Rendering/AssetContainers/Mesh.hpp>
+#include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <vector>
 
-class Model
-{
-public:
-    Model();
-    ~Model();
+struct Mesh {
+    std::vector<Vertex> vertices;
+    unsigned int materialIndex;
+};
 
-    std::vector<Mesh>& getMeshes();
-    std::vector<Material>& getMaterials();
-
-    void allocateMeshes(size_t meshCount);
-    void allocateMaterials(size_t materialCount);
-
-private:
+struct Model {
     std::vector<Mesh> meshes;
     std::vector<Material> materials;
 };
