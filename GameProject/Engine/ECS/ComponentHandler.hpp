@@ -21,7 +21,7 @@ struct ComponentRegistration {
 class ComponentHandler
 {
 public:
-    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* SystemSubscriber, std::type_index tid_handler);
+    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* systemSubscriber, std::type_index tid_handler);
 
     // Deregisters component handler and deletes components
     ~ComponentHandler();

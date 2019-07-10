@@ -1,13 +1,19 @@
 #pragma once
 
-#include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/ECS/System.hpp>
 
-class Renderer // : public System
+class ShaderHandler;
+
+class Renderer : public System
 {
 public:
-    Renderer(ID3D11Device* device);
+    Renderer(ECSInterface* ecs);
     ~Renderer();
 
+    void update(float dt);
+
 private:
-    ShaderHandler shaderHandler;
+    ShaderHandler* shaderHandler;
+
+    IDVector<Entity> renderables;
 };

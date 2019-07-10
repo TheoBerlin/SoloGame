@@ -1,14 +1,12 @@
 #include "Display.hpp"
 
-#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <combaseapi.h>
 #include <comdef.h>
 #include <roapi.h>
 
 Display::Display()
-    :renderer(nullptr),
-    hInstance(nullptr),
+    :hInstance(nullptr),
     hwnd(nullptr),
     device(nullptr),
     deviceContext(nullptr),
@@ -21,9 +19,6 @@ Display::Display()
 
 Display::~Display()
 {
-    if (this->renderer)
-        delete this->renderer;
-
     if (this->device)
         this->device->Release();
 
@@ -47,8 +42,6 @@ bool Display::init(unsigned int height, float aspectRatio, bool windowed)
 
     if (!this->initDX())
         return false;
-
-    this->renderer = new Renderer(this->device);
 
     return true;
 }

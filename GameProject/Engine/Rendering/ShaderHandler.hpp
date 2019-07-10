@@ -1,9 +1,9 @@
 #pragma once
 
+#include <Engine/ECS/ComponentHandler.hpp>
 #include <d3d11.h>
 #include <vector>
 
-//#define SHADERS_PATH = (LPCWSTR)L"Engine/Rendering/Shaders/"
 const LPCWSTR SHADERS_PATH = L"Engine/Rendering/Shaders/";
 
 const LPCSTR VS_ENTRYPOINT = "VS_main";
@@ -35,10 +35,10 @@ struct Program {
     ID3D11PixelShader* pixelShader;
 };
 
-class ShaderHandler
+class ShaderHandler : public ComponentHandler
 {
 public:
-    ShaderHandler(ID3D11Device* device);
+    ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubscriber);
     ~ShaderHandler();
 
     Program* getProgram(PROGRAM program);

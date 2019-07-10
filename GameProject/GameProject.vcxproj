@@ -235,9 +235,11 @@
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
+    <ClCompile Include="Engine\IGame.cpp" />
     <ClCompile Include="Engine\Rendering\AssetContainers\Texture.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
     <ClCompile Include="Engine\Rendering\Renderer.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
@@ -259,6 +261,7 @@
     </ClCompile>
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
+    <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Debug|x64'">true</ExcludedFromBuild>
@@ -281,18 +284,21 @@
     <ClInclude Include="Engine\ECS\System.hpp" />
     <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
+    <ClInclude Include="Engine\IGame.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\Renderer.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
+    <ClInclude Include="Game\Game.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

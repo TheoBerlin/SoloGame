@@ -3,7 +3,8 @@
 #include <Engine/Utils/Logger.hpp>
 #include <d3dcompiler.h>
 
-ShaderHandler::ShaderHandler(ID3D11Device* device)
+ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubscriber)
+    :ComponentHandler({}, systemSubscriber, std::type_index(typeid(ShaderHandler)))
 {
     /* Compile all shaders and associate them with program enum names */
     programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}));
