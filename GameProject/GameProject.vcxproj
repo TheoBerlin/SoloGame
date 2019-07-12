@@ -291,10 +291,12 @@
     <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\Renderer.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
+    <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />

@@ -16,12 +16,9 @@ cbuffer PointLights : register(b1) {
     float lightRadius[MAX_LIGHTS];
 };
 
-cbuffer NumLights : register(b2) {
-    float numLights;
-};
-
-cbuffer camera : register(b3) {
+cbuffer perFrame : register(b2) {
     float3 camPos;
+    int numLights;
 };
 
 struct VS_OUT {
