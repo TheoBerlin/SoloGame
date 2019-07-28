@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/Rendering/AssetContainers/Material.hpp>
-#include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <d3d11.h>
 #include <vector>
 
 struct Vertex {
@@ -11,9 +11,8 @@ struct Vertex {
 };
 
 struct Mesh {
-    std::vector<Vertex> vertices;
+    ID3D11Buffer* vertexBuffer;
     unsigned int materialIndex;
-    std::vector<Texture> textures;
 };
 
 struct Model {

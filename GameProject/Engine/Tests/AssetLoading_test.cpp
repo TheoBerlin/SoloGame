@@ -1,11 +1,20 @@
 #include <catch/catch.hpp>
+#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+#include <Engine/Rendering/Display.hpp>
 
 TEST_CASE("ModelLoader") {
-    Model* umbrellaModel = ModelLoader::loadModel("./Game/Assets/Models/untitled.dae",
-    std::vector<TX_TYPE>(1, TX_TYPE::DIFFUSE));
+    Display display;
+    display.init(720, 16.0f/9.0f, true);
+
+    ECSInterface ecs;
+
+    TextureLoader txLoader(&ecs.systemSubscriber, display.getDevice());
+    ModelLoader modelLoader(&ecs.systemSubscriber, &txLoader, display.getDevice());
+
+    Model* umbrellaModel = modelLoader.loadModel("./Game/Assets/Models/untitled.dae");
 
     // Check that the model was loaded
     REQUIRE(umbrellaModel != nullptr);
@@ -15,17 +24,13 @@ TEST_CASE("ModelLoader") {
 
     REQUIRE(meshes.size() > 0);
 
-    // Check that each mesh contains vertices
+    // Check that each mesh contains a vertex buffer
     for (size_t i = 0; i < meshes.size(); i += 1) {
-        REQUIRE(meshes[i].vertices.size() > 0);
+        REQUIRE(meshes[i].vertexBuffer != nullptr);
     }
 
-    Model* duplicateAttempt = ModelLoader::loadModel("./Game/Assets/Models/untitled.dae",
-    std::vector<TX_TYPE>(1, TX_TYPE::DIFFUSE));
+    Model* duplicateAttempt = modelLoader.loadModel("./Game/Assets/Models/untitled.dae");
 
     // Check that the model was not loaded twice
     REQUIRE(umbrellaModel == duplicateAttempt);
-
-    ModelLoader::deleteAllModels();
-    TextureLoader::deleteAllTextures();
 }

@@ -3,23 +3,28 @@
 #include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
+#include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <DirectXMath.h>
 
-Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device)
-    :System(ecs)
+Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context)
+    :System(ecs),
+    context(context)
 {
     std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
+    std::type_index tid_renderableHandler = std::type_index(typeid(RenderableHandler));
 
     this->shaderHandler = static_cast<ShaderHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderHandler));
+    this->renderableHandler = static_cast<RenderableHandler*>(ecs->systemSubscriber.getComponentHandler(tid_renderableHandler));
 
     SystemRegistration sysReg = {
     {
-        {{{R, tid_renderable}}, &renderables}
+        {{{R, tid_renderable}, {R, tid_worldMatrix}}, &renderables}
     },
     this};
 
@@ -40,7 +45,7 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device)
     if (FAILED(hr))
         Logger::LOG_ERROR("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
 
-    bufferDesc.ByteWidth = sizeof(Material);
+    bufferDesc.ByteWidth = sizeof(MaterialAttributes);
 
     hr = device->CreateBuffer(&bufferDesc, nullptr, &materialCBuffer);
     if (FAILED(hr))
@@ -80,4 +85,33 @@ Renderer::~Renderer()
 {}
 
 void Renderer::update(float dt)
-{}
+{
+    for (size_t i = 0; i < renderables.size(); i += 1) {
+        Model* model = renderableHandler->renderables[i].model;
+
+        context->VSSetShader(renderableHandler->renderables[i].program->vertexShader, nullptr, 0);
+        context->HSSetShader(renderableHandler->renderables[i].program->hullShader, nullptr, 0);
+        context->DSSetShader(renderableHandler->renderables[i].program->domainShader, nullptr, 0);
+        context->GSSetShader(renderableHandler->renderables[i].program->geometryShader, nullptr, 0);
+        context->PSSetShader(renderableHandler->renderables[i].program->pixelShader, nullptr, 0);
+
+        for (size_t j = 0; j < model->meshes.size(); j += 1) {
+            context->IASetVertexBuffers(0, 1, &model->meshes[j].vertexBuffer, nullptr, nullptr);
+
+            // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
+            D3D11_MAPPED_SUBRESOURCE mappedResource;
+            ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+            /* Vertex shader */
+            PerObjectMatrices matrices;
+            // TODO: Declare camera component containing VP matrices, subscribe to it
+            matrices.WVP = transformHandler->getWorldMatrix(renderables[i]).worldMatrix;
+            matrices.world = transformHandler->getWorldMatrix(renderables[i]).worldMatrix;
+            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+            //memcpy(&matrices, &mappedResource, sizeof(matrices));
+            // Edit matrices
+            context->Unmap(perObjectMatrices, 0);
+            context->VSSetConstantBuffers(0, 1, &perObjectMatrices);
+        }
+    }
+}

@@ -1,22 +1,22 @@
 #pragma once
 
+#include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
 #include <d3d11.h>
 #include <unordered_map>
 
-class TextureLoader
+class TextureLoader : private ComponentHandler
 {
 public:
+    TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device);
     ~TextureLoader();
 
-    static void setDevice(ID3D11Device* device);
+    Texture loadTexture(const std::string& filePath, TX_TYPE type);
 
-    static ID3D11ShaderResourceView* loadTexture(const std::string& filePath);
-
-    static void deleteAllTextures();
+    void deleteAllTextures();
 
 private:
-    static std::unordered_map<std::string, ID3D11ShaderResourceView*> textures;
+    std::unordered_map<std::string, Texture> textures;
 
-    static ID3D11Device* device;
+    ID3D11Device* device;
 };

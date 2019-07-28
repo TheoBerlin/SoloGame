@@ -4,20 +4,17 @@
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-std::unordered_map<std::string, ID3D11ShaderResourceView*> TextureLoader::textures = std::unordered_map<std::string, ID3D11ShaderResourceView*>();
-ID3D11Device* TextureLoader::device = nullptr;
+TextureLoader::TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device)
+    :device(device),
+    ComponentHandler({}, sysSubscriber, std::type_index(typeid(TextureLoader)))
+{}
 
 TextureLoader::~TextureLoader()
 {
     this->deleteAllTextures();
 }
 
-void TextureLoader::setDevice(ID3D11Device* device)
-{
-    TextureLoader::device = device;
-}
-
-ID3D11ShaderResourceView* TextureLoader::loadTexture(const std::string& filePath)
+Texture TextureLoader::loadTexture(const std::string& filePath, TX_TYPE type)
 {
     // See if the texture is already loaded
     auto itr = textures.find(filePath);
@@ -28,13 +25,14 @@ ID3D11ShaderResourceView* TextureLoader::loadTexture(const std::string& filePath
     }
 
     // Convert std::string to const wchar_t*
-    const wchar_t* convertedFilePath = std::wstring(filePath.begin(), filePath.end()).c_str();
+    std::wstring wStrPath(filePath.begin(), filePath.end());
+    const wchar_t* convertedFilePath = wStrPath.c_str();
 
     // Load the texture
+    Texture texture;
     ID3D11Resource* textureResource = nullptr;
-    ID3D11ShaderResourceView* srv = nullptr;
 
-    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::device, convertedFilePath, &textureResource, &srv);
+    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::device, convertedFilePath, &textureResource, &texture.srv);
 
     if (textureResource) {
         textureResource->Release();
@@ -42,20 +40,18 @@ ID3D11ShaderResourceView* TextureLoader::loadTexture(const std::string& filePath
 
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to load texture: [%s]", filePath.c_str());
-
-        return nullptr;
     } else {
         Logger::LOG_INFO("Loaded texture: [%s]", filePath.c_str());
-        textures[filePath] = srv;
-
-        return srv;
+        textures[filePath] = texture;
     }
+
+    return texture;
 }
 
 void TextureLoader::deleteAllTextures()
 {
-    for (auto srv : textures) {
-        srv.second->Release();
+    for (auto texture : textures) {
+        texture.second.srv->Release();
     }
 
     textures.clear();

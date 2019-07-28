@@ -236,9 +236,9 @@
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
     <ClCompile Include="Engine\IGame.cpp" />
-    <ClCompile Include="Engine\Rendering\AssetContainers\Texture.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
     <ClCompile Include="Engine\Rendering\Renderer.cpp" />
@@ -259,6 +259,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Engine\Transform.cpp" />
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Game\Game.cpp" />
@@ -291,11 +292,13 @@
     <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\Components\VPMatrices.hpp" />
     <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\Renderer.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
+    <ClInclude Include="Engine\Transform.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />

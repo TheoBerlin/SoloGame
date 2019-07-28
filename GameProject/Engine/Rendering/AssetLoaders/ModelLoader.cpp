@@ -7,15 +7,18 @@
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
-std::unordered_map<std::string, Model*> ModelLoader::models = std::unordered_map<std::string, Model*>();
+ModelLoader::ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader, ID3D11Device* device)
+    :device(device),
+    txLoader(txLoader),
+    ComponentHandler({}, sysSubscriber, std::type_index(typeid(ModelLoader)))
+{}
 
 ModelLoader::~ModelLoader()
 {
     ModelLoader::deleteAllModels();
 }
 
-
-Model* ModelLoader::loadModel(const std::string& filePath, const std::vector<TX_TYPE>& desiredTextures)
+Model* ModelLoader::loadModel(const std::string& filePath)
 {
     // See if the model is already loaded
     auto itr = models.find(filePath);
@@ -68,7 +71,7 @@ Model* ModelLoader::loadModel(const std::string& filePath, const std::vector<TX_
     loadedModel->materials.reserve(scene->mNumMaterials);
 
     for (unsigned int i = 0; i < scene->mNumMaterials; i += 1) {
-        loadMaterial(scene->mMaterials[i], loadedModel->materials, desiredTextures, directory);
+        loadMaterial(scene->mMaterials[i], loadedModel->materials, directory);
     }
 
     // Store a pointer to the loaded model
@@ -99,10 +102,10 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
     }
 
     Mesh mesh;
+    mesh.materialIndex = assimpMesh->mMaterialIndex;
 
-    mesh.vertices.resize(assimpMesh->mNumVertices);
-
-    std::vector<Vertex>& vertices = mesh.vertices;
+    std::vector<Vertex> vertices;
+    vertices.resize(assimpMesh->mNumVertices);
 
     // Loop through vertex data
     for (unsigned int i = 0; i < assimpMesh->mNumVertices; i += 1) {
@@ -118,44 +121,60 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
     }
 
-    mesh.materialIndex = assimpMesh->mMaterialIndex;
+    // Create vertex buffer
+    D3D11_BUFFER_DESC vertexBufferDesc;
+    ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+    vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+    vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    vertexBufferDesc.CPUAccessFlags = 0;
+    vertexBufferDesc.MiscFlags = 0;
+    vertexBufferDesc.StructureByteStride = sizeof(Vertex);
+
+    D3D11_SUBRESOURCE_DATA* bufferData;
+    bufferData->pSysMem = &vertices[0];
+    bufferData->SysMemPitch = 0;
+    bufferData->SysMemSlicePitch = 0;
+
+    device->CreateBuffer(&vertexBufferDesc, bufferData, &mesh.vertexBuffer);
 
     meshes.push_back(mesh);
 }
 
-void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::vector<TX_TYPE>& desiredTextures,
-    const std::string& directory)
+void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::string& directory)
 {
     Material material;
 
-    for (size_t i = 0; i < desiredTextures.size(); i += 1) {
-        aiString textureName;
+    // Get diffuse texture
+    aiString textureName;
 
-        if (desiredTextures[i] == TX_TYPE::NO_TEXTURE ||
-        assimpMaterial->GetTextureCount((aiTextureType)desiredTextures[i]) == 0) {
-            continue;
-        }
-
-        // Get file path of a desired texture
-        assimpMaterial->GetTexture((aiTextureType)desiredTextures[i], 0, &textureName);
-
-        std::string textureNameStd = textureName.C_Str();
-
-        // Remove all whitespaces from the texture name
-        std::replace(textureNameStd.begin(), textureNameStd.end(), ' ', '_');
-
-        std::string texturePath = directory + textureNameStd;
-
-        material.textures.push_back(Texture(texturePath, desiredTextures[i]));
+    if (assimpMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 0) {
+        Logger::LOG_WARNING("Loading material lacks a diffuse texture");
+        return;
     }
 
-    aiColor3D aiDiffuse, aiSpecular;
+    // Get file path of a desired texture
+    assimpMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &textureName);
 
-    assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiDiffuse);
+    std::string textureNameStd = textureName.C_Str();
+
+    // Remove all whitespaces from the texture name
+    std::replace(textureNameStd.begin(), textureNameStd.end(), ' ', '_');
+
+    std::string texturePath = directory + textureNameStd;
+
+    material.textures.push_back(txLoader->loadTexture(texturePath, TX_TYPE::DIFFUSE));
+
+    // Load material attributes
+    aiColor3D aiAmbient, aiSpecular;
+    ai_real aiShininess;
+
+    assimpMaterial->Get(AI_MATKEY_COLOR_AMBIENT, aiAmbient);
     assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiSpecular);
+    assimpMaterial->Get(AI_MATKEY_SHININESS, aiShininess);
 
-    material.diffuse = DirectX::XMFLOAT4(aiDiffuse.r, aiDiffuse.g, aiDiffuse.b, 1.0f);
-    material.specular = DirectX::XMFLOAT4(aiSpecular.r, aiSpecular.g, aiSpecular.b, 1.0f);
+    material.attributes.ambient = DirectX::XMFLOAT3(aiAmbient.r, aiAmbient.g, aiAmbient.b);
+    material.attributes.specular = DirectX::XMFLOAT3(aiSpecular.r, aiSpecular.g, aiSpecular.b);
 
     materials.push_back(material);
 }

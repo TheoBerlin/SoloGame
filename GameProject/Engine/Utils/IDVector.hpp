@@ -103,6 +103,11 @@ public:
         return this->ids;
     }
 
+    inline T& back()
+    {
+        return this->vec.back();
+    }
+
 private:
     std::vector<T> vec;
 
