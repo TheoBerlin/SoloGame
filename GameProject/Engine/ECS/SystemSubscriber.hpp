@@ -40,9 +40,10 @@ public:
     ~SystemSubscriber();
 
     // Associates a component types with functions for querying for their existence given entity IDs
-    void registerComponents(ComponentHandler* handler, std::vector<ComponentRegistration>* componentRegs);
+    void registerComponents(std::vector<ComponentRegistration>* componentRegs);
     void deregisterComponents(ComponentHandler* handler);
 
+    void registerHandler(ComponentHandler* handler, std::type_index& handlerType);
     ComponentHandler* getComponentHandler(std::type_index& handlerType);
 
     void registerSystem(SystemRegistration* sysReg);

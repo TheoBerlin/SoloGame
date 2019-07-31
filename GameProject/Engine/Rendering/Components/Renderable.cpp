@@ -13,8 +13,10 @@ RenderableHandler::RenderableHandler(SystemSubscriber* systemSubscriber)
     this->registerHandler(&compRegs);
 
     std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
+    std::type_index tid_modelLoader = std::type_index(typeid(ModelLoader));
 
     this->shaderHandler = static_cast<ShaderHandler*>(systemSubscriber->getComponentHandler(tid_shaderHandler));
+    this->modelLoader = static_cast<ModelLoader*>(systemSubscriber->getComponentHandler(tid_modelLoader));
 }
 
 bool RenderableHandler::createRenderable(std::string modelPath, PROGRAM program)
@@ -23,7 +25,7 @@ bool RenderableHandler::createRenderable(std::string modelPath, PROGRAM program)
 
     renderable.program = shaderHandler->getProgram(program);
 
-    renderable.model = ModelLoader::loadModel(modelPath, {DIFFUSE});
+    renderable.model = modelLoader->loadModel(modelPath);
 
     return renderable.program && renderable.model;
 }

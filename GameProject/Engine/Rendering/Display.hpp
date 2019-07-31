@@ -6,22 +6,25 @@
 class Display
 {
 public:
-    Display();
+    // aspectRatio - width/height
+    Display(unsigned int height, float aspectRatio, bool windowed);
     ~Display();
 
     /*
         Creates window and directx device and swap chain
-        aspectRatio - width/height
     */
-    bool init(unsigned int height, float aspectRatio, bool windowed);
 
     ID3D11Device* getDevice();
     ID3D11DeviceContext* getDeviceContext();
     IDXGISwapChain* getSwapChain();
+    ID3D11RenderTargetView* getRenderTarget();
+    ID3D11DepthStencilView* getDepthStencilView();
 
 private:
-    bool initWindow();
-    bool initDX();
+    // Creates window
+    void initWindow();
+    // Creates DirectX device, device context, swap chain, render target and depth stencil
+    void initDX();
 
     static LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -33,6 +36,10 @@ private:
     ID3D11Device* device;
     ID3D11DeviceContext* deviceContext;
     IDXGISwapChain* swapChain;
+    ID3D11RenderTargetView* renderTarget;
+    ID3D11DepthStencilState* depthStencilState;
+    ID3D11Texture2D* depthStencilTx;
+    ID3D11DepthStencilView* depthStencilView;
 
     bool windowed;
 

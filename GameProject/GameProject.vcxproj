@@ -238,6 +238,7 @@
     <ClCompile Include="Engine\IGame.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\Components\PointLight.cpp" />
     <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />

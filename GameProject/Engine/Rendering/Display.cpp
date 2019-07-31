@@ -1,20 +1,26 @@
 #include "Display.hpp"
 
+#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <combaseapi.h>
 #include <comdef.h>
 #include <roapi.h>
 
-Display::Display()
+Display::Display(unsigned int height, float aspectRatio, bool windowed)
     :hInstance(nullptr),
     hwnd(nullptr),
     device(nullptr),
     deviceContext(nullptr),
-    windowed(true),
+    windowed(windowed),
     swapChain(nullptr),
-    width(0),
-    height(0)
+    renderTarget(nullptr),
+    height(height),
+    width((unsigned int)(height * aspectRatio))
 {
+    Logger::LOG_INFO("Creating window");
+
+    this->initWindow();
+    this->initDX();
 }
 
 Display::~Display()
@@ -27,23 +33,18 @@ Display::~Display()
 
     if (this->swapChain)
         this->swapChain->Release();
-}
 
-bool Display::init(unsigned int height, float aspectRatio, bool windowed)
-{
-    this->height = height;
-    this->width = (unsigned int)(height * aspectRatio);
-    this->windowed = windowed;
+    if (this->renderTarget)
+        this->renderTarget->Release();
 
-    Logger::LOG_INFO("Creating window");
+    if (this->depthStencilState)
+        this->depthStencilState->Release();
 
-    if (!this->initWindow())
-        return false;
+    if (this->depthStencilTx)
+        this->depthStencilTx->Release();
 
-    if (!this->initDX())
-        return false;
-
-    return true;
+    if (this->depthStencilView)
+        this->depthStencilView->Release();
 }
 
 ID3D11Device* Display::getDevice()
@@ -61,7 +62,17 @@ IDXGISwapChain* Display::getSwapChain()
     return this->swapChain;
 }
 
-bool Display::initWindow()
+ID3D11RenderTargetView* Display::getRenderTarget()
+{
+    return this->renderTarget;
+}
+
+ID3D11DepthStencilView* Display::getDepthStencilView()
+{
+    return this->depthStencilView;
+}
+
+void Display::initWindow()
 {
     // Create window class
     WNDCLASSEX wcex = {0};
@@ -73,7 +84,8 @@ bool Display::initWindow()
 
     if (!RegisterClassEx(&wcex)) {
         Logger::LOG_ERROR("Failed to register window class");
-        return false;
+        system("pause");
+        exit(1);
     }
 
     RECT clientArea = {0, 0, (LONG)this->width, (LONG)this->height};
@@ -94,7 +106,8 @@ bool Display::initWindow()
 
     if (!this->hwnd) {
         Logger::LOG_ERROR("Failed to create window");
-        return false;
+        system("pause");
+        exit(1);
     }
 
     //ShowWindow(hwnd, SW_SHOW);
@@ -103,16 +116,14 @@ bool Display::initWindow()
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to initialize COM library");
-        return false;
+        Logger::LOG_ERROR("Failed to initialize COM library: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
     }
     //Windows::Foundation::Initialize(RO_INIT_MULTITHREADED);
-
-
-    return true;
 }
 
-bool Display::initDX()
+void Display::initDX()
 {
     // Single-threaded flag improves performance when D3D11 calls are only made on one thread
     UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
@@ -131,16 +142,16 @@ bool Display::initDX()
     // Create swap chain description
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-    swapChainDesc.BufferDesc.Width = 0;
+    swapChainDesc.BufferDesc.Width = 0; // Will 'automatically' be adjusted to the size of the window
     swapChainDesc.BufferDesc.Height = 0;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = frameRateLimit;
-    swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
+    swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
     swapChainDesc.SampleDesc.Count = this->multisamples;
     swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
     swapChainDesc.BufferCount = 1;
     swapChainDesc.OutputWindow = this->hwnd;
     swapChainDesc.Windowed = this->windowed;
@@ -161,11 +172,80 @@ bool Display::initDX()
         &this->deviceContext);
 
     if (FAILED(hr) || !device || !swapChain) {
-        Logger::LOG_ERROR("Failed to create device and swap chain");
-        return false;
+        Logger::LOG_ERROR("Failed to create device and swap chain: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
     }
 
-    return true;
+    ID3D11Texture2D* backBuffer = nullptr;
+    hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+    if (FAILED(hr)) {
+        Logger::LOG_ERROR("Failed to retrieve swap chain's back buffer: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    hr = device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
+    if (FAILED(hr)) {
+        Logger::LOG_ERROR("Failed to create render target: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    /* Depth stencil */
+    D3D11_TEXTURE2D_DESC depthTxDesc;
+    ZeroMemory(&depthTxDesc, sizeof(D3D11_TEXTURE2D_DESC));
+    depthTxDesc.Width = width;
+    depthTxDesc.Height = height;
+    depthTxDesc.MipLevels = 1;
+    depthTxDesc.ArraySize = 1;
+    depthTxDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthTxDesc.SampleDesc.Count = 1;
+    depthTxDesc.SampleDesc.Quality = 0;
+    depthTxDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthTxDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthTxDesc.CPUAccessFlags = 0;
+    depthTxDesc.MiscFlags = 0;
+
+    hr = device->CreateTexture2D(&depthTxDesc, nullptr, &depthStencilTx);
+    if (FAILED(hr)) {
+        Logger::LOG_ERROR("Failed to create depth stencil texture: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    D3D11_DEPTH_STENCIL_DESC dsDesc;
+    ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+    dsDesc.DepthEnable = true;
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+    dsDesc.StencilEnable = false;
+    dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
+    dsDesc.BackFace = dsDesc.FrontFace;
+
+    hr = device->CreateDepthStencilState(&dsDesc, &depthStencilState);
+    if (FAILED(hr)) {
+        Logger::LOG_ERROR("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsViewDesc;
+    dsViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    dsViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsViewDesc.Flags = 0;
+    dsViewDesc.Texture2D.MipSlice = 0;
+
+    hr = device->CreateDepthStencilView(depthStencilTx, &dsViewDesc, &depthStencilView);
+    if (FAILED(hr)) {
+        Logger::LOG_ERROR("Failed to create depth stencil view: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    backBuffer->Release();
 }
 
 LRESULT CALLBACK Display::windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

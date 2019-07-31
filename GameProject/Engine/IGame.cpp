@@ -1,18 +1,18 @@
 #include "IGame.hpp"
 
-#include <Engine/Rendering/Renderer.hpp>
-#include <Engine/Rendering/ShaderHandler.hpp>
-
 IGame::IGame()
+    :display(720, 16.0f/9.0f, true),
+    transformHandler(&ecs.systemSubscriber),
+    shaderHandler(display.getDevice(), &ecs.systemSubscriber),
+    txLoader(&ecs.systemSubscriber, display.getDevice()),
+    modelLoader(&ecs.systemSubscriber, &txLoader, display.getDevice()),
+    renderableHandler(&ecs.systemSubscriber),
+    vpHandler(&ecs.systemSubscriber),
+    lightHandler(&ecs.systemSubscriber),
+    renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView())
 {
-    display.init(720, 16.0f/9.0f, true);
-
-    shaderHandler = new ShaderHandler(display.getDevice(), &ecs.systemSubscriber);
-    renderer = new Renderer(&ecs, display.getDevice());
+    std::getchar();
 }
 
 IGame::~IGame()
-{
-    delete shaderHandler;
-    delete renderer;
-}
+{}

@@ -10,7 +10,7 @@ SystemSubscriber::SystemSubscriber()
 SystemSubscriber::~SystemSubscriber()
 {}
 
-void SystemSubscriber::registerComponents(ComponentHandler* handler, std::vector<ComponentRegistration>* componentRegs)
+void SystemSubscriber::registerComponents(std::vector<ComponentRegistration>* componentRegs)
 {
     for (size_t i = 0; i < componentRegs->size(); i += 1) {
         auto mapItr = this->componentResources.find((*componentRegs)[i].tid);
@@ -18,6 +18,8 @@ void SystemSubscriber::registerComponents(ComponentHandler* handler, std::vector
         if (mapItr != this->componentResources.end()) {
             Logger::LOG_WARNING("Attempted to register an already handled component type: %s", (*componentRegs)[i].tid.name());
             continue;
+        } else {
+            Logger::LOG_WARNING("Registered component type: %s", (*componentRegs)[i].tid.name());
         }
 
         ComponentResources componentResources = {
@@ -27,8 +29,6 @@ void SystemSubscriber::registerComponents(ComponentHandler* handler, std::vector
 
         this->componentResources.insert({(*componentRegs)[i].tid, componentResources});
     }
-
-    this->componentHandlers[handler->getHandlerType()] = handler;
 }
 
 void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
@@ -55,6 +55,12 @@ void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
     }
 
     componentHandlers.erase(handlerItr);
+}
+
+void SystemSubscriber::registerHandler(ComponentHandler* handler, std::type_index& handlerType)
+{
+    Logger::LOG_INFO("Registering handler: %s", handlerType.name());
+    this->componentHandlers[handlerType] = handler;
 }
 
 ComponentHandler* SystemSubscriber::getComponentHandler(std::type_index& handlerType)
@@ -86,18 +92,21 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
 
         newSub.subscriber = sysReg->subReqs[i].subscriber;
 
+		for (auto myItr = componentResources.begin(); myItr != componentResources.end(); myItr++) {
+			Logger::LOG_INFO("Found registered component: %s, hash: %d", myItr->first.name(), myItr->first.hash_code());
+		}
+
         for (size_t j = 0; j < componentRegs.size(); j += 1) {
             auto queryItr = componentResources.find(componentRegs[j].tid);
 
             if (queryItr == componentResources.end()) {
-                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s", componentRegs[i].tid.name());
+                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, %d", componentRegs[j].tid.name(), componentRegs[j].tid.hash_code());
                 systemIdGen.popID(sysID);
                 return;
             }
 
             newSub.entityHasComponent.push_back(&queryItr->second.componentQuery);
             newSub.componentTypes.push_back(componentRegs[j].tid);
-
         }
 
         subscriptions.push_back(newSub);

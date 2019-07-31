@@ -8,14 +8,14 @@ struct ViewMatrix {
     DirectX::XMFLOAT4X4 view;
 };
 
-struct ProjMatrix {
+struct ProjectionMatrix {
     DirectX::XMFLOAT4X4 projection;
 };
 
 const std::type_index tid_view = std::type_index(typeid(ViewMatrix));
-const std::type_index tid_projection = std::type_index(typeid(ProjMatrix));
+const std::type_index tid_projection = std::type_index(typeid(ProjectionMatrix));
 
-class VPHandler : private ComponentHandler
+class VPHandler : public ComponentHandler
 {
 public:
     VPHandler(SystemSubscriber* sysSubscriber);
@@ -25,5 +25,5 @@ public:
     void createProjMatrix(Entity entity, float horizontalFOV, float aspectRatio, float nearZ, float farZ);
 
     IDVector<ViewMatrix> viewMatrices;
-    IDVector<ProjMatrix> projMatrices;
+    IDVector<ProjectionMatrix> projMatrices;
 };

@@ -28,6 +28,7 @@ enum PROGRAM
 };
 
 struct Program {
+    ID3D11InputLayout* inputLayout;
     ID3D11VertexShader* vertexShader;
     ID3D11HullShader* hullShader;
     ID3D11DomainShader* domainShader;
@@ -43,7 +44,10 @@ public:
 
     Program* getProgram(PROGRAM program);
 
-    Program compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes);
+    // Creates new input layout using description
+    Program compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes,
+        std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc);
+
     ID3DBlob* compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCSTR targetVer);
 
 private:

@@ -5,6 +5,8 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <typeindex>
 
+class ModelLoader;
+
 struct Model;
 
 struct Renderable {
@@ -25,4 +27,5 @@ public:
 
 private:
     ShaderHandler* shaderHandler;
+    ModelLoader* modelLoader;
 };

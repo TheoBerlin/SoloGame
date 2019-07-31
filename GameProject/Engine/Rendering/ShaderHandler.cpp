@@ -1,5 +1,6 @@
 #include "ShaderHandler.hpp"
 
+#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <d3dcompiler.h>
 
@@ -7,7 +8,36 @@ ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubsc
     :ComponentHandler({}, systemSubscriber, std::type_index(typeid(ShaderHandler)))
 {
     /* Compile all shaders and associate them with program enum names */
-    programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}));
+    std::vector<D3D11_INPUT_ELEMENT_DESC> meshInputLayoutDesc = {
+        {
+            "POSITION",                     // Semantic name in shader
+            0,                              // Semantic index (not used)
+            DXGI_FORMAT_R32G32B32_FLOAT,    // Element format
+            0,                              // Input slot
+            0,                              // Byte offset to first element
+            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
+            0                               // Instance step rate
+        },
+        {
+            "NORMAL",                       // Semantic name in shader
+            0,                              // Semantic index (not used)
+            DXGI_FORMAT_R32G32B32_FLOAT,    // Element format
+            0,                              // Input slot
+            12,                             // Byte offset to first element
+            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
+            0                               // Instance step rate
+        },
+        {
+            "TEXCOORD",                     // Semantic name in shader
+            0,                              // Semantic index (not used)
+            DXGI_FORMAT_R32G32_FLOAT,       // Element format
+            0,                              // Input slot
+            24,                             // Byte offset to first element
+            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
+            0                               // Instance step rate
+        },
+    };
+    programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, meshInputLayoutDesc));
 }
 
 ShaderHandler::~ShaderHandler()
@@ -26,7 +56,8 @@ Program* ShaderHandler::getProgram(PROGRAM program)
     return &programs[program];
 }
 
-Program ShaderHandler::compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes)
+Program ShaderHandler::compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes,
+    std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc)
 {
     Program program = {nullptr, nullptr, nullptr, nullptr, nullptr};
 
@@ -53,6 +84,10 @@ Program ShaderHandler::compileProgram(ID3D11Device* device, LPCWSTR programName,
                         system("pause");
                     }
                 } while (program.vertexShader == nullptr);
+                hr = device->CreateInputLayout(&inputLayoutDesc[0], (UINT)inputLayoutDesc.size(), compiledCode->GetBufferPointer(),
+                    compiledCode->GetBufferSize(), &program.inputLayout);
+                if (FAILED(hr))
+                    Logger::LOG_ERROR("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
                 break;
 
             case PIXEL_SHADER:

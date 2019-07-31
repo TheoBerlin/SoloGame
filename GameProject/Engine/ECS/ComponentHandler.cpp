@@ -6,7 +6,9 @@ ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, Sy
     :handledTypes(handledTypes),
     systemSubscriber(systemSubscriber),
     tid_handler(tid_handler)
-{}
+{
+    systemSubscriber->registerHandler(this, tid_handler);
+}
 
 ComponentHandler::~ComponentHandler()
 {
@@ -15,7 +17,7 @@ ComponentHandler::~ComponentHandler()
 
 void ComponentHandler::registerHandler(std::vector<ComponentRegistration>* componentQueries)
 {
-    this->systemSubscriber->registerComponents(this, componentQueries);
+    this->systemSubscriber->registerComponents(componentQueries);
 }
 
 const std::vector<std::type_index>& ComponentHandler::getHandledTypes() const

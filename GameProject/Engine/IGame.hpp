@@ -1,11 +1,15 @@
 #pragma once
 
 #include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
+#include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/Components/PointLight.hpp>
+#include <Engine/Rendering/Components/Renderable.hpp>
+#include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Display.hpp>
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
-
-class Renderer;
-class ShaderHandler;
+#include <Engine/Transform.hpp>
 
 class IGame
 {
@@ -16,6 +20,12 @@ public:
 private:
     ECSInterface ecs;
     Display display;
-    ShaderHandler* shaderHandler;
-    Renderer* renderer;
+    TransformHandler transformHandler;
+    ShaderHandler shaderHandler;
+    TextureLoader txLoader;
+    ModelLoader modelLoader;
+    RenderableHandler renderableHandler;
+    VPHandler vpHandler;
+    LightHandler lightHandler;
+    Renderer renderer;
 };

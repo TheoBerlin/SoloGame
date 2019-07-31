@@ -4,6 +4,7 @@
 #include <assimp/postprocess.h>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
@@ -121,22 +122,27 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
     }
 
+    mesh.vertexCount = vertices.size();
+
     // Create vertex buffer
     D3D11_BUFFER_DESC vertexBufferDesc;
     ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-    vertexBufferDesc.ByteWidth = sizeof(Vertex) * vertices.size();
+    vertexBufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
     vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
     vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertexBufferDesc.CPUAccessFlags = 0;
     vertexBufferDesc.MiscFlags = 0;
     vertexBufferDesc.StructureByteStride = sizeof(Vertex);
 
-    D3D11_SUBRESOURCE_DATA* bufferData;
-    bufferData->pSysMem = &vertices[0];
-    bufferData->SysMemPitch = 0;
-    bufferData->SysMemSlicePitch = 0;
+    D3D11_SUBRESOURCE_DATA bufferData;
+    bufferData.pSysMem = &vertices[0];
+    bufferData.SysMemPitch = 0;
+    bufferData.SysMemSlicePitch = 0;
 
-    device->CreateBuffer(&vertexBufferDesc, bufferData, &mesh.vertexBuffer);
+    HRESULT hr = device->CreateBuffer(&vertexBufferDesc, &bufferData, &mesh.vertexBuffer);
+    if (FAILED(hr)) {
+        Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+    }
 
     meshes.push_back(mesh);
 }

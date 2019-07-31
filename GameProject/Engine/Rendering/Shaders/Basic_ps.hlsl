@@ -1,7 +1,6 @@
 Texture2D diffuseTX : register(t0);
 SamplerState sampAni;
 
-
 cbuffer material : register(b0) {
     float3 Ka;
     float3 Ks;
@@ -10,15 +9,16 @@ cbuffer material : register(b0) {
 
 #define MAX_LIGHTS 5
 
-cbuffer PointLights : register(b1) {
-    float3 lightPos[MAX_LIGHTS];
-    float3 light[MAX_LIGHTS];
-    float lightRadius[MAX_LIGHTS];
+struct PointLight {
+    float3 lightPos;
+    float3 light;
+    float lightRadius;
 };
 
-cbuffer perFrame : register(b2) {
+cbuffer perFrame : register(b1) {
+    PointLight pointLights[MAX_LIGHTS];
     float3 camPos;
-    int numLights;
+    uint numLights;
 };
 
 struct VS_OUT {
@@ -38,15 +38,15 @@ float4 PS_main(VS_OUT ps_in) : SV_TARGET {
 
     float3 specular = (float3) 0;
 
-    for (int i = 0; i < numLights; i += 1) {
-        float distance = length(lightPos[i] - ps_in.worldPos);
-        float3 lightDir = (lightPos[i] - ps_in.worldPos)/distance;
+    for (uint i = 0; i < numLights; i += 1) {
+        float distance = length(pointLights[i].lightPos - ps_in.worldPos);
+        float3 lightDir = (pointLights[i].lightPos - ps_in.worldPos)/distance;
         float cosAngle = dot(normal, lightDir);
         float attenuation = 1.0/distance;
 
-        ambient += Ka*light[i]*attenuation;
-        diffuse += max(cosAngle, 0.0) * Kd * light[i] * attenuation;
-        specular += pow(max(0.0, dot(reflect(lightDir, normal), normalize(camPos-ps_in.worldPos))), shininess)*light[i];
+        ambient += Ka*pointLights[i].light*attenuation;
+        diffuse += max(cosAngle, 0.0) * Kd * pointLights[i].light * attenuation;
+        specular += pow(max(0.0, dot(reflect(lightDir, normal), normalize(camPos-ps_in.worldPos))), shininess)*pointLights[i].light;
     }
 
     diffuse = saturate(diffuse);
