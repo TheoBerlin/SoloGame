@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <Engine/Utils/Logger.hpp>
 #include <Game/Game.hpp>
 #include <crtdbg.h>

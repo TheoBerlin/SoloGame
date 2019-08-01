@@ -2,7 +2,13 @@
 
 LightHandler::LightHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_pointLight}, sysSubscriber, std::type_index(typeid(LightHandler)))
-{}
+{
+    std::vector<ComponentRegistration> compRegs = {
+        {tid_pointLight, [this](Entity entity) {return pointLights.hasElement(entity);}, &pointLights.getIDs()}
+    };
+
+    this->registerHandler(&compRegs);
+}
 
 LightHandler::~LightHandler()
 {}

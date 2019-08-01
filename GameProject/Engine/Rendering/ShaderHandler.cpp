@@ -48,6 +48,8 @@ ShaderHandler::~ShaderHandler()
             program.vertexShader->Release();
         if (program.pixelShader)
             program.pixelShader->Release();
+        if (program.inputLayout)
+            program.inputLayout->Release();
     }
 }
 

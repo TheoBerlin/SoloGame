@@ -1,5 +1,6 @@
 #pragma once
 
+#define NOMINMAX
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/IDVector.hpp>

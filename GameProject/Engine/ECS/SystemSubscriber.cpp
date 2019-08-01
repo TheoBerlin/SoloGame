@@ -18,8 +18,6 @@ void SystemSubscriber::registerComponents(std::vector<ComponentRegistration>* co
         if (mapItr != this->componentResources.end()) {
             Logger::LOG_WARNING("Attempted to register an already handled component type: %s", (*componentRegs)[i].tid.name());
             continue;
-        } else {
-            Logger::LOG_WARNING("Registered component type: %s", (*componentRegs)[i].tid.name());
         }
 
         ComponentResources componentResources = {
@@ -59,7 +57,6 @@ void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
 
 void SystemSubscriber::registerHandler(ComponentHandler* handler, std::type_index& handlerType)
 {
-    Logger::LOG_INFO("Registering handler: %s", handlerType.name());
     this->componentHandlers[handlerType] = handler;
 }
 
@@ -91,10 +88,6 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
         newSub.componentTypes.reserve(componentRegs.size());
 
         newSub.subscriber = sysReg->subReqs[i].subscriber;
-
-		for (auto myItr = componentResources.begin(); myItr != componentResources.end(); myItr++) {
-			Logger::LOG_INFO("Found registered component: %s, hash: %d", myItr->first.name(), myItr->first.hash_code());
-		}
 
         for (size_t j = 0; j < componentRegs.size(); j += 1) {
             auto queryItr = componentResources.find(componentRegs[j].tid);

@@ -84,6 +84,10 @@ Model* ModelLoader::loadModel(const std::string& filePath)
 void ModelLoader::deleteAllModels()
 {
     for (auto& itr : models) {
+        Model* model = itr.second;
+        for (size_t i = 0; i < model->meshes.size(); i += 1) {
+            model->meshes[i].vertexBuffer->Release();
+        }
         delete itr.second;
     }
 

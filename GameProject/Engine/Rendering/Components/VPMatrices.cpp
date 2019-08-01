@@ -4,7 +4,14 @@ const float degreesToRadians = DirectX::XM_PI / 180.0f;
 
 VPHandler::VPHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_view, tid_projection}, sysSubscriber, std::type_index(typeid(VPHandler)))
-{}
+{
+    std::vector<ComponentRegistration> compRegs = {
+        {tid_view, [this](Entity entity) {return viewMatrices.hasElement(entity);}, &viewMatrices.getIDs()},
+        {tid_projection, [this](Entity entity) {return projMatrices.hasElement(entity);}, &projMatrices.getIDs()}
+    };
+
+    this->registerHandler(&compRegs);
+}
 
 VPHandler::~VPHandler()
 {}

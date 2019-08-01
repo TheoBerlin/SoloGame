@@ -33,7 +33,5 @@ public:
     WorldMatrix& getWorldMatrix(Entity entity);
 
     IDVector<Transform> transforms;
-
-private:
     IDVector<WorldMatrix> worldMatrices;
 };

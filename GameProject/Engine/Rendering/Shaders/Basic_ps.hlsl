@@ -5,6 +5,7 @@ cbuffer material : register(b0) {
     float3 Ka;
     float3 Ks;
     float shininess;
+    uint paddingb0;
 };
 
 #define MAX_LIGHTS 5
@@ -19,6 +20,7 @@ cbuffer perFrame : register(b1) {
     PointLight pointLights[MAX_LIGHTS];
     float3 camPos;
     uint numLights;
+    uint paddingb1;
 };
 
 struct VS_OUT {

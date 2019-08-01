@@ -6,8 +6,7 @@
 #include <Engine/Rendering/Display.hpp>
 
 TEST_CASE("ModelLoader") {
-    Display display;
-    display.init(720, 16.0f/9.0f, true);
+    Display display(720, 16.0f/9.0f, true);
 
     ECSInterface ecs;
 

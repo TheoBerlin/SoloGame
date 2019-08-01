@@ -7,6 +7,7 @@ struct MaterialAttributes {
     DirectX::XMFLOAT3 ambient;
     DirectX::XMFLOAT3 specular;
     float shininess;
+    uint32_t bufferPadding;
 };
 
 struct Material {

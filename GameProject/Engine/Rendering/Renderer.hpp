@@ -64,4 +64,5 @@ struct PerFrameBuffer {
     PointLight pointLights[MAX_POINTLIGHTS];
     DirectX::XMFLOAT3 cameraPosition;
     unsigned int numLights;
+    uint32_t padding;
 };

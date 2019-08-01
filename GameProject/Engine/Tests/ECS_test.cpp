@@ -20,11 +20,11 @@ struct Direction {
 
 std::type_index tid_dir = std::type_index(typeid(Direction));
 
-class TransformHandler : public ComponentHandler
+class TransformHandler_test : public ComponentHandler
 {
 public:
-    TransformHandler(SystemSubscriber* sysHandler)
-        :ComponentHandler({tid_pos, tid_dir}, sysHandler, std::type_index(typeid(TransformHandler)))
+    TransformHandler_test(SystemSubscriber* sysHandler)
+        :ComponentHandler({tid_pos, tid_dir}, sysHandler, std::type_index(typeid(TransformHandler_test)))
     {
         std::vector<ComponentRegistration> compRegs = {
             {tid_pos, [this](Entity entity) { return this->positions.hasElement(entity);}, &this->positions.getIDs()},
@@ -66,9 +66,9 @@ public:
     ForwardMover(ECSInterface* ecs)
         :System(ecs)
     {
-        std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
+        std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler_test));
         ComponentHandler* handler = this->getComponentHandler(tid_transformHandler);
-        this->transformHandler = static_cast<TransformHandler*>(handler);
+        this->transformHandler = static_cast<TransformHandler_test*>(handler);
 
         // Subscribe to components
         SystemRegistration sysReg = {
@@ -108,7 +108,7 @@ public:
 private:
     IDVector<Entity> entities;
 
-    TransformHandler* transformHandler;
+    TransformHandler_test* transformHandler;
 };
 
 TEST_CASE("ECS Subscriptions") {
@@ -132,7 +132,7 @@ TEST_CASE("ECS Subscriptions") {
 
     SECTION("Register system before components are created") {
         // Component handlers must be registered before systems
-        TransformHandler transformHandler(&ecs.systemSubscriber);
+        TransformHandler_test transformHandler(&ecs.systemSubscriber);
 
         ForwardMover sys(&ecs);
 
@@ -157,7 +157,7 @@ TEST_CASE("ECS Subscriptions") {
             Registering a system after registering components should lead to the system being notified about all existing components
             it's subscribing to
         */
-        TransformHandler transformHandler(&ecs.systemSubscriber);
+        TransformHandler_test transformHandler(&ecs.systemSubscriber);
 
         // With this setup, registering the forward mover system should lead to entities[0] being processed
         transformHandler.createPos(pos, entities[0]);

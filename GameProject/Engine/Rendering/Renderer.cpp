@@ -43,11 +43,11 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     /* Cbuffers */
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = sizeof(DirectX::XMFLOAT4X4) * 2;
+    bufferDesc.ByteWidth = sizeof(PerObjectMatrices);
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
     HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &perObjectMatrices);
