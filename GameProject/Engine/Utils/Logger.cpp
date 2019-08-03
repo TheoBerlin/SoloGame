@@ -6,19 +6,46 @@
 #include <sstream>
 #include <Windows.h>
 
+#include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
 HANDLE Logger::consoleHandle = nullptr;
 std::ofstream Logger::logFile;
 
 void Logger::init()
 {
+    AllocConsole(); //debug console
+    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout); //just works
     consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    const LPCWSTR consoleTitle = L"Debug Console";
+    SetConsoleTitleW(consoleTitle);
+    SetConsoleCtrlHandler(Logger::consoleEventHandler, TRUE);
 
     logFile.open(LOG_PATH, std::ofstream::out | std::ofstream::trunc);
 }
 
 Logger::~Logger()
 {
+    if (consoleHandle) {
+        FreeConsole();
+    }
     logFile.close();
+}
+
+BOOL WINAPI Logger::consoleEventHandler(DWORD eventType)
+{
+    switch(eventType)
+    {
+        case CTRL_C_EVENT:
+        case CTRL_CLOSE_EVENT:
+            FreeConsole();
+            consoleHandle = nullptr;
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 void Logger::log(unsigned short color, const std::string prefix, const std::string text)

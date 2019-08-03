@@ -3,14 +3,20 @@
 #include <Game/Game.hpp>
 #include <crtdbg.h>
 
-int main()
+#include <stdio.h>
+#include <io.h>
+#include <windows.h>
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
 	// Check for memory leaks. Disabled when not debugging
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	Logger::init();
+    std::getchar();
 
-	Game game;
+	Game game(hInstance);
+    game.run();
 
 	return 0;
 }

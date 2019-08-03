@@ -6,8 +6,10 @@
 #include <comdef.h>
 #include <roapi.h>
 
-Display::Display(unsigned int height, float aspectRatio, bool windowed)
-    :hInstance(nullptr),
+bool Display::keepRunning = true;
+
+Display::Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bool windowed)
+    :hInstance(hInstance),
     hwnd(nullptr),
     device(nullptr),
     deviceContext(nullptr),
@@ -72,6 +74,18 @@ ID3D11DepthStencilView* Display::getDepthStencilView()
     return this->depthStencilView;
 }
 
+void Display::showWindow()
+{
+    ShowWindow(hwnd, SW_SHOW);
+}
+
+void Display::presentBackBuffer()
+{
+    HRESULT hr = swapChain->Present(0, 0);
+    if (FAILED(hr))
+        Logger::LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+}
+
 void Display::initWindow()
 {
     // Create window class
@@ -109,8 +123,6 @@ void Display::initWindow()
         system("pause");
         exit(1);
     }
-
-    //ShowWindow(hwnd, SW_SHOW);
 
     // Allows for use of windows COM
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -253,7 +265,7 @@ LRESULT CALLBACK Display::windowProcedure(HWND hwnd, UINT message, WPARAM wParam
     switch (message)
     {
         case WM_DESTROY:
-            PostQuitMessage(0);
+            keepRunning = false;
             break;
     }
 

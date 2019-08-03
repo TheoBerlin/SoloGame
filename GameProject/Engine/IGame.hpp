@@ -14,18 +14,25 @@
 class IGame
 {
 public:
-    IGame();
+    IGame(HINSTANCE hInstance);
     ~IGame();
 
-private:
+    // Starts the main loop
+    void run();
+
+    virtual void update(float dt) = 0;
+
+protected:
     ECSInterface ecs;
-    Display display;
     TransformHandler transformHandler;
+    VPHandler vpHandler;
+
+private:
+    Display display;
     ShaderHandler shaderHandler;
     TextureLoader txLoader;
     ModelLoader modelLoader;
     RenderableHandler renderableHandler;
-    VPHandler vpHandler;
     LightHandler lightHandler;
     Renderer renderer;
 };

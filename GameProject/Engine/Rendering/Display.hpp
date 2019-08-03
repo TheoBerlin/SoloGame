@@ -7,7 +7,7 @@ class Display
 {
 public:
     // aspectRatio - width/height
-    Display(unsigned int height, float aspectRatio, bool windowed);
+    Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bool windowed);
     ~Display();
 
     /*
@@ -19,6 +19,12 @@ public:
     IDXGISwapChain* getSwapChain();
     ID3D11RenderTargetView* getRenderTarget();
     ID3D11DepthStencilView* getDepthStencilView();
+
+    void showWindow();
+    void presentBackBuffer();
+
+    // Set to false when window is being closed (eg. alt+f4)
+    static bool keepRunning;
 
 private:
     // Creates window

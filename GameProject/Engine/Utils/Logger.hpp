@@ -12,6 +12,8 @@ public:
     static void init();
     ~Logger();
 
+    static BOOL WINAPI consoleEventHandler(DWORD eventType);
+
     template<typename ... Args>
     static void LOG_INFO(const std::string& format, Args&& ... args);
 

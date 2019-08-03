@@ -125,8 +125,8 @@ Renderer::~Renderer()
 
 void Renderer::update(float dt)
 {
-    if (renderables.size() == 0)
-        return;
+    if (renderables.size() == 0 || camera.size() == 0)
+       return;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
     D3D11_MAPPED_SUBRESOURCE mappedResource;
