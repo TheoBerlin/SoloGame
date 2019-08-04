@@ -84,6 +84,8 @@ void Display::presentBackBuffer()
     HRESULT hr = swapChain->Present(0, 0);
     if (FAILED(hr))
         Logger::LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+
+    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
 void Display::initWindow()
@@ -154,8 +156,8 @@ void Display::initDX()
     // Create swap chain description
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-    swapChainDesc.BufferDesc.Width = 0; // Will 'automatically' be adjusted to the size of the window
-    swapChainDesc.BufferDesc.Height = 0;
+    swapChainDesc.BufferDesc.Width = width;
+    swapChainDesc.BufferDesc.Height = height;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = frameRateLimit;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -203,6 +205,7 @@ void Display::initDX()
         system("pause");
         exit(1);
     }
+    backBuffer->Release();
 
     /* Depth stencil */
     D3D11_TEXTURE2D_DESC depthTxDesc;
@@ -245,6 +248,7 @@ void Display::initDX()
     }
 
     D3D11_DEPTH_STENCIL_VIEW_DESC dsViewDesc;
+    ZeroMemory(&dsViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
     dsViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
     dsViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     dsViewDesc.Flags = 0;
@@ -257,7 +261,17 @@ void Display::initDX()
         exit(1);
     }
 
-    backBuffer->Release();
+    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+
+    /* Set viewport */
+    D3D11_VIEWPORT viewPort;
+    viewPort.TopLeftX = 0;
+    viewPort.TopLeftY = 0;
+    viewPort.Width = (float)width;
+    viewPort.Height = (float)height;
+    viewPort.MinDepth = 0.0f;
+    viewPort.MaxDepth = 1.0f;
+    deviceContext->RSSetViewports(1, &viewPort);
 }
 
 LRESULT CALLBACK Display::windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

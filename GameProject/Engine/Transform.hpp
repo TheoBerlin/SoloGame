@@ -4,7 +4,7 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 
-const DirectX::XMFLOAT3 defaultForward = {0.0f, 0.0f, -1.0f};
+const DirectX::XMVECTOR defaultForward = {0.0f, 0.0f, -1.0f};
 const DirectX::XMFLOAT3 defaultUp = {0.0f, 1.0f, 0.0f};
 
 struct Transform {
@@ -28,10 +28,15 @@ public:
     ~TransformHandler();
 
     void createTransform(Entity entity);
+    // Requires that the entity has a transform component
+    void createWorldMatrix(Entity entity);
 
     // Requires that the entity has both a transform and world matrix component
     WorldMatrix& getWorldMatrix(Entity entity);
 
     IDVector<Transform> transforms;
     IDVector<WorldMatrix> worldMatrices;
+
+    // Transform calculation functions
+    DirectX::XMVECTOR getForward(Transform& transform);
 };

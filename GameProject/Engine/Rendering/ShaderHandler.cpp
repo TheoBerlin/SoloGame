@@ -37,7 +37,8 @@ ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubsc
             0                               // Instance step rate
         },
     };
-    programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, meshInputLayoutDesc));
+    UINT vertexSize = 32;
+    programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, meshInputLayoutDesc, vertexSize));
 }
 
 ShaderHandler::~ShaderHandler()
@@ -59,9 +60,9 @@ Program* ShaderHandler::getProgram(PROGRAM program)
 }
 
 Program ShaderHandler::compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes,
-    std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc)
+    std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize)
 {
-    Program program = {nullptr, nullptr, nullptr, nullptr, nullptr};
+    Program program = {vertexSize, nullptr, nullptr, nullptr, nullptr, nullptr};
 
     HRESULT hr;
     std::wstring filePath;

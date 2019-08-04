@@ -24,7 +24,7 @@ cbuffer perFrame : register(b1) {
 };
 
 struct VS_OUT {
-    float4 pos : POSITION;
+    float4 pos : SV_POSITION;
     float3 normal : NORMAL;
     float3 worldPos : WORLD_POSITION;
     float2 txCoords : TEXCOORD0;
@@ -33,10 +33,10 @@ struct VS_OUT {
 float4 PS_main(VS_OUT ps_in) : SV_TARGET {
     float3 normal = normalize(float3(ps_in.normal.xyz));
 
-    float3 ambient = (float3) 0;
+    float3 ambient = Ka;
 
     float3 Kd = diffuseTX.Sample(sampAni, ps_in.txCoords).xyz;
-    float3 diffuse = (float3) 0;
+    float3 diffuse = Kd;
 
     float3 specular = (float3) 0;
 
@@ -46,8 +46,8 @@ float4 PS_main(VS_OUT ps_in) : SV_TARGET {
         float cosAngle = dot(normal, lightDir);
         float attenuation = 1.0/distance;
 
-        ambient += Ka*pointLights[i].light*attenuation;
-        diffuse += max(cosAngle, 0.0) * Kd * pointLights[i].light * attenuation;
+        ambient *= pointLights[i].light*attenuation;
+        diffuse *= max(cosAngle, 0.0) * pointLights[i].light * attenuation;
         specular += pow(max(0.0, dot(reflect(lightDir, normal), normalize(camPos-ps_in.worldPos))), shininess)*pointLights[i].light;
     }
 

@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
+#include <Engine/Utils/Logger.hpp>
 
 RenderableHandler::RenderableHandler(SystemSubscriber* systemSubscriber)
     :ComponentHandler({tid_renderable}, systemSubscriber, std::type_index(typeid(RenderableHandler)))
@@ -19,13 +20,19 @@ RenderableHandler::RenderableHandler(SystemSubscriber* systemSubscriber)
     this->modelLoader = static_cast<ModelLoader*>(systemSubscriber->getComponentHandler(tid_modelLoader));
 }
 
-bool RenderableHandler::createRenderable(std::string modelPath, PROGRAM program)
+bool RenderableHandler::createRenderable(Entity entity, std::string modelPath, PROGRAM program)
 {
     Renderable renderable;
 
     renderable.program = shaderHandler->getProgram(program);
-
     renderable.model = modelLoader->loadModel(modelPath);
 
-    return renderable.program && renderable.model;
+    if (!renderable.program || !renderable.model) {
+        Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);
+        return false;
+    }
+
+    renderables.push_back(renderable, entity);
+    this->registerComponent(tid_renderable, entity);
+    return true;
 }

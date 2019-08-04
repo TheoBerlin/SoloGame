@@ -12,8 +12,7 @@
 #include <Engine/Utils/Logger.hpp>
 #include <DirectXMath.h>
 
-Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv,
-        ID3D11DepthStencilView* dsv)
+Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
     :System(ecs),
     context(context),
     renderTarget(rtv),
@@ -91,7 +90,7 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     rsDesc.FrontCounterClockwise = false;
     rsDesc.DepthBias = 0;
     rsDesc.SlopeScaledDepthBias = 0.0f;
-    rsDesc.SlopeScaledDepthBias = 0.0f;
+    rsDesc.DepthBiasClamp = 0.0f;
     rsDesc.DepthClipEnable = true;
     rsDesc.ScissorEnable = false;
     rsDesc.MultisampleEnable = false;
@@ -144,11 +143,12 @@ void Renderer::update(float dt)
     perFrame.cameraPosition = transformHandler->transforms[camera[0]].position;
     perFrame.numLights = numLights;
 
-    context->Map(pointLightBuffer, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+    context->Map(pointLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     memcpy(mappedResource.pData, &perFrame, sizeof(PerFrameBuffer));
     context->Unmap(pointLightBuffer, 0);
     context->PSSetConstantBuffers(0, 1, &pointLightBuffer);
 
+    context->RSSetState(rsState);
     context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
 
     for (size_t i = 0; i < renderables.size(); i += 1) {
@@ -170,10 +170,15 @@ void Renderer::update(float dt)
 
         for (size_t j = 0; j < model->meshes.size(); j += 1) {
             Mesh& mesh = model->meshes[j];
+            if (model->materials[mesh.materialIndex].textures.empty()) {
+                // Will not render the mesh if it does not have a texture
+                continue;
+            }
 
             // Vertex buffer
             context->IASetInputLayout(program->inputLayout);
-            context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, nullptr, nullptr);
+            UINT offsets = 0;
+            context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &program->vertexSize, &offsets);
 
             /* Vertex shader */
             PerObjectMatrices matrices;
@@ -183,7 +188,7 @@ void Renderer::update(float dt)
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMLoadFloat4x4(&matrices.world) * camVP);
 
             ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
             memcpy(mappedResource.pData, &matrices, sizeof(PerObjectMatrices));
             context->Unmap(perObjectMatrices, 0);
             context->VSSetConstantBuffers(0, 1, &perObjectMatrices);
@@ -195,7 +200,7 @@ void Renderer::update(float dt)
 
             // Material cbuffer
             ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-            context->Map(materialBuffer, 0, D3D11_MAP_WRITE, 0, &mappedResource);
+            context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
             memcpy(mappedResource.pData, &model->materials[mesh.materialIndex].attributes, sizeof(Material));
             context->Unmap(materialBuffer, 0);
             context->PSSetConstantBuffers(0, 1, &materialBuffer);

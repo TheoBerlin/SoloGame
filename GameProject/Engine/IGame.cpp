@@ -9,7 +9,8 @@ IGame::IGame(HINSTANCE hInstance)
     renderableHandler(&ecs.systemSubscriber),
     vpHandler(&ecs.systemSubscriber),
     lightHandler(&ecs.systemSubscriber),
-    renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView())
+    renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
+    cameraSystem(&ecs)
 {
     display.showWindow();
     renderer.update(0.0f);

@@ -3,6 +3,7 @@
 #include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/Camera.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -26,8 +27,6 @@ protected:
     ECSInterface ecs;
     TransformHandler transformHandler;
     VPHandler vpHandler;
-
-private:
     Display display;
     ShaderHandler shaderHandler;
     TextureLoader txLoader;
@@ -35,4 +34,5 @@ private:
     RenderableHandler renderableHandler;
     LightHandler lightHandler;
     Renderer renderer;
+    CameraSystem cameraSystem;
 };

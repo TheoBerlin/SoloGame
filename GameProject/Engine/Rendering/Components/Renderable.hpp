@@ -22,7 +22,7 @@ class RenderableHandler : public ComponentHandler
 public:
     RenderableHandler(SystemSubscriber* SystemSubscriber);
 
-    bool createRenderable(std::string modelPath, PROGRAM program);
+    bool createRenderable(Entity entity, std::string modelPath, PROGRAM program);
 
     IDVector<Renderable> renderables;
 

@@ -52,7 +52,7 @@ Model* ModelLoader::loadModel(const std::string& filePath)
         Logger::LOG_WARNING("Model could not be loaded: [%s]", filePath.c_str());
         return nullptr;
     } else {
-        Logger::LOG_INFO("Loading model [%s] containing [%d] meshes", filePath.c_str(), scene->mNumMeshes);
+        Logger::LOG_INFO("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
     }
 
     Model* loadedModel = new Model();
@@ -73,6 +73,14 @@ Model* ModelLoader::loadModel(const std::string& filePath)
 
     for (unsigned int i = 0; i < scene->mNumMaterials; i += 1) {
         loadMaterial(scene->mMaterials[i], loadedModel->materials, directory);
+    }
+
+    // Not all materials might have been loaded, subtract the material indices to compensate
+    size_t materialIndexOffset = scene->mNumMaterials - loadedModel->materials.size();
+    if (materialIndexOffset > 0) {
+        for (size_t i = 0; i < loadedModel->meshes.size(); i += 1) {
+            loadedModel->meshes[i].materialIndex -= materialIndexOffset;
+        }
     }
 
     // Store a pointer to the loaded model
@@ -114,13 +122,13 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
     // Loop through vertex data
     for (unsigned int i = 0; i < assimpMesh->mNumVertices; i += 1) {
-        vertices[i].position.x = assimpMesh->mVertices->x;
-        vertices[i].position.y = assimpMesh->mVertices->y;
-        vertices[i].position.z = assimpMesh->mVertices->z;
+        vertices[i].position.x = assimpMesh->mVertices[i].x;
+        vertices[i].position.y = assimpMesh->mVertices[i].y;
+        vertices[i].position.z = assimpMesh->mVertices[i].z;
 
-        vertices[i].normal.x = assimpMesh->mNormals->x;
-        vertices[i].normal.y = assimpMesh->mNormals->y;
-        vertices[i].normal.z = assimpMesh->mNormals->z;
+        vertices[i].normal.x = assimpMesh->mNormals[i].x;
+        vertices[i].normal.y = assimpMesh->mNormals[i].y;
+        vertices[i].normal.z = assimpMesh->mNormals[i].z;
 
         vertices[i].txCoords.x = assimpMesh->mTextureCoords[0][i].x;
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
@@ -136,10 +144,10 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
     vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertexBufferDesc.CPUAccessFlags = 0;
     vertexBufferDesc.MiscFlags = 0;
-    vertexBufferDesc.StructureByteStride = sizeof(Vertex);
+    vertexBufferDesc.StructureByteStride = 0;
 
     D3D11_SUBRESOURCE_DATA bufferData;
-    bufferData.pSysMem = &vertices[0];
+    bufferData.pSysMem = &vertices.front();
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
