@@ -95,6 +95,7 @@ void ModelLoader::deleteAllModels()
         Model* model = itr.second;
         for (size_t i = 0; i < model->meshes.size(); i += 1) {
             model->meshes[i].vertexBuffer->Release();
+            model->meshes[i].indexBuffer->Release();
         }
         delete itr.second;
     }
@@ -120,7 +121,7 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
     std::vector<Vertex> vertices;
     vertices.resize(assimpMesh->mNumVertices);
 
-    // Loop through vertex data
+    // Read vertex data
     for (unsigned int i = 0; i < assimpMesh->mNumVertices; i += 1) {
         vertices[i].position.x = assimpMesh->mVertices[i].x;
         vertices[i].position.y = assimpMesh->mVertices[i].y;
@@ -132,28 +133,62 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
         vertices[i].txCoords.x = assimpMesh->mTextureCoords[0][i].x;
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
+
     }
 
     mesh.vertexCount = vertices.size();
 
+    // Read indices
+    std::vector<unsigned int> indices;
+    indices.resize(assimpMesh->mNumFaces * 3);
+
+    for (unsigned int i = 0; i < assimpMesh->mNumFaces; i += 1) {
+        const aiFace* face = &assimpMesh->mFaces[i];
+
+        if (face->mNumIndices != 3) {
+            Logger::LOG_WARNING("Mesh face has an unexpected amount of indices: %d", face->mNumIndices);
+            return;
+        }
+
+        indices[i*3] = face->mIndices[0];
+        indices[i*3+1] = face->mIndices[1];
+        indices[i*3+2] = face->mIndices[2];
+    }
+
+    mesh.indexCount = indices.size();
+
     // Create vertex buffer
-    D3D11_BUFFER_DESC vertexBufferDesc;
-    ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-    vertexBufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
-    vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    vertexBufferDesc.CPUAccessFlags = 0;
-    vertexBufferDesc.MiscFlags = 0;
-    vertexBufferDesc.StructureByteStride = 0;
+    D3D11_BUFFER_DESC bufferDesc;
+    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+    bufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
+    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bufferDesc.CPUAccessFlags = 0;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
 
     D3D11_SUBRESOURCE_DATA bufferData;
     bufferData.pSysMem = &vertices.front();
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    HRESULT hr = device->CreateBuffer(&vertexBufferDesc, &bufferData, &mesh.vertexBuffer);
+    HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+    }
+
+    // Create index buffer
+    bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indices.size());
+    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+    bufferData.pSysMem = &indices.front();
+    bufferData.SysMemPitch = 0;
+    bufferData.SysMemSlicePitch = 0;
+
+    hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
+    if (FAILED(hr)) {
+        Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
     }
 
     meshes.push_back(mesh);

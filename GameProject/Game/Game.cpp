@@ -19,7 +19,7 @@ void Game::update(float dt)
         camera = ecs.entityIDGen.genID();
         transformHandler.createTransform(camera);
         Transform& camTransform = transformHandler.transforms.indexID(camera);
-        camTransform.position = {0.0f, 0.0f, 4.0f};
+        camTransform.position = {3.0f, 3.0f, 4.0f};
 
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
         DirectX::XMVECTOR camLookDir = transformHandler.getForward(camTransform);

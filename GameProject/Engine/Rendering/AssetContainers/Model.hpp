@@ -11,8 +11,8 @@ struct Vertex {
 };
 
 struct Mesh {
-    ID3D11Buffer* vertexBuffer;
-    size_t vertexCount, materialIndex;
+    ID3D11Buffer* vertexBuffer, *indexBuffer;
+    size_t vertexCount, indexCount, materialIndex;
 };
 
 struct Model {

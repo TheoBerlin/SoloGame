@@ -179,6 +179,7 @@ void Renderer::update(float dt)
             context->IASetInputLayout(program->inputLayout);
             UINT offsets = 0;
             context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &program->vertexSize, &offsets);
+            context->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
             /* Vertex shader */
             PerObjectMatrices matrices;
@@ -205,7 +206,7 @@ void Renderer::update(float dt)
             context->Unmap(materialBuffer, 0);
             context->PSSetConstantBuffers(0, 1, &materialBuffer);
 
-            context->Draw((UINT)mesh.vertexCount, 0);
+            context->DrawIndexed((UINT)mesh.indexCount, 0, 0);
         }
     }
 }
