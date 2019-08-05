@@ -185,7 +185,7 @@ void Renderer::update(float dt)
 
             // PerObjectMatrices cbuffer
             matrices.world = transformHandler->getWorldMatrix(renderables[i]).worldMatrix;
-            DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMLoadFloat4x4(&matrices.world) * camVP);
+            DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
 
             ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
             context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

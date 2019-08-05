@@ -38,8 +38,8 @@ void TransformHandler::createWorldMatrix(Entity entity)
 
     WorldMatrix worldMatrix;
     DirectX::XMStoreFloat4x4(&worldMatrix.worldMatrix,
-        DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
         DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
+        DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
         DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z));
 
     worldMatrix.dirty = false;
@@ -56,8 +56,8 @@ WorldMatrix& TransformHandler::getWorldMatrix(Entity entity)
         Transform& transform = transforms.indexID(entity);
 
         DirectX::XMStoreFloat4x4(&worldMatrix.worldMatrix,
-            DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
             DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
+            DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
             DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z));
 
         worldMatrix.dirty = false;
