@@ -5,23 +5,20 @@ cbuffer material : register(b0) {
     float4 Ks;
 };
 
-#define MAX_LIGHTS 5
+#define MAX_LIGHTS 7
 
 struct PointLight {
     float3 lightPos;
-    float padA;
-    float3 light;
-    float padB;
     float lightRadiusReciprocal;
-    float3 padC;
+    float3 light;
+    float padding;
 };
 
 cbuffer perFrame : register(b1) {
     PointLight pointLights[MAX_LIGHTS];
     float3 camPos;
-    float paddingD;
     uint numLights;
-    uint paddingE[3];
+    float4 padding;
 };
 
 struct VS_OUT {

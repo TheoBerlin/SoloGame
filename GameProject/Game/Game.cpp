@@ -35,7 +35,7 @@ void Game::update(float dt)
         renderableHandler.createRenderable(renderableObject, "./Game/Assets/Models/untitled.dae", PROGRAM::BASIC);
 
         // Create point light
-        for (unsigned i = 0; i < 4; i += 1) {
+        for (unsigned i = 0; i < MAX_POINTLIGHTS; i += 1) {
             Entity lightID = ecs.entityIDGen.genID();
             DirectX::XMFLOAT3 lightPos = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
             DirectX::XMFLOAT3 light = {std::sinf(DirectX::XM_PIDIV2*1.2f * i), 0.5f, std::cosf(DirectX::XM_PIDIV2*1.2f * i)};

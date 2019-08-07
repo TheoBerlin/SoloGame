@@ -5,7 +5,7 @@
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <d3d11.h>
 
-#define MAX_POINTLIGHTS 5
+#define MAX_POINTLIGHTS 7
 
 class RenderableHandler;
 class ShaderHandler;
@@ -62,7 +62,6 @@ struct PerObjectMatrices {
 struct PerFrameBuffer {
     PointLight pointLights[MAX_POINTLIGHTS];
     DirectX::XMFLOAT3 cameraPosition;
-    uint32_t padA;
     uint32_t numLights;
-    uint32_t padB[3];
+    DirectX::XMFLOAT4 padding;
 };
