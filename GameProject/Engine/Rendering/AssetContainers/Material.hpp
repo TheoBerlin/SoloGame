@@ -4,10 +4,8 @@
 #include <DirectXMath.h>
 
 struct MaterialAttributes {
-    DirectX::XMFLOAT3 ambient;
-    DirectX::XMFLOAT3 specular;
-    float shininess;
-    uint32_t bufferPadding;
+    // R=shininess (exponent), G=shininess strength (factor), B,W = padding
+    DirectX::XMFLOAT4 specular;
 };
 
 struct Material {

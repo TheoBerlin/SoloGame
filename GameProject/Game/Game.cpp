@@ -2,6 +2,7 @@
 
 Game::Game(HINSTANCE hInstance)
     :IGame(hInstance),
+    lightSpinner(&ecs),
     hasSetup(false)
 {}
 
@@ -19,7 +20,7 @@ void Game::update(float dt)
         camera = ecs.entityIDGen.genID();
         transformHandler.createTransform(camera);
         Transform& camTransform = transformHandler.transforms.indexID(camera);
-        camTransform.position = {3.0f, 3.0f, 4.0f};
+        camTransform.position = {2.0f, 1.8f, 3.3f};
 
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
         DirectX::XMVECTOR camLookDir = transformHandler.getForward(camTransform);
@@ -32,6 +33,15 @@ void Game::update(float dt)
         transformHandler.createTransform(renderableObject);
         transformHandler.createWorldMatrix(renderableObject);
         renderableHandler.createRenderable(renderableObject, "./Game/Assets/Models/untitled.dae", PROGRAM::BASIC);
+
+        // Create point light
+        for (unsigned i = 0; i < 4; i += 1) {
+            Entity lightID = ecs.entityIDGen.genID();
+            DirectX::XMFLOAT3 lightPos = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
+            DirectX::XMFLOAT3 light = {std::sinf(DirectX::XM_PIDIV2*1.2f * i), 0.5f, std::cosf(DirectX::XM_PIDIV2*1.2f * i)};
+
+            lightHandler.createPointLight(lightID, lightPos, light, 10.0f);
+        }
     }
 
     ecs.systemUpdater.updateMT(dt);

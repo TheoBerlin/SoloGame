@@ -220,14 +220,18 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Mat
 
     // Load material attributes
     aiColor3D aiAmbient, aiSpecular;
-    ai_real aiShininess;
+    ai_real aiShininess, aiShininessStrength;
 
-    assimpMaterial->Get(AI_MATKEY_COLOR_AMBIENT, aiAmbient);
+    //assimpMaterial->Get(AI_MATKEY_COLOR_AMBIENT, aiAmbient);
     assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiSpecular);
     assimpMaterial->Get(AI_MATKEY_SHININESS, aiShininess);
+    assimpMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, aiShininessStrength);
 
-    material.attributes.ambient = DirectX::XMFLOAT3(aiAmbient.r, aiAmbient.g, aiAmbient.b);
-    material.attributes.specular = DirectX::XMFLOAT3(aiSpecular.r, aiSpecular.g, aiSpecular.b);
+    // Set shininess factor to 0.5 if there is none
+    aiShininessStrength = aiShininessStrength < 0.01f ? 0.5f : aiShininessStrength;
+
+    //material.attributes.ambient = DirectX::XMFLOAT3(aiAmbient.r, aiAmbient.g, aiAmbient.b);
+    material.attributes.specular = DirectX::XMFLOAT4(aiShininess, aiShininessStrength, 0.0f, 0.0f);
 
     materials.push_back(material);
 }

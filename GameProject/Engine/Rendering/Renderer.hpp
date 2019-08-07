@@ -11,7 +11,6 @@ class RenderableHandler;
 class ShaderHandler;
 class TransformHandler;
 class VPHandler;
-class LightHandler;
 
 class Renderer : public System
 {
@@ -63,6 +62,7 @@ struct PerObjectMatrices {
 struct PerFrameBuffer {
     PointLight pointLights[MAX_POINTLIGHTS];
     DirectX::XMFLOAT3 cameraPosition;
-    unsigned int numLights;
-    uint32_t padding;
+    uint32_t padA;
+    uint32_t numLights;
+    uint32_t padB[3];
 };

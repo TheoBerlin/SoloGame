@@ -1,7 +1,6 @@
 #include "Renderer.hpp"
 
 #include <Engine/ECS/ECSInterface.hpp>
-#include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -22,11 +21,13 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     std::type_index tid_renderableHandler = std::type_index(typeid(RenderableHandler));
     std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
     std::type_index tid_vpHandler = std::type_index(typeid(VPHandler));
+    std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
 
     this->shaderHandler = static_cast<ShaderHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderHandler));
     this->renderableHandler = static_cast<RenderableHandler*>(ecs->systemSubscriber.getComponentHandler(tid_renderableHandler));
     this->transformHandler = static_cast<TransformHandler*>(ecs->systemSubscriber.getComponentHandler(tid_transformHandler));
     this->vpHandler = static_cast<VPHandler*>(ecs->systemSubscriber.getComponentHandler(tid_vpHandler));
+    this->lightHandler = static_cast<LightHandler*>(ecs->systemSubscriber.getComponentHandler(tid_lightHandler));
 
     SystemRegistration sysReg = {
     {
@@ -127,15 +128,11 @@ void Renderer::update(float dt)
     if (renderables.size() == 0 || camera.size() == 0)
        return;
 
-    // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-
     context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Point light cbuffer
     PerFrameBuffer perFrame;
-    unsigned int numLights = std::min(MAX_POINTLIGHTS, (int)pointLights.size());
+    uint32_t numLights = std::min(MAX_POINTLIGHTS, (int)pointLights.size());
     for (unsigned int i = 0; i < numLights; i += 1) {
         perFrame.pointLights[i] = lightHandler->pointLights[i];
     }
@@ -143,10 +140,13 @@ void Renderer::update(float dt)
     perFrame.cameraPosition = transformHandler->transforms[camera[0]].position;
     perFrame.numLights = numLights;
 
-    context->Map(pointLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    memcpy(mappedResource.pData, &perFrame, sizeof(PerFrameBuffer));
+    // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
+    D3D11_MAPPED_SUBRESOURCE mappedResources;
+    ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
+    context->Map(pointLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+    memcpy(mappedResources.pData, &perFrame, sizeof(PerFrameBuffer));
     context->Unmap(pointLightBuffer, 0);
-    context->PSSetConstantBuffers(0, 1, &pointLightBuffer);
+    context->PSSetConstantBuffers(1, 1, &pointLightBuffer);
 
     context->RSSetState(rsState);
     context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
@@ -188,9 +188,8 @@ void Renderer::update(float dt)
             matrices.world = transformHandler->getWorldMatrix(renderables[i]).worldMatrix;
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
 
-            ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-            memcpy(mappedResource.pData, &matrices, sizeof(PerObjectMatrices));
+            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+            memcpy(mappedResources.pData, &matrices, sizeof(PerObjectMatrices));
             context->Unmap(perObjectMatrices, 0);
             context->VSSetConstantBuffers(0, 1, &perObjectMatrices);
 
@@ -200,9 +199,8 @@ void Renderer::update(float dt)
             context->PSSetSamplers(0, 1, &this->aniSampler);
 
             // Material cbuffer
-            ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-            context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-            memcpy(mappedResource.pData, &model->materials[mesh.materialIndex].attributes, sizeof(Material));
+            context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+            memcpy(mappedResources.pData, &model->materials[mesh.materialIndex].attributes, sizeof(Material));
             context->Unmap(materialBuffer, 0);
             context->PSSetConstantBuffers(0, 1, &materialBuffer);
 

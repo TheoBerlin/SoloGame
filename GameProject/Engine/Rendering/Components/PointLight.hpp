@@ -7,8 +7,11 @@
 struct PointLight
 {
     DirectX::XMFLOAT3 position;
+    float padA;
     DirectX::XMFLOAT3 light;
-    float radius;
+    float padB;
+    float radiusReciprocal;
+    DirectX::XMFLOAT3 padC;
 };
 
 const std::type_index tid_pointLight = std::type_index(typeid(PointLight));

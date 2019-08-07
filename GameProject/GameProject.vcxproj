@@ -265,6 +265,7 @@
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\LightSpinner.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Debug|x64'">true</ExcludedFromBuild>
@@ -307,6 +308,7 @@
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
     <ClInclude Include="Game\Game.hpp" />
+    <ClInclude Include="Game\LightSpinner.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

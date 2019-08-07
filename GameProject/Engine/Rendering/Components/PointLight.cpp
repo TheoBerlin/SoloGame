@@ -18,6 +18,7 @@ void LightHandler::createPointLight(Entity entity, DirectX::XMFLOAT3 position, D
     PointLight pointLight;
     pointLight.position = position;
     pointLight.light = light;
-    pointLight.radius = radius;
+    pointLight.radiusReciprocal = 1.0f/radius;
+    pointLights.push_back(pointLight, entity);
     this->registerComponent(tid_pointLight, entity);
 }
