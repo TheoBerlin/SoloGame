@@ -34,6 +34,8 @@ private:
     static HANDLE consoleHandle;
 
     static std::ofstream logFile;
+
+    static WORD defaultAttributes;
 };
 
 template<typename ... Args>

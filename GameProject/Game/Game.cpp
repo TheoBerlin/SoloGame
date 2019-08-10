@@ -32,7 +32,7 @@ void Game::update(float dt)
         renderableObject = ecs.entityIDGen.genID();
         transformHandler.createTransform(renderableObject);
         transformHandler.createWorldMatrix(renderableObject);
-        renderableHandler.createRenderable(renderableObject, "./Game/Assets/Models/untitled.dae", PROGRAM::BASIC);
+        renderableHandler.createRenderable(renderableObject, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
 
         // Create point light
         for (unsigned i = 0; i < MAX_POINTLIGHTS; i += 1) {

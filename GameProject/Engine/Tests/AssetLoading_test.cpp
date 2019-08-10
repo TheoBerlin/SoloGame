@@ -6,14 +6,14 @@
 #include <Engine/Rendering/Display.hpp>
 
 TEST_CASE("ModelLoader") {
-    Display display(720, 16.0f/9.0f, true);
+    Display display(nullptr, 720, 16.0f/9.0f, true);
 
     ECSInterface ecs;
 
     TextureLoader txLoader(&ecs.systemSubscriber, display.getDevice());
     ModelLoader modelLoader(&ecs.systemSubscriber, &txLoader, display.getDevice());
 
-    Model* umbrellaModel = modelLoader.loadModel("./Game/Assets/Models/untitled.dae");
+    Model* umbrellaModel = modelLoader.loadModel("./Game/Assets/Models/Cube.dae");
 
     // Check that the model was loaded
     REQUIRE(umbrellaModel != nullptr);
@@ -28,7 +28,7 @@ TEST_CASE("ModelLoader") {
         REQUIRE(meshes[i].vertexBuffer != nullptr);
     }
 
-    Model* duplicateAttempt = modelLoader.loadModel("./Game/Assets/Models/untitled.dae");
+    Model* duplicateAttempt = modelLoader.loadModel("./Game/Assets/Models/Cube.dae");
 
     // Check that the model was not loaded twice
     REQUIRE(umbrellaModel == duplicateAttempt);

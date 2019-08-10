@@ -13,15 +13,38 @@
 
 HANDLE Logger::consoleHandle = nullptr;
 std::ofstream Logger::logFile;
+WORD Logger::defaultAttributes = 0;
 
 void Logger::init()
 {
     AllocConsole(); //debug console
-    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout); //just works
     consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     const LPCWSTR consoleTitle = L"Debug Console";
     SetConsoleTitleW(consoleTitle);
     SetConsoleCtrlHandler(Logger::consoleEventHandler, TRUE);
+
+    FILE *fDummy;
+    freopen_s(&fDummy, "CONIN$", "r", stdin);
+    freopen_s(&fDummy, "CONOUT$", "w", stderr);
+    freopen_s(&fDummy, "CONOUT$", "w", stdout);
+    std::cout.clear();
+    std::clog.clear();
+    std::cerr.clear();
+    std::cin.clear();
+
+    LPCWSTR conout = L"CONOUT$";
+    LPCWSTR conin = L"CONIN$";
+
+    // std::wcout, std::wclog, std::wcerr, std::wcin
+    HANDLE hConOut = CreateFileW(conout, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hConIn = CreateFileW(conin, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
+    SetStdHandle(STD_ERROR_HANDLE, hConOut);
+    SetStdHandle(STD_INPUT_HANDLE, hConIn);
+    std::wcout.clear();
+    std::wclog.clear();
+    std::wcerr.clear();
+    std::wcin.clear();
 
     logFile.open(LOG_PATH, std::ofstream::out | std::ofstream::trunc);
 }
