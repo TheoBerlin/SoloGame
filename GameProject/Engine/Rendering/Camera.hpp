@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/IDVector.hpp>
+#include <DirectXTK/Keyboard.h>
 
 class TransformHandler;
 class VPHandler;
@@ -19,4 +20,5 @@ private:
 
     TransformHandler* transformHandler;
     VPHandler *vpHandler;
+    DirectX::Keyboard::State* keyboardState;
 };

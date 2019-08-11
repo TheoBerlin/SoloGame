@@ -19,9 +19,11 @@ public:
     IDXGISwapChain* getSwapChain();
     ID3D11RenderTargetView* getRenderTarget();
     ID3D11DepthStencilView* getDepthStencilView();
+    HWND getWindow();
 
     void showWindow();
     void presentBackBuffer();
+    void clearBackBuffer();
 
     // Set to false when window is being closed (eg. alt+f4)
     static bool keepRunning;
@@ -46,6 +48,9 @@ private:
     ID3D11DepthStencilState* depthStencilState;
     ID3D11Texture2D* depthStencilTx;
     ID3D11DepthStencilView* depthStencilView;
+
+    // Color used to clear the back buffer
+    FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
     bool windowed;
 

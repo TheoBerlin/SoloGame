@@ -38,7 +38,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{E4DC0D9E-7A35-44C8-BBBC-1D83AD761CF2}</ProjectGuid>
     <RootNamespace>GameProject</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -229,13 +229,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\DDSTextureLoader\DDSTextureLoader.cpp" />
-    <ClCompile Include="..\include\WICTextureLoader\WICTextureLoader.cpp" />
+    <ClCompile Include="..\include\DirectXTK\DDSTextureLoader.cpp" />
+    <ClCompile Include="..\include\DirectXTK\Keyboard.cpp" />
+    <ClCompile Include="..\include\DirectXTK\Mouse.cpp" />
+    <ClCompile Include="..\include\DirectXTK\pch.cpp" />
+    <ClCompile Include="..\include\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
     <ClCompile Include="Engine\IGame.cpp" />
+    <ClCompile Include="Engine\InputHandler.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
     <ClCompile Include="Engine\Rendering\Camera.cpp" />
@@ -280,8 +284,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\include\DDSTextureLoader\DDSTextureLoader.h" />
-    <ClInclude Include="..\include\WICTextureLoader\WICTextureLoader.h" />
+    <ClInclude Include="..\include\DirectXTK\DDSTextureLoader.h" />
+    <ClInclude Include="..\include\DirectXTK\Keyboard.h" />
+    <ClInclude Include="..\include\DirectXTK\Mouse.h" />
+    <ClInclude Include="..\include\DirectXTK\pch.h" />
+    <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
+    <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
     <ClInclude Include="Engine\ECS\ComponentHandler.hpp" />
     <ClInclude Include="Engine\ECS\ECSInterface.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
@@ -289,6 +297,7 @@
     <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
     <ClInclude Include="Engine\IGame.hpp" />
+    <ClInclude Include="Engine\InputHandler.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
