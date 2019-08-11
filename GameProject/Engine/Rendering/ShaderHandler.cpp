@@ -134,8 +134,8 @@ ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCS
             Logger::LOG_ERROR("Failed to compile [%S]", fileName);
 
             if (errorMsgs) {
-                errorMsgs->Release();
                 Logger::LOG_ERROR("%s", (char*)errorMsgs->GetBufferPointer());
+                errorMsgs->Release();
             }
 
             if (compiledCode) {
@@ -144,7 +144,8 @@ ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCS
             }
 
             Logger::LOG_INFO("Edit the shader code and press any key to reattempt a compilation");
-            system("pause");
+			std::getchar();
+            //system("pause");
         }
     } while (compiledCode == nullptr);
 

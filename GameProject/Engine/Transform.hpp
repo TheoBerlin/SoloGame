@@ -39,4 +39,6 @@ public:
 
     // Transform calculation functions
     DirectX::XMVECTOR getForward(Transform& transform);
+
+    float getPitch(DirectX::XMVECTOR& forward) const;
 };

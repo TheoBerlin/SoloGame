@@ -38,7 +38,7 @@ void Game::update(float dt)
         for (unsigned i = 0; i < MAX_POINTLIGHTS; i += 1) {
             Entity lightID = ecs.entityIDGen.genID();
             DirectX::XMFLOAT3 lightPos = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
-            DirectX::XMFLOAT3 light = {std::sinf(DirectX::XM_PIDIV2*1.2f * i), 0.5f, std::cosf(DirectX::XM_PIDIV2*1.2f * i)};
+            DirectX::XMFLOAT3 light = {std::sinf(1.6f * i), 0.8f, std::cosf(1.2f * i)};
 
             lightHandler.createPointLight(lightID, lightPos, light, 10.0f);
         }

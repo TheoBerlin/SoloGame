@@ -20,8 +20,9 @@ public:
 
 private:
     DirectX::Keyboard keyboard;
-    DirectX::Mouse mouse;
-
     DirectX::Keyboard::State keyboardState;
+
+    DirectX::Mouse mouse;
     DirectX::Mouse::State mouseState;
+    DirectX::Mouse::ButtonStateTracker mouseBtnTracker;
 };

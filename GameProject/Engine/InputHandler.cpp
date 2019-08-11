@@ -14,6 +14,7 @@ void InputHandler::update()
 {
     keyboardState = keyboard.GetState();
     mouseState = mouse.GetState();
+    mouseBtnTracker.Update(mouseState);
 }
 
 DirectX::Keyboard::State* InputHandler::getKeyboardState()
