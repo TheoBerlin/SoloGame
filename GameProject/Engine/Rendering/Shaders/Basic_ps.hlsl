@@ -32,7 +32,9 @@ float4 PS_main(VS_OUT ps_in) : SV_TARGET {
     float3 normal = normalize(float3(ps_in.normal.xyz));
 
     float3 Kd = diffuseTX.Sample(sampAni, ps_in.txCoords).xyz;
-    float3 finalColor = Kd * 0.2;
+    float3 finalColor = Kd * 0.08;
+
+    float3 pointLight = (float3) 0;
 
     for (uint i = 0; i < numLights; i += 1) {
         float3 toLight = pointLights[i].lightPos - ps_in.worldPos;
@@ -41,17 +43,17 @@ float4 PS_main(VS_OUT ps_in) : SV_TARGET {
         float cosAngle = saturate(dot(normal, toLight));
 
         // Diffuse
-        finalColor += cosAngle * pointLights[i].light;
+        pointLight += cosAngle * pointLights[i].light;
 
         // Specular
         float3 toEye = normalize(camPos-ps_in.worldPos);
         float3 halfwayVec = normalize(toLight + toEye);
-        finalColor += pointLights[i].light.rgb * pow(saturate(dot(halfwayVec, ps_in.normal)), Ks.r) * Ks.g;
+        pointLight += pointLights[i].light.rgb * pow(saturate(dot(halfwayVec, ps_in.normal)), Ks.r) * Ks.g;
 
         // Attenuation
         float attenuation = 1.0 - saturate(pointLights[i].lightRadiusReciprocal * distToLight);
-        finalColor *= Kd * attenuation;
+        pointLight *= Kd * attenuation;
     }
 
-    return float4(saturate(finalColor), 1.0);
+    return float4(saturate(finalColor + pointLight), 1.0);
 }

@@ -228,7 +228,7 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Mat
     assimpMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, aiShininessStrength);
 
     // Set shininess factor to 0.5 if there is none
-    aiShininessStrength = aiShininessStrength < 0.01f ? 0.5f : aiShininessStrength;
+    aiShininessStrength = aiShininessStrength < 0.01f || aiShininessStrength > 1.0f ? 0.5f : aiShininessStrength;
 
     //material.attributes.ambient = DirectX::XMFLOAT3(aiAmbient.r, aiAmbient.g, aiAmbient.b);
     material.attributes.specular = DirectX::XMFLOAT4(aiShininess, aiShininessStrength, 0.0f, 0.0f);

@@ -1,5 +1,7 @@
 #include "Display.hpp"
 
+#include <DirectXTK/Keyboard.h>
+#include <DirectXTK/Mouse.h>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <combaseapi.h>
@@ -74,6 +76,11 @@ ID3D11DepthStencilView* Display::getDepthStencilView()
     return this->depthStencilView;
 }
 
+HWND Display::getWindow()
+{
+    return this->hwnd;
+}
+
 void Display::showWindow()
 {
     ShowWindow(hwnd, SW_SHOW);
@@ -84,7 +91,11 @@ void Display::presentBackBuffer()
     HRESULT hr = swapChain->Present(0, 0);
     if (FAILED(hr))
         Logger::LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+}
 
+void Display::clearBackBuffer()
+{
+    deviceContext->ClearRenderTargetView(renderTarget, clearColor);
     deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
@@ -280,6 +291,29 @@ LRESULT CALLBACK Display::windowProcedure(HWND hwnd, UINT message, WPARAM wParam
     {
         case WM_DESTROY:
             keepRunning = false;
+            break;
+        case WM_ACTIVATEAPP:
+            DirectX::Mouse::ProcessMessage(message, wParam, lParam);
+            DirectX::Keyboard::ProcessMessage(message, wParam, lParam);
+        case WM_MOUSEMOVE:
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONDOWN:
+        case WM_MBUTTONUP:
+        case WM_MOUSEWHEEL:
+        case WM_XBUTTONDOWN:
+        case WM_XBUTTONUP:
+        case WM_MOUSEHOVER:
+        case WM_INPUT:
+            DirectX::Mouse::ProcessMessage(message, wParam, lParam);
+            break;
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+            DirectX::Keyboard::ProcessMessage(message, wParam, lParam);
             break;
     }
 

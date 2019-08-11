@@ -71,3 +71,12 @@ DirectX::XMVECTOR TransformHandler::getForward(Transform& transform)
     DirectX::XMVECTOR rotationQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
     return DirectX::XMVector3Rotate(defaultForward, rotationQuat);
 }
+
+float TransformHandler::getPitch(DirectX::XMVECTOR& forward) const
+{
+    DirectX::XMVECTOR temp = DirectX::XMVector3Normalize({forward.m128_f32[0], 0.0f, forward.m128_f32[2], 0.0f});
+    temp = DirectX::XMVector3AngleBetweenNormals(forward, temp);
+
+    float pitch = DirectX::XMVectorGetX(temp);
+    return forward.m128_f32[1] > 0.0f ? -pitch : pitch;
+}

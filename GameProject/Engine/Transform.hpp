@@ -5,7 +5,7 @@
 #include <DirectXMath.h>
 
 const DirectX::XMVECTOR defaultForward = {0.0f, 0.0f, -1.0f};
-const DirectX::XMFLOAT3 defaultUp = {0.0f, 1.0f, 0.0f};
+const DirectX::XMVECTOR defaultUp = {0.0f, 1.0f, 0.0f};
 
 struct Transform {
     DirectX::XMFLOAT3 position, scale;
@@ -39,4 +39,6 @@ public:
 
     // Transform calculation functions
     DirectX::XMVECTOR getForward(Transform& transform);
+
+    float getPitch(DirectX::XMVECTOR& forward) const;
 };

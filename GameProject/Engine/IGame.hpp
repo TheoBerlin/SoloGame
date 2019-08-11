@@ -10,6 +10,7 @@
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 
 class IGame
@@ -28,6 +29,7 @@ protected:
     TransformHandler transformHandler;
     VPHandler vpHandler;
     Display display;
+    InputHandler inputHandler;
     ShaderHandler shaderHandler;
     TextureLoader txLoader;
     ModelLoader modelLoader;

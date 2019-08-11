@@ -1,6 +1,6 @@
 #include "TextureLoader.hpp"
 
-#include <WICTextureLoader/WICTextureLoader.h>
+#include <DirectXTK/WICTextureLoader.h>
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Utils/Logger.hpp>
 

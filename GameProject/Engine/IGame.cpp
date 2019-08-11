@@ -2,6 +2,7 @@
 
 IGame::IGame(HINSTANCE hInstance)
     :display(hInstance, 720, 16.0f/9.0f, true),
+    inputHandler(&ecs.systemSubscriber, display.getWindow()),
     transformHandler(&ecs.systemSubscriber),
     shaderHandler(display.getDevice(), &ecs.systemSubscriber),
     txLoader(&ecs.systemSubscriber, display.getDevice()),
@@ -44,7 +45,13 @@ void IGame::run()
 
             timer = timeNow;
 
+            inputHandler.update();
+
+            // Update logic
             this->update(dt);
+
+            // Render
+            display.clearBackBuffer();
             renderer.update(dt);
             display.presentBackBuffer();
         }
