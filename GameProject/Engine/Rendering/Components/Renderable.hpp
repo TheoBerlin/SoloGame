@@ -22,7 +22,10 @@ class RenderableHandler : public ComponentHandler
 public:
     RenderableHandler(SystemSubscriber* SystemSubscriber);
 
+    // Creates a renderable component by loading from file
     bool createRenderable(Entity entity, std::string modelPath, PROGRAM program);
+    // Creates a renderable component out of an existing model
+    bool createRenderable(Entity entity, Model* model, PROGRAM program);
 
     IDVector<Renderable> renderables;
 

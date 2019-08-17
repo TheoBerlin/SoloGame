@@ -5,7 +5,7 @@
 #include <d3d11.h>
 #include <unordered_map>
 
-class TextureLoader : private ComponentHandler
+class TextureLoader : public ComponentHandler
 {
 public:
     TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device);

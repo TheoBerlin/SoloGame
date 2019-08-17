@@ -92,11 +92,7 @@ Model* ModelLoader::loadModel(const std::string& filePath)
 void ModelLoader::deleteAllModels()
 {
     for (auto& itr : models) {
-        Model* model = itr.second;
-        for (size_t i = 0; i < model->meshes.size(); i += 1) {
-            model->meshes[i].vertexBuffer->Release();
-            model->meshes[i].indexBuffer->Release();
-        }
+        releaseModel(itr.second);
         delete itr.second;
     }
 
@@ -175,6 +171,7 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
     HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+        return;
     }
 
     // Create index buffer

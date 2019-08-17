@@ -19,3 +19,11 @@ struct Model {
     std::vector<Mesh> meshes;
     std::vector<Material> materials;
 };
+
+inline void releaseModel(Model* model)
+{
+    for (size_t i = 0; i < model->meshes.size(); i += 1) {
+        model->meshes[i].vertexBuffer->Release();
+        model->meshes[i].indexBuffer->Release();
+    }
+}

@@ -70,9 +70,9 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     D3D11_SAMPLER_DESC samplerDesc;
     ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
     samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
     samplerDesc.MipLODBias = 0.0f;
     samplerDesc.MaxAnisotropy = 1;
     samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;

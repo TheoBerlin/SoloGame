@@ -4,6 +4,7 @@
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+
 RenderableHandler::RenderableHandler(SystemSubscriber* systemSubscriber)
     :ComponentHandler({tid_renderable}, systemSubscriber, std::type_index(typeid(RenderableHandler)))
 {
@@ -26,6 +27,23 @@ bool RenderableHandler::createRenderable(Entity entity, std::string modelPath, P
 
     renderable.program = shaderHandler->getProgram(program);
     renderable.model = modelLoader->loadModel(modelPath);
+
+    if (!renderable.program || !renderable.model) {
+        Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);
+        return false;
+    }
+
+    renderables.push_back(renderable, entity);
+    this->registerComponent(tid_renderable, entity);
+    return true;
+}
+
+bool RenderableHandler::createRenderable(Entity entity, Model* model, PROGRAM program)
+{
+    Renderable renderable;
+
+    renderable.program = shaderHandler->getProgram(program);
+    renderable.model = model;
 
     if (!renderable.program || !renderable.model) {
         Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);

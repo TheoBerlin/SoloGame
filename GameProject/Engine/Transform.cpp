@@ -66,6 +66,12 @@ WorldMatrix& TransformHandler::getWorldMatrix(Entity entity)
     return worldMatrix;
 }
 
+DirectX::XMVECTOR TransformHandler::getUp(DirectX::XMFLOAT4& rotationQuat)
+{
+    DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&rotationQuat);
+    return DirectX::XMVector3Rotate(defaultUp, quat);
+}
+
 DirectX::XMVECTOR TransformHandler::getForward(Transform& transform)
 {
     DirectX::XMVECTOR rotationQuat = DirectX::XMLoadFloat4(&transform.rotQuat);

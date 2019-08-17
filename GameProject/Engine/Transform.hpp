@@ -38,7 +38,8 @@ public:
     IDVector<WorldMatrix> worldMatrices;
 
     // Transform calculation functions
-    DirectX::XMVECTOR getForward(Transform& transform);
+    static DirectX::XMVECTOR getUp(DirectX::XMFLOAT4& rotationQuat);
+    static DirectX::XMVECTOR getForward(Transform& transform);
 
     float getPitch(DirectX::XMVECTOR& forward) const;
 };

@@ -3,6 +3,7 @@
 Game::Game(HINSTANCE hInstance)
     :IGame(hInstance),
     lightSpinner(&ecs),
+    tubeHandler(&ecs.systemSubscriber, display.getDevice()),
     hasSetup(false)
 {}
 
@@ -42,6 +43,27 @@ void Game::update(float dt)
 
             lightHandler.createPointLight(lightID, lightPos, light, 10.0f);
         }
+
+        // Create tube
+        std::vector<TubePoint> points = {
+            {
+                {0.0f, 0.0f, 0.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f}
+            },
+            {
+                {0.0f, 0.0f, -10.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f}
+            }
+        };
+
+        const float tubeRadius = 1.0f;
+        unsigned int tubeFaces = 90;
+        Model* tubeModel = tubeHandler.createTube(points, tubeRadius, tubeFaces);
+
+        Entity tube = ecs.entityIDGen.genID();
+        renderableHandler.createRenderable(tube, tubeModel, PROGRAM::BASIC);
+        transformHandler.createTransform(tube);
+        transformHandler.createWorldMatrix(tube);
     }
 
     ecs.systemUpdater.updateMT(dt);
