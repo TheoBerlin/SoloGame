@@ -72,10 +72,32 @@ DirectX::XMVECTOR TransformHandler::getUp(DirectX::XMFLOAT4& rotationQuat)
     return DirectX::XMVector3Rotate(defaultUp, quat);
 }
 
-DirectX::XMVECTOR TransformHandler::getForward(Transform& transform)
+DirectX::XMVECTOR TransformHandler::getForward(DirectX::XMFLOAT4& rotationQuat)
 {
-    DirectX::XMVECTOR rotationQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
-    return DirectX::XMVector3Rotate(defaultForward, rotationQuat);
+    DirectX::XMVECTOR quat = DirectX::XMLoadFloat4(&rotationQuat);
+    return DirectX::XMVector3Rotate(defaultForward, quat);
+}
+
+DirectX::XMFLOAT4 TransformHandler::getRotationQuaternion(DirectX::XMFLOAT3& forward)
+{
+    DirectX::XMVECTOR temp = DirectX::XMLoadFloat3(&forward);
+    DirectX::XMFLOAT4 rotationQuaternion;
+
+    // Rotation angle
+    DirectX::XMVECTOR rotationAngleV = DirectX::XMVector3AngleBetweenNormals(defaultForward, temp);
+    float rotationAngle = DirectX::XMVectorGetX(temp);
+
+    if (rotationAngle < 0.0f + FLT_EPSILON * 10.0f) {
+        temp = DirectX::XMQuaternionIdentity();
+    } else {
+        // Rotation axis
+        temp = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(defaultForward, temp));
+
+        temp = DirectX::XMQuaternionRotationNormal(temp, rotationAngle);
+    }
+
+    DirectX::XMStoreFloat4(&rotationQuaternion, temp);
+    return rotationQuaternion;
 }
 
 float TransformHandler::getPitch(DirectX::XMVECTOR& forward) const
@@ -85,4 +107,13 @@ float TransformHandler::getPitch(DirectX::XMVECTOR& forward) const
 
     float pitch = DirectX::XMVectorGetX(temp);
     return forward.m128_f32[1] > 0.0f ? -pitch : pitch;
+}
+
+void TransformHandler::rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle)
+{
+    V = DirectX::XMVectorSubtract(V, P);
+
+    V = DirectX::XMVector3Rotate(V, DirectX::XMQuaternionRotationAxis(axis, angle));
+
+    V = DirectX::XMVectorAdd(V, P);
 }

@@ -22,7 +22,7 @@ public:
     TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device);
     ~TubeHandler();
 
-    Model* createTube(const std::vector<TubePoint>& points, const float radius, const unsigned faces);
+    Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);
 
 private:
     TextureLoader* textureLoader;
@@ -30,6 +30,12 @@ private:
 
     std::vector<Model> tubes;
 
-    // Creates more points in between the listed points to create smooth curves and to avoid stretching textures
-    void createPoints();
+    // Populate tube sections with enough points to create smooth curves and to avoid stretching textures. The resulting points are stored in tubePoints.
+    void createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius);
+
+    // Gets the forward vector of a point at T0 pointing at T1 in a catmull-rom curve
+    DirectX::XMFLOAT3 getPointForward(DirectX::XMVECTOR P[], DirectX::XMVECTOR& pointPos, float T0, float T1);
+
+    // Creates a point in the tube. sectionPoints contains the sparse control points, and tubePoints contains the densely packed points.
+    void createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t pointIdx, float T);
 };

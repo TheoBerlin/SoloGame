@@ -38,7 +38,7 @@ void CameraSystem::update(float dt)
         Transform& camTransform = transformHandler->transforms.indexID(cameras[i]);
         ViewMatrix& viewMatrix = vpHandler->viewMatrices.indexID(cameras[i]);
 
-        DirectX::XMVECTOR lookDir = transformHandler->getForward(camTransform);
+        DirectX::XMVECTOR lookDir = transformHandler->getForward(camTransform.rotQuat);
         DirectX::XMVECTOR rightDir = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(defaultUp, lookDir));
 
         // React to mouse input
@@ -57,7 +57,7 @@ void CameraSystem::update(float dt)
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(defaultUp, mouseState->x * dt * 1.3f));
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(rightDir, addedPitch));
             DirectX::XMStoreFloat4(&camTransform.rotQuat, rotation);
-            lookDir = transformHandler->getForward(camTransform);
+            lookDir = transformHandler->getForward(camTransform.rotQuat);
         }
 
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);

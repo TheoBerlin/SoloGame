@@ -39,7 +39,11 @@ public:
 
     // Transform calculation functions
     static DirectX::XMVECTOR getUp(DirectX::XMFLOAT4& rotationQuat);
-    static DirectX::XMVECTOR getForward(Transform& transform);
+    static DirectX::XMVECTOR getForward(DirectX::XMFLOAT4& rotationQuat);
+    static DirectX::XMFLOAT4 getRotationQuaternion(DirectX::XMFLOAT3& forward);
 
     float getPitch(DirectX::XMVECTOR& forward) const;
+
+    // Rotate V around P using a given axis and angle
+    static void rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle);
 };

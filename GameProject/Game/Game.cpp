@@ -1,5 +1,7 @@
 #include "Game.hpp"
 
+#include <Engine/Utils/Logger.hpp>
+
 Game::Game(HINSTANCE hInstance)
     :IGame(hInstance),
     lightSpinner(&ecs),
@@ -24,7 +26,7 @@ void Game::update(float dt)
         camTransform.position = {2.0f, 1.8f, 3.3f};
 
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
-        DirectX::XMVECTOR camLookDir = transformHandler.getForward(camTransform);
+        DirectX::XMVECTOR camLookDir = transformHandler.getForward(camTransform.rotQuat);
         DirectX::XMVECTOR camUpDir = {0.0f, 1.0f, 0.0f, 0.0f};
         vpHandler.createViewMatrix(camera, camPos, camLookDir, camUpDir);
         vpHandler.createProjMatrix(camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
@@ -45,20 +47,17 @@ void Game::update(float dt)
         }
 
         // Create tube
-        std::vector<TubePoint> points = {
-            {
+        std::vector<DirectX::XMFLOAT3> sectionPoints = {
                 {0.0f, 0.0f, 0.0f},
-                {0.0f, 0.0f, 0.0f, 1.0f}
-            },
-            {
-                {0.0f, 0.0f, -10.0f},
-                {0.0f, 0.0f, 0.0f, 1.0f}
-            }
+                {4.0f, 4.0f, -10.0f},
+                {2.0f, 2.0f, -22.0f},
+                {0.0f, 0.0f, -32.0f},
+                {-3.0f, -6.0f, -42.0f},
         };
 
-        const float tubeRadius = 1.0f;
+        const float tubeRadius = 1.5f;
         unsigned int tubeFaces = 90;
-        Model* tubeModel = tubeHandler.createTube(points, tubeRadius, tubeFaces);
+        Model* tubeModel = tubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
         Entity tube = ecs.entityIDGen.genID();
         renderableHandler.createRenderable(tube, tubeModel, PROGRAM::BASIC);
