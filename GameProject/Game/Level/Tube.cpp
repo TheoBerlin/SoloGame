@@ -16,11 +16,15 @@ const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device)
-    :device(device)
+    :ComponentHandler({}, sysSubscriber, std::type_index(typeid(TubeHandler))),
+    device(device)
 {
     std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
 
     this->textureLoader = static_cast<TextureLoader*>(sysSubscriber->getComponentHandler(tid_textureLoader));
+
+    std::vector<ComponentRegistration> compRegs = {};
+    this->registerHandler(&compRegs);
 }
 
 TubeHandler::~TubeHandler()
@@ -36,6 +40,9 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
         Logger::LOG_WARNING("Tube must have at least 3 faces, attempted to create one with: %d", faces);
         return nullptr;
     }
+
+    // Save the section points for later use
+    this->tubeSections = sectionPoints;
 
     std::vector<TubePoint> tubePoints;
     createSections(sectionPoints, tubePoints, radius);

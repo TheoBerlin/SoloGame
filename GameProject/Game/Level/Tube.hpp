@@ -16,13 +16,15 @@ struct TubePoint {
     DirectX::XMFLOAT4 rotationQuat;
 };
 
-class TubeHandler
+class TubeHandler : public ComponentHandler
 {
 public:
     TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device);
     ~TubeHandler();
 
     Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);
+
+    std::vector<DirectX::XMFLOAT3> tubeSections;
 
 private:
     TextureLoader* textureLoader;
