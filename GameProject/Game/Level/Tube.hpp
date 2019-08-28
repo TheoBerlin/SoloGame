@@ -24,12 +24,13 @@ public:
 
     Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);
 
-    std::vector<DirectX::XMFLOAT3> tubeSections;
+    const std::vector<DirectX::XMFLOAT3>& getTubeSections() const;
 
 private:
     TextureLoader* textureLoader;
     ID3D11Device* device;
 
+    std::vector<DirectX::XMFLOAT3> tubeSections;
     std::vector<Model> tubes;
 
     // Populate tube sections with enough points to create smooth curves and to avoid stretching textures. The resulting points are stored in tubePoints.

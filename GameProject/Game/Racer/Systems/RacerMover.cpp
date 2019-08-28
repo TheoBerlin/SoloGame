@@ -5,8 +5,6 @@
 #include <Game/Level/Tube.hpp>
 #include <Game/Racer/Components/TrackPosition.hpp>
 
-#include <Engine/Utils/Logger.hpp>
-
 RacerMover::RacerMover(ECSInterface* ecs)
     :System(ecs)
 {
@@ -34,6 +32,8 @@ RacerMover::~RacerMover()
 
 void RacerMover::update(float dt)
 {
+    const std::vector<DirectX::XMFLOAT3>& tubeSections = tubeHandler->getTubeSections();
+
     for (size_t i = 0; i < racers.size(); i += 1) {
         Transform& transform = transformHandler->transforms.indexID(i);
         TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(i);
@@ -43,13 +43,11 @@ void RacerMover::update(float dt)
         idx0 = std::max((int)trackPosition.section-1, 0);
         idx1 = trackPosition.section;
         idx2 = trackPosition.section+1;
-        idx3 = std::min(trackPosition.section+2, tubeHandler->tubeSections.size()-1);
+        idx3 = std::min(trackPosition.section+2, tubeSections.size()-1);
 
         DirectX::XMVECTOR P[4];
-        P[0] = DirectX::XMLoadFloat3(&tubeHandler->tubeSections[idx0]);
-        P[1] = DirectX::XMLoadFloat3(&tubeHandler->tubeSections[idx1]);
-        P[2] = DirectX::XMLoadFloat3(&tubeHandler->tubeSections[idx2]);
-        P[3] = DirectX::XMLoadFloat3(&tubeHandler->tubeSections[idx3]);
+        P[1] = DirectX::XMLoadFloat3(&tubeSections[idx1]);
+        P[2] = DirectX::XMLoadFloat3(&tubeSections[idx2]);
 
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
         DirectX::XMVECTOR temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
@@ -57,29 +55,25 @@ void RacerMover::update(float dt)
 
         float tPerSecond = racerSpeed * sectionLengthReciprocal;
 
-        unsigned hasNotReachedEnd = (trackPosition.section != tubeHandler->tubeSections.size() - 2) || (trackPosition.T < 1.0f);
-        bool A = hasNotReachedEnd;
+        unsigned hasNotReachedEnd = (trackPosition.section != tubeSections.size() - 2) || (trackPosition.T < 1.0f);
         trackPosition.T += tPerSecond * dt * hasNotReachedEnd;
-        hasNotReachedEnd = (trackPosition.section != tubeHandler->tubeSections.size() - 2) || (trackPosition.T < 1.0f);
+        hasNotReachedEnd = (trackPosition.section != tubeSections.size() - 2) || (trackPosition.T < 1.0f);
 
-        size_t oldSection = trackPosition.section;
-
-        float tFloor = 0.0f;
-        float tFractal = std::modff(trackPosition.T, &tFloor);
+        float tFloor = std::floorf(trackPosition.T);
         trackPosition.section += (size_t)tFloor * hasNotReachedEnd;
 
-        // Floor T to 0, or 1 if the racer has reached the end
+        // Clamp T to [0, 1) if the racer has not reached the end
         trackPosition.T -= tFloor * hasNotReachedEnd;
-        hasNotReachedEnd = (trackPosition.section != tubeHandler->tubeSections.size() - 2) || (trackPosition.T < 1.0f);
 
-        if (oldSection != trackPosition.section) {
-            Logger::LOG_INFO("Section %d->%d", oldSection, trackPosition.section);
-        }
+        idx0 = std::max((int)trackPosition.section-1, 0);
+        idx1 = trackPosition.section;
+        idx2 = trackPosition.section+1;
+        idx3 = std::min(trackPosition.section+2, tubeSections.size()-1);
 
-        if (A && !hasNotReachedEnd) {
-            Logger::LOG_INFO("End reached: T: %f, Section: %d", trackPosition.T, trackPosition.section);
-        }
-
+        P[0] = DirectX::XMLoadFloat3(&tubeSections[idx0]);
+        P[1] = DirectX::XMLoadFloat3(&tubeSections[idx1]);
+        P[2] = DirectX::XMLoadFloat3(&tubeSections[idx2]);
+        P[3] = DirectX::XMLoadFloat3(&tubeSections[idx3]);
         // TODO: if the racer reaches a new section, tPerSecond will change, account for this!
 
         // Update transform
