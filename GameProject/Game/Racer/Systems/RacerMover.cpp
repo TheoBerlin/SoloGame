@@ -38,43 +38,41 @@ void RacerMover::update(float dt)
         Transform& transform = transformHandler->transforms.indexID(i);
         TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(i);
 
-        // Get four control points for catmull-rom
-        size_t idx0, idx1, idx2, idx3;
-        idx0 = std::max((int)trackPosition.section-1, 0);
-        idx1 = trackPosition.section;
-        idx2 = trackPosition.section+1;
-        idx3 = std::min(trackPosition.section+2, tubeSections.size()-1);
-
-        DirectX::XMVECTOR P[4];
-        P[1] = DirectX::XMLoadFloat3(&tubeSections[idx1]);
-        P[2] = DirectX::XMLoadFloat3(&tubeSections[idx2]);
-
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
-        DirectX::XMVECTOR temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
-        float sectionLengthReciprocal = 1.0f / DirectX::XMVectorGetX(temp);
+        DirectX::XMVECTOR P[4];
+        P[1] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section]);
+        P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section+1]);
 
-        float tPerSecond = racerSpeed * sectionLengthReciprocal;
+        DirectX::XMVECTOR temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
+        float sectionLength = DirectX::XMVectorGetX(temp);
+        float tPerSecond = racerSpeed / sectionLength;
 
         unsigned hasNotReachedEnd = (trackPosition.section != tubeSections.size() - 2) || (trackPosition.T < 1.0f);
         trackPosition.T += tPerSecond * dt * hasNotReachedEnd;
         hasNotReachedEnd = (trackPosition.section != tubeSections.size() - 2) || (trackPosition.T < 1.0f);
 
-        float tFloor = std::floorf(trackPosition.T);
-        trackPosition.section += (size_t)tFloor * hasNotReachedEnd;
+        // Advance in sections and clamp T to [0, 1) if the racer has not reached the end
+        while (std::floorf(trackPosition.T) > 0.0f && hasNotReachedEnd) {
+            trackPosition.section += 1;
 
-        // Clamp T to [0, 1) if the racer has not reached the end
-        trackPosition.T -= tFloor * hasNotReachedEnd;
+            // Update T by accounting for the next section's T/s
+            P[1] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section]);
+            P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section+1]);
 
+            temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
+            float newSectionLength = DirectX::XMVectorGetX(temp);
+
+            trackPosition.T = (newSectionLength / sectionLength) * (trackPosition.T - 1.0f);
+            hasNotReachedEnd = (trackPosition.section != tubeSections.size() - 2) || (trackPosition.T < 1.0f);
+        }
+
+        // P[1] and P[2] are loaded since earlier
+        size_t idx0, idx3;
         idx0 = std::max((int)trackPosition.section-1, 0);
-        idx1 = trackPosition.section;
-        idx2 = trackPosition.section+1;
         idx3 = std::min(trackPosition.section+2, tubeSections.size()-1);
 
         P[0] = DirectX::XMLoadFloat3(&tubeSections[idx0]);
-        P[1] = DirectX::XMLoadFloat3(&tubeSections[idx1]);
-        P[2] = DirectX::XMLoadFloat3(&tubeSections[idx2]);
         P[3] = DirectX::XMLoadFloat3(&tubeSections[idx3]);
-        // TODO: if the racer reaches a new section, tPerSecond will change, account for this!
 
         // Update transform
         temp = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], trackPosition.T);
