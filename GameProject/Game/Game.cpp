@@ -1,11 +1,11 @@
 #include "Game.hpp"
 
-#include <Engine/Utils/Logger.hpp>
-
 Game::Game(HINSTANCE hInstance)
     :IGame(hInstance),
     lightSpinner(&ecs),
     tubeHandler(&ecs.systemSubscriber, display.getDevice()),
+    trackPositionHandler(&ecs.systemSubscriber),
+    racerMover(&ecs),
     hasSetup(false)
 {}
 
@@ -56,13 +56,15 @@ void Game::update(float dt)
         };
 
         const float tubeRadius = 1.5f;
-        unsigned int tubeFaces = 90;
+        unsigned int tubeFaces = 6;
         Model* tubeModel = tubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
         Entity tube = ecs.entityIDGen.genID();
         renderableHandler.createRenderable(tube, tubeModel, PROGRAM::BASIC);
         transformHandler.createTransform(tube);
         transformHandler.createWorldMatrix(tube);
+
+        trackPositionHandler.createTrackPosition(camera);
     }
 
     ecs.systemUpdater.updateMT(dt);

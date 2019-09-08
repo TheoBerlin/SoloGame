@@ -16,11 +16,15 @@ const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device)
-    :device(device)
+    :ComponentHandler({}, sysSubscriber, std::type_index(typeid(TubeHandler))),
+    device(device)
 {
     std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
 
     this->textureLoader = static_cast<TextureLoader*>(sysSubscriber->getComponentHandler(tid_textureLoader));
+
+    std::vector<ComponentRegistration> compRegs = {};
+    this->registerHandler(&compRegs);
 }
 
 TubeHandler::~TubeHandler()
@@ -36,6 +40,9 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
         Logger::LOG_WARNING("Tube must have at least 3 faces, attempted to create one with: %d", faces);
         return nullptr;
     }
+
+    // Save the section points for later use
+    this->tubeSections = sectionPoints;
 
     std::vector<TubePoint> tubePoints;
     createSections(sectionPoints, tubePoints, radius);
@@ -82,7 +89,6 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
             // Compute vertex 2
             vertexIdx += 1;
-            //vertexPosition = DirectX::XMVector3Rotate(vertexPosition, DirectX::XMQuaternionRotationAxis(pointForward, angleBetweenFaces));
             TransformHandler::rotateAroundPoint(pointPosition, vertexPosition, pointForward, angleBetweenFaces);
 
             DirectX::XMStoreFloat3(&vertices[vertexIdx].position, vertexPosition);
@@ -93,7 +99,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
     // Make indices
     std::vector<unsigned int> indices;
-    indices.resize(faces * 2 * 3 * (tubePoints.size()/2)); // Two triangles per face with 3 vertices each
+    indices.resize(faces * 2 * 3 * (tubePoints.size() - 1)); // Two triangles per face with 3 vertices each
 
 	unsigned startVertexIndex = 0;
 
@@ -165,6 +171,11 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     return &model;
 }
 
+const std::vector<DirectX::XMFLOAT3>& TubeHandler::getTubeSections() const
+{
+    return tubeSections;
+}
+
 void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius)
 {
     // Rough estimate of the amount of points in the tube
@@ -184,7 +195,7 @@ void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPo
     }
 
     // .. and the last point
-    createTubePoint(sectionPoints, tubePoints, sectionPoints.size()-2, 1.0f);
+    createTubePoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
 }
 
 DirectX::XMFLOAT3 TubeHandler::getPointForward(DirectX::XMVECTOR P[], DirectX::XMVECTOR& pointPos, float T0, float T1)
