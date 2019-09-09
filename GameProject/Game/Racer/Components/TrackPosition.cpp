@@ -4,7 +4,7 @@ TrackPositionHandler::TrackPositionHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_trackPosition}, sysSubscriber, std::type_index(typeid(TrackPositionHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
-        {tid_trackPosition, [this](Entity entity) {return trackPositions.hasElement(entity);}, &trackPositions.getIDs()}
+        {tid_trackPosition, &trackPositions}
     };
 
     this->registerHandler(&compRegs);

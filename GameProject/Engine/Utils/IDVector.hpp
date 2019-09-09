@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Utils/IDContainer.hpp>
 #include <queue>
 #include <vector>
 
@@ -12,7 +13,7 @@
 */
 
 template <typename T>
-class IDVector
+class IDVector : public IDContainer
 {
 public:
     IDVector() {}

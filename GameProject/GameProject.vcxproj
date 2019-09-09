@@ -316,6 +316,7 @@
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Transform.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
+    <ClInclude Include="Engine\Utils\IDContainer.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
