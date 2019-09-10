@@ -83,6 +83,7 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
         newSub.componentTypes.reserve(componentRegs.size());
 
         newSub.subscriber = subReq.subscriber;
+        newSub.onEntityAdded = subReq.onEntityAdded;
 
         for (const ComponentUpdateReg& componentReg : componentRegs) {
             auto queryItr = componentContainers.find(componentReg.tid);
