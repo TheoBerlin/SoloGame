@@ -6,8 +6,8 @@ TransformHandler::TransformHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_transform, tid_worldMatrix}, sysSubscriber, std::type_index(typeid(TransformHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
-        {tid_transform, [this](Entity entity) {return transforms.hasElement(entity);}, &transforms.getIDs()},
-        {tid_worldMatrix, [this](Entity entity) {return worldMatrices.hasElement(entity);}, &worldMatrices.getIDs()}
+        {tid_transform, &transforms},
+        {tid_worldMatrix, &worldMatrices}
     };
 
     this->registerHandler(&compRegs);

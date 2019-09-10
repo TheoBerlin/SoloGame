@@ -12,20 +12,15 @@ SystemSubscriber::~SystemSubscriber()
 
 void SystemSubscriber::registerComponents(std::vector<ComponentRegistration>* componentRegs)
 {
-    for (size_t i = 0; i < componentRegs->size(); i += 1) {
-        auto mapItr = this->componentResources.find((*componentRegs)[i].tid);
+    for (const ComponentRegistration& componentReg : *componentRegs) {
+        auto mapItr = this->componentContainers.find(componentReg.tid);
 
-        if (mapItr != this->componentResources.end()) {
-            Logger::LOG_WARNING("Attempted to register an already handled component type: %s", (*componentRegs)[i].tid.name());
+        if (mapItr != this->componentContainers.end()) {
+            Logger::LOG_WARNING("Attempted to register an already handled component type: %s", componentReg.tid.name());
             continue;
         }
 
-        ComponentResources componentResources = {
-            (*componentRegs)[i].componentQuery,
-            (*componentRegs)[i].entities
-        };
-
-        this->componentResources.insert({(*componentRegs)[i].tid, componentResources});
+        this->componentContainers.insert({componentReg.tid, componentReg.componentContainer});
     }
 }
 
@@ -33,16 +28,16 @@ void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
 {
     const std::vector<std::type_index>& componentTypes = handler->getHandledTypes();
 
-    for (size_t i = 0; i < componentTypes.size(); i += 1) {
+    for (const std::type_index& componentType : componentTypes) {
         // Delete component query functions
-        auto handlerItr = this->componentResources.find(componentTypes[i]);
+        auto handlerItr = this->componentContainers.find(componentType);
 
-        if (handlerItr == componentResources.end()) {
-            Logger::LOG_WARNING("Attempted to deregister a component handler for an unregistered component type: %s", componentTypes[i].name());
+        if (handlerItr == componentContainers.end()) {
+            Logger::LOG_WARNING("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
             continue;
         }
 
-        componentResources.erase(handlerItr);
+        componentContainers.erase(handlerItr);
     }
 
     auto handlerItr = componentHandlers.find(handler->getHandlerType());
@@ -76,30 +71,31 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
 {
     size_t sysID = systemIdGen.genID();
 
-    // Convert subscription requests to subscriptions by finding the components' resources
+    // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<ComponentSubscriptions> subscriptions;
     subscriptions.reserve(sysReg->subReqs.size());
 
-    for (size_t i = 0; i < sysReg->subReqs.size(); i += 1) {
-        const std::vector<ComponentUpdateReg>& componentRegs = sysReg->subReqs[i].componentTypes;
+    for (const ComponentSubReq& subReq : sysReg->subReqs) {
+        const std::vector<ComponentUpdateReg>& componentRegs = subReq.componentTypes;
 
         ComponentSubscriptions newSub;
-        newSub.entityHasComponent.reserve(componentRegs.size());
+        newSub.componentContainers.reserve(componentRegs.size());
         newSub.componentTypes.reserve(componentRegs.size());
 
-        newSub.subscriber = sysReg->subReqs[i].subscriber;
+        newSub.subscriber = subReq.subscriber;
+        newSub.onEntityAdded = subReq.onEntityAdded;
 
-        for (size_t j = 0; j < componentRegs.size(); j += 1) {
-            auto queryItr = componentResources.find(componentRegs[j].tid);
+        for (const ComponentUpdateReg& componentReg : componentRegs) {
+            auto queryItr = componentContainers.find(componentReg.tid);
 
-            if (queryItr == componentResources.end()) {
-                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, %d", componentRegs[j].tid.name(), componentRegs[j].tid.hash_code());
+            if (queryItr == componentContainers.end()) {
+                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, %d", componentReg.tid.name(), componentReg.tid.hash_code());
                 systemIdGen.popID(sysID);
                 return;
             }
 
-            newSub.entityHasComponent.push_back(&queryItr->second.componentQuery);
-            newSub.componentTypes.push_back(componentRegs[j].tid);
+            newSub.componentContainers.push_back(queryItr->second);
+            newSub.componentTypes.push_back(componentReg.tid);
         }
 
         subscriptions.push_back(newSub);
@@ -114,10 +110,10 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
     this->subscriptionStorage.push_back(subscriptions, sysID);
 
     // Map each component type to its subscriptions
-    std::vector<ComponentSubscriptions>& subs = subscriptionStorage.indexID(sysID);
+    const std::vector<ComponentSubscriptions>& subs = subscriptionStorage.indexID(sysID);
 
     for (size_t i = 0; i < subs.size(); i += 1) {
-        std::vector<std::type_index>& componentTypes = subs[i].componentTypes;
+        const std::vector<std::type_index>& componentTypes = subs[i].componentTypes;
 
         for (size_t j = 0; j < componentTypes.size(); j += 1) {
             componentSubscriptions.insert({componentTypes[j], {sysID, i}});
@@ -125,31 +121,17 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
     }
 
     // A subscription has been made, notify the system of all existing components it subscribed to
-    for (size_t i = 0; i < subscriptions.size(); i += 1) {
-        /*
-            1. Fetch the entity ID vector of the first subscribed component type
-            2. Fetch the entity existence query functions for all the other component types in the subscriptions.
-            3. See which entities in the ID vector also have all the other component types. Register those entities in the system.
-        */
+    for (ComponentSubscriptions& subscription : subscriptions) {
+        // Fetch the entity vector of the first subscribed component type
+        const std::vector<const IDContainer*>& componentContainers = subscription.componentContainers;
+        const std::vector<Entity>& entityVec = componentContainers[0]->getIDs();
 
-        // 1.
-        std::vector<std::type_index>& componentTypes = subscriptions[i].componentTypes;
-
-        ComponentResources& componentResources = this->componentResources[componentTypes[0]];
-
-        const std::vector<Entity>* entityVec = componentResources.entities;
-
-        // 2.
-        std::vector<std::function<bool(Entity)>*>& queryFuncs = subscriptions[i].entityHasComponent;
-
-        // 3.
-        for (size_t entityIdx = 0; entityIdx < entityVec->size(); entityIdx += 1) {
+        // See which entities in the entity vector also have all the other component types. Register those entities in the system.
+        for (Entity entity : entityVec) {
             bool registerEntity = true;
 
-            Entity entity = entityVec->at(entityIdx);
-
-            for (size_t queryIdx = 1; queryIdx < queryFuncs.size(); queryIdx += 1) {
-                if ((*queryFuncs[queryIdx])(entity) == false) {
+            for (size_t otherVecIdx = 1; otherVecIdx < componentContainers.size(); otherVecIdx += 1) {
+                if (componentContainers[otherVecIdx]->hasElement(entity) == false) {
                     // The entity does not have this component type, do not register it
                     registerEntity = false;
                     break;
@@ -157,7 +139,11 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
             }
 
             if (registerEntity) {
-                subscriptions[i].subscriber->push_back(entity, entity);
+                subscription.subscriber->push_back(entity, entity);
+
+                if (subscription.onEntityAdded != nullptr) {
+                    subscription.onEntityAdded(entity);
+                }
             }
         }
     }
@@ -173,11 +159,11 @@ void SystemSubscriber::deregisterSystem(System* system, std::vector<std::type_in
     // Use the subscriptions to find and delete component subscriptions
     std::vector<ComponentSubscriptions>& subscriptions = subscriptionStorage.indexID(system->ID);
 
-    for (size_t i = 0; i < subscriptions.size(); i += 1) {
-        std::vector<std::type_index>& componentTypes = subscriptions[i].componentTypes;
+    for (const ComponentSubscriptions& subscription : subscriptions) {
+        const std::vector<std::type_index>& componentTypes = subscription.componentTypes;
 
-        for (size_t j = 0; j < componentTypes.size(); j += 1) {
-            auto subBucketItr = componentSubscriptions.find(componentTypes[j]);
+        for (const std::type_index& componentType : componentTypes) {
+            auto subBucketItr = componentSubscriptions.find(componentType);
 
             if (subBucketItr == componentSubscriptions.end()) {
                 Logger::LOG_WARNING("Attempted to delete non-existent component subscription");
@@ -186,7 +172,7 @@ void SystemSubscriber::deregisterSystem(System* system, std::vector<std::type_in
             }
 
             // Find the subscription and delete it
-            while (subBucketItr != componentSubscriptions.end() && subBucketItr->first == componentTypes[j]) {
+            while (subBucketItr != componentSubscriptions.end() && subBucketItr->first == componentType) {
                 if (subBucketItr->second.systemID == system->ID) {
                     componentSubscriptions.erase(subBucketItr);
                     break;
@@ -221,9 +207,11 @@ void SystemSubscriber::newComponent(Entity entityID, std::type_index componentTy
         // Whether or not the entity has all the subscribed component types
         bool triggerSub = true;
 
-        // Query for every componen's existence given the entity
-        for (size_t i = 0; i < sysSub.entityHasComponent.size(); i += 1) {
-            if ((*sysSub.entityHasComponent[i])(entityID) == false) {
+        // Query for every component's existence given the entity
+        const std::vector<const IDContainer*>& componentContainers = sysSub.componentContainers;
+
+        for (const IDContainer* componentContainer : componentContainers) {
+            if (componentContainer->hasElement(entityID) == false) {
                 triggerSub = false;
                 break;
             }
@@ -231,6 +219,10 @@ void SystemSubscriber::newComponent(Entity entityID, std::type_index componentTy
 
         if (triggerSub) {
             sysSub.subscriber->push_back(entityID, entityID);
+
+            if (sysSub.onEntityAdded != nullptr) {
+                sysSub.onEntityAdded(entityID);
+            }
         }
 
         subBucketItr++;

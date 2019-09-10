@@ -12,20 +12,17 @@
 #include <vector>
 
 class ComponentHandler;
+class IComponentContainer;
 struct ComponentRegistration;
 
 struct ComponentSubscriptions {
-    // Pointer to a system's entity ID vector
+    // Stores IDs of entities found using subscription
     IDVector<Entity>* subscriber;
-    // Functions for querying whether or not an entity has component of subscribed types
-    std::vector<std::function<bool(Entity)>*> entityHasComponent;
-
+    // Used for querying whether or not an entity has component of subscribed types
+    std::vector<const IDContainer*> componentContainers;
     std::vector<std::type_index> componentTypes;
-};
-
-struct ComponentResources {
-    std::function<bool(Entity)> componentQuery;
-    const std::vector<size_t>* entities;
+    // Optional: Called after an entity was added due to the subscription
+    std::function<void(Entity)> onEntityAdded;
 };
 
 struct SubscriptionStorageIndex {
@@ -56,7 +53,7 @@ public:
 
 private:
     // Map component types to resources used when systems subscribe
-    std::unordered_map<std::type_index, ComponentResources> componentResources;
+    std::unordered_map<std::type_index, const IDContainer*> componentContainers;
     // Map component types to subscriptions. Deleted only when a subscribing system unsubscribes.
     std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
 

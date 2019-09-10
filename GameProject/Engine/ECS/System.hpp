@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/Entity.hpp>
 #include <Engine/Utils/IDVector.hpp>
+#include <functional>
 #include <typeindex>
 #include <vector>
 
@@ -19,6 +20,8 @@ struct ComponentUpdateReg {
 struct ComponentSubReq {
     std::vector<ComponentUpdateReg> componentTypes;
     IDVector<Entity>* subscriber;
+    // Optional: Called after an entity was added due to the subscription
+    std::function<void(Entity)> onEntityAdded;
 };
 
 class System;

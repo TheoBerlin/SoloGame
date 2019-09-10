@@ -27,8 +27,8 @@ public:
         :ComponentHandler({tid_pos, tid_dir}, sysHandler, std::type_index(typeid(TransformHandler_test)))
     {
         std::vector<ComponentRegistration> compRegs = {
-            {tid_pos, [this](Entity entity) { return this->positions.hasElement(entity);}, &this->positions.getIDs()},
-            {tid_dir, [this](Entity entity) { return this->directions.hasElement(entity);}, &this->directions.getIDs()}
+            {tid_pos, &this->positions},
+            {tid_dir, &this->directions}
         };
 
         this->registerHandler(&compRegs);
@@ -73,7 +73,7 @@ public:
         // Subscribe to components
         SystemRegistration sysReg = {
         {
-            {{{RW, tid_pos}, {R, tid_dir}}, &entities}
+            {{{RW, tid_pos}, {R, tid_dir}}, &entities, [this](Entity entity){OnEntityAdded(entity);}}
         },
         this
         };
@@ -84,6 +84,11 @@ public:
     ~ForwardMover()
     {
         this->unsubscribeFromComponents({tid_pos, tid_dir});
+    }
+
+    void OnEntityAdded(Entity entity)
+    {
+        transformHandler->positions.indexID(entity).position.z = 10.0f;
     }
 
     void update(float dt)
@@ -150,6 +155,9 @@ TEST_CASE("ECS Subscriptions") {
 
         transformHandler.createPos(pos, entities[1]);
         REQUIRE(sys.getEntities().size() == 2);
+
+        // Check that forwardmover's OnEntityAdded is called
+        REQUIRE(transformHandler.positions[0].position.z == 10.0f);
     }
 
     SECTION("Register system after components are created") {
@@ -171,6 +179,9 @@ TEST_CASE("ECS Subscriptions") {
 
         REQUIRE(sysEntities.size() == 1);
         REQUIRE(sysEntities[(size_t)0] == entities[(size_t)0]);
+
+        // Check that forwardmover's OnEntityAdded is called
+        REQUIRE(transformHandler.positions[0].position.z == 10.0f);
     }
 }
 
@@ -196,8 +207,8 @@ public:
         :ComponentHandler({tid_power, tid_division}, sysSubscriber, std::type_index(typeid(MathComponentHandler)))
     {
         std::vector<ComponentRegistration> compRegs = {
-            {tid_power, [this](Entity entity) { return this->powers.hasElement(entity);}, &this->powers.getIDs()},
-            {tid_division, [this](Entity entity) { return this->divisions.hasElement(entity);}, &this->divisions.getIDs()}
+            {tid_power, &this->powers},
+            {tid_division, &this->divisions}
         };
 
         this->registerHandler(&compRegs);

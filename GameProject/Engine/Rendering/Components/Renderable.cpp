@@ -9,7 +9,7 @@ RenderableHandler::RenderableHandler(SystemSubscriber* systemSubscriber)
     :ComponentHandler({tid_renderable}, systemSubscriber, std::type_index(typeid(RenderableHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
-        {tid_renderable, [this](Entity entity) {return renderables.hasElement(entity);}, &renderables.getIDs()}
+        {tid_renderable, &renderables}
     };
 
     this->registerHandler(&compRegs);
