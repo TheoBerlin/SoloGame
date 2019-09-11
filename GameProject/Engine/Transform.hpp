@@ -38,11 +38,18 @@ public:
     IDVector<WorldMatrix> worldMatrices;
 
     // Transform calculation functions
-    static DirectX::XMVECTOR getUp(DirectX::XMFLOAT4& rotationQuat);
-    static DirectX::XMVECTOR getForward(DirectX::XMFLOAT4& rotationQuat);
-    static DirectX::XMFLOAT4 getRotationQuaternion(DirectX::XMFLOAT3& forward);
+    static DirectX::XMVECTOR getUp(const DirectX::XMFLOAT4& rotationQuat);
+    static DirectX::XMVECTOR getForward(const DirectX::XMFLOAT4& rotationQuat);
+    static DirectX::XMFLOAT4 getRotationQuaternion(const DirectX::XMFLOAT3& forward);
 
-    float getPitch(DirectX::XMVECTOR& forward) const;
+    static float getPitch(const DirectX::XMVECTOR& forward);
+    static float getYaw(const DirectX::XMVECTOR& forward);
+    static float getRoll(const DirectX::XMFLOAT4& rotationQuat);
+
+    // Assumes the forward is normalized
+    static void setForward(Transform& transform, DirectX::XMVECTOR forward);
+
+    static void roll(DirectX::XMFLOAT4& rotationQuat, float angle);
 
     // Rotate V around P using a given axis and angle
     static void rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle);
