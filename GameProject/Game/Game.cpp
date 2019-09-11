@@ -64,7 +64,9 @@ void Game::update(float dt)
         transformHandler.createTransform(tube);
         transformHandler.createWorldMatrix(tube);
 
+        // For some reason the two lines below have the same effect, TODO: investigate and fix
         trackPositionHandler.createTrackPosition(camera);
+        //trackPositionHandler.createTrackPosition(renderableObject);
     }
 
     ecs.systemUpdater.updateMT(dt);

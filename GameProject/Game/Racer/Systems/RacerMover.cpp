@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Transform.hpp>
+#include <Engine/Utils/DirectXUtils.hpp>
 #include <Game/Level/Tube.hpp>
 #include <Game/Racer/Components/TrackPosition.hpp>
 
@@ -19,12 +20,16 @@ RacerMover::RacerMover(ECSInterface* ecs)
 
     SystemRegistration sysReg = {
     {
-        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &racers}
+        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &racers, [this](Entity entity){onRacerAdded(entity);}}
     },
     this};
 
     this->subscribeToComponents(&sysReg);
     this->registerUpdate(&sysReg);
+
+    std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
+    InputHandler* inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    this->keyboardState = inputHandler->getKeyboardState();
 }
 
 RacerMover::~RacerMover()
@@ -76,6 +81,46 @@ void RacerMover::update(float dt)
 
         // Update transform
         temp = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], trackPosition.T);
-        DirectX::XMStoreFloat3(&transform.position, temp);
+
+        DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(catmullRomDerivative(P[0], P[1], P[2], P[3], trackPosition.T));
+        TransformHandler::setForward(transform, forward);
+
+        DirectX::XMStoreFloat3(&transform.position, DirectX::XMVectorSubtract(temp, TransformHandler::getUp(transform.rotQuat)));
+
+        // Roll using keyboard input
+        if (keyboardState->D - keyboardState->A) {
+            float rotationAngle = (keyboardState->D - keyboardState->A) * rotationSpeed * dt;
+            TransformHandler::roll(transform.rotQuat, rotationAngle);
+        }
     }
+}
+
+void RacerMover::onRacerAdded(Entity entity)
+{
+    Transform& transform = transformHandler->transforms.indexID(entity);
+
+    // Calculate the position of the center point of the tube right at the beginning
+    const std::vector<DirectX::XMFLOAT3>& tubeSections = tubeHandler->getTubeSections();
+
+    DirectX::XMVECTOR P01, P2, P3;
+    P01 = DirectX::XMLoadFloat3(&tubeSections[0]);
+    P2 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)1, tubeSections.size()-1)]);
+    P3 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)2, tubeSections.size()-1)]);
+
+    DirectX::XMVECTOR f = DirectX::XMVector3Normalize(catmullRomDerivative(P01, P01, P2, P3, 0.001f));
+
+    TransformHandler::setForward(transform, f);
+
+    // Correct the roll
+    DirectX::XMVECTOR tubeStartCenter = DirectX::XMVectorCatmullRom(P01, P01, P2, P3, 0.0f);
+
+    DirectX::XMVECTOR desiredUp = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMLoadFloat3(&transform.position)));
+    DirectX::XMVECTOR currentUp = TransformHandler::getUp(transform.rotQuat);
+
+    //float rollAngle = std::acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(desiredUp, currentUp)));
+    float rollAngle = DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(desiredUp, currentUp));
+    DirectX::XMVECTOR roll = DirectX::XMQuaternionRotationNormal(f, rollAngle);
+
+    DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
+    DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
 }

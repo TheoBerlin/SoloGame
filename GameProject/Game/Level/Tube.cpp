@@ -230,6 +230,11 @@ void TubeHandler::createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionP
     float dT = deltaT + 2.0f * deltaT * (sectionIdx == 0);
     DirectX::XMFLOAT3 pointForward = getPointForward(P, newPointPos, T, T + dT);
 
+    // Invert deltaT if it's the first point in the tube
+    /*DirectX::XMFLOAT3 pointForward;
+    DirectX::XMStoreFloat3(&pointForward, catmullRomDerivative(P[0], P[1], P[2], P[3], T));
+    Logger::LOG_INFO("Section: %d, Forward: (%f,%f,%f)", sectionIdx, pointForward.x, pointForward.y, pointForward.z);*/
+
     TubePoint newPoint;
     DirectX::XMStoreFloat3(&newPoint.position, newPointPos);
     newPoint.rotationQuat = TransformHandler::getRotationQuaternion(pointForward);
