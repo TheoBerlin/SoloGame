@@ -41,6 +41,8 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
         return nullptr;
     }
 
+    this->tubeRadius = radius;
+
     // Save the section points for later use
     this->tubeSections = sectionPoints;
 
@@ -176,6 +178,11 @@ const std::vector<DirectX::XMFLOAT3>& TubeHandler::getTubeSections() const
     return tubeSections;
 }
 
+float TubeHandler::getTubeRadius() const
+{
+    return tubeRadius;
+}
+
 void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius)
 {
     // Rough estimate of the amount of points in the tube
@@ -198,17 +205,6 @@ void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPo
     createTubePoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
 }
 
-DirectX::XMFLOAT3 TubeHandler::getPointForward(DirectX::XMVECTOR P[], DirectX::XMVECTOR& pointPos, float T0, float T1)
-{
-    DirectX::XMVECTOR temp = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], T1-T0);
-    temp = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(pointPos, temp));
-
-    DirectX::XMFLOAT3 forward;
-    DirectX::XMStoreFloat3(&forward, temp);
-
-    return forward;
-}
-
 void TubeHandler::createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t sectionIdx, float T)
 {
     // Get four control points for catmull-rom
@@ -224,20 +220,10 @@ void TubeHandler::createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionP
     P[2] = DirectX::XMLoadFloat3(&sectionPoints[idx2]);
     P[3] = DirectX::XMLoadFloat3(&sectionPoints[idx3]);
 
-    DirectX::XMVECTOR newPointPos = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], T);
-
-    // Invert deltaT if it's the first point in the tube
-    float dT = deltaT + 2.0f * deltaT * (sectionIdx == 0);
-    DirectX::XMFLOAT3 pointForward = getPointForward(P, newPointPos, T, T + dT);
-
-    // Invert deltaT if it's the first point in the tube
-    /*DirectX::XMFLOAT3 pointForward;
-    DirectX::XMStoreFloat3(&pointForward, catmullRomDerivative(P[0], P[1], P[2], P[3], T));
-    Logger::LOG_INFO("Section: %d, Forward: (%f,%f,%f)", sectionIdx, pointForward.x, pointForward.y, pointForward.z);*/
-
     TubePoint newPoint;
-    DirectX::XMStoreFloat3(&newPoint.position, newPointPos);
-    newPoint.rotationQuat = TransformHandler::getRotationQuaternion(pointForward);
+    DirectX::XMStoreFloat3(&newPoint.position, DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], T));
+    DirectX::XMStoreFloat4(&newPoint.rotationQuat, DirectX::XMQuaternionIdentity());
+    TransformHandler::setForward(newPoint.rotationQuat, DirectX::XMVector3Normalize(catmullRomDerivative(P[0], P[1], P[2], P[3], T)));
 
     tubePoints.push_back(newPoint);
 }

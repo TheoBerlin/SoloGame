@@ -56,7 +56,7 @@ void Game::update(float dt)
         };
 
         const float tubeRadius = 1.5f;
-        unsigned int tubeFaces = 6;
+        const unsigned int tubeFaces = 10;
         Model* tubeModel = tubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
         Entity tube = ecs.entityIDGen.genID();
@@ -64,9 +64,7 @@ void Game::update(float dt)
         transformHandler.createTransform(tube);
         transformHandler.createWorldMatrix(tube);
 
-        // For some reason the two lines below have the same effect, TODO: investigate and fix
         trackPositionHandler.createTrackPosition(camera);
-        //trackPositionHandler.createTrackPosition(renderableObject);
     }
 
     ecs.systemUpdater.updateMT(dt);

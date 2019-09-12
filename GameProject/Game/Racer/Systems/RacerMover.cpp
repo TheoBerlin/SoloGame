@@ -20,7 +20,7 @@ RacerMover::RacerMover(ECSInterface* ecs)
 
     SystemRegistration sysReg = {
     {
-        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &racers, [this](Entity entity){onRacerAdded(entity);}}
+        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &racers, [this](Entity entity){racerAdded(entity);}}
     },
     this};
 
@@ -39,9 +39,9 @@ void RacerMover::update(float dt)
 {
     const std::vector<DirectX::XMFLOAT3>& tubeSections = tubeHandler->getTubeSections();
 
-    for (size_t i = 0; i < racers.size(); i += 1) {
-        Transform& transform = transformHandler->transforms.indexID(i);
-        TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(i);
+    for (Entity entity : racers.getIDs()) {
+        Transform& transform = transformHandler->transforms.indexID(entity);
+        TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(entity);
 
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
         DirectX::XMVECTOR P[4];
@@ -83,19 +83,28 @@ void RacerMover::update(float dt)
         temp = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], trackPosition.T);
 
         DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(catmullRomDerivative(P[0], P[1], P[2], P[3], trackPosition.T));
-        TransformHandler::setForward(transform, forward);
+        TransformHandler::setForward(transform.rotQuat, forward);
 
-        DirectX::XMStoreFloat3(&transform.position, DirectX::XMVectorSubtract(temp, TransformHandler::getUp(transform.rotQuat)));
+        DirectX::XMVECTOR position = DirectX::XMVectorSubtract(temp, DirectX::XMVectorScale(TransformHandler::getUp(transform.rotQuat), trackPosition.distanceFromCenter));
+        DirectX::XMStoreFloat3(&transform.position, position);
 
         // Roll using keyboard input
-        if (keyboardState->D - keyboardState->A) {
-            float rotationAngle = (keyboardState->D - keyboardState->A) * rotationSpeed * dt;
+        int keyInput = keyboardState->D - keyboardState->A;
+        if (keyInput) {
+            float rotationAngle = keyInput * rotationSpeed * dt;
             TransformHandler::roll(transform.rotQuat, rotationAngle);
+        }
+
+        // Move towards or away from the center
+        keyInput = keyboardState->S - keyboardState->W;
+        if (keyInput) {
+            trackPosition.distanceFromCenter += keyInput * centerMoveSpeed * dt;
+            trackPosition.distanceFromCenter = std::min(tubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));
         }
     }
 }
 
-void RacerMover::onRacerAdded(Entity entity)
+void RacerMover::racerAdded(Entity entity)
 {
     Transform& transform = transformHandler->transforms.indexID(entity);
 
@@ -109,7 +118,7 @@ void RacerMover::onRacerAdded(Entity entity)
 
     DirectX::XMVECTOR f = DirectX::XMVector3Normalize(catmullRomDerivative(P01, P01, P2, P3, 0.001f));
 
-    TransformHandler::setForward(transform, f);
+    TransformHandler::setForward(transform.rotQuat, f);
 
     // Correct the roll
     DirectX::XMVECTOR tubeStartCenter = DirectX::XMVectorCatmullRom(P01, P01, P2, P3, 0.0f);
@@ -117,10 +126,16 @@ void RacerMover::onRacerAdded(Entity entity)
     DirectX::XMVECTOR desiredUp = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMLoadFloat3(&transform.position)));
     DirectX::XMVECTOR currentUp = TransformHandler::getUp(transform.rotQuat);
 
-    //float rollAngle = std::acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(desiredUp, currentUp)));
     float rollAngle = DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(desiredUp, currentUp));
     DirectX::XMVECTOR roll = DirectX::XMQuaternionRotationNormal(f, rollAngle);
 
     DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
     DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
+
+    // Set the distance to the tube's center
+    TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(entity);
+    trackPosition.distanceFromCenter = minCenterDistance + startingCenterDistance * ((tubeHandler->getTubeRadius() - minEdgeDistance) - minCenterDistance);
+
+    // Set starting position
+    DirectX::XMStoreFloat3(&transform.position, DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMVectorScale(desiredUp, trackPosition.distanceFromCenter)));
 }

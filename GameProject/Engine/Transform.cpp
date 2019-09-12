@@ -134,12 +134,11 @@ float TransformHandler::getRoll(const DirectX::XMFLOAT4& rotationQuat)
     return roll - (rollSign * 2.0f * roll);
 }
 
-void TransformHandler::setForward(Transform& transform, DirectX::XMVECTOR forward)
+void TransformHandler::setForward(DirectX::XMFLOAT4& rotationQuat, const DirectX::XMVECTOR& forward)
 {
 	// Create rotation quaternion based on new forward
 	// Beware of the cases where the new forward vector is parallell to the old one
-    DirectX::XMVECTOR currentForward = getForward(transform.rotQuat);
-    forward = DirectX::XMVector3Normalize(forward);
+    DirectX::XMVECTOR currentForward = getForward(rotationQuat);
 	float cosAngle = DirectX::XMVectorGetX(DirectX::XMVector3Dot(forward, currentForward));
 
     DirectX::XMVECTOR rotation;
@@ -171,8 +170,8 @@ void TransformHandler::setForward(Transform& transform, DirectX::XMVECTOR forwar
 		rotation = DirectX::XMQuaternionRotationNormal(axis, angle);
 	}
 
-    DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
-    DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionMultiply(currentRotQuat, rotation));
+    DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&rotationQuat);
+    DirectX::XMStoreFloat4(&rotationQuat, DirectX::XMQuaternionMultiply(currentRotQuat, rotation));
 }
 
 void TransformHandler::roll(DirectX::XMFLOAT4& rotationQuat, float angle)

@@ -47,7 +47,7 @@ public:
     static float getRoll(const DirectX::XMFLOAT4& rotationQuat);
 
     // Assumes the forward is normalized
-    static void setForward(Transform& transform, DirectX::XMVECTOR forward);
+    static void setForward(DirectX::XMFLOAT4& rotationQuat, const DirectX::XMVECTOR& forward);
 
     static void roll(DirectX::XMFLOAT4& rotationQuat, float angle);
 
