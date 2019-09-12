@@ -4,6 +4,7 @@
 #include <thread>
 
 SystemUpdater::SystemUpdater()
+    :timeoutDisabled(true)
 {}
 
 SystemUpdater::~SystemUpdater()
@@ -44,7 +45,7 @@ void SystemUpdater::updateMT(float dt)
     std::thread threads[MAX_THREADS];
 
     for (unsigned short i = 0; i < MAX_THREADS; i += 1) {
-        threads[i] = std::thread(&SystemUpdater::updateSystem, this, dt);
+        threads[i] = std::thread(&SystemUpdater::updateSystems, this, dt);
     }
 
     for (unsigned short i = 0; i < MAX_THREADS; i += 1) {
@@ -55,46 +56,75 @@ void SystemUpdater::updateMT(float dt)
     processingSystems.clear();
 }
 
-void SystemUpdater::updateSystem(float dt)
+void SystemUpdater::updateSystems(float dt)
 {
-    mux.lock();
+    std::unique_lock<std::mutex> lk(mux);
 
-    // Check that not all systems have been processed
     while (updateInfos.size() != processedSystems.size()) {
-        for (size_t i = 0; i < updateInfos.size(); i += 1) {
-            SystemUpdateInfo& sysReg = updateInfos[i];
+        const SystemUpdateInfo* systemToUpdate = findUpdateableSystem();
 
-            // Check that the system hasn't already been processed
-            if (!processedSystems.hasElement(sysReg.system->ID)) {
-                // Prevent multiple systems from accessing the same components where at least one of them has write permissions
-                for (size_t compIdx = 0; compIdx < sysReg.components.size(); compIdx += 1) {
-                    auto mapItr = processingSystems.find(sysReg.components[compIdx].tid);
+        if (systemToUpdate == nullptr) {
+            // No updateable system was found, have the thread wait until an update finishes
+            timeoutDisabled = false;
+            timeoutCV.wait(lk, [this]{return timeoutDisabled;});
+        } else {
+            ProcessingSystemsIterators updateIterators;
+            registerUpdate(systemToUpdate, &updateIterators);
 
-                    if (mapItr != processingSystems.end() && (mapItr->second & sysReg.components[compIdx].permissions) == RW) {
-                        continue;
-                    }
-                }
-                // Found a system to process
-                processedSystems.push_back(sysReg.system->ID, sysReg.system->ID);
+            mux.unlock();
+            systemToUpdate->system->update(dt);
+            mux.lock();
 
-                std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> mapIterators;
-                mapIterators.reserve(sysReg.components.size());
+            timeoutDisabled = true;
+            timeoutCV.notify_all();
 
-                for (size_t compIdx = 0; compIdx < sysReg.components.size(); compIdx += 1) {
-                    mapIterators.push_back(processingSystems.insert({sysReg.components[compIdx].tid, sysReg.components[compIdx].permissions}));
-                }
-
-                mux.unlock();
-                sysReg.system->update(dt);
-                mux.lock();
-
-                // The system has finished updating
-                for (auto itr : mapIterators) {
-                    processingSystems.erase(itr);
-                }
-            }
+            deregisterUpdate(&updateIterators);
         }
     }
+}
 
-    mux.unlock();
+const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
+{
+    for (const SystemUpdateInfo& sysReg : updateInfos.getVec()) {
+        // Check that the system hasn't already been processed
+        if (processedSystems.hasElement(sysReg.system->ID)) {
+            continue;
+        }
+
+        // Prevent multiple systems from accessing the same components where at least one of them has write permissions
+        for (const ComponentUpdateReg& componentReg : sysReg.components) {
+            auto permissionsItrs = processingSystems.equal_range(componentReg.tid);
+
+            while (permissionsItrs.first != permissionsItrs.second) {
+                if ((permissionsItrs.second->second & componentReg.permissions) == RW) {
+                    // System collides with another currently updating system
+                    return nullptr;
+                }
+
+                permissionsItrs.first++;
+            }
+        }
+
+        return &sysReg;
+    }
+
+    return nullptr;
+}
+
+void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators)
+{
+    processedSystems.push_back(systemToRegister->system->ID, systemToRegister->system->ID);
+
+    processingSystemsIterators->reserve(systemToRegister->components.size());
+
+    for (const ComponentUpdateReg& componentReg : systemToRegister->components) {
+        processingSystemsIterators->push_back(processingSystems.insert({componentReg.tid, componentReg.permissions}));
+    }
+}
+
+void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators* processingSystemsIterators)
+{
+    for (auto itr : *processingSystemsIterators) {
+        processingSystems.erase(itr);
+    }
 }

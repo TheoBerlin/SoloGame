@@ -17,6 +17,7 @@ WORD Logger::defaultAttributes = 0;
 
 void Logger::init()
 {
+    // TODO: Direct all streams to file so that error messages aren't just printed in the console
     AllocConsole(); //debug console
     consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     const LPCWSTR consoleTitle = L"Debug Console";

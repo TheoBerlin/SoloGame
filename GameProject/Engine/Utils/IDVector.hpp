@@ -99,6 +99,11 @@ public:
         return vec.size();
     }
 
+    std::vector<T>& getVec()
+    {
+        return this->vec;
+    }
+
     const std::vector<size_t>& getIDs() const
     {
         return this->ids;

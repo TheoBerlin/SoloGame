@@ -1,6 +1,7 @@
 #pragma once
 
 // TODO: Move to config file
+// TODO: Get maximum number of threads programmatically
 #define MAX_THREADS 4
 
 #include <Engine/ECS/System.hpp>
@@ -11,6 +12,8 @@ struct SystemUpdateInfo {
     System* system;
     std::vector<ComponentUpdateReg> components;
 };
+
+typedef std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> ProcessingSystemsIterators;
 
 class SystemUpdater
 {
@@ -39,8 +42,22 @@ private:
     std::unordered_multimap<std::type_index, ComponentPermissions> processingSystems;
 
     // Used when threads pick systems to update
-    std::mutex mux;
+    std::mutex mux, timeoutMux;
 
-    // Executed by one of multiple threads to continuously pick systems to update and update them until every one has been updated
-    void updateSystem(float dt);
+    // Executed multiple threads simultaneously to continuously pick systems to update and update them until every one has been updated
+    void updateSystems(float dt);
+
+    const SystemUpdateInfo* findUpdateableSystem();
+
+    /**
+     * Registers a system's updated components types and their respective permissions
+     * @param systemToRegister System to register as updating
+     * @param processingSystemsIterators In/Out: Receives empty vector of iterators, inserts elements
+     */
+    void registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators);
+    void deregisterUpdate(const ProcessingSystemsIterators* processingSystemsIterators);
+
+    // Used to time out threads unable to find updateable systems
+    std::condition_variable timeoutCV;
+    bool timeoutDisabled;
 };
