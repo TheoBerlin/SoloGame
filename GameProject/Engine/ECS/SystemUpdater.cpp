@@ -61,27 +61,27 @@ void SystemUpdater::updateSystem(float dt)
 
     // Check that not all systems have been processed
     while (updateInfos.size() != processedSystems.size()) {
-        for (size_t i = 0; i < updateInfos.size(); i += 1) {
-            SystemUpdateInfo& sysReg = updateInfos[i];
+        for (const SystemUpdateInfo& sysReg : updateInfos.getVec()) {
 
             // Check that the system hasn't already been processed
             if (!processedSystems.hasElement(sysReg.system->ID)) {
                 // Prevent multiple systems from accessing the same components where at least one of them has write permissions
-                for (size_t compIdx = 0; compIdx < sysReg.components.size(); compIdx += 1) {
-                    auto mapItr = processingSystems.find(sysReg.components[compIdx].tid);
+                for (const ComponentUpdateReg& componentReg : sysReg.components) {
+                    auto mapItr = processingSystems.find(componentReg.tid);
 
-                    if (mapItr != processingSystems.end() && (mapItr->second & sysReg.components[compIdx].permissions) == RW) {
+                    if (mapItr != processingSystems.end() && (mapItr->second & componentReg.permissions) == RW) {
                         continue;
                     }
                 }
+
                 // Found a system to process
                 processedSystems.push_back(sysReg.system->ID, sysReg.system->ID);
 
                 std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> mapIterators;
                 mapIterators.reserve(sysReg.components.size());
 
-                for (size_t compIdx = 0; compIdx < sysReg.components.size(); compIdx += 1) {
-                    mapIterators.push_back(processingSystems.insert({sysReg.components[compIdx].tid, sysReg.components[compIdx].permissions}));
+                for (const ComponentUpdateReg& componentReg : sysReg.components) {
+                    mapIterators.push_back(processingSystems.insert({componentReg.tid, componentReg.permissions}));
                 }
 
                 mux.unlock();
