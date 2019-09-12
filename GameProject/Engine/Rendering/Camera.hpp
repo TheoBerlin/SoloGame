@@ -17,6 +17,7 @@ public:
     CameraSystem(ECSInterface* ecs);
     ~CameraSystem();
 
+    // Keeps cameras' view matrices up-to date with their transforms
     void update(float dt);
 
 private:

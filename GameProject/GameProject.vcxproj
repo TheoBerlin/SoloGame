@@ -266,6 +266,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Transform.cpp" />
+    <ClCompile Include="Engine\Utils\DirectXUtils.cpp" />
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Game\Game.cpp" />

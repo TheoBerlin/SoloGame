@@ -39,7 +39,7 @@ void CameraSystem::update(float dt)
         ViewMatrix& viewMatrix = vpHandler->viewMatrices.indexID(cameras[i]);
 
         DirectX::XMVECTOR lookDir = transformHandler->getForward(camTransform.rotQuat);
-        DirectX::XMVECTOR rightDir = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(defaultUp, lookDir));
+        DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(defaultUp, lookDir));
 
         // React to mouse input
         if (mouseState->x || mouseState->y) {
@@ -55,7 +55,7 @@ void CameraSystem::update(float dt)
             }
 
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(defaultUp, mouseState->x * dt * 1.3f));
-            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(rightDir, addedPitch));
+            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(pitchAxis, addedPitch));
             DirectX::XMStoreFloat4(&camTransform.rotQuat, rotation);
             lookDir = transformHandler->getForward(camTransform.rotQuat);
         }
@@ -67,7 +67,7 @@ void CameraSystem::update(float dt)
             DirectX::XMVECTOR camMove = {0.0f, 0.0f, 0.0f, 0.0f};
 
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(lookDir, (float)(keyboardState->W-keyboardState->S)));
-            camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(rightDir, (float)(keyboardState->D-keyboardState->A)));
+            camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(pitchAxis, (float)(keyboardState->D-keyboardState->A)));
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(defaultUp, (float)(keyboardState->LeftShift-keyboardState->LeftControl)));
 
             camMove = DirectX::XMVectorScale(DirectX::XMVector3Normalize(camMove), dt * 1.5f);
@@ -75,6 +75,7 @@ void CameraSystem::update(float dt)
             DirectX::XMStoreFloat3(&camTransform.position, camPos);
         }
 
-        DirectX::XMStoreFloat4x4(&viewMatrix.view, DirectX::XMMatrixLookAtLH(camPos, DirectX::XMVectorAdd(camPos, lookDir), {0.0f, 1.0f, 0.0f, 0.0f}));
+        DirectX::XMVECTOR upDir = TransformHandler::getUp(camTransform.rotQuat);
+        DirectX::XMStoreFloat4x4(&viewMatrix.view, DirectX::XMMatrixLookAtLH(camPos, DirectX::XMVectorAdd(camPos, lookDir), upDir));
     }
 }

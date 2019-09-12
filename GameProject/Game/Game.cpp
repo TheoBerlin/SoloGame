@@ -56,7 +56,7 @@ void Game::update(float dt)
         };
 
         const float tubeRadius = 1.5f;
-        unsigned int tubeFaces = 6;
+        const unsigned int tubeFaces = 10;
         Model* tubeModel = tubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
         Entity tube = ecs.entityIDGen.genID();
