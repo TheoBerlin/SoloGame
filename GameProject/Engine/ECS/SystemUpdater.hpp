@@ -42,7 +42,7 @@ private:
     std::unordered_multimap<std::type_index, ComponentPermissions> processingSystems;
 
     // Used when threads pick systems to update
-    std::mutex mux, timeoutMux;
+    std::mutex mux;
 
     // Executed multiple threads simultaneously to continuously pick systems to update and update them until every one has been updated
     void updateSystems(float dt);
