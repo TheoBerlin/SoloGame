@@ -238,6 +238,8 @@
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
+    <ClCompile Include="Engine\GameState\State.cpp" />
+    <ClCompile Include="Engine\GameState\StateManager.cpp" />
     <ClCompile Include="Engine\IGame.cpp" />
     <ClCompile Include="Engine\InputHandler.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
@@ -274,6 +276,8 @@
     <ClCompile Include="Game\LightSpinner.cpp" />
     <ClCompile Include="Game\Racer\Components\TrackPosition.cpp" />
     <ClCompile Include="Game\Racer\Systems\RacerMover.cpp" />
+    <ClCompile Include="Game\States\GameSession.cpp" />
+    <ClCompile Include="Game\States\MainMenu.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Debug|x64'">true</ExcludedFromBuild>
@@ -300,6 +304,8 @@
     <ClInclude Include="Engine\ECS\System.hpp" />
     <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
+    <ClInclude Include="Engine\GameState\State.hpp" />
+    <ClInclude Include="Engine\GameState\StateManager.hpp" />
     <ClInclude Include="Engine\IGame.hpp" />
     <ClInclude Include="Engine\InputHandler.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
@@ -326,6 +332,8 @@
     <ClInclude Include="Game\LightSpinner.hpp" />
     <ClInclude Include="Game\Racer\Components\TrackPosition.hpp" />
     <ClInclude Include="Game\Racer\Systems\RacerMover.hpp" />
+    <ClInclude Include="Game\States\GameSession.hpp" />
+    <ClInclude Include="Game\States\MainMenu.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
