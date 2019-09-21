@@ -26,7 +26,6 @@ void IGame::run()
     auto timeNow = timer;
     std::chrono::duration<float> dtChrono;
 
-
     MSG msg = {0};
     while(WM_QUIT != msg.message)
     { 
@@ -54,6 +53,16 @@ void IGame::run()
             display.clearBackBuffer();
             renderer.update(dt);
             display.presentBackBuffer();
+
+            // Perform maintenance
+            const std::vector<Entity>& entitiesToDelete = ecs.systemSubscriber.getEntitiesToDelete();
+            if (!entitiesToDelete.empty()) {
+                ecs.systemSubscriber.performDeletions();
+
+                for (Entity deletedEntity : entitiesToDelete) {
+                    ecs.entityIDGen.popID(deletedEntity);
+                }
+            }
         }
     }
 }
