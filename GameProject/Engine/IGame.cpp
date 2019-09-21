@@ -47,7 +47,7 @@ void IGame::run()
             inputHandler.update();
 
             // Update logic
-            this->update(dt);
+            stateManager.update(dt);
 
             // Render
             display.clearBackBuffer();

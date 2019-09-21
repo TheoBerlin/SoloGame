@@ -6,21 +6,14 @@
 #include <Game/Racer/Components/TrackPosition.hpp>
 #include <Game/Racer/Systems/RacerMover.hpp>
 
+class MainMenu;
+
 class Game : public IGame
 {
 public:
     Game(HINSTANCE hInstance);
     ~Game();
 
-    void update(float dt);
-
 private:
-    bool hasSetup;
-
-    Entity camera, renderableObject;
-
-    LightSpinner lightSpinner;
-    TubeHandler tubeHandler;
-    TrackPositionHandler trackPositionHandler;
-    RacerMover racerMover;
+    MainMenu* mainMenu;
 };

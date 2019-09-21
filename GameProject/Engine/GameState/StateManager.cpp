@@ -15,7 +15,9 @@ StateManager::~StateManager()
 
 void StateManager::pushState(State* state)
 {
-    states.top()->pause();
+	if (!states.empty()) {
+		states.top()->pause();
+	}
 
     states.push(state);
 }

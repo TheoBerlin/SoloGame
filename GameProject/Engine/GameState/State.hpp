@@ -1,7 +1,7 @@
 #pragma once
 
-class ECSInterface;
 class StateManager;
+struct ECSInterface;
 
 class State
 {

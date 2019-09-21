@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/GameState/StateManager.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/Camera.hpp>
@@ -22,10 +23,10 @@ public:
     // Starts the main loop
     void run();
 
-    virtual void update(float dt) = 0;
-
 protected:
     ECSInterface ecs;
+
+    // Component handlers
     TransformHandler transformHandler;
     VPHandler vpHandler;
     Display display;
@@ -35,6 +36,10 @@ protected:
     ModelLoader modelLoader;
     RenderableHandler renderableHandler;
     LightHandler lightHandler;
+
+    // Systems
     Renderer renderer;
     CameraSystem cameraSystem;
+
+    StateManager stateManager;
 };
