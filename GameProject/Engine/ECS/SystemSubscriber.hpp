@@ -9,6 +9,7 @@
 #include <map>
 #include <typeindex>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class ComponentHandler;
@@ -51,6 +52,12 @@ public:
     // Notifies subscribed systems that a component has been deleted
     void removedComponent(Entity entityID, std::type_index componentType);
 
+    void addDelayedDeletion(Entity entity);
+
+    // Perform accumulated requests to delete entities
+    void performDeletions();
+    const std::vector<Entity>& getEntitiesToDelete() const;
+
 private:
     // Map component types to resources used when systems subscribe
     std::unordered_map<std::type_index, const IDContainer*> componentContainers;
@@ -62,4 +69,10 @@ private:
     IDGenerator systemIdGen;
 
     std::unordered_map<std::type_index, ComponentHandler*> componentHandlers;
+
+    // Store all registered entity IDs and their related components. Used when deleting entities.
+    IDVector<std::unordered_set<std::type_index>> registeredEntities;
+
+    // Lists what entities to delete when performDeletions is called
+    std::vector<Entity> entitiesToDelete;
 };

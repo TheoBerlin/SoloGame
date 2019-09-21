@@ -227,6 +227,14 @@ void SystemSubscriber::newComponent(Entity entityID, std::type_index componentTy
 
         subBucketItr++;
     }
+
+    if (registeredEntities.hasElement(entityID)) {
+        registeredEntities.indexID(entityID).insert(componentType);
+    } else {
+        std::unordered_set<std::type_index> componentSet;
+        componentSet.insert(componentType);
+        registeredEntities.push_back(componentSet, entityID);
+    }
 }
 
 void SystemSubscriber::removedComponent(Entity entityID, std::type_index componentType)
@@ -247,4 +255,33 @@ void SystemSubscriber::removedComponent(Entity entityID, std::type_index compone
 
         subBucketItr++;
     }
+
+    registeredEntities.indexID(entityID).erase(componentType);
+}
+
+void SystemSubscriber::addDelayedDeletion(Entity entity)
+{
+    entitiesToDelete.push_back(entity);
+}
+
+void SystemSubscriber::performDeletions()
+{
+    for (Entity entity : entitiesToDelete) {
+        const std::unordered_set<std::type_index>& componentTypes = registeredEntities.indexID(entity);
+
+        // Tell every system that has the entity listed, that the entity has been deleted
+        // Each call to removedComponent will remove the component type from the set
+        while (!componentTypes.empty()) {
+            this->removedComponent(entity, *componentTypes.begin());
+        }
+
+        registeredEntities.pop(entity);
+    }
+
+    entitiesToDelete.clear();
+}
+
+const std::vector<Entity>& SystemSubscriber::getEntitiesToDelete() const
+{
+    return entitiesToDelete;
 }

@@ -158,6 +158,16 @@ TEST_CASE("ECS Subscriptions") {
 
         // Check that forwardmover's OnEntityAdded is called
         REQUIRE(transformHandler.positions[0].position.z == 10.0f);
+
+        SECTION("Deleting an entity leads to its components being unregistered") {
+            ecs.systemSubscriber.addDelayedDeletion(entities[0]);
+            ecs.systemSubscriber.performDeletions();
+            REQUIRE(sys.getEntities().size() == 1);
+
+            ecs.systemSubscriber.addDelayedDeletion(entities[1]);
+            ecs.systemSubscriber.performDeletions();
+            REQUIRE(sys.getEntities().size() == 0);
+        }
     }
 
     SECTION("Register system after components are created") {
