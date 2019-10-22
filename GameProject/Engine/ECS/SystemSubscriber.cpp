@@ -50,7 +50,7 @@ void SystemSubscriber::deregisterComponents(ComponentHandler* handler)
     componentHandlers.erase(handlerItr);
 }
 
-void SystemSubscriber::registerHandler(ComponentHandler* handler, std::type_index& handlerType)
+void SystemSubscriber::registerHandler(ComponentHandler* handler, const std::type_index& handlerType)
 {
     this->componentHandlers[handlerType] = handler;
 }
@@ -69,8 +69,6 @@ ComponentHandler* SystemSubscriber::getComponentHandler(std::type_index& handler
 
 void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
 {
-    size_t sysID = systemIdGen.genID();
-
     // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<ComponentSubscriptions> subscriptions;
     subscriptions.reserve(sysReg->subReqs.size());
@@ -90,7 +88,6 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
 
             if (queryItr == componentContainers.end()) {
                 Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, %d", componentReg.tid.name(), componentReg.tid.hash_code());
-                systemIdGen.popID(sysID);
                 return;
             }
 
@@ -106,6 +103,7 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
         return;
     }
 
+    size_t sysID = systemIdGen.genID();
     sysReg->system->ID = sysID;
     this->subscriptionStorage.push_back(subscriptions, sysID);
 
