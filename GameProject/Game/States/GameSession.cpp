@@ -5,6 +5,7 @@
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Transform.hpp>
+#include <Engine/Utils/Logger.hpp>
 #include <Game/States/MainMenu.hpp>
 
 GameSession::GameSession(MainMenu* mainMenu)
@@ -14,6 +15,8 @@ GameSession::GameSession(MainMenu* mainMenu)
     lightSpinner(ecs),
     racerMover(ecs)
 {
+    Logger::LOG_INFO("Started game session");
+
     // Create camera
     camera = ecs->entityIDGen.genID();
 
