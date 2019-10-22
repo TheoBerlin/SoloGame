@@ -28,7 +28,7 @@ void IGame::run()
 
     MSG msg = {0};
     while(WM_QUIT != msg.message)
-    { 
+    {
         if (!Display::keepRunning)
         {
             break;
