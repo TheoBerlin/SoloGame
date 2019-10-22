@@ -42,7 +42,7 @@ public:
     }
 
     // Returns ID of added element
-    void push_back(T& newElement, size_t ID)
+    void push_back(const T& newElement, size_t ID)
     {
         vec.push_back(newElement);
         ids.push_back(ID);
@@ -70,13 +70,12 @@ public:
         vec.pop_back();
         ids.pop_back();
 
-        // Pop the rear indices element if it points at the element was just deleted
-        if (indices.back() == vec.size()) {
-            indices.pop_back();
+        if (vec.empty()) {
+            indices.clear();
         }
 
-        // The indices vector might point at deleted elements, clean up the rear elements
-        while (!indices.empty() && (ids.empty() || ids[indices.back()] != indices.size() - 1)) {
+        // The rear elements in the indices vector might point at deleted elements, clean them up
+        while (indices.size() > vec.size() && indices.back() >= vec.size()) {
             indices.pop_back();
         }
     }
@@ -118,8 +117,10 @@ private:
     std::vector<T> vec;
 
     /*
-        Stores indexed using an ID to retrieve and index to vec
-        Example: T myElement = vec[indices[ID]];
+        Stores indices to the main vector, use entity IDs to index it, eg:
+        T myElement = vec[indices[ID]];
+        or
+        size_t entityIndex = indices[entityID];
     */
     std::vector<size_t> indices;
 
