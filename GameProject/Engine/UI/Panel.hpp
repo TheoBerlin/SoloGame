@@ -19,6 +19,16 @@ struct UIPanel
 
 const std::type_index tid_UIPanel = std::type_index(typeid(UIPanel));
 
+struct UIButton
+{
+    DirectX::XMFLOAT4 defaultColor, hoverColor, pressColor;
+    // For now, buttons are handled after systems have been updated.
+    // Perhaps later, this could be changed by specifying what component types the function affects, and with what permissions.
+    std::function<void()> onPress;
+};
+
+const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
+
 class TextureLoader;
 
 class UIHandler : public ComponentHandler
@@ -30,7 +40,12 @@ public:
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color,
     std::string texturePath = "./Game/Assets/Models/Solid_White.png");
 
+    // Requires that the entity has a UI panel already
+    void createButton(Entity entity, DirectX::XMFLOAT4 hoverColor, DirectX::XMFLOAT4 pressColor,
+    std::function<void()> onPress);
+
     IDVector<UIPanel> panels;
+    IDVector<UIButton> buttons;
 
 private:
     TextureLoader* textureLoader;

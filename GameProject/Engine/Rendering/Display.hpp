@@ -8,7 +8,7 @@ class Display
 {
 public:
     // aspectRatio - width/height
-    Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bool windowed);
+    Display(HINSTANCE hInstance, unsigned int clientHeight, float aspectRatio, bool windowed);
     ~Display();
 
     /*
@@ -25,6 +25,9 @@ public:
     void showWindow();
     void presentBackBuffer();
     void clearBackBuffer();
+
+    unsigned int getWindowWidth() const;
+    unsigned int getWindowHeight() const;
 
     // Set to false when window is being closed (eg. alt+f4)
     static bool keepRunning;
@@ -56,7 +59,8 @@ private:
     bool windowed;
 
     const unsigned int frameRateLimit = 60;
-    unsigned int width, height;
+    unsigned int clientWidth, clientHeight;
+    unsigned int windowWidth, windowHeight;
 
     // MSAA, 1 multisample means no 'extra samples'
     const unsigned int multisamples = 1;

@@ -26,3 +26,15 @@ DirectX::Mouse::State* InputHandler::getMouseState()
 {
     return &mouseState;
 }
+
+void InputHandler::setMouseMode(DirectX::Mouse::Mode mode)
+{
+    mouse.SetMode(mode);
+}
+
+void InputHandler::setMouseVisibility(bool visible)
+{
+    ShowCursor(visible);
+    mouse.SetVisible(visible);
+    ShowCursor(visible);
+}

@@ -2,12 +2,14 @@
 
 #include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Utils/Logger.hpp>
 
 UIHandler::UIHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_UIPanel}, sysSubscriber, std::type_index(typeid(UIHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
-        {tid_UIPanel, &panels}
+        {tid_UIPanel, &panels},
+        {tid_UIButton, &buttons}
     };
 
     this->registerHandler(&compRegs);
@@ -29,4 +31,24 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 
     panels.push_back(panel, entity);
     this->registerComponent(tid_UIPanel, entity);
+}
+
+void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverColor, DirectX::XMFLOAT4 pressColor,
+    std::function<void()> onPress)
+{
+    if (!panels.hasElement(entity)) {
+        Logger::LOG_WARNING("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
+        return;
+    }
+
+    DirectX::XMFLOAT4 defaultColor = panels.indexID(entity).color;
+
+    buttons.push_back({
+        defaultColor,
+        hoverColor,
+        pressColor,
+        onPress
+    }, entity);
+
+    this->registerComponent(tid_UIButton, entity);
 }

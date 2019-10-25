@@ -10,7 +10,7 @@
 
 bool Display::keepRunning = true;
 
-Display::Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bool windowed)
+Display::Display(HINSTANCE hInstance, unsigned int clientHeight, float aspectRatio, bool windowed)
     :hInstance(hInstance),
     hwnd(nullptr),
     device(nullptr),
@@ -18,8 +18,8 @@ Display::Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bo
     windowed(windowed),
     swapChain(nullptr),
     renderTarget(nullptr),
-    height(height),
-    width((unsigned int)(height * aspectRatio))
+    clientHeight(clientHeight),
+    clientWidth((unsigned int)(clientHeight * aspectRatio))
 {
     Logger::LOG_INFO("Creating window");
 
@@ -78,6 +78,16 @@ void Display::clearBackBuffer()
     deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
+unsigned int Display::getWindowWidth() const
+{
+    return clientWidth;
+}
+
+unsigned int Display::getWindowHeight() const
+{
+    return clientHeight;
+}
+
 void Display::initWindow()
 {
     // Create window class
@@ -94,8 +104,10 @@ void Display::initWindow()
         exit(1);
     }
 
-    RECT clientArea = {0, 0, (LONG)this->width, (LONG)this->height};
+    RECT clientArea = {0, 0, (LONG)this->clientWidth, (LONG)this->clientHeight};
     AdjustWindowRect(&clientArea, WS_OVERLAPPEDWINDOW, FALSE);
+    windowWidth = clientArea.right - clientArea.left;
+    windowHeight = clientArea.bottom - clientArea.top;
 
     this->hwnd = CreateWindow(
         "Game Name",
@@ -103,8 +115,8 @@ void Display::initWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        this->width,
-        this->height,
+        this->windowWidth,
+        this->windowHeight,
         nullptr,
         nullptr,
         this->hInstance,
@@ -146,8 +158,8 @@ void Display::initDX()
     // Create swap chain description
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-    swapChainDesc.BufferDesc.Width = width;
-    swapChainDesc.BufferDesc.Height = height;
+    swapChainDesc.BufferDesc.Width = clientWidth;
+    swapChainDesc.BufferDesc.Height = clientHeight;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = frameRateLimit;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -201,8 +213,8 @@ void Display::initDX()
     /* Depth stencil */
     D3D11_TEXTURE2D_DESC depthTxDesc;
     ZeroMemory(&depthTxDesc, sizeof(D3D11_TEXTURE2D_DESC));
-    depthTxDesc.Width = width;
-    depthTxDesc.Height = height;
+    depthTxDesc.Width = clientWidth;
+    depthTxDesc.Height = clientHeight;
     depthTxDesc.MipLevels = 1;
     depthTxDesc.ArraySize = 1;
     depthTxDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -258,8 +270,8 @@ void Display::initDX()
     D3D11_VIEWPORT viewPort;
     viewPort.TopLeftX = 0;
     viewPort.TopLeftY = 0;
-    viewPort.Width = (float)width;
-    viewPort.Height = (float)height;
+    viewPort.Width = (float)clientWidth;
+    viewPort.Height = (float)clientHeight;
     viewPort.MinDepth = 0.0f;
     viewPort.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewPort);

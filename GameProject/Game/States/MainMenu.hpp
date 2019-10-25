@@ -5,6 +5,8 @@
 #include <DirectXTK/Keyboard.h>
 #include <d3d11.h>
 
+class InputHandler;
+
 class MainMenu : public State
 {
 public:
@@ -21,6 +23,7 @@ public:
 private:
     Entity uiEntity;
 
+    InputHandler* inputHandler;
     DirectX::Keyboard::State* keyboardState;
     ID3D11Device* device;
 };

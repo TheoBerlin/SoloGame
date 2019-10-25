@@ -6,6 +6,7 @@
 #include <Game/Racer/Components/TrackPosition.hpp>
 #include <Game/Racer/Systems/RacerMover.hpp>
 
+class InputHandler;
 class MainMenu;
 
 class GameSession : public State
@@ -29,4 +30,6 @@ private:
     // Systems
     LightSpinner lightSpinner;
     RacerMover racerMover;
+
+    InputHandler* inputHandler;
 };

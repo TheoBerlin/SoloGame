@@ -12,6 +12,7 @@
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/UI/ButtonSystem.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/UI/UIRenderer.hpp>
 #include <Engine/InputHandler.hpp>
@@ -46,6 +47,7 @@ protected:
     Renderer renderer;
     UIRenderer uiRenderer;
     CameraSystem cameraSystem;
+    ButtonSystem buttonSystem;
 
     StateManager stateManager;
 };

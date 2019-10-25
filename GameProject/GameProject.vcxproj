@@ -269,6 +269,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Transform.cpp" />
+    <ClCompile Include="Engine\UI\ButtonSystem.cpp" />
     <ClCompile Include="Engine\UI\Panel.cpp" />
     <ClCompile Include="Engine\UI\UIRenderer.cpp" />
     <ClCompile Include="Engine\Utils\DirectXUtils.cpp" />
@@ -326,6 +327,7 @@
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderResourceHandler.hpp" />
     <ClInclude Include="Engine\Transform.hpp" />
+    <ClInclude Include="Engine\UI\ButtonSystem.hpp" />
     <ClInclude Include="Engine\UI\Panel.hpp" />
     <ClInclude Include="Engine\UI\UIRenderer.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />

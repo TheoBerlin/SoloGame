@@ -14,7 +14,8 @@ IGame::IGame(HINSTANCE hInstance)
     uiHandler(&ecs.systemSubscriber),
     renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
     uiRenderer(&ecs, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),
-    cameraSystem(&ecs)
+    cameraSystem(&ecs),
+    buttonSystem(&ecs, display.getWindowWidth(), display.getWindowHeight())
 {
     display.showWindow();
     renderer.update(0.0f);
@@ -51,6 +52,8 @@ void IGame::run()
 
             // Update logic
             stateManager.update(dt);
+
+            buttonSystem.update(dt);
 
             // Render
             display.clearBackBuffer();
