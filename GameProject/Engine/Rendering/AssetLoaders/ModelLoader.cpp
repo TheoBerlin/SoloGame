@@ -192,7 +192,7 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Mat
 
     std::string texturePath = directory + textureNameStd;
 
-    material.textures.push_back(txLoader->loadTexture(texturePath, TX_TYPE::DIFFUSE));
+    material.textures.push_back(txLoader->loadTexture(texturePath));
 
     // Load material attributes
     aiColor3D aiAmbient, aiSpecular;

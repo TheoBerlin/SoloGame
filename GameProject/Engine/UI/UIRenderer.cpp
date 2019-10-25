@@ -50,7 +50,7 @@ UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11De
     // Create per-panel constant buffer
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = sizeof(UIPanel);
+    bufferDesc.ByteWidth = sizeof(UIPanel) - sizeof(ID3D11ShaderResourceView*);
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -89,13 +89,16 @@ void UIRenderer::update(float dt)
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
     for (const Entity& entity : panels.getVec()) {
+        UIPanel& panel = UIhandler->panels.indexID(entity);
         // Set per-object buffer
         context->Map(perPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-        memcpy(mappedResources.pData, &UIhandler->panels.indexID(entity), sizeof(UIPanel));
+        memcpy(mappedResources.pData, &panel, sizeof(UIPanel) - sizeof(ID3D11ShaderResourceView*));
         context->Unmap(perPanelBuffer.Get(), 0);
 
         context->VSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
         context->PSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
+
+        context->PSSetShaderResources(0, 1, &panel.texture);
 
         context->Draw(4, 0);
     }

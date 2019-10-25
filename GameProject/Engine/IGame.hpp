@@ -39,8 +39,8 @@ protected:
     TextureLoader txLoader;
     ModelLoader modelLoader;
     RenderableHandler renderableHandler;
-    LightHandler lightHandler;
     UIHandler uiHandler;
+    LightHandler lightHandler;
 
     // Systems
     Renderer renderer;

@@ -3,6 +3,7 @@
 #include <Engine/Rendering/AssetContainers/AssetResources.hpp>
 #include <d3d11.h>
 
+// Not currently used
 enum TX_TYPE {
     // Indicates a texture failed to load or has yet to be loaded
     NO_TEXTURE,
@@ -12,6 +13,5 @@ enum TX_TYPE {
 
 struct Texture
 {
-    TX_TYPE type;
     ID3D11ShaderResourceView* srv;
 };
