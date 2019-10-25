@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <d3d11.h>
+#include <wrl/client.h>
 
 class Display
 {
@@ -41,13 +42,13 @@ private:
     HINSTANCE hInstance;
     HWND hwnd;
 
-    ID3D11Device* device;
-    ID3D11DeviceContext* deviceContext;
-    IDXGISwapChain* swapChain;
-    ID3D11RenderTargetView* renderTarget;
-    ID3D11DepthStencilState* depthStencilState;
-    ID3D11Texture2D* depthStencilTx;
-    ID3D11DepthStencilView* depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
+    Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTarget;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilTx;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 
     // Color used to clear the back buffer
     FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
