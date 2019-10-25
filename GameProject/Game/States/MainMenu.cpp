@@ -3,6 +3,7 @@
 #include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/InputHandler.hpp>
+#include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
 
@@ -14,6 +15,14 @@ MainMenu::MainMenu(StateManager* stateManager, ECSInterface* ecs, ID3D11Device* 
 
     InputHandler* inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
     this->keyboardState = inputHandler->getKeyboardState();
+
+    std::type_index tid_uiHandler = std::type_index(typeid(UIHandler));
+    UIHandler* uiHandler = static_cast<UIHandler*>(ecs->systemSubscriber.getComponentHandler(tid_uiHandler));
+
+    // Create UI panel
+    uiEntity = ecs->entityIDGen.genID();
+
+    uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {1.0f, 0.3f, 0.3f, 1.0f});
 
     Logger::LOG_INFO("Entered main menu, press E to start a game session");
 }

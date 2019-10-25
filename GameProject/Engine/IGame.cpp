@@ -11,7 +11,9 @@ IGame::IGame(HINSTANCE hInstance)
     renderableHandler(&ecs.systemSubscriber),
     vpHandler(&ecs.systemSubscriber),
     lightHandler(&ecs.systemSubscriber),
+    uiHandler(&ecs.systemSubscriber),
     renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
+    uiRenderer(&ecs, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),
     cameraSystem(&ecs)
 {
     display.showWindow();
@@ -53,6 +55,7 @@ void IGame::run()
             // Render
             display.clearBackBuffer();
             renderer.update(dt);
+            uiRenderer.update(dt);
             display.presentBackBuffer();
 
             // Perform maintenance

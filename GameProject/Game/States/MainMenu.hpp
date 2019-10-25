@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/ECS/Entity.hpp>
 #include <Engine/GameState/State.hpp>
 #include <DirectXTK/Keyboard.h>
 #include <d3d11.h>
@@ -18,6 +19,8 @@ public:
     ID3D11Device* getDevice();
 
 private:
+    Entity uiEntity;
+
     DirectX::Keyboard::State* keyboardState;
     ID3D11Device* device;
 };
