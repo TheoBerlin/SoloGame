@@ -1,5 +1,5 @@
-//Texture2D uiTexture : register(t0);
-//SamplerState sampAni;
+Texture2D uiTexture : register(t0);
+SamplerState sampAni;
 
 cbuffer perObject : register(b0)
 {
@@ -13,5 +13,5 @@ struct VS_OUT {
 };
 
 float4 PS_main(VS_OUT ps_in) : SV_TARGET {
-    return color;// * uiTexture.Sample(sampAni, ps_in.txCoords);
+    return color * uiTexture.Sample(sampAni, ps_in.txCoords);
 }

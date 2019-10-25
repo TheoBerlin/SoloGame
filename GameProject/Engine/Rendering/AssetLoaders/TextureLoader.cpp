@@ -14,7 +14,7 @@ TextureLoader::~TextureLoader()
     this->deleteAllTextures();
 }
 
-Texture TextureLoader::loadTexture(const std::string& filePath, TX_TYPE type)
+Texture TextureLoader::loadTexture(const std::string& filePath)
 {
     // See if the texture is already loaded
     auto itr = textures.find(filePath);

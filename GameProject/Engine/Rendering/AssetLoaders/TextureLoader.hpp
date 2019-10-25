@@ -11,7 +11,7 @@ public:
     TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device);
     ~TextureLoader();
 
-    Texture loadTexture(const std::string& filePath, TX_TYPE type);
+    Texture loadTexture(const std::string& filePath);
 
     void deleteAllTextures();
 
