@@ -5,10 +5,12 @@
 #include <d3dcompiler.h>
 
 ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubscriber)
-    :ComponentHandler({}, systemSubscriber, std::type_index(typeid(ShaderHandler)))
+    :ComponentHandler({}, systemSubscriber, std::type_index(typeid(ShaderHandler))),
+    device(device)
 {
     /* Compile all shaders and associate them with program enum names */
-    std::vector<D3D11_INPUT_ELEMENT_DESC> meshInputLayoutDesc = {
+    // Compile Basic program
+    std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc = {
         {
             "POSITION",                     // Semantic name in shader
             0,                              // Semantic index (not used)
@@ -38,7 +40,31 @@ ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubsc
         },
     };
     UINT vertexSize = 32;
-    programs.push_back(compileProgram(device, L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, meshInputLayoutDesc, vertexSize));
+    programs.push_back(compileProgram(L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, inputLayoutDesc, vertexSize));
+
+    // Compile UI program
+    inputLayoutDesc = {
+        {
+            "POSITION",                     // Semantic name in shader
+            0,                              // Semantic index (not used)
+            DXGI_FORMAT_R32G32_FLOAT,       // Element format
+            0,                              // Input slot
+            0,                              // Byte offset to first element
+            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
+            0                               // Instance step rate
+        },
+        {
+            "TEXCOORD",                     // Semantic name in shader
+            0,                              // Semantic index (not used)
+            DXGI_FORMAT_R32G32_FLOAT,       // Element format
+            0,                              // Input slot
+            8,                              // Byte offset to first element
+            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
+            0                               // Instance step rate
+        },
+    };
+    vertexSize = 16;
+    programs.push_back(compileProgram(L"UI", {VERTEX_SHADER, PIXEL_SHADER}, inputLayoutDesc, vertexSize));
 }
 
 ShaderHandler::~ShaderHandler()
@@ -59,8 +85,7 @@ Program* ShaderHandler::getProgram(PROGRAM program)
     return &programs[program];
 }
 
-Program ShaderHandler::compileProgram(ID3D11Device* device, LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes,
-    std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize)
+Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes, std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize)
 {
     Program program = {vertexSize, nullptr, nullptr, nullptr, nullptr, nullptr};
 
@@ -145,7 +170,6 @@ ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCS
 
             Logger::LOG_INFO("Edit the shader code and press any key to reattempt a compilation");
 			std::getchar();
-            //system("pause");
         }
     } while (compiledCode == nullptr);
 

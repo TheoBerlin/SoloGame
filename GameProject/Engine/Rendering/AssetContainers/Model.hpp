@@ -4,6 +4,11 @@
 #include <d3d11.h>
 #include <vector>
 
+struct Vertex2D {
+    DirectX::XMFLOAT2 position;
+    DirectX::XMFLOAT2 txCoords;
+};
+
 struct Vertex {
     DirectX::XMFLOAT3 position;
     DirectX::XMFLOAT3 normal;

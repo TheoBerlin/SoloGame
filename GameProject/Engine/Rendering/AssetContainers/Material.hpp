@@ -4,7 +4,7 @@
 #include <DirectXMath.h>
 
 struct MaterialAttributes {
-    // R=shininess (exponent), G=shininess strength (factor), B,W = padding
+    // R=shininess (exponent), G=shininess strength (factor), B,A = padding
     DirectX::XMFLOAT4 specular;
 };
 
