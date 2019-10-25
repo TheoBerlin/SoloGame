@@ -55,7 +55,7 @@ void SystemSubscriber::registerHandler(ComponentHandler* handler, const std::typ
     this->componentHandlers[handlerType] = handler;
 }
 
-ComponentHandler* SystemSubscriber::getComponentHandler(std::type_index& handlerType)
+ComponentHandler* SystemSubscriber::getComponentHandler(const std::type_index& handlerType)
 {
     auto itr = componentHandlers.find(handlerType);
 
@@ -87,7 +87,7 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
             auto queryItr = componentContainers.find(componentReg.tid);
 
             if (queryItr == componentContainers.end()) {
-                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, %d", componentReg.tid.name(), componentReg.tid.hash_code());
+                Logger::LOG_WARNING("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.tid.name(), componentReg.tid.hash_code());
                 return;
             }
 

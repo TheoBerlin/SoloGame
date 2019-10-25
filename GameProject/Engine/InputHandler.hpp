@@ -18,6 +18,9 @@ public:
     DirectX::Keyboard::State* getKeyboardState();
     DirectX::Mouse::State* getMouseState();
 
+    void setMouseMode(DirectX::Mouse::Mode mode);
+    void setMouseVisibility(bool visible);
+
 private:
     DirectX::Keyboard keyboard;
     DirectX::Keyboard::State keyboardState;

@@ -17,6 +17,13 @@ GameSession::GameSession(MainMenu* mainMenu)
 {
     Logger::LOG_INFO("Started game session");
 
+    // Set mouse mode to relative, which also hides the mouse
+    std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
+
+    this->inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
+    inputHandler->setMouseVisibility(false);
+
     // Create camera
     camera = ecs->entityIDGen.genID();
 
@@ -88,7 +95,10 @@ GameSession::~GameSession()
 }
 
 void GameSession::resume()
-{}
+{
+    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
+    inputHandler->setMouseVisibility(false);
+}
 
 void GameSession::pause()
 {}
