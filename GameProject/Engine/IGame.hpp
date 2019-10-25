@@ -11,6 +11,7 @@
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 
@@ -32,6 +33,7 @@ protected:
     Display display;
     InputHandler inputHandler;
     ShaderHandler shaderHandler;
+    ShaderResourceHandler shaderResourceHandler;
     TextureLoader txLoader;
     ModelLoader modelLoader;
     RenderableHandler renderableHandler;
