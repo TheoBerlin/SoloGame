@@ -12,6 +12,8 @@
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/UI/Panel.hpp>
+#include <Engine/UI/UIRenderer.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 
@@ -38,9 +40,11 @@ protected:
     ModelLoader modelLoader;
     RenderableHandler renderableHandler;
     LightHandler lightHandler;
+    UIHandler uiHandler;
 
     // Systems
     Renderer renderer;
+    UIRenderer uiRenderer;
     CameraSystem cameraSystem;
 
     StateManager stateManager;
