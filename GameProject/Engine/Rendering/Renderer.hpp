@@ -8,14 +8,12 @@
 #define MAX_POINTLIGHTS 7
 
 class RenderableHandler;
-class ShaderHandler;
 class TransformHandler;
 class VPHandler;
 
 class Renderer : public System
 {
 public:
-    // Requires that RenderableHandler, ShaderHandler, TransformHandler, VpHandler and LightHandler exist
     Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
     ~Renderer();
 
@@ -23,7 +21,6 @@ public:
 
 private:
     RenderableHandler* renderableHandler;
-    ShaderHandler* shaderHandler;
     TransformHandler* transformHandler;
     VPHandler* vpHandler;
     LightHandler* lightHandler;
@@ -34,7 +31,6 @@ private:
 
     ID3D11DeviceContext* context;
 
-    /* Shader resources TODO: move some generic resources to a 'Shader Resource' class */
     /* Mesh input layout */
     ID3D11InputLayout* meshInputLayout;
 
@@ -46,7 +42,7 @@ private:
     ID3D11Buffer* pointLightBuffer;
 
     /* Samplers */
-    ID3D11SamplerState* aniSampler;
+    ID3D11SamplerState *const* aniSampler;
 
     /* Render targets */
     ID3D11RenderTargetView* renderTarget;

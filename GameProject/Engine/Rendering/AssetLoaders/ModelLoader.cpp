@@ -2,17 +2,21 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
-ModelLoader::ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader, ID3D11Device* device)
-    :device(device),
-    txLoader(txLoader),
+ModelLoader::ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader)
+    :txLoader(txLoader),
     ComponentHandler({}, sysSubscriber, std::type_index(typeid(ModelLoader)))
-{}
+{
+    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
+    this->shaderResourceHandler = static_cast<ShaderResourceHandler*>(sysSubscriber->getComponentHandler(tid_shaderResourceHandler));
+}
 
 ModelLoader::~ModelLoader()
 {
@@ -153,39 +157,14 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
     mesh.indexCount = indices.size();
 
-    // Create vertex buffer
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA bufferData;
-    bufferData.pSysMem = &vertices.front();
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
-    if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+    shaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size(), &mesh.vertexBuffer);
+    if (mesh.vertexBuffer == nullptr) {
         return;
     }
 
-    // Create index buffer
-    bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indices.size());
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-    bufferData.pSysMem = &indices.front();
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
-    if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
+    shaderResourceHandler->createIndexBuffer(&indices.front(), indices.size(), &mesh.indexBuffer);
+    if (mesh.indexBuffer == nullptr) {
+        return;
     }
 
     meshes.push_back(mesh);

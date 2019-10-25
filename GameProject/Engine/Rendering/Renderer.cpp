@@ -5,7 +5,7 @@
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
-#include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -17,13 +17,11 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     renderTarget(rtv),
     depthStencilView(dsv)
 {
-    std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
     std::type_index tid_renderableHandler = std::type_index(typeid(RenderableHandler));
     std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
     std::type_index tid_vpHandler = std::type_index(typeid(VPHandler));
     std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
 
-    this->shaderHandler = static_cast<ShaderHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderHandler));
     this->renderableHandler = static_cast<RenderableHandler*>(ecs->systemSubscriber.getComponentHandler(tid_renderableHandler));
     this->transformHandler = static_cast<TransformHandler*>(ecs->systemSubscriber.getComponentHandler(tid_transformHandler));
     this->vpHandler = static_cast<VPHandler*>(ecs->systemSubscriber.getComponentHandler(tid_vpHandler));
@@ -38,6 +36,12 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     this};
 
     this->subscribeToComponents(&sysReg);
+
+    // Retrieve anisotropic sampler
+    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
+    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderResourceHandler));
+
+    this->aniSampler = shaderResourceHandler->getAniSampler();
 
     /* Shader resource creation */
     /* Cbuffers */
@@ -65,23 +69,6 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     hr = device->CreateBuffer(&bufferDesc, nullptr, &pointLightBuffer);
     if (FAILED(hr))
         Logger::LOG_ERROR("Failed to create point light cbuffer: %s", hresultToString(hr).c_str());
-
-    /* Samplers */
-    D3D11_SAMPLER_DESC samplerDesc;
-    ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
-    samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 1;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    samplerDesc.MinLOD = 0.0f;
-    samplerDesc.MaxLOD = 0.0f;
-
-    device->CreateSamplerState(&samplerDesc, &aniSampler);
-    if (FAILED(hr))
-        Logger::LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
 
     /* Rasterizer state */
     D3D11_RASTERIZER_DESC rsDesc;
@@ -115,9 +102,6 @@ Renderer::~Renderer()
 
     if (pointLightBuffer)
         pointLightBuffer->Release();
-
-    if (aniSampler)
-        aniSampler->Release();
 
     if (rsState)
         rsState->Release();
@@ -196,7 +180,7 @@ void Renderer::update(float dt)
             /* Pixel shader */
             // Diffuse texture
             context->PSSetShaderResources(0, 1, &model->materials[mesh.materialIndex].textures[0].srv);
-            context->PSSetSamplers(0, 1, &this->aniSampler);
+            context->PSSetSamplers(0, 1, this->aniSampler);
 
             // Material cbuffer
             context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);

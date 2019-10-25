@@ -11,12 +11,13 @@
 #include <vector>
 #include <unordered_map>
 
+class ShaderResourceHandler;
 class TextureLoader;
 
 class ModelLoader : public ComponentHandler
 {
 public:
-    ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader, ID3D11Device* device);
+    ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader);
     ~ModelLoader();
 
     Model* loadModel(const std::string& filePath);
@@ -30,8 +31,8 @@ private:
     void loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes);
     void loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::string& directory);
 
-    ID3D11Device* device;
     TextureLoader* txLoader;
+    ShaderResourceHandler* shaderResourceHandler;
 
     // Recursively traverse scene nodes to find out which meshes are used
     void loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene);
