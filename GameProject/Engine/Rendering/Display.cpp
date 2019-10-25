@@ -28,52 +28,31 @@ Display::Display(HINSTANCE hInstance, unsigned int height, float aspectRatio, bo
 }
 
 Display::~Display()
-{
-    if (this->device)
-        this->device->Release();
-
-    if (this->deviceContext)
-        this->deviceContext->Release();
-
-    if (this->swapChain)
-        this->swapChain->Release();
-
-    if (this->renderTarget)
-        this->renderTarget->Release();
-
-    if (this->depthStencilState)
-        this->depthStencilState->Release();
-
-    if (this->depthStencilTx)
-        this->depthStencilTx->Release();
-
-    if (this->depthStencilView)
-        this->depthStencilView->Release();
-}
+{}
 
 ID3D11Device* Display::getDevice()
 {
-    return this->device;
+    return this->device.Get();
 }
 
 ID3D11DeviceContext* Display::getDeviceContext()
 {
-    return this->deviceContext;
+    return this->deviceContext.Get();
 }
 
 IDXGISwapChain* Display::getSwapChain()
 {
-    return this->swapChain;
+    return this->swapChain.Get();
 }
 
 ID3D11RenderTargetView* Display::getRenderTarget()
 {
-    return this->renderTarget;
+    return this->renderTarget.Get();
 }
 
 ID3D11DepthStencilView* Display::getDepthStencilView()
 {
-    return this->depthStencilView;
+    return this->depthStencilView.Get();
 }
 
 HWND Display::getWindow()
@@ -95,8 +74,8 @@ void Display::presentBackBuffer()
 
 void Display::clearBackBuffer()
 {
-    deviceContext->ClearRenderTargetView(renderTarget, clearColor);
-    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    deviceContext->ClearRenderTargetView(renderTarget.Get(), clearColor);
+    deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
 void Display::initWindow()
@@ -177,9 +156,10 @@ void Display::initDX()
     swapChainDesc.SampleDesc.Count = this->multisamples;
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
-    swapChainDesc.BufferCount = 1;
+    swapChainDesc.BufferCount = 2;
     swapChainDesc.OutputWindow = this->hwnd;
     swapChainDesc.Windowed = this->windowed;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
     // Create device
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
@@ -191,10 +171,10 @@ void Display::initDX()
         sizeof(featureLevels) / sizeof(featureLevels[0]),
         D3D11_SDK_VERSION,
         &swapChainDesc,
-        &this->swapChain,
-        &this->device,
+        this->swapChain.GetAddressOf(),
+        this->device.GetAddressOf(),
         &createdFeatureLevel,
-        &this->deviceContext);
+        this->deviceContext.GetAddressOf());
 
     if (FAILED(hr) || !device || !swapChain) {
         Logger::LOG_ERROR("Failed to create device and swap chain: %s", hresultToString(hr).c_str());
@@ -265,14 +245,14 @@ void Display::initDX()
     dsViewDesc.Flags = 0;
     dsViewDesc.Texture2D.MipSlice = 0;
 
-    hr = device->CreateDepthStencilView(depthStencilTx, &dsViewDesc, &depthStencilView);
+    hr = device->CreateDepthStencilView(depthStencilTx.Get(), &dsViewDesc, &depthStencilView);
     if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create depth stencil view: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
 
-    deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 
     /* Set viewport */
     D3D11_VIEWPORT viewPort;
