@@ -85,6 +85,8 @@ void ButtonSystem::update(float dt)
         } else {
             if (pressedButtonExists && pressedButton == entity) {
                 // State 2
+                pressedButtonExists = false;
+
                 panel.color = button.defaultColor;
                 button.onPress();
             } else {
