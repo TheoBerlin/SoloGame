@@ -29,22 +29,9 @@ UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11De
     this->shaderHandler = static_cast<ShaderHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderHandler));
     this->UIhandler = static_cast<UIHandler*>(ecs->systemSubscriber.getComponentHandler(tid_UIHandler));
 
-    // Get UI rendering program
     this->UIProgram = shaderHandler->getProgram(UI);
 
-    // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
-    // is used as it eases resizing and positioning in the UI vertex shader.
-    Vertex2D quadVertices[4] = {
-        // Position, txCoord
-        {{0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{1.0f, 1.0f}, {1.0f, 1.0f}}
-    };
-
-    shaderResourceHandler->createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
-
-    // Get anisotropic sampler
+    this->quad = shaderResourceHandler->getQuarterScreenQuad();
     this->aniSampler = shaderResourceHandler->getAniSampler();
 
     // Create per-panel constant buffer

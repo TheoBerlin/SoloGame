@@ -19,9 +19,14 @@ public:
 
     ID3D11SamplerState *const* getAniSampler() const;
 
+    Microsoft::WRL::ComPtr<ID3D11Buffer> getQuarterScreenQuad();
+
 private:
     ID3D11Device* device;
 
     /* Samplers */
     Microsoft::WRL::ComPtr<ID3D11SamplerState> aniSampler;
+
+    // Quarter-screen quad
+    Microsoft::WRL::ComPtr<ID3D11Buffer> quad;
 };

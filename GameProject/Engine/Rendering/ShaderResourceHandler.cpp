@@ -24,6 +24,18 @@ ShaderResourceHandler::ShaderResourceHandler(SystemSubscriber* sysSubscriber, ID
     HRESULT hr = device->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
     if (FAILED(hr))
         Logger::LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
+
+    // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
+    // is used as it eases resizing and positioning in the UI vertex shader.
+    Vertex2D quadVertices[4] = {
+        // Position, txCoord
+        {{0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{0.0f, 1.0f}, {0.0f, 1.0f}},
+        {{1.0f, 0.0f}, {1.0f, 0.0f}},
+        {{1.0f, 1.0f}, {1.0f, 1.0f}}
+    };
+
+    this->createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
 }
 
 ShaderResourceHandler::~ShaderResourceHandler()
@@ -76,4 +88,9 @@ void ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCou
 ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const
 {
     return aniSampler.GetAddressOf();
+}
+
+Microsoft::WRL::ComPtr<ID3D11Buffer> ShaderResourceHandler::getQuarterScreenQuad()
+{
+    return quad;
 }
