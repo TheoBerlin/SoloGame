@@ -191,24 +191,32 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         }
 
         face = glyphsItr->second.face;
+        FT_GlyphSlot glyph = face->glyph;
+        FT_Glyph_Metrics& metrics = glyph->metrics;
+
+        /*
+        FT_GlyphSlotRec_& glyph = glyphsItr->second;
+        face = glyph.face;
+        FT_Glyph_Metrics& metrics = glyph.metrics;
+        */
 
         // Advance pen
         //pen.x += face->glyph->metrics.horiBearingX;
         //pen.y += face->glyph->metrics.height - face->glyph->metrics.horiBearingY;
 
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV = glyphToTexture(character, face->glyph);
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV = glyphToTexture(character, glyph);
 
         // Draw character to string texture
         // Set per-char buffer
         UIPanel charPanel;
         // Add horizontal bearing for every character but the first
         // TODO: Do this for the first character of each line
-        charPanel.position.x = (pen.x + face->glyph->metrics.horiBearingX * charIdx != 0) / ((float)textureSize.x * 64.0f);
-        charPanel.position.y = (pen.y + face->glyph->metrics.vertBearingY) / ((float)textureSize.y * 64.0f);
+        charPanel.position.x = (pen.x + metrics.horiBearingX * (charIdx != 0)) / ((float)textureSize.x/* * 64.0f*/);
+        charPanel.position.y = (pen.y + metrics.height - metrics.horiBearingY) / ((float)textureSize.y/* * 64.0f*/);
         face->bbox.xMax;
         face->bbox.xMin;
-        charPanel.size.x = face->glyph->metrics.width / ((float)textureSize.x * 64.0f);
-        charPanel.size.y = face->glyph->metrics.height / ((float)textureSize.y * 64.0f);
+        charPanel.size.x = metrics.width / ((float)textureSize.x/* * 64.0f*/);
+        charPanel.size.y = metrics.height / ((float)textureSize.y/* * 64.0f*/);
         charPanel.color = {1.0f, 1.0f, 1.0f, 1.0f};
 
         context->Map(perCharBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
@@ -223,10 +231,10 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         context->Draw(4, 0);
 
         // Advance pen
-        pen.x += face->glyph->advance.x;// * 64) / (float)textureSize.x;
+        pen.x += metrics.horiAdvance;// * 64) / (float)textureSize.x;
         //pen.x += face->glyph->advance.x;// * 64) / (float)textureSize.x;
         // Reset vertical position
-        pen.y -= face->glyph->metrics.height - face->glyph->metrics.horiBearingY;
+        //pen.y -= metrics.height - metrics.horiBearingY;
 
         charIdx += 1;
     }
@@ -273,24 +281,38 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 {
     DirectX::XMUINT2 textureSize = {0, 0};
 
+    size_t glyphIdx = 0;
+
     for (char character : text) {
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
             Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
-            return {0, 0};
+            return textureSize;
         }
 
-        FT_Glyph_Metrics& glyphMetrics = glyphsItr->second.face->glyph->metrics;
-        const FT_GlyphSlot glyph = glyphsItr->second.face->glyph;
+        const FT_Glyph_Metrics& glyphMetrics = glyphsItr->second.metrics;
         //textureSize.x += glyphMetrics.width;
-        // TODO: Don't use advance for the last character in the text (or line), instead, use the width
-        textureSize.x += glyph->advance.x;
+        // TODO: Don't use advance for the last character in the text (or line), instead, use left bearing + width (this exludes the right side bearing)
+        // if (glyphIdx == text.size() - 1) {
+        //     // Exclude right side bearing
+        //     textureSize.x += glyphMetrics.horiBearingX + glyphMetrics.width;
+        // } else {
+            // 'Normal case': All letters that are neither the last nor the first in the string
+            textureSize.x += glyphMetrics.horiAdvance;
+        // }
+
+        // if (glyphIdx == 0) {
+        //     textureSize.x -= glyphMetrics.horiBearingX;
+        // }
+
         //textureSize.x += glyphMetrics.horiAdvance;// + glyphMetrics.horiBearingX;
         textureSize.y = std::max(textureSize.y, (uint32_t)glyphMetrics.height);
+
+        glyphIdx += 1;
     }
 
-    textureSize.x = (unsigned int)(ceil((float)textureSize.x / 64.0f));
-    textureSize.y = (unsigned int)(ceil((float)textureSize.y / 64.0f));
+    //textureSize.x = (unsigned int)(ceil((float)textureSize.x / 64.0f));
+    //textureSize.y = (unsigned int)(ceil((float)textureSize.y / 64.0f));
     return textureSize;
 }
 
