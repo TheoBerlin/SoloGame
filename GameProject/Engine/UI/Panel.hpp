@@ -40,6 +40,8 @@ public:
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color,
     std::string texturePath = "./Game/Assets/Models/Solid_White.png");
 
+    void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color, ID3D11ShaderResourceView* texture);
+
     // Requires that the entity has a UI panel already
     void createButton(Entity entity, DirectX::XMFLOAT4 hoverColor, DirectX::XMFLOAT4 pressColor,
     std::function<void()> onPress);

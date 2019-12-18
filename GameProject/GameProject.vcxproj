@@ -252,6 +252,7 @@
     <ClCompile Include="Engine\Rendering\Renderer.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderResourceHandler.cpp" />
+    <ClCompile Include="Engine\Rendering\Text\TextRenderer.cpp" />
     <ClCompile Include="Engine\Tests\AssetLoading_test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -326,6 +327,7 @@
     <ClInclude Include="Engine\Rendering\Renderer.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderResourceHandler.hpp" />
+    <ClInclude Include="Engine\Rendering\Text\TextRenderer.hpp" />
     <ClInclude Include="Engine\Transform.hpp" />
     <ClInclude Include="Engine\UI\ButtonSystem.hpp" />
     <ClInclude Include="Engine\UI\Panel.hpp" />

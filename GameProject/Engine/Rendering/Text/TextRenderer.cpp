@@ -89,8 +89,8 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
     }
 
     // Create texture to render all characters to
-    std::map<char, FT_GlyphSlotRec_> glyphs;
-    if (!loadGlyphs(face, text, font, fontPixelHeight, &glyphs)) {
+    std::map<char, ProcessedGlyph> glyphs;
+    if (!loadGlyphs(glyphs, face, text, font, fontPixelHeight)) {
         return nullptr;
     }
 
@@ -119,7 +119,6 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
 
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
     ZeroMemory(&rtvDesc, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
-    //rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UINT;
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     rtvDesc.Texture2D.MipSlice = 0;
@@ -133,23 +132,6 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
 
     // Check if the font has already been loaded, otherwise, load it
     auto fontItr = loadedCharacters.find(font);
-
-    //if (fontItr == loadedCharacters.end()) {
-    //    fontItr->second = std::map<char, ID3D11ShaderResourceView*>();
-
-        /*err = FT_New_Face(ftLib, font.c_str(), 0, &face);
-        if (err) {
-            Logger::LOG_WARNING("Failed to load FreeType face from file [%s]: %s", font.c_str(), FT_Error_String(err));
-            return nullptr;
-        }
-    //}
-
-    // Set the desired size of the font
-    err = FT_Set_Pixel_Sizes(face, 0, fontPixelHeight);
-    if (err) {
-        Logger::LOG_WARNING("FreeType failed to set pixel size: %d, font: %s", fontPixelHeight, font.c_str());
-        return nullptr;
-    }*/
 
     // Initial rendering setup
     context->VSSetShader(uiProgram->vertexShader, nullptr, 0);
@@ -173,41 +155,27 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
     // Describes where to draw the next character onto the texture
     DirectX::XMFLOAT2 pen = {0.0f, 0.0f};
 
-    // Write text to the texture
+    // Render each character onto the final texture
     int charIdx = 0;
 
     for (char character : text) {
+        // TODO: Handle newlines
         /*if (character == '\n') {
             pen.x = 0;
-            // TODO: Find line gap
-            pen.y += 100000000;
+            pen.y += ...;
             continue;
         }*/
 
-        auto glyphsItr = glyphs.find(text.front());
+        auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
-            Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", text.front());
+            Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
             return nullptr;
         }
 
-        face = glyphsItr->second.face;
-        FT_GlyphSlot glyph = face->glyph;
-        FT_Glyph_Metrics& metrics = glyph->metrics;
-
-        /*
-        FT_GlyphSlotRec_& glyph = glyphsItr->second;
-        face = glyph.face;
-        FT_Glyph_Metrics& metrics = glyph.metrics;
-        */
-
-        // Advance pen
-        //pen.x += face->glyph->metrics.horiBearingX;
-        //pen.y += face->glyph->metrics.height - face->glyph->metrics.horiBearingY;
-
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV = glyphToTexture(character, glyph);
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV(glyphsItr->second.texture);
+        FT_Glyph_Metrics& metrics = glyphsItr->second.metrics;
 
         // Draw character to string texture
-        // Set per-char buffer
         UIPanel charPanel;
         // Add horizontal bearing for every character but the first
         // TODO: Do this for the first character of each line
@@ -219,6 +187,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         charPanel.size.y = metrics.height / ((float)textureSize.y/* * 64.0f*/);
         charPanel.color = {1.0f, 1.0f, 1.0f, 1.0f};
 
+        // Set per-char buffer
         context->Map(perCharBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
         memcpy(mappedResources.pData, &charPanel, sizeof(UIPanel) - sizeof(ID3D11ShaderResourceView*));
         context->Unmap(perCharBuffer.Get(), 0);
@@ -231,10 +200,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         context->Draw(4, 0);
 
         // Advance pen
-        pen.x += metrics.horiAdvance;// * 64) / (float)textureSize.x;
-        //pen.x += face->glyph->advance.x;// * 64) / (float)textureSize.x;
-        // Reset vertical position
-        //pen.y -= metrics.height - metrics.horiBearingY;
+        pen.x += metrics.horiAdvance;
 
         charIdx += 1;
     }
@@ -252,15 +218,14 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
     //finalTexture.Detach();
 
     return finishedSRV;
-    //return nullptr;
 }
 
-bool TextRenderer::loadGlyphs(FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight, std::map<char, FT_GlyphSlotRec_>* glyphs)
+bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight)
 {
     FT_Error err;
 
     for (char character : text) {
-        if (glyphs->find(character) != glyphs->end()) {
+        if (glyphs.find(character) != glyphs.end()) {
             // Character is already loaded
             continue;
         }
@@ -271,13 +236,15 @@ bool TextRenderer::loadGlyphs(FT_Face face, const std::string& text, const std::
             return false;
         }
 
-        glyphs->insert({character, *face->glyph});
+        ID3D11ShaderResourceView* glyphTexture = glyphToTexture(character, face->glyph);
+
+        glyphs.insert({character, {face->glyph->metrics, glyphTexture}});
     }
 
     return true;
 }
 
-DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, const std::map<char, FT_GlyphSlotRec_>& glyphs)
+DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs)
 {
     DirectX::XMUINT2 textureSize = {0, 0};
 
@@ -316,7 +283,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
     return textureSize;
 }
 
-Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> TextRenderer::glyphToTexture(char character, const FT_GlyphSlot glyph)
+ID3D11ShaderResourceView* TextRenderer::glyphToTexture(char character, const FT_GlyphSlot glyph)
 {
     if (glyph->format != FT_GLYPH_FORMAT_BITMAP) {
         Logger::LOG_WARNING("Cannot convert glyph to texture: glyph is not expressed using a bitmap");
@@ -355,8 +322,8 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> TextRenderer::glyphToTexture(ch
         return nullptr;
     }
 
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV;
-    hr = device->CreateShaderResourceView(glyphTexture.Get(), nullptr, glyphSRV.GetAddressOf());
+    ID3D11ShaderResourceView* glyphSRV;
+    hr = device->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create shader resource view for character: '%c', error: %s", character, hresultToString(hr).c_str());
         return nullptr;

@@ -12,6 +12,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+struct ProcessedGlyph {
+    FT_Glyph_Metrics metrics;
+    ID3D11ShaderResourceView* texture;
+};
+
 class TextRenderer : public ComponentHandler
 {
 public:
@@ -23,13 +28,13 @@ public:
 
 private:
     // Loads and maps each character in a string to FreeType glyph data
-    bool loadGlyphs(FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight, std::map<char, FT_GlyphSlotRec_>* glyphs);
+    bool loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight);
 
     // Calculates the size in pixels required by a texture to hold the rendered text
-    DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, FT_GlyphSlotRec_>& glyphs);
+    DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs);
 
     // Render a glyph onto a texture
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphToTexture(char character, const FT_GlyphSlot glyph);
+    ID3D11ShaderResourceView* glyphToTexture(char character, const FT_GlyphSlot glyph);
 
     // Convert a bitmap into an array of unsigned integers
     void bitmapToUints(const FT_Bitmap& bitmap, std::vector<uint8_t>& uints);

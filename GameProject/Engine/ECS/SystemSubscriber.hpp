@@ -70,7 +70,7 @@ private:
 
     std::unordered_map<std::type_index, ComponentHandler*> componentHandlers;
 
-    // Store all registered entity IDs and their related components. Used when deleting entities.
+    // Store all registered entity IDs and their related component types. Used when deleting entities.
     IDVector<std::unordered_set<std::type_index>> registeredEntities;
 
     // Lists what entities to delete when performDeletions is called

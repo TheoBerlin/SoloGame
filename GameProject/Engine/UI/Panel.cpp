@@ -33,6 +33,18 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
     this->registerComponent(tid_UIPanel, entity);
 }
 
+void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color, ID3D11ShaderResourceView* texture)
+{
+    UIPanel panel;
+    panel.position = pos;
+    panel.size = size;
+    panel.color = color;
+    panel.texture = texture;
+
+    panels.push_back(panel, entity);
+    this->registerComponent(tid_UIPanel, entity);
+}
+
 void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverColor, DirectX::XMFLOAT4 pressColor,
     std::function<void()> onPress)
 {
