@@ -31,7 +31,7 @@ private:
     bool loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight);
 
     // Calculates the size in pixels required by a texture to hold the rendered text
-    DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs);
+    DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face);
 
     // Render a glyph onto a texture
     ID3D11ShaderResourceView* glyphToTexture(char character, const FT_GlyphSlot glyph);

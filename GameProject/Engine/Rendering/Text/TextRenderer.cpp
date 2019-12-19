@@ -94,7 +94,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         return nullptr;
     }
 
-    DirectX::XMUINT2 textureSize = calculateTextureSize(text, glyphs);
+    DirectX::XMUINT2 textureSize = calculateTextureSize(text, glyphs, face);
 
     D3D11_TEXTURE2D_DESC txDesc;
     ZeroMemory(&txDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -153,7 +153,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
     // Describes where to draw the next character onto the texture
-    DirectX::XMFLOAT2 pen = {0.0f, 0.0f};
+    DirectX::XMFLOAT2 pen = {0.0f, (float)(textureSize.y - face->size->metrics.ascender)};
 
     // Render each character onto the final texture
     int charIdx = 0;
@@ -166,6 +166,12 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
             continue;
         }*/
 
+        if (character == ' ') {
+            Logger::LOG_INFO("Max advance (rendering): %d", face->size->metrics.max_advance);
+            pen.x += face->size->metrics.max_advance;
+            continue;
+        }
+
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
             Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
@@ -175,14 +181,14 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> glyphSRV(glyphsItr->second.texture);
         FT_Glyph_Metrics& metrics = glyphsItr->second.metrics;
 
+        pen.x -= (charIdx == 0) * metrics.horiBearingX;
+
         // Draw character to string texture
         UIPanel charPanel;
         // Add horizontal bearing for every character but the first
         // TODO: Do this for the first character of each line
-        charPanel.position.x = (pen.x + metrics.horiBearingX * (charIdx != 0)) / ((float)textureSize.x/* * 64.0f*/);
-        charPanel.position.y = (pen.y + metrics.height - metrics.horiBearingY) / ((float)textureSize.y/* * 64.0f*/);
-        face->bbox.xMax;
-        face->bbox.xMin;
+        charPanel.position.x = (pen.x + metrics.horiBearingX) / ((float)textureSize.x/* * 64.0f*/);
+        charPanel.position.y = (pen.y + metrics.horiBearingY - metrics.height) / ((float)face->size->metrics.ascender/* * 64.0f*/);
         charPanel.size.x = metrics.width / ((float)textureSize.x/* * 64.0f*/);
         charPanel.size.y = metrics.height / ((float)textureSize.y/* * 64.0f*/);
         charPanel.color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -225,6 +231,10 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
     FT_Error err;
 
     for (char character : text) {
+        if (character == ' ' || character == '\n') {
+            continue;
+        }
+
         if (glyphs.find(character) != glyphs.end()) {
             // Character is already loaded
             continue;
@@ -244,13 +254,26 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
     return true;
 }
 
-DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs)
+DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face)
 {
-    DirectX::XMUINT2 textureSize = {0, 0};
+    DirectX::XMUINT2 textureSize = {0, (uint32_t)face->size->metrics.height}; 
 
     size_t glyphIdx = 0;
 
     for (char character : text) {
+        if (character == ' ') {
+            Logger::LOG_INFO("Max advance (calculate size): %d", face->size->metrics.max_advance);
+            textureSize.x += (uint32_t)face->size->metrics.max_advance;
+            continue;
+        }
+
+        /* To support multiple rows, a 'currentRowWidth' variable is needed
+        if (character == '\n') {
+            textureSize.y += face->size->metrics.ascender;
+            continue;
+        }
+        */
+
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
             Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
@@ -260,20 +283,17 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
         const FT_Glyph_Metrics& glyphMetrics = glyphsItr->second.metrics;
         //textureSize.x += glyphMetrics.width;
         // TODO: Don't use advance for the last character in the text (or line), instead, use left bearing + width (this exludes the right side bearing)
-        // if (glyphIdx == text.size() - 1) {
-        //     // Exclude right side bearing
-        //     textureSize.x += glyphMetrics.horiBearingX + glyphMetrics.width;
-        // } else {
+        if (glyphIdx == text.size() - 1) {
+            // Exclude right side bearing
+            textureSize.x += glyphMetrics.horiBearingX + glyphMetrics.width;
+        } else {
             // 'Normal case': All letters that are neither the last nor the first in the string
             textureSize.x += glyphMetrics.horiAdvance;
-        // }
+        }
 
-        // if (glyphIdx == 0) {
-        //     textureSize.x -= glyphMetrics.horiBearingX;
-        // }
-
-        //textureSize.x += glyphMetrics.horiAdvance;// + glyphMetrics.horiBearingX;
-        textureSize.y = std::max(textureSize.y, (uint32_t)glyphMetrics.height);
+        if (glyphIdx == 0) {
+            textureSize.x -= glyphMetrics.horiBearingX;
+        }
 
         glyphIdx += 1;
     }
@@ -312,6 +332,9 @@ ID3D11ShaderResourceView* TextRenderer::glyphToTexture(char character, const FT_
     ZeroMemory(&glyphTxSubdata, sizeof(D3D11_SUBRESOURCE_DATA));
     glyphTxSubdata.pSysMem = &uints.front();
     // The bitmap's pitch might be negative in case the first bytes describe the bottom row of the image. This might need to be handled.
+    if (glyph->bitmap.pitch < 0) {
+        Logger::LOG_WARNING("Pitch is negative for character: %c", character);
+    }
     glyphTxSubdata.SysMemPitch = glyph->bitmap.width * sizeof(uint8_t) * 4;
     glyphTxSubdata.SysMemSlicePitch = 0;
 
@@ -335,8 +358,8 @@ ID3D11ShaderResourceView* TextRenderer::glyphToTexture(char character, const FT_
 void TextRenderer::bitmapToUints(const FT_Bitmap& bitmap, std::vector<uint8_t>& uints)
 {
     // Pitch is the amount of bytes per row
-    size_t bitmapByteSize = bitmap.pitch * bitmap.rows; // not needed?
-    size_t pixelCount = bitmap.rows * bitmap.width;
+    size_t bitmapByteSize = (size_t)(bitmap.pitch * bitmap.rows); // not needed?
+    size_t pixelCount = (size_t)(bitmap.rows * bitmap.width);
     uints.reserve(pixelCount);
 
     const unsigned char* bitmapBuffer = bitmap.buffer;
