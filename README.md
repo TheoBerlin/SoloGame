@@ -1,5 +1,5 @@
 ## What is this project?
-In this repository is an engine and a game, both being far away from being finalized. This is a project I started for two purposes;
+In this repository is an engine and a game, both being made from scratch using C++ and DirectX, and are far away from being finalized. This is a project I started for two purposes;
 to learn and to have something to display to employers.
 
 ## Highlights in the code
