@@ -7,14 +7,21 @@
 #include <DirectXMath.h>
 #include <d3d11.h>
 #include <map>
+#include <memory>
 #include <wrl/client.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+struct Bitmap {
+    unsigned int rows;
+    unsigned int width;
+    uint8_t* buffer;
+};
+
 struct ProcessedGlyph {
     FT_Glyph_Metrics metrics;
-    ID3D11ShaderResourceView* texture;
+    Bitmap bitmap;
 };
 
 class TextRenderer : public ComponentHandler
@@ -33,8 +40,11 @@ private:
     // Calculates the size in pixels required by a texture to hold the rendered text
     DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face);
 
-    // Render a glyph onto a texture
-    ID3D11ShaderResourceView* glyphToTexture(char character, const FT_GlyphSlot glyph);
+    // Copies a glyph's bitmap data into the target bitmap's bitmap
+    void drawGlyphToTexture(unsigned char* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bitmap& glyphBitmap);
+
+    // Convert a bitmap to a texture.Requires that the bitmap is converted into uints.
+    ID3D11ShaderResourceView* bitmapToTexture(const Bitmap& bitmap);
 
     // Convert a bitmap into an array of unsigned integers
     void bitmapToUints(const FT_Bitmap& bitmap, std::vector<uint8_t>& uints);
