@@ -29,10 +29,10 @@ ShaderResourceHandler::ShaderResourceHandler(SystemSubscriber* sysSubscriber, ID
     // is used as it eases resizing and positioning in the UI vertex shader.
     Vertex2D quadVertices[4] = {
         // Position, txCoord
-        {{0.0f, 0.0f}, {0.0f, 0.0f}},
-        {{0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{1.0f, 0.0f}, {1.0f, 0.0f}},
-        {{1.0f, 1.0f}, {1.0f, 1.0f}}
+        {{0.0f, 0.0f}, {0.0f, 1.0f}},
+        {{0.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f, 0.0f}, {1.0f, 1.0f}},
+        {{1.0f, 1.0f}, {1.0f, 0.0f}}
     };
 
     this->createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
