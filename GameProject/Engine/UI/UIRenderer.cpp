@@ -46,7 +46,7 @@ UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11De
 
     HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, perPanelBuffer.GetAddressOf());
     if (FAILED(hr))
-        Logger::LOG_ERROR("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
+        Logger::LOG_ERROR("Failed to create per-object cbuffer: %s", hresultToString(hr).c_str());
 }
 
 UIRenderer::~UIRenderer()

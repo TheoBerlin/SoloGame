@@ -11,6 +11,7 @@ IGame::IGame(HINSTANCE hInstance)
     renderableHandler(&ecs.systemSubscriber),
     vpHandler(&ecs.systemSubscriber),
     lightHandler(&ecs.systemSubscriber),
+    textRenderer(&ecs.systemSubscriber, display.getDevice(), display.getDeviceContext()),
     uiHandler(&ecs.systemSubscriber),
     renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
     uiRenderer(&ecs, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),

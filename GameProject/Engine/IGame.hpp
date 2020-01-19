@@ -12,6 +12,7 @@
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/Rendering/Text/TextRenderer.hpp>
 #include <Engine/UI/ButtonSystem.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/UI/UIRenderer.hpp>
@@ -42,6 +43,7 @@ protected:
     RenderableHandler renderableHandler;
     UIHandler uiHandler;
     LightHandler lightHandler;
+    TextRenderer textRenderer;
 
     // Systems
     Renderer renderer;
