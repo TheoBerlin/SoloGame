@@ -184,7 +184,7 @@ void Renderer::update(float dt)
 
             // Material cbuffer
             context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-            memcpy(mappedResources.pData, &model->materials[mesh.materialIndex].attributes, sizeof(Material));
+            memcpy(mappedResources.pData, &model->materials[mesh.materialIndex].attributes, sizeof(MaterialAttributes));
             context->Unmap(materialBuffer, 0);
             context->PSSetConstantBuffers(0, 1, &materialBuffer);
 
