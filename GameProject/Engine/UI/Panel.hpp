@@ -6,6 +6,7 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 #include <d3d11.h>
+#include <string>
 
 struct UIPanel
 {

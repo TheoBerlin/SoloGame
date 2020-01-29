@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <map>
 #include <memory>
+#include <string>
 #include <wrl/client.h>
 
 #include <ft2build.h>

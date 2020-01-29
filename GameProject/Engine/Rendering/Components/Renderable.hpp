@@ -4,6 +4,7 @@
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/IDVector.hpp>
+#include <string>
 #include <typeindex>
 
 class ModelLoader;

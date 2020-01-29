@@ -2,6 +2,8 @@
 
 #include <Engine/Utils/Logger.hpp>
 
+#include <cmath>
+
 TransformHandler::TransformHandler(SystemSubscriber* sysSubscriber)
     :ComponentHandler({tid_transform, tid_worldMatrix}, sysSubscriber, std::type_index(typeid(TransformHandler)))
 {
