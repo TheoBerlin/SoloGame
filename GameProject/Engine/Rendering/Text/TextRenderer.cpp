@@ -70,11 +70,12 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
 
     DirectX::XMUINT2 textureSize = calculateTextureSize(text, glyphs, face);
 
-    Bitmap finalBitmap;
-    finalBitmap.buffer = new uint8_t[textureSize.x * textureSize.y * 4];
-    ZeroMemory(finalBitmap.buffer, textureSize.x * textureSize.y * 4);
-    finalBitmap.rows = textureSize.y;
-    finalBitmap.width = textureSize.x;
+    // The bytemap to paste glyph bytemaps onto
+    Bytemap textBytemap;
+    textBytemap.buffer.resize(textureSize.x * textureSize.y);
+    ZeroMemory(textBytemap.buffer.data(), textBytemap.buffer.size());
+    textBytemap.rows = textureSize.y;
+    textBytemap.width = textureSize.x;
 
     // Check if the font has already been loaded, otherwise, load it
     auto fontItr = loadedCharacters.find(font);
@@ -114,7 +115,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         pen.x += metrics.horiBearingX;
         pen.y += metrics.horiBearingY - metrics.height;
 
-        drawGlyphToTexture(finalBitmap.buffer, textureSize, {pen.x / 64, pen.y / 64}, glyphsItr->second.bitmap);
+        drawGlyphToTexture(textBytemap.buffer.data(), textureSize, {pen.x / 64, pen.y / 64}, glyphsItr->second.bytemap);
 
         pen.x -= metrics.horiBearingX;
         pen.y -= metrics.horiBearingY - metrics.height;
@@ -125,14 +126,7 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         charIdx += 1;
     }
 
-    for (auto glyph : glyphs) {
-        delete glyph.second.bitmap.buffer;
-    }
-
-    ID3D11ShaderResourceView* finalSRV = bitmapToTexture(finalBitmap);
-    delete finalBitmap.buffer;
-
-    return finalSRV;
+    return bytemapToTexture(textBytemap);
 }
 
 bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight)
@@ -155,19 +149,10 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
             return false;
         }
 
-        std::vector<uint8_t> convertedBitmap;
-        bitmapToUints(face->glyph->bitmap, convertedBitmap);
-
-        Bitmap glyphBitmap;
-        glyphBitmap.rows = face->glyph->bitmap.rows;
-        glyphBitmap.width = face->glyph->bitmap.width;
-        glyphBitmap.buffer = new uint8_t[convertedBitmap.size()];
-        std::memcpy(glyphBitmap.buffer, convertedBitmap.data(), convertedBitmap.size());
-
         ProcessedGlyph processedGlyph;
         processedGlyph.metrics = face->glyph->metrics;
-        processedGlyph.bitmap = glyphBitmap;
 
+        bitmapToBytemap(face->glyph->bitmap, processedGlyph.bytemap);
         glyphs.insert({character, processedGlyph});
     }
 
@@ -223,26 +208,43 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
     return textureSize;
 }
 
-void TextRenderer::drawGlyphToTexture(uint8_t* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bitmap& glyphBitmap)
+void TextRenderer::drawGlyphToTexture(uint8_t* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bytemap& glyphBytemap)
 {
-    // Pen describes the bottom left corner of the glyph's bounding box
-    unsigned int renderTargetIdx = (textureSize.y - glyphBitmap.rows - pen.y) * textureSize.x + pen.x;
-    uint8_t* glyphBuffer = glyphBitmap.buffer;
+    // Pen describes the bottom left corner of the glyph's bounding box, but data is copied top to bottom
+    unsigned int renderTargetIdx = (textureSize.y - glyphBytemap.rows - pen.y) * textureSize.x + pen.x;
+    const uint8_t* glyphBuffer = glyphBytemap.buffer.data();
 
-    for (unsigned int row = 0; row < glyphBitmap.rows; row++) {
-        std::memcpy(&renderTarget[renderTargetIdx * 4], &glyphBuffer[row * glyphBitmap.width * 4], glyphBitmap.width * 4);
+    for (unsigned int row = 0; row < glyphBytemap.rows; row++) {
+        std::memcpy(&renderTarget[renderTargetIdx], &glyphBuffer[row * glyphBytemap.width], glyphBytemap.width);
 
         renderTargetIdx += textureSize.x;
     }
 }
 
-ID3D11ShaderResourceView* TextRenderer::bitmapToTexture(const Bitmap& bitmap)
+ID3D11ShaderResourceView* TextRenderer::bytemapToTexture(const Bytemap& bytemap)
 {
-    // Convert the glyph's bitmap into unsigned integers
+    // Duplicate each byte in the bytemap four times to create an R8G8B8A8 texture
+    Bytemap convertedBytemap;
+    convertedBytemap.rows = bytemap.rows;
+    convertedBytemap.width = bytemap.width;
+    convertedBytemap.buffer.reserve(bytemap.buffer.size() * 4);
+
+    for (const uint8_t& byte : bytemap.buffer) {
+        // Red
+        convertedBytemap.buffer.push_back(byte);
+        // Green
+        convertedBytemap.buffer.push_back(byte);
+        // Blue
+        convertedBytemap.buffer.push_back(byte);
+        // Alpha
+        convertedBytemap.buffer.push_back(byte);
+    }
+
+    // Convert the glyph's bytemap into unsigned integers
     D3D11_TEXTURE2D_DESC txDesc;
     ZeroMemory(&txDesc, sizeof(D3D11_TEXTURE2D_DESC));
-    txDesc.Width = bitmap.width;
-    txDesc.Height = bitmap.rows;
+    txDesc.Width = convertedBytemap.width;
+    txDesc.Height = convertedBytemap.rows;
     txDesc.MipLevels = 1;
     txDesc.ArraySize = 1;
     txDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -253,71 +255,57 @@ ID3D11ShaderResourceView* TextRenderer::bitmapToTexture(const Bitmap& bitmap)
     txDesc.CPUAccessFlags = 0;
     txDesc.MiscFlags = 0;
 
-    // Use character bitmap to generate D3D11 texture
     D3D11_SUBRESOURCE_DATA glyphTxSubdata;
     ZeroMemory(&glyphTxSubdata, sizeof(D3D11_SUBRESOURCE_DATA));
-    glyphTxSubdata.pSysMem = bitmap.buffer;
-    glyphTxSubdata.SysMemPitch = bitmap.width * sizeof(uint8_t) * 4;
+    glyphTxSubdata.pSysMem = convertedBytemap.buffer.data();
+    glyphTxSubdata.SysMemPitch = convertedBytemap.width * 4 * sizeof(uint8_t);
     glyphTxSubdata.SysMemSlicePitch = 0;
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> glyphTexture;
     HRESULT hr = device->CreateTexture2D(&txDesc, &glyphTxSubdata, glyphTexture.GetAddressOf());
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create texture from bitmap: %s", hresultToString(hr).c_str());
+        Logger::LOG_WARNING("Failed to create texture from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
     ID3D11ShaderResourceView* glyphSRV;
     hr = device->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create shader resource view from bitmap: %s", hresultToString(hr).c_str());
+        Logger::LOG_WARNING("Failed to create shader resource view from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
     return glyphSRV;
 }
 
-void TextRenderer::bitmapToUints(const FT_Bitmap& bitmap, std::vector<uint8_t>& uints)
+void TextRenderer::bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap)
 {
     // The bitmap's pitch might be negative in case the first bytes describe the bottom row of the image. This might need to be handled.
     if (bitmap.pitch < 0) {
         Logger::LOG_WARNING("Pitch is negative, this is not handled correctly!");
     }
 
+    bytemap.rows = bitmap.rows;
+    bytemap.width = bitmap.width;
+
     // Pitch is the amount of bytes per row
-    size_t bitmapByteSize = (size_t)(bitmap.pitch * bitmap.rows); // not needed?
     size_t pixelCount = (size_t)(bitmap.rows * bitmap.width);
-    uints.reserve(pixelCount * 4);
+    bytemap.buffer.resize(pixelCount);
 
     const unsigned char* bitmapBuffer = bitmap.buffer;
 
     if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
+        // Binary format, 1 bit is one pixel
         for (size_t bitIdx = 0; bitIdx < pixelCount; bitIdx += 1) {
             // Convert 8 bits into 8 uints
             unsigned char bit = bitmapBuffer[bitIdx];
 
             for (size_t i = 0; i < 8; i += 1) {
-                // Red
-                uints.push_back((bit >> i) & (unsigned)1);
-                // Green
-                uints.push_back(uints.back());
-                // Blue
-                uints.push_back(uints.back());
-                // Alpha
-                uints.push_back(255);
+                bytemap.buffer[bitIdx * 8 + i] = (bit >> i) & (unsigned)1;
             }
         }
     } else if (bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-        for (size_t bitIdx = 0; bitIdx < pixelCount; bitIdx += 1) {
-            // Copy 8 bits into 4 uints
-            // Red
-            uints.push_back((uint8_t)bitmapBuffer[bitIdx]);
-            // Green
-            uints.push_back(uints.back());
-            // Blue
-            uints.push_back(uints.back());
-            // Alpha
-            uints.push_back(uints.back());
-        }
+        // Grayscale bytemap, copy into target buffer
+        std::memcpy((void*)bytemap.buffer.data(), (const void*)bitmapBuffer, bytemap.buffer.size());
     }
 }

@@ -14,15 +14,15 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-struct Bitmap {
+struct Bytemap {
     unsigned int rows;
     unsigned int width;
-    uint8_t* buffer;
+    std::vector<uint8_t> buffer;
 };
 
 struct ProcessedGlyph {
     FT_Glyph_Metrics metrics;
-    Bitmap bitmap;
+    Bytemap bytemap;
 };
 
 class TextRenderer : public ComponentHandler
@@ -42,13 +42,13 @@ private:
     DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face);
 
     // Copies a glyph's bitmap data into the target bitmap's bitmap
-    void drawGlyphToTexture(unsigned char* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bitmap& glyphBitmap);
+    void drawGlyphToTexture(unsigned char* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bytemap& glyphBytemap);
 
-    // Convert a bitmap to a texture.Requires that the bitmap is converted into uints.
-    ID3D11ShaderResourceView* bitmapToTexture(const Bitmap& bitmap);
+    // Convert a bytemap to an appropriate format, and create a texture from the results
+    ID3D11ShaderResourceView* bytemapToTexture(const Bytemap& bitmap);
 
-    // Convert a bitmap into an array of unsigned integers
-    void bitmapToUints(const FT_Bitmap& bitmap, std::vector<uint8_t>& uints);
+    // Convert a bitmap into a bytemap
+    void bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap);
 
     ID3D11Device* device;
     ID3D11DeviceContext* context;
