@@ -8,25 +8,60 @@
 #include <d3d11.h>
 #include <string>
 
-struct UIPanel
-{
+enum TX_HORIZONTAL_ALIGNMENT {
+    TX_HORIZONTAL_ALIGNMENT_LEFT,
+    TX_HORIZONTAL_ALIGNMENT_CENTER,
+    TX_HORIZONTAL_ALIGNMENT_RIGHT,
+    TX_HORIZONTAL_ALIGNMENT_EXPLICIT  // The horizontal position is specified explicitly in the attachment info
+};
+
+enum TX_VERTICAL_ALIGNMENT {
+    TX_VERTICAL_ALIGNMENT_TOP,
+    TX_VERTICAL_ALIGNMENT_CENTER,
+    TX_VERTICAL_ALIGNMENT_BOTTOM,
+    TX_VERTICAL_ALIGNMENT_EXPLICIT  // The vertical position is specified explicitly in the attachment info
+};
+
+enum TX_SIZE {
+    TX_SIZE_STRETCH,
+    TX_SIZE_CLIENT_RESOLUTION_DEPENDENT,    // The size is dependent on the texture's size relative to the size of the client
+    TX_SIZE_EXPLICIT                        // The size relative to the panel is specified explicitly in the attachment info
+};
+
+struct TextureAttachmentInfo {
+    TX_HORIZONTAL_ALIGNMENT horizontalAlignment;
+    TX_VERTICAL_ALIGNMENT verticalAlignment;
+    TX_SIZE sizeSetting;
+    DirectX::XMFLOAT2 explicitPosition;
+    DirectX::XMFLOAT2 explicitSize;
+};
+
+struct TextureAttachment {
+    // Position and size are specified as [0, 1], and are relative to the panel's position and size.
+    DirectX::XMFLOAT2 position, size;
+    ID3D11ShaderResourceView* texture;
+};
+
+struct UIPanel {
     // Position and size are specified in factors [0, 1]. The position describes the bottom left corner of the panel.
     // Note that the final size of the panel scales with the aspect ratio of the window.
     DirectX::XMFLOAT2 position, size;
-    DirectX::XMFLOAT4 color;
-
-    ID3D11ShaderResourceView* texture;
+    /*  Highlights are applied with the equation: finalColor = txColor + highlightFactor * (highlight * txColor)
+        A negative highlight factor will make the panel darker */
+    float highlightFactor;
+    DirectX::XMFLOAT4 highlight;
+    std::vector<TextureAttachment> textures;
 };
 
 const std::type_index tid_UIPanel = std::type_index(typeid(UIPanel));
 
-struct UIButton
-{
-    DirectX::XMFLOAT4 defaultColor, hoverColor, pressColor;
+struct UIButton {
+    DirectX::XMFLOAT4 defaultHighlight, hoverHighlight, pressHighlight;
     // For now, buttons are handled after systems have been updated.
     // Perhaps later, this could be changed by specifying what component types the function affects, and with what permissions.
     std::function<void()> onPress;
 };
+
 
 const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
 
@@ -35,21 +70,25 @@ class TextureLoader;
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(SystemSubscriber* sysSubscriber);
+    UIHandler(SystemSubscriber* sysSubscriber, unsigned int clientWidth, unsigned int clientHeight);
     ~UIHandler();
 
-    void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color,
-    std::string texturePath = "./Game/Assets/Models/Solid_White.png");
+    void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
 
-    void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 color, ID3D11ShaderResourceView* texture);
+    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture);
+    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, std::string texturePath = "./Game/Assets/Models/Solid_White.png");
 
     // Requires that the entity has a UI panel already
-    void createButton(Entity entity, DirectX::XMFLOAT4 hoverColor, DirectX::XMFLOAT4 pressColor,
-    std::function<void()> onPress);
+    void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
+        std::function<void()> onPress);
 
     IDVector<UIPanel> panels;
     IDVector<UIButton> buttons;
 
 private:
+    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture, const UIPanel& panel);
+private:
     TextureLoader* textureLoader;
+
+    unsigned int m_ClientWidth, m_ClientHeight;
 };

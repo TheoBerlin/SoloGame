@@ -24,7 +24,16 @@ MainMenu::MainMenu(StateManager* stateManager, ECSInterface* ecs, ID3D11Device* 
     // Create UI panel
     uiEntity = ecs->entityIDGen.genID();
 
-    uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {1.0f, 0.3f, 0.3f, 1.0f}, "./Game/Assets/Models/Cube.png");
+    uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 0.5f);
+
+    // Attach texture to the panel
+    TextureAttachmentInfo txAttachmentInfo = {};
+    //txAttachmentInfo.sizeSetting = TX_SIZE_STRETCH;
+    txAttachmentInfo.horizontalAlignment = TX_HORIZONTAL_ALIGNMENT_CENTER;
+    txAttachmentInfo.verticalAlignment = TX_VERTICAL_ALIGNMENT_CENTER;
+    txAttachmentInfo.sizeSetting = TX_SIZE_EXPLICIT;
+    txAttachmentInfo.explicitSize = {0.5f, 0.5f};
+    uiHandler->attachTexture(uiEntity, txAttachmentInfo, "./Game/Assets/Models/Cube.png");
 
     // Make the panel a button
     uiHandler->createButton(uiEntity, {1.0f, 0.4f, 0.4f, 1.0f}, {0.9f, 0.2f, 0.2f, 1.0f}, [this](){this->stateManager->pushState(new GameSession(this));});

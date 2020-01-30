@@ -77,15 +77,19 @@ void UIRenderer::update(float dt)
 
     for (const Entity& entity : panels.getVec()) {
         UIPanel& panel = UIhandler->panels.indexID(entity);
+        if (panel.textures.empty()) {
+            continue;
+        }
+
         // Set per-object buffer
         context->Map(perPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-        memcpy(mappedResources.pData, &panel, sizeof(UIPanel) - sizeof(ID3D11ShaderResourceView*));
+        memcpy(mappedResources.pData, &panel, sizeof(UIPanel) - sizeof(std::vector<TextureAttachment>));
         context->Unmap(perPanelBuffer.Get(), 0);
 
         context->VSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
         context->PSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
 
-        context->PSSetShaderResources(0, 1, &panel.texture);
+        context->PSSetShaderResources(0, 1, &panel.textures.back().texture);
 
         context->Draw(4, 0);
     }
