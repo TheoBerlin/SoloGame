@@ -4,9 +4,11 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Utils/IDVector.hpp>
+
 #include <DirectXMath.h>
 #include <d3d11.h>
 #include <string>
+#include <wrl/client.h>
 
 enum TX_HORIZONTAL_ALIGNMENT {
     TX_HORIZONTAL_ALIGNMENT_LEFT,
@@ -51,6 +53,7 @@ struct UIPanel {
     float highlightFactor;
     DirectX::XMFLOAT4 highlight;
     std::vector<TextureAttachment> textures;
+    ID3D11ShaderResourceView* texture;
 };
 
 const std::type_index tid_UIPanel = std::type_index(typeid(UIPanel));
@@ -65,18 +68,20 @@ struct UIButton {
 
 const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
 
+class Display;
+struct Program;
 class TextureLoader;
 
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(SystemSubscriber* sysSubscriber, unsigned int clientWidth, unsigned int clientHeight);
+    UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay);
     ~UIHandler();
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
 
     void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture);
-    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, std::string texturePath = "./Game/Assets/Models/Solid_White.png");
+    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, std::string texturePath);
 
     // Requires that the entity has a UI panel already
     void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
@@ -86,9 +91,19 @@ public:
     IDVector<UIButton> buttons;
 
 private:
+    // Creates a texture for a panel, which can be used as both a RTV and SRV
+    void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture, const UIPanel& panel);
+    void renderTextureOntoPanel(const TextureAttachment& attachment, UIPanel& panel);
 private:
     TextureLoader* textureLoader;
+    ID3D11Device* m_pDevice;
+    ID3D11DeviceContext* m_pContext;
+
+    Program* m_pUIProgram;
+    ID3D11Buffer* m_pPerObjectBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
+    ID3D11SamplerState *const* m_pAniSampler;
 
     unsigned int m_ClientWidth, m_ClientHeight;
 };

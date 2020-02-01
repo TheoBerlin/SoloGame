@@ -275,6 +275,30 @@ void Display::initDX()
     viewPort.MinDepth = 0.0f;
     viewPort.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewPort);
+
+    // Create blend state
+    D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
+    rtvBlendDesc.BlendEnable = TRUE;
+    rtvBlendDesc.SrcBlend = D3D11_BLEND_ONE;
+    rtvBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    rtvBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
+    rtvBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+    rtvBlendDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+    rtvBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    rtvBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    D3D11_BLEND_DESC blendDesc = {};
+    blendDesc.AlphaToCoverageEnable = FALSE;
+    blendDesc.RenderTarget[0] = rtvBlendDesc;
+
+    hr = device->CreateBlendState(&blendDesc, mBlendState.GetAddressOf());
+    if (hr != S_OK) {
+        Logger::LOG_ERROR("Failed create blend state: %s", hresultToString(hr).c_str());
+        system("pause");
+        exit(1);
+    }
+
+    deviceContext->OMSetBlendState(mBlendState.Get(), nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
 }
 
 LRESULT CALLBACK Display::windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

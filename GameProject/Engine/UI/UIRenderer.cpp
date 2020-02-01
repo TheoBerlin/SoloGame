@@ -37,7 +37,11 @@ UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11De
     // Create per-panel constant buffer
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = sizeof(UIPanel) - sizeof(ID3D11ShaderResourceView*);
+    bufferDesc.ByteWidth = sizeof(
+        DirectX::XMFLOAT2) * 2 +    // Position and size
+        sizeof(DirectX::XMFLOAT4) + // Highlight color
+        sizeof(float) +             // Highlight factor
+        sizeof(DirectX::XMFLOAT3);  // Padding
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -75,21 +79,26 @@ void UIRenderer::update(float dt)
     D3D11_MAPPED_SUBRESOURCE mappedResources;
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
+    size_t bufferSize = sizeof(
+        DirectX::XMFLOAT2) * 2 +    // Position and size
+        sizeof(DirectX::XMFLOAT4) + // Highlight color
+        sizeof(float);              // Highlight factor
+
     for (const Entity& entity : panels.getVec()) {
         UIPanel& panel = UIhandler->panels.indexID(entity);
-        if (panel.textures.empty()) {
+        if (panel.texture == nullptr) {
             continue;
         }
 
         // Set per-object buffer
         context->Map(perPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-        memcpy(mappedResources.pData, &panel, sizeof(UIPanel) - sizeof(std::vector<TextureAttachment>));
+        memcpy(mappedResources.pData, &panel, bufferSize);
         context->Unmap(perPanelBuffer.Get(), 0);
 
         context->VSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
         context->PSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
 
-        context->PSSetShaderResources(0, 1, &panel.textures.back().texture);
+        context->PSSetShaderResources(0, 1, &panel.texture);
 
         context->Draw(4, 0);
     }
