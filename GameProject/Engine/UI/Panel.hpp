@@ -3,6 +3,7 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/Rendering/AssetContainers/Texture.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
 #include <DirectXMath.h>
@@ -41,7 +42,7 @@ struct TextureAttachmentInfo {
 struct TextureAttachment {
     // Position and size are specified as [0, 1], and are relative to the panel's position and size.
     DirectX::XMFLOAT2 position, size;
-    ID3D11ShaderResourceView* texture;
+    TextureReference texture;
 };
 
 struct UIPanel {
@@ -53,7 +54,7 @@ struct UIPanel {
     float highlightFactor;
     DirectX::XMFLOAT4 highlight;
     std::vector<TextureAttachment> textures;
-    ID3D11ShaderResourceView* texture;
+    Texture* texture;
 };
 
 const std::type_index tid_UIPanel = std::type_index(typeid(UIPanel));
@@ -64,7 +65,6 @@ struct UIButton {
     // Perhaps later, this could be changed by specifying what component types the function affects, and with what permissions.
     std::function<void()> onPress;
 };
-
 
 const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
 
@@ -78,7 +78,7 @@ public:
     ~UIHandler();
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
-    void attachTextures(Entity entity, const TextureAttachmentInfo* attachmentInfos, ID3D11ShaderResourceView** textures, size_t textureCount);
+    void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount);
 
     // Requires that the entity has a UI panel already
     void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
@@ -90,7 +90,7 @@ public:
 private:
     // Creates a texture for a panel, which can be used as both a RTV and SRV
     void createPanelTexture(UIPanel& panel);
-    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture, const UIPanel& panel);
+    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const TextureReference& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel);
 private:
     ID3D11Device* m_pDevice;

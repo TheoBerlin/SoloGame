@@ -86,7 +86,7 @@ void UIRenderer::update(float dt)
 
     for (const Entity& entity : panels.getVec()) {
         UIPanel& panel = UIhandler->panels.indexID(entity);
-        if (panel.texture == nullptr) {
+        if (panel.texture->getSRV() == nullptr) {
             continue;
         }
 
@@ -98,7 +98,8 @@ void UIRenderer::update(float dt)
         context->VSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
         context->PSSetConstantBuffers(0, 1, perPanelBuffer.GetAddressOf());
 
-        context->PSSetShaderResources(0, 1, &panel.texture);
+        ID3D11ShaderResourceView* pPanelSRV = panel.texture->getSRV();
+        context->PSSetShaderResources(0, 1, &pPanelSRV);
 
         context->Draw(4, 0);
     }

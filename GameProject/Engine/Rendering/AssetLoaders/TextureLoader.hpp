@@ -11,12 +11,12 @@ public:
     TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device);
     ~TextureLoader();
 
-    Texture loadTexture(const std::string& filePath);
+    TextureReference loadTexture(const std::string& filePath);
 
     void deleteAllTextures();
 
 private:
-    std::unordered_map<std::string, Texture> textures;
+    std::unordered_map<std::string, Texture*> textures;
 
     ID3D11Device* device;
 };

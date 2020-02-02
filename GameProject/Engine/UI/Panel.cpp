@@ -37,11 +37,11 @@ UIHandler::UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay)
     // Create constant buffer for texture rendering
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = sizeof(
-        DirectX::XMFLOAT2) * 2 +    // Position and size
-        sizeof(DirectX::XMFLOAT4) + // Highlight color
-        sizeof(float) +             // Highlight factor
-        sizeof(DirectX::XMFLOAT3);  // Padding
+    bufferDesc.ByteWidth = 
+        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
+        sizeof(DirectX::XMFLOAT4) +     // Highlight color
+        sizeof(float) +                 // Highlight factor
+        sizeof(DirectX::XMFLOAT3);      // Padding
     bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -58,7 +58,7 @@ UIHandler::~UIHandler()
     std::vector<UIPanel>& panelVec = panels.getVec();
 
     for (UIPanel& panel : panelVec) {
-        panel.texture->Release();
+        delete panel.texture;
     }
 
     m_pPerObjectBuffer->Release();
@@ -77,7 +77,7 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
     this->registerComponent(tid_UIPanel, entity);
 }
 
-void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* attachmentInfos, ID3D11ShaderResourceView** textures, size_t textureCount)
+void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount)
 {
     if (!panels.hasElement(entity)) {
         Logger::LOG_WARNING("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
@@ -89,7 +89,7 @@ void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* attac
     std::vector<TextureAttachment> attachments(textureCount);
 
     for (size_t textureIdx = 0; textureIdx < textureCount; textureIdx++) {
-        createTextureAttachment(attachments[textureIdx], attachmentInfos[textureIdx], textures[textureIdx], panel);
+        createTextureAttachment(attachments[textureIdx], pAttachmentInfos[textureIdx], pTextureReferences[textureIdx], panel);
     }
 
     renderTexturesOntoPanel(attachments, panel);
@@ -143,15 +143,17 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     }
 
     // Create shader resource view
-    hr = m_pDevice->CreateShaderResourceView(texture2D, nullptr, &panel.texture);
+    ID3D11ShaderResourceView* pSRV = nullptr;
+    hr = m_pDevice->CreateShaderResourceView(texture2D, nullptr, &pSRV);
     if (hr != S_OK) {
         Logger::LOG_WARNING("Failed to create shader resource view for UI panel: %s", hresultToString(hr).c_str());
     }
 
     texture2D->Release();
+    panel.texture = new Texture(pSRV);
 }
 
-void UIHandler::createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture, const UIPanel& panel)
+void UIHandler::createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const TextureReference& texture, const UIPanel& panel)
 {
     attachment.texture = texture;
 
@@ -162,12 +164,14 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
         return;
     } else if (attachmentInfo.sizeSetting == TX_SIZE_CLIENT_RESOLUTION_DEPENDENT) {
         // Get the resolution of the texture
+        ID3D11ShaderResourceView* pSRV = texture.getSRV();
         ID3D11Resource* resource;
-        texture->GetResource(&resource);
+        pSRV->GetResource(&resource);
 
         ID3D11Texture2D* tx2D = static_cast<ID3D11Texture2D*>(resource);
         D3D11_TEXTURE2D_DESC txDesc = {};
         tx2D->GetDesc(&txDesc);
+        resource->Release();
 
         const DirectX::XMFLOAT2& panelSize = panel.size;
         attachment.size = {(float)txDesc.Width / ((float)m_ClientWidth * panelSize.x), (float)txDesc.Height / ((float)m_ClientHeight * panelSize.y)};
@@ -249,7 +253,7 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
 
     // Create a render target view from the panel texture
     ID3D11Resource* panelResource = nullptr;
-    panel.texture->GetResource(&panelResource);
+    panel.texture->getSRV()->GetResource(&panelResource);
 
     D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
     ZeroMemory(&rtvDesc, sizeof(D3D11_RENDER_TARGET_VIEW_DESC));
@@ -267,7 +271,8 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
     m_pContext->OMSetRenderTargets(1, &panelRtv, nullptr);
 
     for (const TextureAttachment& attachment : attachments) {
-        m_pContext->PSSetShaderResources(0, 1, &attachment.texture);
+        ID3D11ShaderResourceView* pSRV = attachment.texture.getSRV();
+        m_pContext->PSSetShaderResources(0, 1, &pSRV);
 
         BufferData bufferData = {
             attachment.position, attachment.size,

@@ -32,10 +32,8 @@ TextRenderer::TextRenderer(SystemSubscriber* systemSubscriber, ID3D11Device* dev
 TextRenderer::~TextRenderer()
 {
     // Release text textures
-    for (auto font : loadedCharacters) {
-        for (auto characterTexture : font.second) {
-            characterTexture.second->Release();
-        }
+    for (Texture* texture : m_Textures) {
+        delete texture;
     }
 
     FT_Error err = FT_Done_FreeType(ftLib);
@@ -44,7 +42,7 @@ TextRenderer::~TextRenderer()
 	}
 }
 
-ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight)
+TextureReference TextRenderer::renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight)
 {
     FT_Face face;
     FT_Error err;
@@ -76,9 +74,6 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
     ZeroMemory(textBytemap.buffer.data(), textBytemap.buffer.size());
     textBytemap.rows = textureSize.y;
     textBytemap.width = textureSize.x;
-
-    // Check if the font has already been loaded, otherwise, load it
-    auto fontItr = loadedCharacters.find(font);
 
     // Describes where to draw the next character onto the texture
     DirectX::XMUINT2 pen = {0, textureSize.y * 64 - face->size->metrics.ascender};
@@ -126,7 +121,9 @@ ID3D11ShaderResourceView* TextRenderer::renderText(const std::string& text, cons
         charIdx += 1;
     }
 
-    return bytemapToTexture(textBytemap);
+    Texture* pTexture = new Texture(bytemapToTexture(textBytemap));
+    m_Textures.push_back(pTexture);
+    return TextureReference(pTexture);
 }
 
 bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight)

@@ -32,8 +32,8 @@ MainMenu::MainMenu(StateManager* stateManager, ECSInterface* ecs, ID3D11Device* 
     uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 1.0f);
 
     // Attach background and text textures to the panel
-    ID3D11ShaderResourceView* panelTextures[2] = {
-        pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png").srv,
+    TextureReference panelTextures[2] = {
+        pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"),
         pTextRenderer->renderText("Play", "Game/Assets/Fonts/arial/arial.ttf", 50)
     };
 

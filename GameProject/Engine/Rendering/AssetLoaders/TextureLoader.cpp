@@ -15,14 +15,19 @@ TextureLoader::~TextureLoader()
     this->deleteAllTextures();
 }
 
-Texture TextureLoader::loadTexture(const std::string& filePath)
+TextureReference TextureLoader::loadTexture(const std::string& filePath)
 {
     // See if the texture is already loaded
     auto itr = textures.find(filePath);
 
     if (itr != textures.end()) {
-        // The texture exists
-        return itr->second;
+        if (itr->second->getSRV() == nullptr) {
+            // The texture was loaded but its data is now deleted, delete the texture pointer
+            delete itr->second;
+        } else {
+            // The texture exists, create a reference to it
+            return TextureReference(itr->second);
+        }
     }
 
     // Convert std::string to const wchar_t*
@@ -30,10 +35,10 @@ Texture TextureLoader::loadTexture(const std::string& filePath)
     const wchar_t* convertedFilePath = wStrPath.c_str();
 
     // Load the texture
-    Texture texture;
+    ID3D11ShaderResourceView* pSRV = nullptr;
     ID3D11Resource* textureResource = nullptr;
 
-    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::device, convertedFilePath, &textureResource, &texture.srv);
+    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::device, convertedFilePath, &textureResource, &pSRV);
 
     if (textureResource) {
         textureResource->Release();
@@ -43,16 +48,20 @@ Texture TextureLoader::loadTexture(const std::string& filePath)
         Logger::LOG_WARNING("Failed to load texture: [%s]", filePath.c_str());
     } else {
         Logger::LOG_INFO("Loaded texture: [%s]", filePath.c_str());
-        textures[filePath] = texture;
+        Texture* pTexture = new Texture(pSRV);
+        textures[filePath] = pTexture;
+
+        TextureReference textureReference(pTexture);
+        return textureReference;
     }
 
-    return texture;
+    return TextureReference(nullptr);
 }
 
 void TextureLoader::deleteAllTextures()
 {
-    for (auto texture : textures) {
-        texture.second.srv->Release();
+    for (auto texturePair : textures) {
+        delete texturePair.second;
     }
 
     textures.clear();
