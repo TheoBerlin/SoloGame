@@ -9,6 +9,6 @@ struct MaterialAttributes {
 };
 
 struct Material {
-    std::vector<Texture> textures;
+    std::vector<TextureReference> textures;
     MaterialAttributes attributes;
 };

@@ -179,7 +179,8 @@ void Renderer::update(float dt)
 
             /* Pixel shader */
             // Diffuse texture
-            context->PSSetShaderResources(0, 1, &model->materials[mesh.materialIndex].textures[0].srv);
+            ID3D11ShaderResourceView* pDiffuseSRV = model->materials[mesh.materialIndex].textures[0].getSRV();
+            context->PSSetShaderResources(0, 1, &pDiffuseSRV);
             context->PSSetSamplers(0, 1, this->aniSampler);
 
             // Material cbuffer

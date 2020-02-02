@@ -3,6 +3,7 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/Rendering/AssetContainers/Texture.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <DirectXMath.h>
 #include <d3d11.h>
@@ -32,7 +33,7 @@ public:
     ~TextRenderer();
 
     // Creates a texture with text rendered onto it
-    ID3D11ShaderResourceView* renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);
+    TextureReference renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);
 
 private:
     // Loads and maps each character in a string to FreeType glyph data
@@ -50,11 +51,12 @@ private:
     // Convert a bitmap into a bytemap
     void bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap);
 
+private:
     ID3D11Device* device;
     ID3D11DeviceContext* context;
 
-    // Maps font names to a mapping of characters to loaded character textures
-    std::map<std::string, std::map<char, ID3D11ShaderResourceView*>> loadedCharacters;
+    // Rendering text results in a texture and a texture reference being created. This is the storage for the textures.
+    std::vector<Texture*> m_Textures;
 
     FT_Library ftLib;
 
