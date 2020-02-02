@@ -1,7 +1,6 @@
 #include "Panel.hpp"
 
 #include <Engine/ECS/SystemSubscriber.hpp>
-#include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -21,9 +20,6 @@ UIHandler::UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay)
     };
 
     this->registerHandler(&compRegs);
-
-    std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
-    textureLoader = static_cast<TextureLoader*>(pSysSubscriber->getComponentHandler(tid_textureLoader));
 
     // Retrieve quad from shader resource handler
     std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
@@ -81,26 +77,26 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
     this->registerComponent(tid_UIPanel, entity);
 }
 
-void UIHandler::attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture)
+void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* attachmentInfos, ID3D11ShaderResourceView** textures, size_t textureCount)
 {
     if (!panels.hasElement(entity)) {
-        Logger::LOG_WARNING("Tried to attach a texture to a non-existing UI panel, entity: %d", entity);
+        Logger::LOG_WARNING("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
         return;
     }
 
     UIPanel& panel = panels.indexID(entity);
 
-    TextureAttachment attachment = {};
-    createTextureAttachment(attachment, attachmentInfo, texture, panel);
-    renderTextureOntoPanel(attachment, panel);
+    std::vector<TextureAttachment> attachments(textureCount);
 
-    panel.textures.push_back(attachment);
-}
+    for (size_t textureIdx = 0; textureIdx < textureCount; textureIdx++) {
+        createTextureAttachment(attachments[textureIdx], attachmentInfos[textureIdx], textures[textureIdx], panel);
+    }
 
-void UIHandler::attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, std::string texturePath)
-{
-    ID3D11ShaderResourceView* texture = textureLoader->loadTexture(texturePath).srv;
-    attachTexture(entity, attachmentInfo, texture);
+    renderTexturesOntoPanel(attachments, panel);
+
+    size_t oldTextureCount = panel.textures.size();
+    panel.textures.resize(oldTextureCount + textureCount);
+    std::memcpy(&panel.textures[oldTextureCount], attachments.data(), sizeof(TextureAttachment) * textureCount);
 }
 
 void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
@@ -211,7 +207,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
     }
 }
 
-void UIHandler::renderTextureOntoPanel(const TextureAttachment& attachment, UIPanel& panel)
+void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel)
 {
     // Get old viewport, and set a new one
     UINT viewportCount = 1;
@@ -226,6 +222,30 @@ void UIHandler::renderTextureOntoPanel(const TextureAttachment& attachment, UIPa
     newViewport.MinDepth = 0.0f;
     newViewport.MaxDepth = 1.0f;
     m_pContext->RSSetViewports(1, &newViewport);
+
+    // Rendering setup
+    m_pContext->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
+    m_pContext->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
+    m_pContext->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
+    m_pContext->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
+    m_pContext->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
+
+    m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    m_pContext->IASetInputLayout(m_pUIProgram->inputLayout);
+
+    UINT offsets = 0;
+    m_pContext->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
+    m_pContext->VSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
+    m_pContext->PSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
+    m_pContext->PSSetSamplers(0, 1, m_pAniSampler);
+    m_pContext->OMSetDepthStencilState(nullptr, 0);
+
+    // Set constant buffer data
+    struct BufferData {
+        DirectX::XMFLOAT2 position, size;
+        DirectX::XMFLOAT4 highlight;
+        float highlightFactor;
+    };
 
     // Create a render target view from the panel texture
     ID3D11Resource* panelResource = nullptr;
@@ -244,53 +264,34 @@ void UIHandler::renderTextureOntoPanel(const TextureAttachment& attachment, UIPa
         return;
     }
 
-    // Rendering setup
-    m_pContext->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
-    m_pContext->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
-    m_pContext->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
-    m_pContext->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
-    m_pContext->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
-
-    m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    m_pContext->IASetInputLayout(m_pUIProgram->inputLayout);
-
-    UINT offsets = 0;
-    m_pContext->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
-    m_pContext->VSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
-    m_pContext->PSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
-    m_pContext->PSSetShaderResources(0, 1, &attachment.texture);
-    m_pContext->PSSetSamplers(0, 1, m_pAniSampler);
-    m_pContext->OMSetDepthStencilState(nullptr, 0);
     m_pContext->OMSetRenderTargets(1, &panelRtv, nullptr);
 
-    // Set constant buffer data
-    struct BufferData {
-        DirectX::XMFLOAT2 position, size;
-        DirectX::XMFLOAT4 highlight;
-        float highlightFactor;
-    };
+    for (const TextureAttachment& attachment : attachments) {
+        m_pContext->PSSetShaderResources(0, 1, &attachment.texture);
 
-    BufferData bufferData = {
-        attachment.position, attachment.size,
-        {0.0f, 0.0f, 0.0f, 0.0f},               // No highlight color is desired
-        0.0f
-    };
+        BufferData bufferData = {
+            attachment.position, attachment.size,
+            {0.0f, 0.0f, 0.0f, 0.0f},               // No highlight color is desired
+            0.0f
+        };
 
-    D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-    hr = m_pContext->Map(m_pPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
-    if (hr != S_OK) {
-        Logger::LOG_WARNING("Failed to map per-object constant buffer: %s", hresultToString(hr).c_str());
-        panelRtv->Release();
-        return;
+        D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+        hr = m_pContext->Map(m_pPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+        if (hr != S_OK) {
+            Logger::LOG_WARNING("Failed to map per-object constant buffer: %s", hresultToString(hr).c_str());
+            panelRtv->Release();
+            return;
+        }
+
+        std::memcpy(mappedBuffer.pData, &bufferData, sizeof(BufferData));
+        m_pContext->Unmap(m_pPerObjectBuffer, 0);
+
+        m_pContext->Draw(4, 0);
     }
-
-    std::memcpy(mappedBuffer.pData, &bufferData, sizeof(BufferData));
-    m_pContext->Unmap(m_pPerObjectBuffer, 0);
-
-    m_pContext->Draw(4, 0);
 
     panelResource->Release();
     panelRtv->Release();
 
+    // Reset viewport
     m_pContext->RSSetViewports(1, &oldViewport);
 }

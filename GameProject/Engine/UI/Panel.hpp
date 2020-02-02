@@ -70,7 +70,6 @@ const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
 
 class Display;
 struct Program;
-class TextureLoader;
 
 class UIHandler : public ComponentHandler
 {
@@ -79,9 +78,7 @@ public:
     ~UIHandler();
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
-
-    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture);
-    void attachTexture(Entity entity, const TextureAttachmentInfo& attachmentInfo, std::string texturePath);
+    void attachTextures(Entity entity, const TextureAttachmentInfo* attachmentInfos, ID3D11ShaderResourceView** textures, size_t textureCount);
 
     // Requires that the entity has a UI panel already
     void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
@@ -94,9 +91,8 @@ private:
     // Creates a texture for a panel, which can be used as both a RTV and SRV
     void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, ID3D11ShaderResourceView* texture, const UIPanel& panel);
-    void renderTextureOntoPanel(const TextureAttachment& attachment, UIPanel& panel);
+    void renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel);
 private:
-    TextureLoader* textureLoader;
     ID3D11Device* m_pDevice;
     ID3D11DeviceContext* m_pContext;
 

@@ -16,5 +16,4 @@ struct VS_OUT {
 float4 PS_main(VS_OUT ps_in) : SV_TARGET {
     float4 txColor = uiTexture.Sample(sampAni, ps_in.txCoords);
     return saturate(txColor + highlightFactor * txColor * highlight);
-    //return color * uiTexture.Sample(sampAni, ps_in.txCoords);
 }
