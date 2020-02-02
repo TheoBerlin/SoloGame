@@ -52,6 +52,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilTx;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> mBlendState;
 
     // Color used to clear the back buffer
     FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};

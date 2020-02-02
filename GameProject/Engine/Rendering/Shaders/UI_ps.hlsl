@@ -4,7 +4,8 @@ SamplerState sampAni;
 cbuffer perObject : register(b0)
 {
     float2 position, size;
-    float4 color;
+    float4 highlight;
+    float highlightFactor;
 };
 
 struct VS_OUT {
@@ -13,5 +14,6 @@ struct VS_OUT {
 };
 
 float4 PS_main(VS_OUT ps_in) : SV_TARGET {
-    return color * uiTexture.Sample(sampAni, ps_in.txCoords);
+    float4 txColor = uiTexture.Sample(sampAni, ps_in.txCoords);
+    return saturate(txColor + highlightFactor * txColor * highlight);
 }

@@ -68,9 +68,9 @@ void ButtonSystem::update(float dt)
         }
 
         // The mouse is hovering the button. Now there are three possible states to check and handle:
-        // 1. The button is being pressed: enable pressed color
-        // 2. The mouse is already pressed and is not being pressed now: enable default color and trigger button function
-        // 3. The mouse is not already pressed and is not being pressed now: enable hover color
+        // 1. The button is being pressed: enable pressed highlight
+        // 2. The mouse is already pressed and is not being pressed now: enable default highlight and trigger button function
+        // 3. The mouse is not already pressed and is not being pressed now: enable hover highlight
         UIButton& button = UIhandler->buttons.indexID(entity);
         isHoveringButton = true;
 
@@ -79,7 +79,7 @@ void ButtonSystem::update(float dt)
 
         if (mouseState->leftButton) {
             // State 1
-            panel.color = button.pressColor;
+            panel.highlight = button.pressHighlight;
             pressedButtonExists = true;
             pressedButton = entity;
         } else {
@@ -87,11 +87,11 @@ void ButtonSystem::update(float dt)
                 // State 2
                 pressedButtonExists = false;
 
-                panel.color = button.defaultColor;
+                panel.highlight = button.defaultHighlight;
                 button.onPress();
             } else {
                 // State 3
-                panel.color = button.hoverColor;
+                panel.highlight = button.hoverHighlight;
             }
         }
     }
@@ -101,16 +101,16 @@ void ButtonSystem::update(float dt)
             if (!mouseState->leftButton) {
                 // The previously pressed button is not being hovered anymore and left mouse is not being held
                 pressedButtonExists = false;
-                UIhandler->panels.indexID(pressedButton).color = UIhandler->buttons.indexID(pressedButton).defaultColor;
+                UIhandler->panels.indexID(pressedButton).highlight = UIhandler->buttons.indexID(pressedButton).defaultHighlight;
             } else {
                 // The previously pressed button is not being hovered, but the left mouse button is still being held
-                UIhandler->panels.indexID(pressedButton).color = UIhandler->buttons.indexID(pressedButton).hoverColor;
+                UIhandler->panels.indexID(pressedButton).highlight = UIhandler->buttons.indexID(pressedButton).hoverHighlight;
             }
         }
 
         if (hoveredButtonExists && (!pressedButtonExists || (hoveredButton != pressedButton))) {
             // The previously (non-pressed) hovered button is not being hovered anymore
-            UIhandler->panels.indexID(hoveredButton).color = UIhandler->buttons.indexID(hoveredButton).defaultColor;
+            UIhandler->panels.indexID(hoveredButton).highlight = UIhandler->buttons.indexID(hoveredButton).defaultHighlight;
         }
 
 		hoveredButtonExists = false;
