@@ -1,11 +1,10 @@
 #include "ButtonSystem.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/UI/Panel.hpp>
 
-ButtonSystem::ButtonSystem(ECSInterface* ecs, unsigned int clientWidth, unsigned int clientHeight)
-    :System(ecs),
+ButtonSystem::ButtonSystem(ECSCore* pECS, unsigned int clientWidth, unsigned int clientHeight)
+    :System(pECS),
     clientWidth(clientWidth),
     clientHeight(clientHeight),
     pressedButtonExists(false),
@@ -20,10 +19,10 @@ ButtonSystem::ButtonSystem(ECSInterface* ecs, unsigned int clientWidth, unsigned
     this->subscribeToComponents(&sysReg);
 
     const std::type_index tid_UIHandler = std::type_index(typeid(UIHandler));
-    this->UIhandler = static_cast<UIHandler*>(ecs->systemSubscriber.getComponentHandler(tid_UIHandler));
+    this->UIhandler = static_cast<UIHandler*>(getComponentHandler(tid_UIHandler));
 
     const std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
-    InputHandler* inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    InputHandler* inputHandler = static_cast<InputHandler*>(getComponentHandler(tid_inputHandler));
 
     this->mouseState = inputHandler->getMouseState();
 }
@@ -37,10 +36,10 @@ void ButtonSystem::update(float dt)
         return;
     }
 
-    bool isHoveringButton = false;
-
     for (Entity entity : buttons.getVec()) {
         UIPanel& panel = UIhandler->panels.indexID(entity);
+        UIButton& button = UIhandler->buttons.indexID(entity);
+        panel.highlight = button.defaultHighlight;
 
 		unsigned int mouseX = (unsigned int)mouseState->x;
 		unsigned int mouseY = (unsigned int)(clientHeight - mouseState->y);
@@ -71,9 +70,6 @@ void ButtonSystem::update(float dt)
         // 1. The button is being pressed: enable pressed highlight
         // 2. The mouse is already pressed and is not being pressed now: enable default highlight and trigger button function
         // 3. The mouse is not already pressed and is not being pressed now: enable hover highlight
-        UIButton& button = UIhandler->buttons.indexID(entity);
-        isHoveringButton = true;
-
 		hoveredButtonExists = true;
 		hoveredButton = entity;
 
@@ -94,25 +90,5 @@ void ButtonSystem::update(float dt)
                 panel.highlight = button.hoverHighlight;
             }
         }
-    }
-
-    if (!isHoveringButton) {
-        if (pressedButtonExists) {
-            if (!mouseState->leftButton) {
-                // The previously pressed button is not being hovered anymore and left mouse is not being held
-                pressedButtonExists = false;
-                UIhandler->panels.indexID(pressedButton).highlight = UIhandler->buttons.indexID(pressedButton).defaultHighlight;
-            } else {
-                // The previously pressed button is not being hovered, but the left mouse button is still being held
-                UIhandler->panels.indexID(pressedButton).highlight = UIhandler->buttons.indexID(pressedButton).hoverHighlight;
-            }
-        }
-
-        if (hoveredButtonExists && (!pressedButtonExists || (hoveredButton != pressedButton))) {
-            // The previously (non-pressed) hovered button is not being hovered anymore
-            UIhandler->panels.indexID(hoveredButton).highlight = UIhandler->buttons.indexID(hoveredButton).defaultHighlight;
-        }
-
-		hoveredButtonExists = false;
     }
 }

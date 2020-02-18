@@ -1,13 +1,14 @@
 #pragma once
 
-class StateManager;
-struct ECSInterface;
+#include <Engine/GameState/StateManager.hpp>
+
+class ECSCore;
 
 class State
 {
 public:
-    State(StateManager* stateManager, ECSInterface* ecs);
-    State(State* other);
+    State(StateManager* pStateManager, ECSCore* ecs, STATE_TRANSITION transitionSetting);
+    State(State* pOther, STATE_TRANSITION transitionSetting);
     virtual ~State();
 
     virtual void resume() = 0;
@@ -16,6 +17,6 @@ public:
     virtual void update(float dt) = 0;
 
 protected:
-    ECSInterface* ecs;
-    StateManager* stateManager;
+    ECSCore* m_pECS;
+    StateManager* m_pStateManager;
 };

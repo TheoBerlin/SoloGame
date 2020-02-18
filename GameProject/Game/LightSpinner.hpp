@@ -7,7 +7,7 @@ class LightHandler;
 class LightSpinner : public System
 {
 public:
-    LightSpinner(ECSInterface* ecs);
+    LightSpinner(ECSCore* pECS);
     ~LightSpinner();
 
     void update(float dt);

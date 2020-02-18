@@ -1,7 +1,7 @@
 #include "InputHandler.hpp"
 
-InputHandler::InputHandler(SystemSubscriber* sysSubscriber, HWND window)
-    :ComponentHandler({}, sysSubscriber, std::type_index(typeid(InputHandler)))
+InputHandler::InputHandler(ECSCore* pECS, HWND window)
+    :ComponentHandler({}, pECS, std::type_index(typeid(InputHandler)))
 {
     mouse.SetWindow(window);
     mouse.SetMode(mouse.MODE_RELATIVE);

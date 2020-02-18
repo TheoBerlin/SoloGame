@@ -1,6 +1,5 @@
 #include "UIRenderer.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
@@ -8,8 +7,8 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11Device* device, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
-    :System(ecs),
+UIRenderer::UIRenderer(ECSCore* pECS, ID3D11DeviceContext* context, ID3D11Device* device, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
+    :System(pECS),
     context(context),
     renderTarget(rtv),
     depthStencilView(dsv)
@@ -22,12 +21,12 @@ UIRenderer::UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11De
 
     this->subscribeToComponents(&sysReg);
 
-    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
-    std::type_index tid_UIHandler = std::type_index(typeid(UIHandler));
-    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderResourceHandler));
-    this->shaderHandler = static_cast<ShaderHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderHandler));
-    this->UIhandler = static_cast<UIHandler*>(ecs->systemSubscriber.getComponentHandler(tid_UIHandler));
+    const std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
+    const std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
+    const std::type_index tid_UIHandler = std::type_index(typeid(UIHandler));
+    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
+    this->shaderHandler = static_cast<ShaderHandler*>(getComponentHandler(tid_shaderHandler));
+    this->UIhandler = static_cast<UIHandler*>(getComponentHandler(tid_UIHandler));
 
     this->UIProgram = shaderHandler->getProgram(UI);
 

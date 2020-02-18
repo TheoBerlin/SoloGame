@@ -1,8 +1,8 @@
 #include "Tube.hpp"
 
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
-#include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -15,13 +15,13 @@ const float maxPointDistance = 3.0f;
 const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
-TubeHandler::TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device)
-    :ComponentHandler({}, sysSubscriber, std::type_index(typeid(TubeHandler))),
+TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* device)
+    :ComponentHandler({}, pECS, std::type_index(typeid(TubeHandler))),
     device(device)
 {
     std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
 
-    this->textureLoader = static_cast<TextureLoader*>(sysSubscriber->getComponentHandler(tid_textureLoader));
+    this->textureLoader = static_cast<TextureLoader*>(pECS->getSystemSubscriber()->getComponentHandler(tid_textureLoader));
 
     std::vector<ComponentRegistration> compRegs = {};
     this->registerHandler(&compRegs);

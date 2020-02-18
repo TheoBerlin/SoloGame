@@ -74,7 +74,7 @@ struct Program;
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay);
+    UIHandler(ECSCore* pECS, Display* pDisplay);
     ~UIHandler();
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);

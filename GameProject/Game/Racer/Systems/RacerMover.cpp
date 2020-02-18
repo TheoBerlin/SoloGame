@@ -1,22 +1,23 @@
 #include "RacerMover.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Game/Level/Tube.hpp>
 #include <Game/Racer/Components/TrackPosition.hpp>
 
-RacerMover::RacerMover(ECSInterface* ecs)
-    :System(ecs)
+#include <cmath>
+
+RacerMover::RacerMover(ECSCore* pECS)
+    :System(pECS)
 {
-    std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
-    this->transformHandler = static_cast<TransformHandler*>(ecs->systemSubscriber.getComponentHandler(tid_transformHandler));
+    const std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
+    this->transformHandler = static_cast<TransformHandler*>(getComponentHandler(tid_transformHandler));
 
-    std::type_index tid_trackPositionHandler= std::type_index(typeid(TrackPositionHandler));
-    this->trackPositionHandler = static_cast<TrackPositionHandler*>(ecs->systemSubscriber.getComponentHandler(tid_trackPositionHandler));
+    const std::type_index tid_trackPositionHandler = std::type_index(typeid(TrackPositionHandler));
+    this->trackPositionHandler = static_cast<TrackPositionHandler*>(getComponentHandler(tid_trackPositionHandler));
 
-    std::type_index tid_tubeHandler= std::type_index(typeid(TubeHandler));
-    this->tubeHandler = static_cast<TubeHandler*>(ecs->systemSubscriber.getComponentHandler(tid_tubeHandler));
+    const std::type_index tid_tubeHandler = std::type_index(typeid(TubeHandler));
+    this->tubeHandler = static_cast<TubeHandler*>(getComponentHandler(tid_tubeHandler));
 
     SystemRegistration sysReg = {
     {
@@ -28,7 +29,7 @@ RacerMover::RacerMover(ECSInterface* ecs)
     this->registerUpdate(&sysReg);
 
     std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
-    InputHandler* inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    InputHandler* inputHandler = static_cast<InputHandler*>(getComponentHandler(tid_inputHandler));
     this->keyboardState = inputHandler->getKeyboardState();
 }
 

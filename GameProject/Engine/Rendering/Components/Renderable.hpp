@@ -21,7 +21,7 @@ const std::type_index tid_renderable = std::type_index(typeid(Renderable));
 class RenderableHandler : public ComponentHandler
 {
 public:
-    RenderableHandler(SystemSubscriber* SystemSubscriber);
+    RenderableHandler(ECSCore* pECS);
 
     // Creates a renderable component by loading from file
     bool createRenderable(Entity entity, std::string modelPath, PROGRAM program);

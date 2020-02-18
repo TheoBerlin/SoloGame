@@ -1,6 +1,5 @@
 #include "Renderer.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -11,8 +10,8 @@
 #include <Engine/Utils/Logger.hpp>
 #include <DirectXMath.h>
 
-Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
-    :System(ecs),
+Renderer::Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
+    :System(pECS),
     context(context),
     renderTarget(rtv),
     depthStencilView(dsv)
@@ -22,10 +21,10 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
     std::type_index tid_vpHandler = std::type_index(typeid(VPHandler));
     std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
 
-    this->renderableHandler = static_cast<RenderableHandler*>(ecs->systemSubscriber.getComponentHandler(tid_renderableHandler));
-    this->transformHandler = static_cast<TransformHandler*>(ecs->systemSubscriber.getComponentHandler(tid_transformHandler));
-    this->vpHandler = static_cast<VPHandler*>(ecs->systemSubscriber.getComponentHandler(tid_vpHandler));
-    this->lightHandler = static_cast<LightHandler*>(ecs->systemSubscriber.getComponentHandler(tid_lightHandler));
+    this->renderableHandler = static_cast<RenderableHandler*>(getComponentHandler(tid_renderableHandler));
+    this->transformHandler = static_cast<TransformHandler*>(getComponentHandler(tid_transformHandler));
+    this->vpHandler = static_cast<VPHandler*>(getComponentHandler(tid_vpHandler));
+    this->lightHandler = static_cast<LightHandler*>(getComponentHandler(tid_lightHandler));
 
     SystemRegistration sysReg = {
     {
@@ -39,7 +38,7 @@ Renderer::Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext*
 
     // Retrieve anisotropic sampler
     std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(ecs->systemSubscriber.getComponentHandler(tid_shaderResourceHandler));
+    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
 
     this->aniSampler = shaderResourceHandler->getAniSampler();
 

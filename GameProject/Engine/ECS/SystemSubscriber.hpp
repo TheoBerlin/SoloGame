@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/ECS/Entity.hpp>
+#include <Engine/ECS/EntityRegistry.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
 #include <Engine/Utils/IDVector.hpp>
@@ -18,28 +19,34 @@ struct ComponentRegistration;
 
 struct ComponentSubscriptions {
     // Stores IDs of entities found using subscription
-    IDVector<Entity>* subscriber;
-    // Used for querying whether or not an entity has component of subscribed types
-    std::vector<const IDContainer*> componentContainers;
+    IDVector<Entity>* subscriber; // TODO: Rename to... "foundEntities"?
     std::vector<std::type_index> componentTypes;
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> onEntityAdded;
 };
 
+// Indices for subscription storage
 struct SubscriptionStorageIndex {
     size_t systemID;
+    // A system can have multiple subscriptions stored in an array, hence the subscription index
     size_t subIdx;
+};
+
+struct ComponentStorage {
+    IDContainer* m_pContainer;
+    // Optional: Used when a component needs to be destroyed by its handler. Called alongside erasing the component from its container.
+    std::function<void(Entity)> m_ComponentDestructor;
 };
 
 class SystemSubscriber
 {
 public:
-    SystemSubscriber();
+    SystemSubscriber(EntityRegistry* pEntityRegistry);
     ~SystemSubscriber();
 
     // Associates a component types with functions for querying for their existence given entity IDs
-    void registerComponents(std::vector<ComponentRegistration>* componentRegs);
-    void deregisterComponents(ComponentHandler* handler);
+    void registerComponentHandler(std::vector<ComponentRegistration>* componentRegs);
+    void deregisterComponentHandler(ComponentHandler* handler);
 
     void registerHandler(ComponentHandler* handler, const std::type_index& handlerType);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
@@ -52,15 +59,11 @@ public:
     // Notifies subscribed systems that a component has been deleted
     void removedComponent(Entity entityID, std::type_index componentType);
 
-    void addDelayedDeletion(Entity entity);
-
-    // Perform accumulated requests to delete entities
-    void performDeletions();
-    const std::vector<Entity>& getEntitiesToDelete() const;
+    std::unordered_map<std::type_index, ComponentStorage>& getComponentStorage() { return m_ComponentStorage; }
 
 private:
     // Map component types to resources used when systems subscribe
-    std::unordered_map<std::type_index, const IDContainer*> componentContainers;
+    std::unordered_map<std::type_index, ComponentStorage> m_ComponentStorage;
     // Map component types to subscriptions. Deleted only when a subscribing system unsubscribes.
     std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
 
@@ -70,9 +73,5 @@ private:
 
     std::unordered_map<std::type_index, ComponentHandler*> componentHandlers;
 
-    // Store all registered entity IDs and their related component types. Used when deleting entities.
-    IDVector<std::unordered_set<std::type_index>> registeredEntities;
-
-    // Lists what entities to delete when performDeletions is called
-    std::vector<Entity> entitiesToDelete;
+    const EntityRegistry* m_pEntityRegistry;
 };

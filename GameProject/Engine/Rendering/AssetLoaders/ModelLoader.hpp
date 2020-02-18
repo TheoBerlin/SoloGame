@@ -17,7 +17,7 @@ class TextureLoader;
 class ModelLoader : public ComponentHandler
 {
 public:
-    ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader);
+    ModelLoader(ECSCore* pECS, TextureLoader* txLoader);
     ~ModelLoader();
 
     Model* loadModel(const std::string& filePath);

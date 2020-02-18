@@ -8,7 +8,7 @@ class UIHandler;
 class ButtonSystem : public System
 {
 public:
-    ButtonSystem(ECSInterface* ecs, unsigned int windowWidth, unsigned int windowHeight);
+    ButtonSystem(ECSCore* pECS, unsigned int windowWidth, unsigned int windowHeight);
     ~ButtonSystem();
 
     void update(float dt);

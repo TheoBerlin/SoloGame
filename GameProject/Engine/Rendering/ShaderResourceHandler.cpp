@@ -4,8 +4,8 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-ShaderResourceHandler::ShaderResourceHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device)
-    :ComponentHandler({}, sysSubscriber, std::type_index(typeid(ShaderResourceHandler))),
+ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device)
+    :ComponentHandler({}, pECS, std::type_index(typeid(ShaderResourceHandler))),
     device(device)
 {
     /* Samplers */

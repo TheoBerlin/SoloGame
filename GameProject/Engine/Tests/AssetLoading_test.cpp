@@ -1,5 +1,5 @@
 #include <catch/catch.hpp>
-#include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
@@ -9,11 +9,11 @@
 TEST_CASE("ModelLoader") {
     Display display(nullptr, 720, 16.0f/9.0f, true);
 
-    ECSInterface ecs;
+    ECSCore ecs;
 
-    ShaderResourceHandler shaderResourceHandler(&ecs.systemSubscriber, display.getDevice());
-    TextureLoader txLoader(&ecs.systemSubscriber, display.getDevice());
-    ModelLoader modelLoader(&ecs.systemSubscriber, &txLoader);
+    ShaderResourceHandler shaderResourceHandler(ecs.getSystemSubscriber(), display.getDevice());
+    TextureLoader txLoader(ecs.getSystemSubscriber(), display.getDevice());
+    ModelLoader modelLoader(ecs.getSystemSubscriber(), &txLoader);
 
     Model* umbrellaModel = modelLoader.loadModel("./Game/Assets/Models/Cube.dae");
 

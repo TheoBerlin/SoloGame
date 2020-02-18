@@ -4,8 +4,8 @@
 #include <Engine/Utils/Logger.hpp>
 #include <d3dcompiler.h>
 
-ShaderHandler::ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubscriber)
-    :ComponentHandler({}, systemSubscriber, std::type_index(typeid(ShaderHandler))),
+ShaderHandler::ShaderHandler(ID3D11Device* device, ECSCore* pECS)
+    :ComponentHandler({}, pECS, std::type_index(typeid(ShaderHandler))),
     device(device)
 {
     /* Compile all shaders and associate them with program enum names */

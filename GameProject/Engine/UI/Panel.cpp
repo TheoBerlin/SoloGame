@@ -1,21 +1,21 @@
 #include "Panel.hpp"
 
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 
-UIHandler::UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay)
-    :ComponentHandler({tid_UIPanel}, pSysSubscriber, std::type_index(typeid(UIHandler))),
+UIHandler::UIHandler(ECSCore* pECS, Display* pDisplay)
+    :ComponentHandler({tid_UIPanel}, pECS, std::type_index(typeid(UIHandler))),
     m_ClientWidth(pDisplay->getWindowWidth()),
     m_ClientHeight(pDisplay->getWindowHeight()),
     m_pDevice(pDisplay->getDevice()),
     m_pContext(pDisplay->getDeviceContext())
 {
     std::vector<ComponentRegistration> compRegs = {
-        {tid_UIPanel, &panels},
+        {tid_UIPanel, &panels, [this](Entity entity){ delete panels.indexID(entity).texture; }},
         {tid_UIButton, &buttons}
     };
 
@@ -23,13 +23,13 @@ UIHandler::UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay)
 
     // Retrieve quad from shader resource handler
     std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(pSysSubscriber->getComponentHandler(tid_shaderResourceHandler));
+    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_shaderResourceHandler));
 
     m_Quad = shaderResourceHandler->getQuarterScreenQuad();
 
     // Retrieve UI rendering shader program from shader handler
     std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
-    ShaderHandler* shaderHandler = static_cast<ShaderHandler*>(pSysSubscriber->getComponentHandler(tid_shaderHandler));
+    ShaderHandler* shaderHandler = static_cast<ShaderHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_shaderHandler));
 
     m_pUIProgram = shaderHandler->getProgram(PROGRAM::UI);
     m_pAniSampler = shaderResourceHandler->getAniSampler();
@@ -49,8 +49,9 @@ UIHandler::UIHandler(SystemSubscriber* pSysSubscriber, Display* pDisplay)
     bufferDesc.StructureByteStride = 0;
 
     HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectBuffer);
-    if (FAILED(hr))
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create per-char cbuffer: %s", hresultToString(hr).c_str());
+    }
 }
 
 UIHandler::~UIHandler()
@@ -74,7 +75,7 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
     createPanelTexture(panel);
 
     panels.push_back(panel, entity);
-    this->registerComponent(tid_UIPanel, entity);
+    this->registerComponent(entity, tid_UIPanel);
 }
 
 void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount)
@@ -116,7 +117,7 @@ void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, Di
         onPress
     }, entity);
 
-    this->registerComponent(tid_UIButton, entity);
+    this->registerComponent(entity, tid_UIButton);
 }
 
 void UIHandler::createPanelTexture(UIPanel& panel)

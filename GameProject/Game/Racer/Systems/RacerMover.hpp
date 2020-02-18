@@ -22,7 +22,7 @@ const float startingCenterDistance = 0.5f;
 class RacerMover : public System
 {
 public:
-    RacerMover(ECSInterface* ecs);
+    RacerMover(ECSCore* pECS);
     ~RacerMover();
 
     void update(float dt);

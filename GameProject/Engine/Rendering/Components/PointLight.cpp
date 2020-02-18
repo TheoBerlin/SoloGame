@@ -1,7 +1,7 @@
 #include "PointLight.hpp"
 
-LightHandler::LightHandler(SystemSubscriber* sysSubscriber)
-    :ComponentHandler({tid_pointLight}, sysSubscriber, std::type_index(typeid(LightHandler)))
+LightHandler::LightHandler(ECSCore* pECS)
+    :ComponentHandler({tid_pointLight}, pECS, std::type_index(typeid(LightHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
         {tid_pointLight, &pointLights}
@@ -20,5 +20,5 @@ void LightHandler::createPointLight(Entity entity, DirectX::XMFLOAT3 position, D
     pointLight.light = light;
     pointLight.radiusReciprocal = 1.0f/radius;
     pointLights.push_back(pointLight, entity);
-    this->registerComponent(tid_pointLight, entity);
+    this->registerComponent(entity, tid_pointLight);
 }

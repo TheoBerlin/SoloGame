@@ -2,7 +2,7 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -10,12 +10,12 @@
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
-ModelLoader::ModelLoader(SystemSubscriber* sysSubscriber, TextureLoader* txLoader)
+ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)
     :txLoader(txLoader),
-    ComponentHandler({}, sysSubscriber, std::type_index(typeid(ModelLoader)))
+    ComponentHandler({}, pECS, std::type_index(typeid(ModelLoader)))
 {
     std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    this->shaderResourceHandler = static_cast<ShaderResourceHandler*>(sysSubscriber->getComponentHandler(tid_shaderResourceHandler));
+    this->shaderResourceHandler = static_cast<ShaderResourceHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_shaderResourceHandler));
 }
 
 ModelLoader::~ModelLoader()

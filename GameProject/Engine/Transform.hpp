@@ -24,7 +24,7 @@ const std::type_index tid_worldMatrix = std::type_index(typeid(WorldMatrix));
 class TransformHandler : public ComponentHandler
 {
 public:
-    TransformHandler(SystemSubscriber* sysSubscriber);
+    TransformHandler(ECSCore* pECs);
     ~TransformHandler();
 
     void createTransform(Entity entity);

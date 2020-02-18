@@ -18,7 +18,7 @@ const std::type_index tid_projection = std::type_index(typeid(ProjectionMatrix))
 class VPHandler : public ComponentHandler
 {
 public:
-    VPHandler(SystemSubscriber* sysSubscriber);
+    VPHandler(ECSCore* pECS);
     ~VPHandler();
 
     void createViewMatrix(Entity entity, DirectX::XMVECTOR eyePos, DirectX::XMVECTOR lookDir, DirectX::XMVECTOR upDir);

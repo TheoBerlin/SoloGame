@@ -41,7 +41,7 @@ struct Program {
 class ShaderHandler : public ComponentHandler
 {
 public:
-    ShaderHandler(ID3D11Device* device, SystemSubscriber* systemSubscriber);
+    ShaderHandler(ID3D11Device* device, ECSCore* pECS);
     ~ShaderHandler();
 
     Program* getProgram(PROGRAM program);

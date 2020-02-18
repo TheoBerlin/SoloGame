@@ -29,7 +29,7 @@ struct ProcessedGlyph {
 class TextRenderer : public ComponentHandler
 {
 public:
-    TextRenderer(SystemSubscriber* systemSubscriber, ID3D11Device* device, ID3D11DeviceContext* context);
+    TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context);
     ~TextRenderer();
 
     // Creates a texture with text rendered onto it

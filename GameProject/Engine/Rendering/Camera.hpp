@@ -14,7 +14,7 @@ class VPHandler;
 class CameraSystem : public System
 {
 public:
-    CameraSystem(ECSInterface* ecs);
+    CameraSystem(ECSCore* pECS);
     ~CameraSystem();
 
     // Keeps cameras' view matrices up-to date with their transforms

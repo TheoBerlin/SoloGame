@@ -1,13 +1,12 @@
 #include "LightSpinner.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 
-LightSpinner::LightSpinner(ECSInterface* ecs)
-    :System(ecs)
+LightSpinner::LightSpinner(ECSCore* pECS)
+    :System(pECS)
 {
     std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
-    this->lightHandler = static_cast<LightHandler*>(ecs->systemSubscriber.getComponentHandler(tid_lightHandler));
+    this->lightHandler = static_cast<LightHandler*>(getComponentHandler(tid_lightHandler));
 
     SystemRegistration sysReg = {
     {

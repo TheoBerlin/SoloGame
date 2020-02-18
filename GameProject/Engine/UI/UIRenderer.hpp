@@ -13,7 +13,7 @@ struct Program;
 class UIRenderer : public System
 {
 public:
-    UIRenderer(ECSInterface* ecs, ID3D11DeviceContext* context, ID3D11Device* device, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
+    UIRenderer(ECSCore* pECS, ID3D11DeviceContext* context, ID3D11Device* device, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
     ~UIRenderer();
 
     void update(float dt);
