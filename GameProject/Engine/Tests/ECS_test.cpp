@@ -1,7 +1,7 @@
 #include <catch/catch.hpp>
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/ECS/Entity.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/ECS/SystemSubscriber.hpp>
@@ -63,8 +63,8 @@ public:
 
 class ForwardMover : public System {
 public:
-    ForwardMover(ECSInterface* ecs)
-        :System(ecs)
+    ForwardMover(ECSCore* pECS)
+        :System(pECS)
     {
         std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler_test));
         ComponentHandler* handler = this->getComponentHandler(tid_transformHandler);
@@ -121,13 +121,13 @@ TEST_CASE("ECS Subscriptions") {
         This set of unit tests serves as a proof of concept and a handbook on how to use the ECS implementation
     */
     // Initial ECS and test setup
-    ECSInterface ecs;
+    ECSCore ecs;
 
     const size_t entityCount = 2;
     Entity entities[entityCount];
 
     for(size_t i = 0; i < entityCount; i += 1) {
-        entities[i] = ecs.entityIDGen.genID();
+        entities[i] = ecs.createEntity();
     }
 
     Position pos;
@@ -137,7 +137,7 @@ TEST_CASE("ECS Subscriptions") {
 
     SECTION("Register system before components are created") {
         // Component handlers must be registered before systems
-        TransformHandler_test transformHandler(&ecs.systemSubscriber);
+        TransformHandler_test transformHandler(ecs.getSystemSubscriber());
 
         ForwardMover sys(&ecs);
 
@@ -160,12 +160,12 @@ TEST_CASE("ECS Subscriptions") {
         REQUIRE(transformHandler.positions[0].position.z == 10.0f);
 
         SECTION("Deleting an entity leads to its components being unregistered") {
-            ecs.systemSubscriber.addDelayedDeletion(entities[0]);
-            ecs.systemSubscriber.performDeletions();
+            ecs.getSystemSubscriber()->addDelayedDeletion(entities[0]);
+            ecs.getSystemSubscriber()->performDeletions();
             REQUIRE(sys.getEntities().size() == 1);
 
-            ecs.systemSubscriber.addDelayedDeletion(entities[1]);
-            ecs.systemSubscriber.performDeletions();
+            ecs.getSystemSubscriber()->addDelayedDeletion(entities[1]);
+            ecs.getSystemSubscriber()->performDeletions();
             REQUIRE(sys.getEntities().size() == 0);
         }
     }
@@ -175,7 +175,7 @@ TEST_CASE("ECS Subscriptions") {
             Registering a system after registering components should lead to the system being notified about all existing components
             it's subscribing to
         */
-        TransformHandler_test transformHandler(&ecs.systemSubscriber);
+        TransformHandler_test transformHandler(ecs.getSystemSubscriber());
 
         // With this setup, registering the forward mover system should lead to entities[0] being processed
         transformHandler.createPos(pos, entities[0]);
@@ -245,8 +245,8 @@ public:
 // Does a lot of calculations per component to avoid memory bandwidth being the performance bottleneck
 class ExpensiveCalculator1 : public System {
 public:
-    ExpensiveCalculator1(ECSInterface* ecs)
-        :System(ecs)
+    ExpensiveCalculator1(ECSCore* pECS)
+        :System(pECS)
     {
         std::type_index tid_mathCompHandler = std::type_index(typeid(MathComponentHandler));
         ComponentHandler* handler = this->getComponentHandler(tid_mathCompHandler);
@@ -289,8 +289,8 @@ private:
 
 class ExpensiveCalculator2 : public System {
 public:
-    ExpensiveCalculator2(ECSInterface* ecs)
-        :System(ecs)
+    ExpensiveCalculator2(ECSCore* pECS)
+        :System(pECS)
     {
         std::type_index tid_mathCompHandler = std::type_index(typeid(MathComponentHandler));
         ComponentHandler* handler = this->getComponentHandler(tid_mathCompHandler);
@@ -345,16 +345,16 @@ TEST_CASE("ECS System Updates") {
 
 double testUpdate(bool multithreaded)
 {
-    ECSInterface ecs;
+    ECSCore ecs;
 
-    MathComponentHandler mathCompHandler(&ecs.systemSubscriber);
+    MathComponentHandler mathCompHandler(ecs.getSystemSubscriber());
 
     ExpensiveCalculator1 calcSys1(&ecs);
     ExpensiveCalculator2 calcSys2(&ecs);
 
     // Prepare lots of components for the systems
     for (size_t i = 0; i < 10000; i += 1) {
-        Entity entity = ecs.entityIDGen.genID();
+        Entity entity = ecs.createEntity();
 
         mathCompHandler.createPower({2.0f, 1.1f}, entity);
         mathCompHandler.createDivision({200000.3f, 1.1f}, entity);
@@ -363,9 +363,9 @@ double testUpdate(bool multithreaded)
     // TODO: Create a simpler interface for measuring and printing time with chrono
     auto start = std::chrono::high_resolution_clock::now();
     if (multithreaded) {
-        ecs.systemUpdater.updateMT(0.1f);
+        ecs.getSystemUpdater()->updateMT(0.1f);
     } else {
-        ecs.systemUpdater.updateST(0.1f);
+        ecs.getSystemUpdater()->updateST(0.1f);
     }
 
     auto end = std::chrono::high_resolution_clock::now();

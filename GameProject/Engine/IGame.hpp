@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
@@ -29,7 +29,7 @@ public:
     void run();
 
 protected:
-    ECSInterface ecs;
+    ECSCore m_ECS;
 
     // Component handlers
     TransformHandler transformHandler;

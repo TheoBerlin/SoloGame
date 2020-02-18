@@ -4,8 +4,8 @@
 
 #include <cmath>
 
-TransformHandler::TransformHandler(SystemSubscriber* sysSubscriber)
-    :ComponentHandler({tid_transform, tid_worldMatrix}, sysSubscriber, std::type_index(typeid(TransformHandler)))
+TransformHandler::TransformHandler(ECSCore* pECS)
+    :ComponentHandler({tid_transform, tid_worldMatrix}, pECS, std::type_index(typeid(TransformHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
         {tid_transform, &transforms},
@@ -26,7 +26,7 @@ void TransformHandler::createTransform(Entity entity)
     DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionIdentity());
 
     transforms.push_back(transform, entity);
-    this->registerComponent(tid_transform, entity);
+    this->registerComponent(entity, tid_transform);
 }
 
 void TransformHandler::createWorldMatrix(Entity entity)
@@ -47,7 +47,7 @@ void TransformHandler::createWorldMatrix(Entity entity)
     worldMatrix.dirty = false;
 
     worldMatrices.push_back(worldMatrix, entity);
-    this->registerComponent(tid_worldMatrix, entity);
+    this->registerComponent(entity, tid_worldMatrix);
 }
 
 WorldMatrix& TransformHandler::getWorldMatrix(Entity entity)

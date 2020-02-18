@@ -1,36 +1,67 @@
 #include "StateManager.hpp"
 
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/State.hpp>
 
-StateManager::StateManager()
+StateManager::StateManager(ECSCore* pECS)
+    :m_pECS(pECS)
 {}
 
 StateManager::~StateManager()
 {
-    while (states.size() != 0) {
-        delete states.top();
-        states.pop();
+    while (!m_StatesToDelete.empty()) {
+        delete m_StatesToDelete.front();
+        m_StatesToDelete.pop();
+    }
+
+    while (!m_States.empty()) {
+        delete m_States.top();
+        m_States.pop();
     }
 }
 
-void StateManager::pushState(State* state)
+void StateManager::transitionState(State* pNewState, STATE_TRANSITION transitionSetting)
 {
-	if (!states.empty()) {
-		states.top()->pause();
-	}
+    switch (transitionSetting) {
+        case STATE_TRANSITION::PUSH:
+            m_pECS->addRegistryPage();
+            m_States.push(pNewState);
+            break;
+        case STATE_TRANSITION::POP:
+            delete m_States.top();
+            m_pECS->deleteTopRegistryPage();
+            m_States.pop();
 
-    states.push(state);
-}
+            if (!m_States.empty()) {
+                m_States.top()->resume();
+            }
+            break;
+        case STATE_TRANSITION::PAUSE_AND_PUSH:
+            m_States.top()->pause();
+            m_pECS->deregisterTopRegistryPage();
 
-void StateManager::popState()
-{
-    delete states.top();
-    states.pop();
+            m_pECS->addRegistryPage();
+            m_States.push(pNewState);
+            break;
+        case STATE_TRANSITION::POP_AND_PUSH:
+            m_pECS->deleteTopRegistryPage();
+            m_StatesToDelete.push(m_States.top());
+            m_States.pop();
 
-    states.top()->resume();
+            m_pECS->addRegistryPage();
+            m_States.push(pNewState);
+            break;
+    }
 }
 
 void StateManager::update(float dt)
 {
-    states.top()->update(dt);
+    // while (!m_StatesToDelete.empty()) {
+    //     delete m_StatesToDelete.front();
+    //     m_StatesToDelete.pop();
+    // }
+
+    if (!m_States.empty()) {
+        m_States.top()->update(dt);
+    }
 }

@@ -5,12 +5,13 @@
 #include <typeindex>
 #include <vector>
 
+class ECSCore;
 class IDContainer;
-class SystemSubscriber;
 
 struct ComponentRegistration {
     std::type_index tid;
-    const IDContainer* componentContainer;
+    IDContainer* componentContainer;
+    std::function<void(Entity)> m_ComponentDestructor;
 };
 
 /*
@@ -20,7 +21,7 @@ struct ComponentRegistration {
 class ComponentHandler
 {
 public:
-    ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* systemSubscriber, std::type_index tid_handler);
+    ComponentHandler(std::vector<std::type_index> handledTypes, ECSCore* pECS, std::type_index tid_handler);
 
     // Deregisters component handler and deletes components
     ~ComponentHandler();
@@ -36,11 +37,11 @@ protected:
     void registerHandler(std::vector<ComponentRegistration>* componentQueries);
 
     // Tell the system handler a component has been created
-    void registerComponent(std::type_index tid, Entity entityID);
+    void registerComponent(Entity entity, std::type_index componentType);
 
-    std::vector<std::type_index> handledTypes;
+    std::vector<std::type_index> m_HandledTypes;
 
 private:
-    std::type_index tid_handler;
-    SystemSubscriber* systemSubscriber;
+    std::type_index m_TID;
+    ECSCore* m_pECS;
 };

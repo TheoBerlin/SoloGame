@@ -5,9 +5,9 @@
 
 #include <DirectXTK/WICTextureLoader.h>
 
-TextureLoader::TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device)
+TextureLoader::TextureLoader(ECSCore* pECS, ID3D11Device* device)
     :device(device),
-    ComponentHandler({}, sysSubscriber, std::type_index(typeid(TextureLoader)))
+    ComponentHandler({}, pECS, std::type_index(typeid(TextureLoader)))
 {}
 
 TextureLoader::~TextureLoader()

@@ -1,15 +1,15 @@
 #include "TextRenderer.hpp"
 
 #include <DirectXTK/WICTextureLoader.h>
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
-TextRenderer::TextRenderer(SystemSubscriber* systemSubscriber, ID3D11Device* device, ID3D11DeviceContext* context)
-    :ComponentHandler({}, systemSubscriber, std::type_index(typeid(TextRenderer))),
+TextRenderer::TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context)
+    :ComponentHandler({}, pECS, std::type_index(typeid(TextRenderer))),
     device(device),
     context(context)
 {
@@ -22,7 +22,7 @@ TextRenderer::TextRenderer(SystemSubscriber* systemSubscriber, ID3D11Device* dev
 	if (err) {
 		Logger::LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
         FT_Done_FreeType(ftLib);
-        systemSubscriber->deregisterComponents(this);
+        pECS->getSystemSubscriber()->deregisterComponentHandler(this);
         return;
 	}
 

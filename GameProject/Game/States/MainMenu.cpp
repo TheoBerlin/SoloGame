@@ -1,6 +1,6 @@
 #include "MainMenu.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
@@ -9,26 +9,26 @@
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
 
-MainMenu::MainMenu(StateManager* stateManager, ECSInterface* ecs, ID3D11Device* device)
-    :State(stateManager, ecs),
+MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* device)
+    :State(stateManager, pECS, STATE_TRANSITION::PUSH),
     device(device)
 {
     std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
 
-    this->inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    this->inputHandler = static_cast<InputHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_inputHandler));
     inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
     inputHandler->setMouseVisibility(true);
     this->keyboardState = inputHandler->getKeyboardState();
 
     std::type_index tid_uiHandler = std::type_index(typeid(UIHandler));
-    UIHandler* uiHandler = static_cast<UIHandler*>(ecs->systemSubscriber.getComponentHandler(tid_uiHandler));
+    UIHandler* uiHandler = static_cast<UIHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_uiHandler));
     std::type_index tid_textRenderer = std::type_index(typeid(TextRenderer));
-    TextRenderer* pTextRenderer = static_cast<TextRenderer*>(ecs->systemSubscriber.getComponentHandler(tid_textRenderer));
+    TextRenderer* pTextRenderer = static_cast<TextRenderer*>(pECS->getSystemSubscriber()->getComponentHandler(tid_textRenderer));
     std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
-    TextureLoader* pTextureLoader = static_cast<TextureLoader*>(ecs->systemSubscriber.getComponentHandler(tid_textureLoader));
+    TextureLoader* pTextureLoader = static_cast<TextureLoader*>(pECS->getSystemSubscriber()->getComponentHandler(tid_textureLoader));
 
     // Create UI panel
-    uiEntity = ecs->entityIDGen.genID();
+    uiEntity = m_pECS->createEntity();
     uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 1.0f);
 
     // Attach background and text textures to the panel
@@ -46,7 +46,7 @@ MainMenu::MainMenu(StateManager* stateManager, ECSInterface* ecs, ID3D11Device* 
     uiHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures, ARRAYSIZE(panelTextures));
 
     // Make the panel a button
-    uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){this->stateManager->pushState(new GameSession(this));});
+    uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ new GameSession(this); });
 
     Logger::LOG_INFO("Entered main menu, press E to start a game session");
 }
@@ -66,7 +66,7 @@ void MainMenu::pause()
 void MainMenu::update(float dt)
 {
     if (keyboardState->E) {
-        this->stateManager->pushState(new GameSession(this));
+        new GameSession(this);
     }
 }
 

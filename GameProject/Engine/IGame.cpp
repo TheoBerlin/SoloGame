@@ -1,22 +1,25 @@
 #include "IGame.hpp"
 
+#include <iostream>
+
 IGame::IGame(HINSTANCE hInstance)
-    :display(hInstance, 720, 16.0f/9.0f, true),
-    inputHandler(&ecs.systemSubscriber, display.getWindow()),
-    transformHandler(&ecs.systemSubscriber),
-    shaderHandler(display.getDevice(), &ecs.systemSubscriber),
-    shaderResourceHandler(&ecs.systemSubscriber, display.getDevice()),
-    txLoader(&ecs.systemSubscriber, display.getDevice()),
-    modelLoader(&ecs.systemSubscriber, &txLoader),
-    renderableHandler(&ecs.systemSubscriber),
-    vpHandler(&ecs.systemSubscriber),
-    lightHandler(&ecs.systemSubscriber),
-    textRenderer(&ecs.systemSubscriber, display.getDevice(), display.getDeviceContext()),
-    uiHandler(&ecs.systemSubscriber, &display),
-    renderer(&ecs, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
-    uiRenderer(&ecs, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),
-    cameraSystem(&ecs),
-    buttonSystem(&ecs, display.getWindowWidth(), display.getWindowHeight())
+    :stateManager(&m_ECS),
+    display(hInstance, 720, 16.0f/9.0f, true),
+    inputHandler(&m_ECS, display.getWindow()),
+    transformHandler(&m_ECS),
+    shaderHandler(display.getDevice(), &m_ECS),
+    shaderResourceHandler(&m_ECS, display.getDevice()),
+    txLoader(&m_ECS, display.getDevice()),
+    modelLoader(&m_ECS, &txLoader),
+    renderableHandler(&m_ECS),
+    vpHandler(&m_ECS),
+    lightHandler(&m_ECS),
+    textRenderer(&m_ECS, display.getDevice(), display.getDeviceContext()),
+    uiHandler(&m_ECS, &display),
+    renderer(&m_ECS, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
+    uiRenderer(&m_ECS, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),
+    cameraSystem(&m_ECS),
+    buttonSystem(&m_ECS, display.getWindowWidth(), display.getWindowHeight())
 {
     display.showWindow();
     renderer.update(0.0f);
@@ -60,15 +63,7 @@ void IGame::run()
             uiRenderer.update(dt);
             display.presentBackBuffer();
 
-            // Perform maintenance
-            const std::vector<Entity>& entitiesToDelete = ecs.systemSubscriber.getEntitiesToDelete();
-            if (!entitiesToDelete.empty()) {
-                ecs.systemSubscriber.performDeletions();
-
-                for (Entity deletedEntity : entitiesToDelete) {
-                    ecs.entityIDGen.popID(deletedEntity);
-                }
-            }
+            m_ECS.performMaintenance();
         }
     }
 }

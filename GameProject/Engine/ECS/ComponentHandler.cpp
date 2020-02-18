@@ -1,36 +1,36 @@
 #include "ComponentHandler.hpp"
 
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ECSCore.hpp>
 
-ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, SystemSubscriber* systemSubscriber, std::type_index tid_handler)
-    :handledTypes(handledTypes),
-    systemSubscriber(systemSubscriber),
-    tid_handler(tid_handler)
+ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, ECSCore* pECS, std::type_index tid_handler)
+    :m_HandledTypes(handledTypes),
+    m_pECS(pECS),
+    m_TID(tid_handler)
 {
-    systemSubscriber->registerHandler(this, tid_handler);
+    m_pECS->getSystemSubscriber()->registerHandler(this, tid_handler);
 }
 
 ComponentHandler::~ComponentHandler()
 {
-    systemSubscriber->deregisterComponents(this);
+    m_pECS->getSystemSubscriber()->deregisterComponentHandler(this);
 }
 
 void ComponentHandler::registerHandler(std::vector<ComponentRegistration>* componentQueries)
 {
-    this->systemSubscriber->registerComponents(componentQueries);
+    m_pECS->getSystemSubscriber()->registerComponentHandler(componentQueries);
 }
 
 const std::vector<std::type_index>& ComponentHandler::getHandledTypes() const
 {
-    return this->handledTypes;
+    return m_HandledTypes;
 }
 
 std::type_index ComponentHandler::getHandlerType() const
 {
-    return this->tid_handler;
+    return m_TID;
 }
 
-void ComponentHandler::registerComponent(std::type_index tid, Entity entityID)
+void ComponentHandler::registerComponent(Entity entity, std::type_index componentType)
 {
-    this->systemSubscriber->newComponent(entityID, tid);
+    m_pECS->componentAdded(entity, componentType);
 }

@@ -17,7 +17,7 @@ const std::type_index tid_pointLight = std::type_index(typeid(PointLight));
 class LightHandler : public ComponentHandler
 {
 public:
-    LightHandler(SystemSubscriber* sysSubscriber);
+    LightHandler(ECSCore* pECS);
     ~LightHandler();
 
     void createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius);

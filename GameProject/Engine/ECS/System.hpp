@@ -31,9 +31,9 @@ struct SystemRegistration {
     System* system;
 };
 
-struct ECSInterface;
-class SystemSubscriber;
 class ComponentHandler;
+class ECSCore;
+class SystemSubscriber;
 struct ComponentSubReq;
 
 /*
@@ -44,7 +44,7 @@ class System
 {
 public:
     // Registers the system in the system handler
-    System(ECSInterface* ecs);
+    System(ECSCore* pECS);
 
     // Deregisters system
     ~System();
@@ -58,10 +58,10 @@ protected:
     void registerUpdate(SystemRegistration* sysReg);
 
     void unsubscribeFromComponents(std::vector<std::type_index> unsubTypes);
-    ComponentHandler* getComponentHandler(std::type_index& handlerType);
+    ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
     std::vector<std::type_index> componentTypes;
 
 private:
-    ECSInterface* ecs;
+    ECSCore* m_pECS;
 };

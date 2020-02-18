@@ -11,7 +11,7 @@ struct Vertex;
 class ShaderResourceHandler : public ComponentHandler
 {
 public:
-    ShaderResourceHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device);
+    ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device);
     ~ShaderResourceHandler();
 
     void createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer);

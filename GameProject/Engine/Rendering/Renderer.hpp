@@ -14,7 +14,7 @@ class VPHandler;
 class Renderer : public System
 {
 public:
-    Renderer(ECSInterface* ecs, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
+    Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
     ~Renderer();
 
     void update(float dt);

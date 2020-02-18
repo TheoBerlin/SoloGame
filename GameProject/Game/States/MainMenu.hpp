@@ -11,7 +11,7 @@ class InputHandler;
 class MainMenu : public State
 {
 public:
-    MainMenu(StateManager* statemanager, ECSInterface* ecs, ID3D11Device* device);
+    MainMenu(StateManager* statemanager, ECSCore* ecs, ID3D11Device* device);
     ~MainMenu();
 
     void resume();

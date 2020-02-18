@@ -1,21 +1,20 @@
 #include "Camera.hpp"
 
-#include <Engine/ECS/ECSInterface.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 
-CameraSystem::CameraSystem(ECSInterface* ecs)
-    :System(ecs)
+CameraSystem::CameraSystem(ECSCore* pECS)
+    :System(pECS)
 {
     std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
     std::type_index tid_vpHandler = std::type_index(typeid(VPHandler));
     std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
 
-    this->transformHandler = static_cast<TransformHandler*>(ecs->systemSubscriber.getComponentHandler(tid_transformHandler));
-    this->vpHandler = static_cast<VPHandler*>(ecs->systemSubscriber.getComponentHandler(tid_vpHandler));
+    this->transformHandler = static_cast<TransformHandler*>(getComponentHandler(tid_transformHandler));
+    this->vpHandler = static_cast<VPHandler*>(getComponentHandler(tid_vpHandler));
 
-    InputHandler* inputHandler = static_cast<InputHandler*>(ecs->systemSubscriber.getComponentHandler(tid_inputHandler));
+    InputHandler* inputHandler = static_cast<InputHandler*>(getComponentHandler(tid_inputHandler));
     this->keyboardState = inputHandler->getKeyboardState();
     this->mouseState = inputHandler->getMouseState();
 

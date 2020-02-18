@@ -1,7 +1,7 @@
 #include "TrackPosition.hpp"
 
-TrackPositionHandler::TrackPositionHandler(SystemSubscriber* sysSubscriber)
-    :ComponentHandler({tid_trackPosition}, sysSubscriber, std::type_index(typeid(TrackPositionHandler)))
+TrackPositionHandler::TrackPositionHandler(ECSCore* pECS)
+    :ComponentHandler({tid_trackPosition}, pECS, std::type_index(typeid(TrackPositionHandler)))
 {
     std::vector<ComponentRegistration> compRegs = {
         {tid_trackPosition, &trackPositions}
@@ -21,5 +21,5 @@ void TrackPositionHandler::createTrackPosition(Entity entity)
     trackPosition.distanceFromCenter = 0.0f;
     trackPositions.push_back(trackPosition, entity);
 
-    this->registerComponent(tid_trackPosition, entity);
+    this->registerComponent(entity, tid_trackPosition);
 }

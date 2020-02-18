@@ -19,7 +19,7 @@ struct TubePoint {
 class TubeHandler : public ComponentHandler
 {
 public:
-    TubeHandler(SystemSubscriber* sysSubscriber, ID3D11Device* device);
+    TubeHandler(ECSCore* pECS, ID3D11Device* device);
     ~TubeHandler();
 
     Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);

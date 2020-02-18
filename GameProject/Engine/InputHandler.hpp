@@ -9,7 +9,7 @@
 class InputHandler : public ComponentHandler
 {
 public:
-    InputHandler(SystemSubscriber* sysSubscriber, HWND window);
+    InputHandler(ECSCore* pECS, HWND window);
     ~InputHandler();
 
     // Updates the states of the keyboard and mouse

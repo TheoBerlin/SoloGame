@@ -8,7 +8,7 @@
 class TextureLoader : public ComponentHandler
 {
 public:
-    TextureLoader(SystemSubscriber* sysSubscriber, ID3D11Device* device);
+    TextureLoader(ECSCore* pECS, ID3D11Device* device);
     ~TextureLoader();
 
     TextureReference loadTexture(const std::string& filePath);
