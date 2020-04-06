@@ -6,6 +6,7 @@
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 // The amount of points to add to each tube section
@@ -17,21 +18,29 @@ const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* device)
     :ComponentHandler({}, pECS, std::type_index(typeid(TubeHandler))),
-    device(device)
+    m_pDevice(device)
 {
-    std::type_index tid_textureLoader = std::type_index(typeid(TextureLoader));
 
-    this->textureLoader = static_cast<TextureLoader*>(pECS->getSystemSubscriber()->getComponentHandler(tid_textureLoader));
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.HandlerDependencies = {
+        TID(TextureLoader)
+    };
 
-    std::vector<ComponentRegistration> compRegs = {};
-    this->registerHandler(&compRegs);
+    registerHandler(handlerReg);
 }
 
 TubeHandler::~TubeHandler()
 {
-    for (size_t i = 0; i < tubes.size(); i += 1) {
-        releaseModel(&tubes[i]);
+    for (size_t i = 0; i < m_Tubes.size(); i += 1) {
+        releaseModel(&m_Tubes[i]);
     }
+}
+
+bool TubeHandler::init()
+{
+    m_pTextureLoader = static_cast<TextureLoader*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(TextureLoader)));
+    return m_pTextureLoader;
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
@@ -41,10 +50,10 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
         return nullptr;
     }
 
-    this->tubeRadius = radius;
+    m_TubeRadius = radius;
 
     // Save the section points for later use
-    this->tubeSections = sectionPoints;
+    m_TubeSections = sectionPoints;
 
     std::vector<TubePoint> tubePoints;
     createSections(sectionPoints, tubePoints, radius);
@@ -119,8 +128,8 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 		startVertexIndex += 2;
     }
 
-    tubes.push_back(Model());
-    Model& model = tubes.front();
+    m_Tubes.push_back(Model());
+    Model& model = m_Tubes.front();
     model.meshes.resize(1);
     Mesh& mesh = model.meshes.front();
     mesh.materialIndex = 0;
@@ -142,7 +151,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
+    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
         return nullptr;
@@ -157,7 +166,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    hr = device->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
+    hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
         return nullptr;
@@ -168,19 +177,19 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     Material& material = model.materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
-    material.textures.push_back(textureLoader->loadTexture("./Game/Assets/Models/Cube.png"));
+    material.textures.push_back(m_pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"));
 
     return &model;
 }
 
 const std::vector<DirectX::XMFLOAT3>& TubeHandler::getTubeSections() const
 {
-    return tubeSections;
+    return m_TubeSections;
 }
 
 float TubeHandler::getTubeRadius() const
 {
-    return tubeRadius;
+    return m_TubeRadius;
 }
 
 void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius)

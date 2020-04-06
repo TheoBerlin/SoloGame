@@ -1,6 +1,9 @@
 #pragma once
 
+#include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/ECS/ECSBooter.hpp>
 #include <Engine/ECS/EntityRegistry.hpp>
+#include <Engine/ECS/System.hpp>
 #include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/ECS/SystemUpdater.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
@@ -16,7 +19,14 @@ public:
     ECSCore(const ECSCore& other) = delete;
     void operator=(const ECSCore& other) = delete;
 
+    void update(float dt);
+
     Entity createEntity();
+
+    void enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration);
+    void enqueueSystemRegistration(const SystemRegistration& systemRegistration);
+    // Registers and initializes component handlers and systems
+    void performRegistrations();
 
     // Enqueues an entity deletion, performed during maintenance
     void deleteEntityDelayed(Entity entity);
@@ -38,6 +48,7 @@ private:
     EntityRegistry m_EntityRegistry;
     SystemSubscriber m_SystemSubscriber;
     SystemUpdater m_SystemUpdater;
+    ECSBooter m_ECSBooter;
 
     std::vector<Entity> m_EntitiesToDelete;
 };

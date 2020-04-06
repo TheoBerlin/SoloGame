@@ -4,6 +4,7 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
 #include <DirectXMath.h>
@@ -57,7 +58,7 @@ struct UIPanel {
     Texture* texture;
 };
 
-const std::type_index tid_UIPanel = std::type_index(typeid(UIPanel));
+const std::type_index tid_UIPanel = TID(UIPanel);
 
 struct UIButton {
     DirectX::XMFLOAT4 defaultHighlight, hoverHighlight, pressHighlight;
@@ -66,7 +67,7 @@ struct UIButton {
     std::function<void()> onPress;
 };
 
-const std::type_index tid_UIButton = std::type_index(typeid(UIButton));
+const std::type_index tid_UIButton = TID(UIButton);
 
 class Display;
 struct Program;
@@ -76,6 +77,8 @@ class UIHandler : public ComponentHandler
 public:
     UIHandler(ECSCore* pECS, Display* pDisplay);
     ~UIHandler();
+
+    virtual bool init() override;
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
     void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount);

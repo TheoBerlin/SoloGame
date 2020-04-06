@@ -49,12 +49,14 @@ public:
     // Deregisters system
     ~System();
 
+    virtual bool init() = 0;
+
     virtual void update(float dt) = 0;
 
     size_t ID;
 
 protected:
-    void subscribeToComponents(SystemRegistration* sysReg);
+    void subscribeToComponents(const SystemRegistration& sysReg);
     void registerUpdate(SystemRegistration* sysReg);
 
     void unsubscribeFromComponents(std::vector<std::type_index> unsubTypes);

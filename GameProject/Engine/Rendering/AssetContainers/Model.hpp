@@ -25,10 +25,10 @@ struct Model {
     std::vector<Material> materials;
 };
 
-inline void releaseModel(Model* model)
+inline void releaseModel(Model* pModel)
 {
-    for (size_t i = 0; i < model->meshes.size(); i += 1) {
-        model->meshes[i].vertexBuffer->Release();
-        model->meshes[i].indexBuffer->Release();
+    for (size_t i = 0; i < pModel->meshes.size(); i += 1) {
+        pModel->meshes[i].vertexBuffer->Release();
+        pModel->meshes[i].indexBuffer->Release();
     }
 }

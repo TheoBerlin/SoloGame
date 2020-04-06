@@ -1,26 +1,36 @@
 #include "TextureLoader.hpp"
 
 #include <Engine/Rendering/Display.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 #include <DirectXTK/WICTextureLoader.h>
 
-TextureLoader::TextureLoader(ECSCore* pECS, ID3D11Device* device)
-    :device(device),
-    ComponentHandler({}, pECS, std::type_index(typeid(TextureLoader)))
-{}
+TextureLoader::TextureLoader(ECSCore* pECS, ID3D11Device* pDevice)
+    :m_pDevice(pDevice),
+    ComponentHandler({}, pECS, TID(TextureLoader))
+{
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    registerHandler(handlerReg);
+}
 
 TextureLoader::~TextureLoader()
 {
     this->deleteAllTextures();
 }
 
+bool TextureLoader::init()
+{
+    return true;
+}
+
 TextureReference TextureLoader::loadTexture(const std::string& filePath)
 {
     // See if the texture is already loaded
-    auto itr = textures.find(filePath);
+    auto itr = m_Textures.find(filePath);
 
-    if (itr != textures.end()) {
+    if (itr != m_Textures.end()) {
         if (itr->second->getSRV() == nullptr) {
             // The texture was loaded but its data is now deleted, delete the texture pointer
             delete itr->second;
@@ -38,7 +48,7 @@ TextureReference TextureLoader::loadTexture(const std::string& filePath)
     ID3D11ShaderResourceView* pSRV = nullptr;
     ID3D11Resource* textureResource = nullptr;
 
-    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::device, convertedFilePath, &textureResource, &pSRV);
+    HRESULT hr = DirectX::CreateWICTextureFromFile(TextureLoader::m_pDevice, convertedFilePath, &textureResource, &pSRV);
 
     if (textureResource) {
         textureResource->Release();
@@ -49,7 +59,7 @@ TextureReference TextureLoader::loadTexture(const std::string& filePath)
     } else {
         Logger::LOG_INFO("Loaded texture: [%s]", filePath.c_str());
         Texture* pTexture = new Texture(pSRV);
-        textures[filePath] = pTexture;
+        m_Textures[filePath] = pTexture;
 
         TextureReference textureReference(pTexture);
         return textureReference;
@@ -60,9 +70,9 @@ TextureReference TextureLoader::loadTexture(const std::string& filePath)
 
 void TextureLoader::deleteAllTextures()
 {
-    for (auto texturePair : textures) {
+    for (auto texturePair : m_Textures) {
         delete texturePair.second;
     }
 
-    textures.clear();
+    m_Textures.clear();
 }

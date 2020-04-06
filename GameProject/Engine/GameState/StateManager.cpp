@@ -56,12 +56,10 @@ void StateManager::transitionState(State* pNewState, STATE_TRANSITION transition
 
 void StateManager::update(float dt)
 {
-    // while (!m_StatesToDelete.empty()) {
-    //     delete m_StatesToDelete.front();
-    //     m_StatesToDelete.pop();
-    // }
-
     if (!m_States.empty()) {
         m_States.top()->update(dt);
+
+        m_pECS->performRegistrations();
+        m_pECS->getSystemUpdater()->updateMT(dt);
     }
 }

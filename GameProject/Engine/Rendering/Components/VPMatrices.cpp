@@ -3,18 +3,25 @@
 const float degreesToRadians = DirectX::XM_PI / 180.0f;
 
 VPHandler::VPHandler(ECSCore* pECS)
-    :ComponentHandler({tid_view, tid_projection}, pECS, std::type_index(typeid(VPHandler)))
+    :ComponentHandler({tid_view, tid_projection}, pECS, TID(VPHandler))
 {
-    std::vector<ComponentRegistration> compRegs = {
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
         {tid_view, &viewMatrices},
         {tid_projection, &projMatrices}
     };
 
-    this->registerHandler(&compRegs);
+    this->registerHandler(handlerReg);
 }
 
 VPHandler::~VPHandler()
 {}
+
+bool VPHandler::init()
+{
+    return true;
+}
 
 void VPHandler::createViewMatrix(Entity entity, DirectX::XMVECTOR eyePos, DirectX::XMVECTOR lookDir, DirectX::XMVECTOR upDir)
 {

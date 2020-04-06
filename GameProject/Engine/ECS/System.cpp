@@ -12,9 +12,9 @@ System::~System()
     m_pECS->getSystemSubscriber()->deregisterSystem(this, componentTypes);
 }
 
-void System::subscribeToComponents(SystemRegistration* sysReg)
+void System::subscribeToComponents(const SystemRegistration& sysReg)
 {
-    m_pECS->getSystemSubscriber()->registerSystem(sysReg);
+    m_pECS->enqueueSystemRegistration(sysReg);
 }
 
 void System::registerUpdate(SystemRegistration* sysReg)

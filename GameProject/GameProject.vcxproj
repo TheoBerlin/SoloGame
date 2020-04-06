@@ -235,6 +235,7 @@
     <ClCompile Include="..\include\DirectXTK\pch.cpp" />
     <ClCompile Include="..\include\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
+    <ClCompile Include="Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="Engine\ECS\EntityRegistry.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
@@ -306,6 +307,7 @@
     <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
     <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
     <ClInclude Include="Engine\ECS\ComponentHandler.hpp" />
+    <ClInclude Include="Engine\ECS\ECSBooter.hpp" />
     <ClInclude Include="Engine\ECS\ECSCore.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
     <ClInclude Include="Engine\ECS\EntityRegistry.hpp" />
@@ -336,6 +338,7 @@
     <ClInclude Include="Engine\UI\Panel.hpp" />
     <ClInclude Include="Engine\UI\UIRenderer.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
+    <ClInclude Include="Engine\Utils\ECSUtils.hpp" />
     <ClInclude Include="Engine\Utils\IDContainer.hpp" />
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />

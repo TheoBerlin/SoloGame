@@ -1,17 +1,24 @@
 #include "PointLight.hpp"
 
 LightHandler::LightHandler(ECSCore* pECS)
-    :ComponentHandler({tid_pointLight}, pECS, std::type_index(typeid(LightHandler)))
+    :ComponentHandler({tid_pointLight}, pECS, TID(LightHandler))
 {
-    std::vector<ComponentRegistration> compRegs = {
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
         {tid_pointLight, &pointLights}
     };
 
-    this->registerHandler(&compRegs);
+    this->registerHandler(handlerReg);
 }
 
 LightHandler::~LightHandler()
 {}
+
+bool LightHandler::init()
+{
+    return true;
+}
 
 void LightHandler::createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius)
 {

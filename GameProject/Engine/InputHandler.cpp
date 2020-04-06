@@ -1,40 +1,51 @@
 #include "InputHandler.hpp"
 
+#include <Engine/Utils/ECSUtils.hpp>
+
 InputHandler::InputHandler(ECSCore* pECS, HWND window)
-    :ComponentHandler({}, pECS, std::type_index(typeid(InputHandler)))
+    :ComponentHandler({}, pECS, TID(InputHandler)),
+    m_Window(window)
 {
-    mouse.SetWindow(window);
-    mouse.SetMode(mouse.MODE_RELATIVE);
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    registerHandler(handlerReg);
 }
 
 InputHandler::~InputHandler()
 {}
 
+bool InputHandler::init()
+{
+    m_Mouse.SetWindow(m_Window);
+    m_Mouse.SetMode(m_Mouse.MODE_RELATIVE);
+    return true;
+}
+
 void InputHandler::update()
 {
-    keyboardState = keyboard.GetState();
-    mouseState = mouse.GetState();
-    mouseBtnTracker.Update(mouseState);
+    m_KeyboardState = m_Keyboard.GetState();
+    m_MouseState = m_Mouse.GetState();
+    m_MouseBtnTracker.Update(m_MouseState);
 }
 
 DirectX::Keyboard::State* InputHandler::getKeyboardState()
 {
-    return &keyboardState;
+    return &m_KeyboardState;
 }
 
 DirectX::Mouse::State* InputHandler::getMouseState()
 {
-    return &mouseState;
+    return &m_MouseState;
 }
 
 void InputHandler::setMouseMode(DirectX::Mouse::Mode mode)
 {
-    mouse.SetMode(mode);
+    m_Mouse.SetMode(mode);
 }
 
 void InputHandler::setMouseVisibility(bool visible)
 {
     ShowCursor(visible);
-    mouse.SetVisible(visible);
+    m_Mouse.SetVisible(visible);
     ShowCursor(visible);
 }

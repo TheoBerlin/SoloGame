@@ -20,6 +20,8 @@ public:
     ModelLoader(ECSCore* pECS, TextureLoader* txLoader);
     ~ModelLoader();
 
+    virtual bool init() override;
+
     Model* loadModel(const std::string& filePath);
 
     void deleteAllModels();
@@ -31,11 +33,12 @@ private:
     void loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes);
     void loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::string& directory);
 
-    TextureLoader* txLoader;
-    ShaderResourceHandler* shaderResourceHandler;
-
-    // Recursively traverse scene nodes to find out which meshes are used
+    // Recursively traverse assimp scene nodes to find out which meshes are used
     void loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene);
 
-    std::unordered_map<std::string, Model*> models;
+private:
+    TextureLoader* m_pTXLoader;
+    ShaderResourceHandler* m_pShaderResourceHandler;
+
+    std::unordered_map<std::string, Model*> m_Models;
 };

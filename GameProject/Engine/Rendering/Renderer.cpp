@@ -10,21 +10,13 @@
 #include <Engine/Utils/Logger.hpp>
 #include <DirectXMath.h>
 
-Renderer::Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv)
+Renderer::Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV)
     :System(pECS),
-    context(context),
-    renderTarget(rtv),
-    depthStencilView(dsv)
+    m_pDevice(pDevice),
+    m_pContext(pContext),
+    m_pRenderTarget(pRTV),
+    m_pDepthStencilView(pDSV)
 {
-    std::type_index tid_renderableHandler = std::type_index(typeid(RenderableHandler));
-    std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
-    std::type_index tid_vpHandler = std::type_index(typeid(VPHandler));
-    std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
-
-    this->renderableHandler = static_cast<RenderableHandler*>(getComponentHandler(tid_renderableHandler));
-    this->transformHandler = static_cast<TransformHandler*>(getComponentHandler(tid_transformHandler));
-    this->vpHandler = static_cast<VPHandler*>(getComponentHandler(tid_vpHandler));
-    this->lightHandler = static_cast<LightHandler*>(getComponentHandler(tid_lightHandler));
 
     SystemRegistration sysReg = {
     {
@@ -34,13 +26,48 @@ Renderer::Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* con
     },
     this};
 
-    this->subscribeToComponents(&sysReg);
+    subscribeToComponents(sysReg);
+}
+
+Renderer::~Renderer()
+{
+    if (m_pMeshInputLayout) {
+        m_pMeshInputLayout->Release();
+    }
+
+    if (m_pPerObjectMatrices) {
+        m_pPerObjectMatrices->Release();
+    }
+
+    if (m_pMaterialBuffer) {
+        m_pMaterialBuffer->Release();
+    }
+
+    if (m_pPointLightBuffer) {
+        m_pPointLightBuffer->Release();
+    }
+
+    if (m_RsState) {
+        m_RsState->Release();
+    }
+}
+
+bool Renderer::init()
+{
+    m_pRenderableHandler = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
+    m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pVPHandler = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+
+    if (!m_pRenderableHandler || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
+        return false;
+    }
 
     // Retrieve anisotropic sampler
     std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    ShaderResourceHandler* shaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
 
-    this->aniSampler = shaderResourceHandler->getAniSampler();
+    m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
     /* Shader resource creation */
     /* Cbuffers */
@@ -53,21 +80,27 @@ Renderer::Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* con
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
-    HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &perObjectMatrices);
-    if (FAILED(hr))
+    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectMatrices);
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
+        return false;
+    }
 
     bufferDesc.ByteWidth = sizeof(MaterialAttributes);
 
-    hr = device->CreateBuffer(&bufferDesc, nullptr, &materialBuffer);
-    if (FAILED(hr))
+    hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pMaterialBuffer);
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create material cbuffer: %s", hresultToString(hr).c_str());
+        return false;
+    }
 
     bufferDesc.ByteWidth = sizeof(PerFrameBuffer);
 
-    hr = device->CreateBuffer(&bufferDesc, nullptr, &pointLightBuffer);
-    if (FAILED(hr))
+    hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPointLightBuffer);
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create point light cbuffer: %s", hresultToString(hr).c_str());
+        return false;
+    }
 
     /* Rasterizer state */
     D3D11_RASTERIZER_DESC rsDesc;
@@ -83,27 +116,13 @@ Renderer::Renderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* con
     rsDesc.MultisampleEnable = false;
     rsDesc.AntialiasedLineEnable = false;
 
-    hr = device->CreateRasterizerState(&rsDesc, &rsState);
-    if (FAILED(hr))
+    hr = m_pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create rasterizer state: %s", hresultToString(hr).c_str());
-}
+        return false;
+    }
 
-Renderer::~Renderer()
-{
-    if (meshInputLayout)
-        meshInputLayout->Release();
-
-    if (perObjectMatrices)
-        perObjectMatrices->Release();
-
-    if (materialBuffer)
-        materialBuffer->Release();
-
-    if (pointLightBuffer)
-        pointLightBuffer->Release();
-
-    if (rsState)
-        rsState->Release();
+    return true;
 }
 
 void Renderer::update(float dt)
@@ -111,43 +130,43 @@ void Renderer::update(float dt)
     if (renderables.size() == 0 || camera.size() == 0)
        return;
 
-    context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Point light cbuffer
     PerFrameBuffer perFrame;
     uint32_t numLights = std::min(MAX_POINTLIGHTS, (int)pointLights.size());
     for (unsigned int i = 0; i < numLights; i += 1) {
-        perFrame.pointLights[i] = lightHandler->pointLights[i];
+        perFrame.pointLights[i] = m_pLightHandler->pointLights[i];
     }
 
-    perFrame.cameraPosition = transformHandler->transforms[camera[0]].position;
+    perFrame.cameraPosition = m_pTransformHandler->transforms[camera[0]].position;
     perFrame.numLights = numLights;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
     D3D11_MAPPED_SUBRESOURCE mappedResources;
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
-    context->Map(pointLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+    m_pContext->Map(m_pPointLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
     memcpy(mappedResources.pData, &perFrame, sizeof(PerFrameBuffer));
-    context->Unmap(pointLightBuffer, 0);
-    context->PSSetConstantBuffers(1, 1, &pointLightBuffer);
+    m_pContext->Unmap(m_pPointLightBuffer, 0);
+    m_pContext->PSSetConstantBuffers(1, 1, &m_pPointLightBuffer);
 
-    context->RSSetState(rsState);
-    context->OMSetRenderTargets(1, &renderTarget, depthStencilView);
+    m_pContext->RSSetState(m_RsState);
+    m_pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
 
     for (size_t i = 0; i < renderables.size(); i += 1) {
-        Renderable& renderable = renderableHandler->renderables[i];
+        Renderable& renderable = m_pRenderableHandler->m_Renderables[i];
         Program* program = renderable.program;
         Model* model = renderable.model;
 
-        context->VSSetShader(program->vertexShader, nullptr, 0);
-        context->HSSetShader(program->hullShader, nullptr, 0);
-        context->DSSetShader(program->domainShader, nullptr, 0);
-        context->GSSetShader(program->geometryShader, nullptr, 0);
-        context->PSSetShader(program->pixelShader, nullptr, 0);
+        m_pContext->VSSetShader(program->vertexShader, nullptr, 0);
+        m_pContext->HSSetShader(program->hullShader, nullptr, 0);
+        m_pContext->DSSetShader(program->domainShader, nullptr, 0);
+        m_pContext->GSSetShader(program->geometryShader, nullptr, 0);
+        m_pContext->PSSetShader(program->pixelShader, nullptr, 0);
 
         // Prepare camera's view*proj matrix
-        ViewMatrix camView = vpHandler->viewMatrices.indexID(camera[0]);
-        ProjectionMatrix camProj = vpHandler->projMatrices.indexID(camera[0]);
+        ViewMatrix camView = m_pVPHandler->viewMatrices.indexID(camera[0]);
+        ProjectionMatrix camProj = m_pVPHandler->projMatrices.indexID(camera[0]);
 
         DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&camView.view) * DirectX::XMLoadFloat4x4(&camProj.projection);
 
@@ -159,36 +178,36 @@ void Renderer::update(float dt)
             }
 
             // Vertex buffer
-            context->IASetInputLayout(program->inputLayout);
+            m_pContext->IASetInputLayout(program->inputLayout);
             UINT offsets = 0;
-            context->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &program->vertexSize, &offsets);
-            context->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            m_pContext->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &program->vertexSize, &offsets);
+            m_pContext->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
             /* Vertex shader */
             PerObjectMatrices matrices;
 
             // PerObjectMatrices cbuffer
-            matrices.world = transformHandler->getWorldMatrix(renderables[i]).worldMatrix;
+            matrices.world = m_pTransformHandler->getWorldMatrix(renderables[i]).worldMatrix;
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
 
-            context->Map(perObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+            m_pContext->Map(m_pPerObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
             memcpy(mappedResources.pData, &matrices, sizeof(PerObjectMatrices));
-            context->Unmap(perObjectMatrices, 0);
-            context->VSSetConstantBuffers(0, 1, &perObjectMatrices);
+            m_pContext->Unmap(m_pPerObjectMatrices, 0);
+            m_pContext->VSSetConstantBuffers(0, 1, &m_pPerObjectMatrices);
 
             /* Pixel shader */
             // Diffuse texture
             ID3D11ShaderResourceView* pDiffuseSRV = model->materials[mesh.materialIndex].textures[0].getSRV();
-            context->PSSetShaderResources(0, 1, &pDiffuseSRV);
-            context->PSSetSamplers(0, 1, this->aniSampler);
+            m_pContext->PSSetShaderResources(0, 1, &pDiffuseSRV);
+            m_pContext->PSSetSamplers(0, 1, m_ppAniSampler);
 
             // Material cbuffer
-            context->Map(materialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+            m_pContext->Map(m_pMaterialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
             memcpy(mappedResources.pData, &model->materials[mesh.materialIndex].attributes, sizeof(MaterialAttributes));
-            context->Unmap(materialBuffer, 0);
-            context->PSSetConstantBuffers(0, 1, &materialBuffer);
+            m_pContext->Unmap(m_pMaterialBuffer, 0);
+            m_pContext->PSSetConstantBuffers(0, 1, &m_pMaterialBuffer);
 
-            context->DrawIndexed((UINT)mesh.indexCount, 0, 0);
+            m_pContext->DrawIndexed((UINT)mesh.indexCount, 0, 0);
         }
     }
 }

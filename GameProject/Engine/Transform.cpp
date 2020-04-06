@@ -5,18 +5,25 @@
 #include <cmath>
 
 TransformHandler::TransformHandler(ECSCore* pECS)
-    :ComponentHandler({tid_transform, tid_worldMatrix}, pECS, std::type_index(typeid(TransformHandler)))
+    :ComponentHandler({tid_transform, tid_worldMatrix}, pECS, TID(TransformHandler))
 {
-    std::vector<ComponentRegistration> compRegs = {
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
         {tid_transform, &transforms},
         {tid_worldMatrix, &worldMatrices}
     };
 
-    this->registerHandler(&compRegs);
+    this->registerHandler(handlerReg);
 }
 
 TransformHandler::~TransformHandler()
 {}
+
+bool TransformHandler::init()
+{
+    return true;
+}
 
 void TransformHandler::createTransform(Entity entity)
 {

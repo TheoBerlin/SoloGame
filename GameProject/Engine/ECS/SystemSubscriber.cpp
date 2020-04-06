@@ -11,9 +11,16 @@ SystemSubscriber::SystemSubscriber(EntityRegistry* pEntityRegistry)
 SystemSubscriber::~SystemSubscriber()
 {}
 
-void SystemSubscriber::registerComponentHandler(std::vector<ComponentRegistration>* componentRegs)
+
+void SystemSubscriber::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
 {
-    for (const ComponentRegistration& componentReg : *componentRegs) {
+    ComponentHandler* pComponentHandler = componentHandlerRegistration.pComponentHandler;
+    std::type_index tidHandler = pComponentHandler->getHandlerType();
+
+    this->componentHandlers[tidHandler] = pComponentHandler;
+
+    // Register component containers
+    for (const ComponentRegistration& componentReg : componentHandlerRegistration.ComponentRegistrations) {
         auto mapItr = this->m_ComponentStorage.find(componentReg.tid);
 
         if (mapItr != this->m_ComponentStorage.end()) {
@@ -21,7 +28,7 @@ void SystemSubscriber::registerComponentHandler(std::vector<ComponentRegistratio
             continue;
         }
 
-        this->m_ComponentStorage.insert({componentReg.tid, {componentReg.componentContainer, componentReg.m_ComponentDestructor}});
+        this->m_ComponentStorage.insert({componentReg.tid, {componentReg.pComponentContainer, componentReg.m_ComponentDestructor}});
     }
 }
 
@@ -56,11 +63,6 @@ void SystemSubscriber::deregisterComponentHandler(ComponentHandler* handler)
     componentHandlers.erase(handlerItr);
 }
 
-void SystemSubscriber::registerHandler(ComponentHandler* handler, const std::type_index& handlerType)
-{
-    this->componentHandlers[handlerType] = handler;
-}
-
 ComponentHandler* SystemSubscriber::getComponentHandler(const std::type_index& handlerType)
 {
     auto itr = componentHandlers.find(handlerType);
@@ -73,13 +75,13 @@ ComponentHandler* SystemSubscriber::getComponentHandler(const std::type_index& h
     return itr->second;
 }
 
-void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
+void SystemSubscriber::registerSystem(const SystemRegistration& sysReg)
 {
     // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<ComponentSubscriptions> subscriptions;
-    subscriptions.reserve(sysReg->subReqs.size());
+    subscriptions.reserve(sysReg.subReqs.size());
 
-    for (const ComponentSubReq& subReq : sysReg->subReqs) {
+    for (const ComponentSubReq& subReq : sysReg.subReqs) {
         const std::vector<ComponentUpdateReg>& componentRegs = subReq.componentTypes;
 
         ComponentSubscriptions newSub;
@@ -108,7 +110,7 @@ void SystemSubscriber::registerSystem(SystemRegistration* sysReg)
     }
 
     size_t sysID = systemIdGen.genID();
-    sysReg->system->ID = sysID;
+    sysReg.system->ID = sysID;
     this->subscriptionStorage.push_back(subscriptions, sysID);
 
     // Map each component type to its subscriptions

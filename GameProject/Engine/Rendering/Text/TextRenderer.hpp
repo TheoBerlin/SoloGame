@@ -32,6 +32,8 @@ public:
     TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context);
     ~TextRenderer();
 
+    virtual bool init() override;
+
     // Creates a texture with text rendered onto it
     TextureReference renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);
 

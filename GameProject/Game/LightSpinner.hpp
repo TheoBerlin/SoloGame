@@ -10,9 +10,11 @@ public:
     LightSpinner(ECSCore* pECS);
     ~LightSpinner();
 
+    virtual bool init() override;
+
     void update(float dt);
 
 private:
-    LightHandler* lightHandler;
-    IDVector<Entity> lights;
+    LightHandler* m_pLightHandler;
+    IDVector<Entity> m_Lights;
 };
