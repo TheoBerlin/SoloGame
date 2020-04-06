@@ -2,66 +2,69 @@
 
 #include <Engine/Rendering/Display.hpp>
 #include <Engine/UI/Panel.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 
 ButtonSystem::ButtonSystem(ECSCore* pECS, unsigned int clientWidth, unsigned int clientHeight)
     :System(pECS),
-    clientWidth(clientWidth),
-    clientHeight(clientHeight),
-    pressedButtonExists(false),
-    pressedButton(0)
+    m_ClientWidth(clientWidth),
+    m_ClientHeight(clientHeight),
+    m_PressedButtonExists(false),
+    m_PressedButton(0)
 {
     SystemRegistration sysReg = {
     {
-        {{{RW, tid_UIPanel}, {R, tid_UIButton}}, &buttons}
+        {{{RW, tid_UIPanel}, {R, tid_UIButton}}, &m_Buttons}
     },
     this};
 
-    this->subscribeToComponents(&sysReg);
-
-    const std::type_index tid_UIHandler = std::type_index(typeid(UIHandler));
-    this->UIhandler = static_cast<UIHandler*>(getComponentHandler(tid_UIHandler));
-
-    const std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
-    InputHandler* inputHandler = static_cast<InputHandler*>(getComponentHandler(tid_inputHandler));
-
-    this->mouseState = inputHandler->getMouseState();
+    this->subscribeToComponents(sysReg);
 }
 
 ButtonSystem::~ButtonSystem()
 {}
 
+bool ButtonSystem::init()
+{
+    m_pUIhandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
+    InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
+
+    m_pMouseState = pInputHandler->getMouseState();
+
+    return m_pUIhandler && pInputHandler;
+}
+
 void ButtonSystem::update(float dt)
 {
-    if (mouseState->positionMode == DirectX::Mouse::Mode::MODE_RELATIVE) {
+    if (m_pMouseState->positionMode == DirectX::Mouse::Mode::MODE_RELATIVE) {
         return;
     }
 
-    for (Entity entity : buttons.getVec()) {
-        UIPanel& panel = UIhandler->panels.indexID(entity);
-        UIButton& button = UIhandler->buttons.indexID(entity);
+    for (Entity entity : m_Buttons.getVec()) {
+        UIPanel& panel = m_pUIhandler->panels.indexID(entity);
+        UIButton& button = m_pUIhandler->buttons.indexID(entity);
         panel.highlight = button.defaultHighlight;
 
-		unsigned int mouseX = (unsigned int)mouseState->x;
-		unsigned int mouseY = (unsigned int)(clientHeight - mouseState->y);
+		unsigned int mouseX = (unsigned int)m_pMouseState->x;
+		unsigned int mouseY = (unsigned int)(m_ClientHeight - m_pMouseState->y);
 
         // Check that the mouse and the button align horizontally
-        unsigned int buttonXLeft = (unsigned int)(panel.position.x * clientWidth);
+        unsigned int buttonXLeft = (unsigned int)(panel.position.x * m_ClientWidth);
         if (mouseX < buttonXLeft) {
             continue;
         }
 
-        unsigned int buttonXRight = (unsigned int)(buttonXLeft + panel.size.x * clientWidth);
+        unsigned int buttonXRight = (unsigned int)(buttonXLeft + panel.size.x * m_ClientWidth);
         if (mouseX > buttonXRight) {
             continue;
         }
 
         // Check that the mouse and the button align vertically
-        unsigned int buttonYDown = (unsigned int)(panel.position.y * clientHeight);
+        unsigned int buttonYDown = (unsigned int)(panel.position.y * m_ClientHeight);
         if (mouseY < buttonYDown) {
             continue;
         }
 
-        unsigned int buttonYUp = (unsigned int)(buttonYDown + panel.size.y * clientHeight);
+        unsigned int buttonYUp = (unsigned int)(buttonYDown + panel.size.y * m_ClientHeight);
         if (mouseY > buttonYUp) {
             continue;
         }
@@ -70,18 +73,18 @@ void ButtonSystem::update(float dt)
         // 1. The button is being pressed: enable pressed highlight
         // 2. The mouse is already pressed and is not being pressed now: enable default highlight and trigger button function
         // 3. The mouse is not already pressed and is not being pressed now: enable hover highlight
-		hoveredButtonExists = true;
-		hoveredButton = entity;
+		m_HoveredButtonExists = true;
+		m_HoveredButton = entity;
 
-        if (mouseState->leftButton) {
+        if (m_pMouseState->leftButton) {
             // State 1
             panel.highlight = button.pressHighlight;
-            pressedButtonExists = true;
-            pressedButton = entity;
+            m_PressedButtonExists = true;
+            m_PressedButton = entity;
         } else {
-            if (pressedButtonExists && pressedButton == entity) {
+            if (m_PressedButtonExists && m_PressedButton == entity) {
                 // State 2
-                pressedButtonExists = false;
+                m_PressedButtonExists = false;
 
                 panel.highlight = button.defaultHighlight;
                 button.onPress();

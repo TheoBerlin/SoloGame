@@ -1,35 +1,39 @@
 #include "LightSpinner.hpp"
 
 #include <Engine/Rendering/Components/PointLight.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 
 LightSpinner::LightSpinner(ECSCore* pECS)
     :System(pECS)
 {
-    std::type_index tid_lightHandler = std::type_index(typeid(LightHandler));
-    this->lightHandler = static_cast<LightHandler*>(getComponentHandler(tid_lightHandler));
-
     SystemRegistration sysReg = {
     {
-        {{{RW, tid_pointLight}}, &lights}
+        {{{RW, tid_pointLight}}, &m_Lights}
     },
     this};
 
-    this->subscribeToComponents(&sysReg);
-    this->registerUpdate(&sysReg);
+    subscribeToComponents(sysReg);
+    registerUpdate(&sysReg);
 }
 
 LightSpinner::~LightSpinner()
 {}
 
+bool LightSpinner::init()
+{
+    m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    return m_pLightHandler;
+}
+
 void LightSpinner::update(float dt)
 {
-    size_t lightCount = lights.size();
+    size_t lightCount = m_Lights.size();
 
     const float anglePerSec = DirectX::XM_PIDIV4;
     DirectX::XMVECTOR position;
 
     for (size_t i = 0; i < lightCount; i += 1) {
-        PointLight& light = lightHandler->pointLights.indexID(lights[i]);
+        PointLight& light = m_pLightHandler->pointLights.indexID(m_Lights[i]);
 
         position = DirectX::XMLoadFloat3(&light.position);
 

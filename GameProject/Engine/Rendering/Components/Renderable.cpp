@@ -6,35 +6,43 @@
 #include <Engine/Utils/Logger.hpp>
 
 RenderableHandler::RenderableHandler(ECSCore* pECS)
-    :ComponentHandler({tid_renderable}, pECS, std::type_index(typeid(RenderableHandler)))
+    :ComponentHandler({tid_renderable}, pECS, TID(RenderableHandler))
 {
-    std::vector<ComponentRegistration> compRegs = {
-        {tid_renderable, &renderables}
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
+        {tid_renderable, &m_Renderables}
+    };
+    handlerReg.HandlerDependencies = {
+        TID(ShaderHandler),
+        TID(ModelLoader)
     };
 
-    this->registerHandler(&compRegs);
+    this->registerHandler(handlerReg);
+}
 
-    std::type_index tid_shaderHandler = std::type_index(typeid(ShaderHandler));
-    std::type_index tid_modelLoader = std::type_index(typeid(ModelLoader));
+bool RenderableHandler::init()
+{
+    m_pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ShaderHandler)));
+    m_pModelLoader = static_cast<ModelLoader*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ModelLoader)));
 
-    this->shaderHandler = static_cast<ShaderHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_shaderHandler));
-    this->modelLoader = static_cast<ModelLoader*>(pECS->getSystemSubscriber()->getComponentHandler(tid_modelLoader));
+    return m_pShaderHandler && m_pModelLoader;
 }
 
 bool RenderableHandler::createRenderable(Entity entity, std::string modelPath, PROGRAM program)
 {
     Renderable renderable;
 
-    renderable.program = shaderHandler->getProgram(program);
-    renderable.model = modelLoader->loadModel(modelPath);
+    renderable.program = m_pShaderHandler->getProgram(program);
+    renderable.model = m_pModelLoader->loadModel(modelPath);
 
     if (!renderable.program || !renderable.model) {
         Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);
         return false;
     }
 
-    renderables.push_back(renderable, entity);
-    this->registerComponent(entity, tid_renderable);
+    m_Renderables.push_back(renderable, entity);
+    registerComponent(entity, tid_renderable);
     return true;
 }
 
@@ -42,7 +50,7 @@ bool RenderableHandler::createRenderable(Entity entity, Model* model, PROGRAM pr
 {
     Renderable renderable;
 
-    renderable.program = shaderHandler->getProgram(program);
+    renderable.program = m_pShaderHandler->getProgram(program);
     renderable.model = model;
 
     if (!renderable.program || !renderable.model) {
@@ -50,7 +58,7 @@ bool RenderableHandler::createRenderable(Entity entity, Model* model, PROGRAM pr
         return false;
     }
 
-    renderables.push_back(renderable, entity);
-    this->registerComponent(entity, tid_renderable);
+    m_Renderables.push_back(renderable, entity);
+    registerComponent(entity, tid_renderable);
     return true;
 }

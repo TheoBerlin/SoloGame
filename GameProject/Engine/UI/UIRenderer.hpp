@@ -13,31 +13,34 @@ struct Program;
 class UIRenderer : public System
 {
 public:
-    UIRenderer(ECSCore* pECS, ID3D11DeviceContext* context, ID3D11Device* device, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv);
+    UIRenderer(ECSCore* pECS, ID3D11DeviceContext* pContext, ID3D11Device* pDevice, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
     ~UIRenderer();
+
+    virtual bool init() override;
 
     void update(float dt);
 
 private:
-    IDVector<Entity> panels;
+    IDVector<Entity> m_Panels;
 
-    UIHandler* UIhandler;
+    UIHandler* m_pUIHandler;
 
-    ShaderHandler* shaderHandler;
+    ShaderHandler* m_pShaderHandler;
 
-    Program* UIProgram;
+    Program* m_pUIProgram;
 
-    ID3D11DeviceContext* context;
+    ID3D11Device* m_pDevice;
+    ID3D11DeviceContext* m_pContext;
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> quad;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
 
     /* Render targets */
-    ID3D11RenderTargetView* renderTarget;
-    ID3D11DepthStencilView* depthStencilView;
+    ID3D11RenderTargetView* m_pRenderTarget;
+    ID3D11DepthStencilView* m_pDepthStencilView;
 
     // Constant buffer
-    Microsoft::WRL::ComPtr<ID3D11Buffer> perPanelBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> m_PerPanelBuffer;
 
     /* Samplers */
-    ID3D11SamplerState *const* aniSampler;
+    ID3D11SamplerState *const* m_ppAniSampler;
 };

@@ -7,15 +7,20 @@
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
 ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)
-    :txLoader(txLoader),
+    :m_pTXLoader(txLoader),
     ComponentHandler({}, pECS, std::type_index(typeid(ModelLoader)))
 {
-    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    this->shaderResourceHandler = static_cast<ShaderResourceHandler*>(pECS->getSystemSubscriber()->getComponentHandler(tid_shaderResourceHandler));
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.HandlerDependencies = {
+        TID(ShaderResourceHandler)
+    };
+    registerHandler(handlerReg);
 }
 
 ModelLoader::~ModelLoader()
@@ -23,12 +28,20 @@ ModelLoader::~ModelLoader()
     ModelLoader::deleteAllModels();
 }
 
+bool ModelLoader::init()
+{
+    std::type_index tid_shaderResourceHandler = TID(ShaderResourceHandler);
+    m_pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(tid_shaderResourceHandler));
+
+    return m_pShaderResourceHandler;
+}
+
 Model* ModelLoader::loadModel(const std::string& filePath)
 {
     // See if the model is already loaded
-    auto itr = models.find(filePath);
+    auto itr = m_Models.find(filePath);
 
-    if (itr != models.end()) {
+    if (itr != m_Models.end()) {
         // The model was found, return it
         return itr->second;
     }
@@ -49,7 +62,6 @@ Model* ModelLoader::loadModel(const std::string& filePath)
 
     // Load the model
     Assimp::Importer importer;
-
     const aiScene* scene = importer.ReadFile(filePath, aiProcess_GenUVCoords | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenNormals | aiProcess_FlipUVs);
 
     if (!scene) {
@@ -88,19 +100,19 @@ Model* ModelLoader::loadModel(const std::string& filePath)
     }
 
     // Store a pointer to the loaded model
-    models[filePath] = loadedModel;
+    m_Models[filePath] = loadedModel;
 
     return loadedModel;
 }
 
 void ModelLoader::deleteAllModels()
 {
-    for (auto& itr : models) {
+    for (auto& itr : m_Models) {
         releaseModel(itr.second);
         delete itr.second;
     }
 
-    models.clear();
+    m_Models.clear();
 }
 
 void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
@@ -157,12 +169,12 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
     mesh.indexCount = indices.size();
 
-    shaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size(), &mesh.vertexBuffer);
+    m_pShaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size(), &mesh.vertexBuffer);
     if (mesh.vertexBuffer == nullptr) {
         return;
     }
 
-    shaderResourceHandler->createIndexBuffer(&indices.front(), indices.size(), &mesh.indexBuffer);
+    m_pShaderResourceHandler->createIndexBuffer(&indices.front(), indices.size(), &mesh.indexBuffer);
     if (mesh.indexBuffer == nullptr) {
         return;
     }
@@ -192,7 +204,7 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Mat
 
     std::string texturePath = directory + textureNameStd;
 
-    material.textures.push_back(txLoader->loadTexture(texturePath));
+    material.textures.push_back(m_pTXLoader->loadTexture(texturePath));
 
     // Load material attributes
     aiColor3D aiAmbient, aiSpecular;

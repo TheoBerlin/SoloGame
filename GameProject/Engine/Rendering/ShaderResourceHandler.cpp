@@ -8,6 +8,17 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device
     :ComponentHandler({}, pECS, std::type_index(typeid(ShaderResourceHandler))),
     device(device)
 {
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+
+    registerHandler(handlerReg);
+}
+
+ShaderResourceHandler::~ShaderResourceHandler()
+{}
+
+bool ShaderResourceHandler::init()
+{
     /* Samplers */
     D3D11_SAMPLER_DESC samplerDesc;
     ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -22,8 +33,10 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device
     samplerDesc.MaxLOD = 0.0f;
 
     HRESULT hr = device->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
-    if (FAILED(hr))
+    if (FAILED(hr)) {
         Logger::LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
+        return false;
+    }
 
     // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
     // is used as it eases resizing and positioning in the UI vertex shader.
@@ -35,13 +48,10 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device
         {{1.0f, 1.0f}, {1.0f, 0.0f}}
     };
 
-    this->createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
+    return createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
 }
 
-ShaderResourceHandler::~ShaderResourceHandler()
-{}
-
-void ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer)
+bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer)
 {
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
@@ -60,10 +70,13 @@ void ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vert
     HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+        return false;
     }
+
+    return true;
 }
 
-void ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer)
+bool ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer)
 {
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
@@ -82,7 +95,10 @@ void ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCou
     HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
         Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
+        return false;
     }
+
+    return true;
 }
 
 ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const

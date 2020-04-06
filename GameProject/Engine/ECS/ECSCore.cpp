@@ -1,15 +1,39 @@
 #include "ECSCore.hpp"
 
 ECSCore::ECSCore()
-    :m_SystemSubscriber(&m_EntityRegistry)
+    :m_SystemSubscriber(&m_EntityRegistry),
+    m_ECSBooter(this)
 {}
 
 ECSCore::~ECSCore()
 {}
 
+void ECSCore::update(float dt)
+{
+    performRegistrations();
+
+    m_SystemUpdater.updateMT(dt);
+}
+
 Entity ECSCore::createEntity()
 {
     return m_EntityRegistry.createEntity();
+}
+
+void ECSCore::enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration)
+{
+    m_ECSBooter.enqueueComponentHandlerRegistration(handlerRegistration);
+}
+
+void ECSCore::enqueueSystemRegistration(const SystemRegistration& systemRegistration)
+{
+    m_ECSBooter.enqueueSystemRegistration(systemRegistration);
+}
+
+void ECSCore::performRegistrations()
+{
+    // Initialize and register systems and component handlers
+    m_ECSBooter.performBootups();
 }
 
 void ECSCore::deleteEntityDelayed(Entity entity)

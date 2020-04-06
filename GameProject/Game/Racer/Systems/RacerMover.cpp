@@ -2,6 +2,7 @@
 
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Game/Level/Tube.hpp>
 #include <Game/Racer/Components/TrackPosition.hpp>
 
@@ -10,39 +11,38 @@
 RacerMover::RacerMover(ECSCore* pECS)
     :System(pECS)
 {
-    const std::type_index tid_transformHandler = std::type_index(typeid(TransformHandler));
-    this->transformHandler = static_cast<TransformHandler*>(getComponentHandler(tid_transformHandler));
-
-    const std::type_index tid_trackPositionHandler = std::type_index(typeid(TrackPositionHandler));
-    this->trackPositionHandler = static_cast<TrackPositionHandler*>(getComponentHandler(tid_trackPositionHandler));
-
-    const std::type_index tid_tubeHandler = std::type_index(typeid(TubeHandler));
-    this->tubeHandler = static_cast<TubeHandler*>(getComponentHandler(tid_tubeHandler));
-
     SystemRegistration sysReg = {
     {
-        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &racers, [this](Entity entity){racerAdded(entity);}}
+        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &m_Racers, [this](Entity entity){racerAdded(entity);}}
     },
     this};
 
-    this->subscribeToComponents(&sysReg);
-    this->registerUpdate(&sysReg);
-
-    std::type_index tid_inputHandler = std::type_index(typeid(InputHandler));
-    InputHandler* inputHandler = static_cast<InputHandler*>(getComponentHandler(tid_inputHandler));
-    this->keyboardState = inputHandler->getKeyboardState();
+    subscribeToComponents(sysReg);
+    registerUpdate(&sysReg);
 }
 
 RacerMover::~RacerMover()
 {}
 
+bool RacerMover::init()
+{
+    this->m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    this->m_pTrackPositionHandler = static_cast<TrackPositionHandler*>(getComponentHandler(TID(TrackPositionHandler)));
+    this->m_pTubeHandler = static_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
+
+    InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
+    this->m_pKeyboardState = pInputHandler->getKeyboardState();
+
+    return m_pTransformHandler && m_pTrackPositionHandler && m_pTubeHandler && pInputHandler;
+}
+
 void RacerMover::update(float dt)
 {
-    const std::vector<DirectX::XMFLOAT3>& tubeSections = tubeHandler->getTubeSections();
+    const std::vector<DirectX::XMFLOAT3>& tubeSections = m_pTubeHandler->getTubeSections();
 
-    for (Entity entity : racers.getIDs()) {
-        Transform& transform = transformHandler->transforms.indexID(entity);
-        TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(entity);
+    for (Entity entity : m_Racers.getIDs()) {
+        Transform& transform = m_pTransformHandler->transforms.indexID(entity);
+        TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
 
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
         DirectX::XMVECTOR P[4];
@@ -90,27 +90,27 @@ void RacerMover::update(float dt)
         DirectX::XMStoreFloat3(&transform.position, position);
 
         // Roll using keyboard input
-        int keyInput = keyboardState->D - keyboardState->A;
+        int keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
         if (keyInput) {
             float rotationAngle = keyInput * rotationSpeed * dt;
             TransformHandler::roll(transform.rotQuat, rotationAngle);
         }
 
         // Move towards or away from the center
-        keyInput = keyboardState->S - keyboardState->W;
+        keyInput = m_pKeyboardState->S - m_pKeyboardState->W;
         if (keyInput) {
             trackPosition.distanceFromCenter += keyInput * centerMoveSpeed * dt;
-            trackPosition.distanceFromCenter = std::min(tubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));
+            trackPosition.distanceFromCenter = std::min(m_pTubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));
         }
     }
 }
 
 void RacerMover::racerAdded(Entity entity)
 {
-    Transform& transform = transformHandler->transforms.indexID(entity);
+    Transform& transform = m_pTransformHandler->transforms.indexID(entity);
 
     // Calculate the position of the center point of the tube right at the beginning
-    const std::vector<DirectX::XMFLOAT3>& tubeSections = tubeHandler->getTubeSections();
+    const std::vector<DirectX::XMFLOAT3>& tubeSections = m_pTubeHandler->getTubeSections();
 
     DirectX::XMVECTOR P01, P2, P3;
     P01 = DirectX::XMLoadFloat3(&tubeSections[0]);
@@ -134,8 +134,8 @@ void RacerMover::racerAdded(Entity entity)
     DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
 
     // Set the distance to the tube's center
-    TrackPosition& trackPosition = trackPositionHandler->trackPositions.indexID(entity);
-    trackPosition.distanceFromCenter = minCenterDistance + startingCenterDistance * ((tubeHandler->getTubeRadius() - minEdgeDistance) - minCenterDistance);
+    TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
+    trackPosition.distanceFromCenter = minCenterDistance + startingCenterDistance * ((m_pTubeHandler->getTubeRadius() - minEdgeDistance) - minCenterDistance);
 
     // Set starting position
     DirectX::XMStoreFloat3(&transform.position, DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMVectorScale(desiredUp, trackPosition.distanceFromCenter)));

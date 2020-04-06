@@ -5,28 +5,18 @@
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <algorithm>
 
 TextRenderer::TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context)
-    :ComponentHandler({}, pECS, std::type_index(typeid(TextRenderer))),
+    :ComponentHandler({}, pECS, TID(TextRenderer)),
     device(device),
     context(context)
 {
-    // https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html
-    // [Since 2.5.6] In multi-threaded applications it is easiest to use one FT_Library object per thread.
-    // In case this is too cumbersome, a single FT_Library object across threads is possible also, as long as a mutex lock is used around FT_New_Face and FT_Done_Face.
-
-    // Initialize FreeType library
-	FT_Error err = FT_Init_FreeType(&ftLib);
-	if (err) {
-		Logger::LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
-        FT_Done_FreeType(ftLib);
-        pECS->getSystemSubscriber()->deregisterComponentHandler(this);
-        return;
-	}
-
-    Logger::LOG_INFO("Initialized FreeType library");
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    registerHandler(handlerReg);
 }
 
 TextRenderer::~TextRenderer()
@@ -40,6 +30,24 @@ TextRenderer::~TextRenderer()
 	if (err) {
 		Logger::LOG_ERROR("Failed to release FreeType library: %s", FT_Error_String(err));
 	}
+}
+
+bool TextRenderer::init()
+{
+    // https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html
+    // [Since 2.5.6] In multi-threaded applications it is easiest to use one FT_Library object per thread.
+    // In case this is too cumbersome, a single FT_Library object across threads is possible also, as long as a mutex lock is used around FT_New_Face and FT_Done_Face.
+
+    // Initialize FreeType library
+	FT_Error err = FT_Init_FreeType(&ftLib);
+	if (err) {
+		Logger::LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
+        FT_Done_FreeType(ftLib);
+        return false;
+	}
+
+    Logger::LOG_INFO("Initialized FreeType library");
+    return true;
 }
 
 TextureReference TextRenderer::renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight)
@@ -158,7 +166,7 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
 
 DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face)
 {
-    DirectX::XMUINT2 textureSize = {0, (uint32_t)face->size->metrics.height}; 
+    DirectX::XMUINT2 textureSize = {0, (uint32_t)face->size->metrics.height};
 
     size_t glyphIdx = 0;
 

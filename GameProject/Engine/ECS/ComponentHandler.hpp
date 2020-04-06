@@ -10,8 +10,16 @@ class IDContainer;
 
 struct ComponentRegistration {
     std::type_index tid;
-    IDContainer* componentContainer;
+    IDContainer* pComponentContainer;
     std::function<void(Entity)> m_ComponentDestructor;
+};
+
+class ComponentHandler;
+
+struct ComponentHandlerRegistration {
+    ComponentHandler* pComponentHandler;
+    std::vector<ComponentRegistration> ComponentRegistrations;
+    std::vector<std::type_index> HandlerDependencies;
 };
 
 /*
@@ -26,6 +34,8 @@ public:
     // Deregisters component handler and deletes components
     ~ComponentHandler();
 
+    virtual bool init() = 0;
+
     const std::vector<std::type_index>& getHandledTypes() const;
     std::type_index getHandlerType() const;
 
@@ -34,14 +44,15 @@ protected:
      * Registers the component handler's type of components it handles
      * @param componentQueries Functions for asking if an entity has a component of a certain type
      */
-    void registerHandler(std::vector<ComponentRegistration>* componentQueries);
+    void registerHandler(const ComponentHandlerRegistration& handlerRegistration);
 
-    // Tell the system handler a component has been created
+    // Tell the system subscriber a component has been created
     void registerComponent(Entity entity, std::type_index componentType);
 
+protected:
+    ECSCore* m_pECS;
     std::vector<std::type_index> m_HandledTypes;
 
 private:
     std::type_index m_TID;
-    ECSCore* m_pECS;
 };

@@ -44,6 +44,8 @@ public:
     ShaderHandler(ID3D11Device* device, ECSCore* pECS);
     ~ShaderHandler();
 
+    virtual bool init() override;
+
     Program* getProgram(PROGRAM program);
 
 private:
@@ -51,7 +53,7 @@ private:
 
     ID3DBlob* compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCSTR targetVer);
 
-    std::vector<Program> programs;
+    std::vector<Program> m_Programs;
 
-    ID3D11Device* device;
+    ID3D11Device* m_pDevice;
 };

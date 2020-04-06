@@ -12,6 +12,8 @@ public:
     InputHandler(ECSCore* pECS, HWND window);
     ~InputHandler();
 
+    virtual bool init() override;
+
     // Updates the states of the keyboard and mouse
     void update();
 
@@ -22,10 +24,12 @@ public:
     void setMouseVisibility(bool visible);
 
 private:
-    DirectX::Keyboard keyboard;
-    DirectX::Keyboard::State keyboardState;
+    DirectX::Keyboard m_Keyboard;
+    DirectX::Keyboard::State m_KeyboardState;
 
-    DirectX::Mouse mouse;
-    DirectX::Mouse::State mouseState;
-    DirectX::Mouse::ButtonStateTracker mouseBtnTracker;
+    DirectX::Mouse m_Mouse;
+    DirectX::Mouse::State m_MouseState;
+    DirectX::Mouse::ButtonStateTracker m_MouseBtnTracker;
+
+    HWND m_Window;
 };

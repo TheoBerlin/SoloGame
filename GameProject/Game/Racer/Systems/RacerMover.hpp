@@ -9,14 +9,18 @@ class TransformHandler;
 class TubeHandler;
 
 const float racerSpeed = 3.0f;
+
 // Radians per second
 const float rotationSpeed = DirectX::XM_PIDIV2 * 0.8f;
+
 // Racers' minimum distance to the tube's edge or center
 const float minEdgeDistance = 0.3f;
 const float minCenterDistance = 0.05f;
+
 // Speed at which a racer moves towards or away from the center
 const float centerMoveSpeed = 1.0f;
-// Racers' starting distance from the tube's center, where 0 is nearest allowed distance, and 1 is the furthest
+
+// Racers' starting distance from the tube's center, [0, 1]
 const float startingCenterDistance = 0.5f;
 
 class RacerMover : public System
@@ -25,16 +29,18 @@ public:
     RacerMover(ECSCore* pECS);
     ~RacerMover();
 
+    virtual bool init() override;
+
     void update(float dt);
 
 private:
     void racerAdded(Entity entity);
 
-    IDVector<Entity> racers;
+    IDVector<Entity> m_Racers;
 
-    TransformHandler* transformHandler;
-    TrackPositionHandler* trackPositionHandler;
-    TubeHandler* tubeHandler;
+    TransformHandler* m_pTransformHandler;
+    TrackPositionHandler* m_pTrackPositionHandler;
+    TubeHandler* m_pTubeHandler;
 
-    DirectX::Keyboard::State* keyboardState;
+    DirectX::Keyboard::State* m_pKeyboardState;
 };

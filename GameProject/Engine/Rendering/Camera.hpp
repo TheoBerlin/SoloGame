@@ -17,14 +17,16 @@ public:
     CameraSystem(ECSCore* pECS);
     ~CameraSystem();
 
+    virtual bool init() override;
+
     // Keeps cameras' view matrices up-to date with their transforms
     void update(float dt);
 
 private:
-    IDVector<Entity> cameras;
+    IDVector<Entity> m_Cameras;
 
-    TransformHandler* transformHandler;
-    VPHandler *vpHandler;
-    DirectX::Keyboard::State* keyboardState;
-    DirectX::Mouse::State* mouseState;
+    TransformHandler* m_pTransformHandler;
+    VPHandler* m_pVPHandler;
+    DirectX::Keyboard::State* m_pKeyboardState;
+    DirectX::Mouse::State* m_pMouseState;
 };

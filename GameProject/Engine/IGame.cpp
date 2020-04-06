@@ -21,6 +21,8 @@ IGame::IGame(HINSTANCE hInstance)
     cameraSystem(&m_ECS),
     buttonSystem(&m_ECS, display.getWindowWidth(), display.getWindowHeight())
 {
+    m_ECS.performRegistrations();
+
     display.showWindow();
     renderer.update(0.0f);
 }
@@ -41,11 +43,11 @@ void IGame::run()
         }
 
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg); 
-            DispatchMessage(&msg); 
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
         } else {
             timeNow = std::chrono::high_resolution_clock::now();
-            dtChrono = timeNow-timer;
+            dtChrono = timeNow - timer;
             float dt = dtChrono.count();
 
             timer = timeNow;

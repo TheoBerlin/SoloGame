@@ -6,18 +6,16 @@ ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, EC
     :m_HandledTypes(handledTypes),
     m_pECS(pECS),
     m_TID(tid_handler)
-{
-    m_pECS->getSystemSubscriber()->registerHandler(this, tid_handler);
-}
+{}
 
 ComponentHandler::~ComponentHandler()
 {
     m_pECS->getSystemSubscriber()->deregisterComponentHandler(this);
 }
 
-void ComponentHandler::registerHandler(std::vector<ComponentRegistration>* componentQueries)
+void ComponentHandler::registerHandler(const ComponentHandlerRegistration& handlerRegistration)
 {
-    m_pECS->getSystemSubscriber()->registerComponentHandler(componentQueries);
+    m_pECS->enqueueComponentHandlerRegistration(handlerRegistration);
 }
 
 const std::vector<std::type_index>& ComponentHandler::getHandledTypes() const

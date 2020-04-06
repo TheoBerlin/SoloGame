@@ -1,17 +1,24 @@
 #include "TrackPosition.hpp"
 
 TrackPositionHandler::TrackPositionHandler(ECSCore* pECS)
-    :ComponentHandler({tid_trackPosition}, pECS, std::type_index(typeid(TrackPositionHandler)))
+    :ComponentHandler({tid_trackPosition}, pECS, TID(TrackPositionHandler))
 {
-    std::vector<ComponentRegistration> compRegs = {
+    ComponentHandlerRegistration handlerReg = {};
+    handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
         {tid_trackPosition, &trackPositions}
     };
 
-    this->registerHandler(&compRegs);
+    this->registerHandler(handlerReg);
 }
 
 TrackPositionHandler::~TrackPositionHandler()
 {}
+
+bool TrackPositionHandler::init()
+{
+    return true;
+}
 
 void TrackPositionHandler::createTrackPosition(Entity entity)
 {

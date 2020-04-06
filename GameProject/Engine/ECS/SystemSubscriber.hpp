@@ -14,8 +14,7 @@
 #include <vector>
 
 class ComponentHandler;
-class IComponentContainer;
-struct ComponentRegistration;
+struct ComponentHandlerRegistration;
 
 struct ComponentSubscriptions {
     // Stores IDs of entities found using subscription
@@ -44,14 +43,11 @@ public:
     SystemSubscriber(EntityRegistry* pEntityRegistry);
     ~SystemSubscriber();
 
-    // Associates a component types with functions for querying for their existence given entity IDs
-    void registerComponentHandler(std::vector<ComponentRegistration>* componentRegs);
+    void registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration);
     void deregisterComponentHandler(ComponentHandler* handler);
-
-    void registerHandler(ComponentHandler* handler, const std::type_index& handlerType);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
-    void registerSystem(SystemRegistration* sysReg);
+    void registerSystem(const SystemRegistration& sysReg);
     void deregisterSystem(System* system, std::vector<std::type_index>& componentTypes);
 
     // Notifies subscribed systems that a new component has been made

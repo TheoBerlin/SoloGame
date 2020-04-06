@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 
@@ -18,14 +19,16 @@ struct WorldMatrix {
     bool dirty;
 };
 
-const std::type_index tid_transform = std::type_index(typeid(Transform));
-const std::type_index tid_worldMatrix = std::type_index(typeid(WorldMatrix));
+const std::type_index tid_transform = TID(Transform);
+const std::type_index tid_worldMatrix = TID(WorldMatrix);
 
 class TransformHandler : public ComponentHandler
 {
 public:
     TransformHandler(ECSCore* pECs);
     ~TransformHandler();
+
+    virtual bool init() override;
 
     void createTransform(Entity entity);
     // Requires that the entity has a transform component
