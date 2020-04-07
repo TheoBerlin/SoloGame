@@ -3,28 +3,30 @@
 #include <iostream>
 
 IGame::IGame(HINSTANCE hInstance)
-    :stateManager(&m_ECS),
-    display(hInstance, 720, 16.0f/9.0f, true),
-    inputHandler(&m_ECS, display.getWindow()),
-    transformHandler(&m_ECS),
-    shaderHandler(display.getDevice(), &m_ECS),
-    shaderResourceHandler(&m_ECS, display.getDevice()),
-    txLoader(&m_ECS, display.getDevice()),
-    modelLoader(&m_ECS, &txLoader),
-    renderableHandler(&m_ECS),
-    vpHandler(&m_ECS),
-    lightHandler(&m_ECS),
-    textRenderer(&m_ECS, display.getDevice(), display.getDeviceContext()),
-    uiHandler(&m_ECS, &display),
-    renderer(&m_ECS, display.getDevice(), display.getDeviceContext(), display.getRenderTarget(), display.getDepthStencilView()),
-    uiRenderer(&m_ECS, display.getDeviceContext(), display.getDevice(), display.getRenderTarget(), display.getDepthStencilView()),
-    cameraSystem(&m_ECS),
-    buttonSystem(&m_ECS, display.getWindowWidth(), display.getWindowHeight())
+    :m_StateManager(&m_ECS),
+    m_Display(hInstance, 720, 16.0f/9.0f, true),
+    m_InputHandler(&m_ECS, m_Display.getWindow()),
+    m_TransformHandler(&m_ECS),
+    m_ShaderHandler(m_Display.getDevice(), &m_ECS),
+    m_ShaderResourceHandler(&m_ECS, m_Display.getDevice()),
+    m_TXLoader(&m_ECS, m_Display.getDevice()),
+    m_ModelLoader(&m_ECS, &m_TXLoader),
+    m_RenderableHandler(&m_ECS),
+    m_VPHandler(&m_ECS),
+    m_LightHandler(&m_ECS),
+    m_TextRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext()),
+    m_UIHandler(&m_ECS, &m_Display),
+    m_SoundHandler(&m_ECS),
+    m_Renderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
+    m_UIRenderer(&m_ECS, m_Display.getDeviceContext(), m_Display.getDevice(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
+    m_CameraSystem(&m_ECS),
+    m_ButtonSystem(&m_ECS, m_Display.getWindowWidth(), m_Display.getWindowHeight()),
+    m_SoundPlayer(&m_ECS)
 {
     m_ECS.performRegistrations();
 
-    display.showWindow();
-    renderer.update(0.0f);
+    m_Display.showWindow();
+    m_Renderer.update(0.0f);
 }
 
 IGame::~IGame()
@@ -52,18 +54,18 @@ void IGame::run()
 
             timer = timeNow;
 
-            inputHandler.update();
+            m_InputHandler.update();
 
             // Update logic
-            stateManager.update(dt);
+            m_StateManager.update(dt);
 
-            buttonSystem.update(dt);
+            m_ButtonSystem.update(dt);
 
             // Render
-            display.clearBackBuffer();
-            renderer.update(dt);
-            uiRenderer.update(dt);
-            display.presentBackBuffer();
+            m_Display.clearBackBuffer();
+            m_Renderer.update(dt);
+            m_UIRenderer.update(dt);
+            m_Display.presentBackBuffer();
 
             m_ECS.performMaintenance();
         }

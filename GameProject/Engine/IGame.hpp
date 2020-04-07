@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/Audio/SoundHandler.hpp>
+#include <Engine/Audio/SoundPlayer.hpp>
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
@@ -32,24 +34,26 @@ protected:
     ECSCore m_ECS;
 
     // Component handlers
-    TransformHandler transformHandler;
-    VPHandler vpHandler;
-    Display display;
-    InputHandler inputHandler;
-    ShaderHandler shaderHandler;
-    ShaderResourceHandler shaderResourceHandler;
-    TextureLoader txLoader;
-    ModelLoader modelLoader;
-    RenderableHandler renderableHandler;
-    UIHandler uiHandler;
-    LightHandler lightHandler;
-    TextRenderer textRenderer;
+    TransformHandler m_TransformHandler;
+    VPHandler m_VPHandler;
+    Display m_Display;
+    InputHandler m_InputHandler;
+    ShaderHandler m_ShaderHandler;
+    ShaderResourceHandler m_ShaderResourceHandler;
+    TextureLoader m_TXLoader;
+    ModelLoader m_ModelLoader;
+    RenderableHandler m_RenderableHandler;
+    UIHandler m_UIHandler;
+    LightHandler m_LightHandler;
+    TextRenderer m_TextRenderer;
+    SoundHandler m_SoundHandler;
 
     // Systems
-    Renderer renderer;
-    UIRenderer uiRenderer;
-    CameraSystem cameraSystem;
-    ButtonSystem buttonSystem;
+    Renderer m_Renderer;
+    UIRenderer m_UIRenderer;
+    CameraSystem m_CameraSystem;
+    ButtonSystem m_ButtonSystem;
+    SoundPlayer m_SoundPlayer;
 
-    StateManager stateManager;
+    StateManager m_StateManager;
 };
