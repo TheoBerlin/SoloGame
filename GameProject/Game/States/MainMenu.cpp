@@ -1,5 +1,6 @@
 #include "MainMenu.hpp"
 
+#include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/InputHandler.hpp>
@@ -14,14 +15,16 @@ MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* devi
     :State(stateManager, pECS, STATE_TRANSITION::PUSH),
     device(device)
 {
-    this->inputHandler = static_cast<InputHandler*>(pECS->getSystemSubscriber()->getComponentHandler(TID(InputHandler)));
+    SystemSubscriber* pSystemSubscriber = pECS->getSystemSubscriber();
+
+    this->inputHandler = static_cast<InputHandler*>(pSystemSubscriber->getComponentHandler(TID(InputHandler)));
     inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
     inputHandler->setMouseVisibility(true);
     this->keyboardState = inputHandler->getKeyboardState();
 
-    UIHandler* uiHandler            = static_cast<UIHandler*>(pECS->getSystemSubscriber()->getComponentHandler(TID(UIHandler)));
-    TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pECS->getSystemSubscriber()->getComponentHandler(TID(TextRenderer)));
-    TextureLoader* pTextureLoader   = static_cast<TextureLoader*>(pECS->getSystemSubscriber()->getComponentHandler(TID(TextureLoader)));
+    UIHandler* uiHandler            = static_cast<UIHandler*>(pSystemSubscriber->getComponentHandler(TID(UIHandler)));
+    TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pSystemSubscriber->getComponentHandler(TID(TextRenderer)));
+    TextureLoader* pTextureLoader   = static_cast<TextureLoader*>(pSystemSubscriber->getComponentHandler(TID(TextureLoader)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
@@ -43,6 +46,15 @@ MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* devi
 
     // Make the panel a button
     uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ new GameSession(this); });
+
+    // Create test sound
+    Entity soundEntity = m_pECS->createEntity();
+    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
+
+    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pSystemSubscriber->getComponentHandler(TID(SoundHandler)));
+    if (pSoundHandler->createSound(soundEntity, soundFile)) {
+        pSoundHandler->playSound(soundEntity);
+    }
 
     Logger::LOG_INFO("Entered main menu, press E to start a game session");
 }

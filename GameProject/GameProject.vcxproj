@@ -147,10 +147,11 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;freetype-d.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;freetype-d.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unit_Test_Debug|x64'">
@@ -160,6 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>assimp-vc140-mt.lib;freetype-d.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -203,10 +205,11 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;d3d11.lib;runtimeobject.lib;D3DCompiler.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -220,6 +223,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -234,6 +238,8 @@
     <ClCompile Include="..\include\DirectXTK\Mouse.cpp" />
     <ClCompile Include="..\include\DirectXTK\pch.cpp" />
     <ClCompile Include="..\include\DirectXTK\WICTextureLoader.cpp" />
+    <ClCompile Include="Engine\Audio\SoundHandler.cpp" />
+    <ClCompile Include="Engine\Audio\SoundPlayer.cpp" />
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
     <ClCompile Include="Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="Engine\ECS\ECSCore.cpp" />
@@ -306,6 +312,8 @@
     <ClInclude Include="..\include\DirectXTK\pch.h" />
     <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
     <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
+    <ClInclude Include="Engine\Audio\SoundHandler.hpp" />
+    <ClInclude Include="Engine\Audio\SoundPlayer.hpp" />
     <ClInclude Include="Engine\ECS\ComponentHandler.hpp" />
     <ClInclude Include="Engine\ECS\ECSBooter.hpp" />
     <ClInclude Include="Engine\ECS\ECSCore.hpp" />
