@@ -39,7 +39,7 @@ void TransformHandler::createTransform(Entity entity)
 void TransformHandler::createWorldMatrix(Entity entity)
 {
     if (!transforms.hasElement(entity)) {
-        Log_Warning("Tried to create a world matrix component for an entity which does not have a transform: %d", entity);
+        LOG_WARNING("Tried to create a world matrix component for an entity which does not have a transform: %d", entity);
         return;
     }
 

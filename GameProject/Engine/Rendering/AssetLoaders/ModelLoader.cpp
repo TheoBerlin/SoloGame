@@ -65,10 +65,10 @@ Model* ModelLoader::loadModel(const std::string& filePath)
     const aiScene* scene = importer.ReadFile(filePath, aiProcess_GenUVCoords | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenNormals | aiProcess_FlipUVs);
 
     if (!scene) {
-        Log_Warning("Model could not be loaded: [%s]", filePath.c_str());
+        LOG_WARNING("Model could not be loaded: [%s]", filePath.c_str());
         return nullptr;
     } else {
-        Log_Info("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
+        LOG_INFO("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
     }
 
     Model* loadedModel = new Model();
@@ -118,12 +118,12 @@ void ModelLoader::deleteAllModels()
 void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 {
     if (!assimpMesh->HasPositions()) {
-        Log_Warning("Assimp mesh is missing vertex positions");
+        LOG_WARNING("Assimp mesh is missing vertex positions");
         return;
     }
 
     if (!assimpMesh->HasNormals()) {
-        Log_Warning("Assimp mesh is missing normals");
+        LOG_WARNING("Assimp mesh is missing normals");
         return;
     }
 
@@ -158,7 +158,7 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
         const aiFace* face = &assimpMesh->mFaces[i];
 
         if (face->mNumIndices != 3) {
-            Log_Warning("Mesh face has an unexpected amount of indices: %d", face->mNumIndices);
+            LOG_WARNING("Mesh face has an unexpected amount of indices: %d", face->mNumIndices);
             return;
         }
 
@@ -190,7 +190,7 @@ void ModelLoader::loadMaterial(const aiMaterial* assimpMaterial, std::vector<Mat
     aiString textureName;
 
     if (assimpMaterial->GetTextureCount(aiTextureType_DIFFUSE) == 0) {
-        Log_Warning("Loading material lacks a diffuse texture");
+        LOG_WARNING("Loading material lacks a diffuse texture");
         return;
     }
 
@@ -233,7 +233,7 @@ void ModelLoader::loadNode(std::vector<unsigned int>& meshIndices, aiNode* node,
 
         // Make sure the mesh has texture coordinates
         if (!scene->mMeshes[node->mMeshes[i]]->HasTextureCoords(0)) {
-            Log_Warning("Ignoring mesh [%d]: missing texture coordinates", node->mMeshes[i]);
+            LOG_WARNING("Ignoring mesh [%d]: missing texture coordinates", node->mMeshes[i]);
             continue;
         }
 

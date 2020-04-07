@@ -17,7 +17,7 @@ GameSession::GameSession(MainMenu* mainMenu)
     racerMover(m_pECS)
 {
     m_pECS->performRegistrations();
-    Log_Info("Started game session");
+    LOG_INFO("Started game session");
 
     // Set mouse mode to relative, which also hides the mouse
     this->inputHandler = static_cast<InputHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(InputHandler)));

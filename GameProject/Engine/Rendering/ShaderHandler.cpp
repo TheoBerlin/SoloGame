@@ -118,14 +118,14 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                             program.vertexShader = nullptr;
                         }
 
-                        Log_Error("Failed to create vertex shader from compiled code: %S", filePath.c_str());
+                        LOG_ERROR("Failed to create vertex shader from compiled code: %S", filePath.c_str());
                         system("pause");
                     }
                 } while (program.vertexShader == nullptr);
                 hr = m_pDevice->CreateInputLayout(&inputLayoutDesc[0], (UINT)inputLayoutDesc.size(), compiledCode->GetBufferPointer(),
                     compiledCode->GetBufferSize(), &program.inputLayout);
                 if (FAILED(hr))
-                    Log_Error("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
+                    LOG_ERROR("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
                 break;
 
             case PIXEL_SHADER:
@@ -141,7 +141,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                             program.pixelShader = nullptr;
                         }
 
-                        Log_Error("Failed to create pixel shader from compiled code: %S", filePath.c_str());
+                        LOG_ERROR("Failed to create pixel shader from compiled code: %S", filePath.c_str());
                         system("pause");
                     }
                 } while (program.pixelShader == nullptr);
@@ -166,10 +166,10 @@ ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCS
         HRESULT hr = D3DCompileFromFile(fileName, nullptr, nullptr, entryPoint, targetVer, compileFlags, 0, &compiledCode, &errorMsgs);
 
         if (FAILED(hr)) {
-            Log_Error("Failed to compile [%S]", fileName);
+            LOG_ERROR("Failed to compile [%S]", fileName);
 
             if (errorMsgs) {
-                Log_Error("%s", (char*)errorMsgs->GetBufferPointer());
+                LOG_ERROR("%s", (char*)errorMsgs->GetBufferPointer());
                 errorMsgs->Release();
             }
 
@@ -178,7 +178,7 @@ ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCS
                 compiledCode = nullptr;
             }
 
-            Log_Info("Edit the shader code and press any key to reattempt a compilation");
+            LOG_INFO("Edit the shader code and press any key to reattempt a compilation");
 			std::getchar();
         }
     } while (compiledCode == nullptr);
