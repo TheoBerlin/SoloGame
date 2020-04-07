@@ -28,7 +28,7 @@ TextRenderer::~TextRenderer()
 
     FT_Error err = FT_Done_FreeType(ftLib);
 	if (err) {
-		Logger::LOG_ERROR("Failed to release FreeType library: %s", FT_Error_String(err));
+		Log_Error("Failed to release FreeType library: %s", FT_Error_String(err));
 	}
 }
 
@@ -41,12 +41,12 @@ bool TextRenderer::init()
     // Initialize FreeType library
 	FT_Error err = FT_Init_FreeType(&ftLib);
 	if (err) {
-		Logger::LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
+		Log_Error("Failed to initialize FreeType library: %s", FT_Error_String(err));
         FT_Done_FreeType(ftLib);
         return false;
 	}
 
-    Logger::LOG_INFO("Initialized FreeType library");
+    Log_Info("Initialized FreeType library");
     return true;
 }
 
@@ -57,14 +57,14 @@ TextureReference TextRenderer::renderText(const std::string& text, const std::st
 
     err = FT_New_Face(ftLib, font.c_str(), 0, &face);
     if (err) {
-        Logger::LOG_WARNING("Failed to load FreeType face from file [%s]: %s", font.c_str(), FT_Error_String(err));
+        Log_Warning("Failed to load FreeType face from file [%s]: %s", font.c_str(), FT_Error_String(err));
         return nullptr;
     }
 
     // Set the desired size of the font
     err = FT_Set_Pixel_Sizes(face, 0, fontPixelHeight);
     if (err) {
-        Logger::LOG_WARNING("[%s] FreeType failed to set pixel size %d: %s", font.c_str(), fontPixelHeight, FT_Error_String(err));
+        Log_Warning("[%s] FreeType failed to set pixel size %d: %s", font.c_str(), fontPixelHeight, FT_Error_String(err));
         return nullptr;
     }
 
@@ -98,14 +98,14 @@ TextureReference TextRenderer::renderText(const std::string& text, const std::st
         }*/
 
         if (character == ' ') {
-            Logger::LOG_INFO("Max advance (rendering): %d", face->size->metrics.max_advance);
+            Log_Info("Max advance (rendering): %d", face->size->metrics.max_advance);
             pen.x += face->size->metrics.max_advance;
             continue;
         }
 
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
-            Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
+            Log_Warning("Expected glyph to be loaded: '%c'", character);
             return nullptr;
         }
 
@@ -150,7 +150,7 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
 
         err = FT_Load_Char(face, character, FT_LOAD_RENDER);
         if (err) {
-            Logger::LOG_WARNING("Failed to load character: '%c', font: %s", character, font.c_str());
+            Log_Warning("Failed to load character: '%c', font: %s", character, font.c_str());
             return false;
         }
 
@@ -172,7 +172,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
     for (char character : text) {
         if (character == ' ') {
-            Logger::LOG_INFO("Max advance (calculate size): %d", face->size->metrics.max_advance);
+            Log_Info("Max advance (calculate size): %d", face->size->metrics.max_advance);
             textureSize.x += (uint32_t)face->size->metrics.max_advance;
             continue;
         }
@@ -186,7 +186,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
-            Logger::LOG_WARNING("Expected glyph to be loaded: '%c'", character);
+            Log_Warning("Expected glyph to be loaded: '%c'", character);
             return textureSize;
         }
 
@@ -209,7 +209,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
     textureSize.x = (uint32_t)(ceil((float)textureSize.x / 64.0f));
     textureSize.y = (uint32_t)(ceil((float)textureSize.y / 64.0f));
-    Logger::LOG_INFO("Texture size: (%d, %d)", textureSize.x, textureSize.y);
+    Log_Info("Texture size: (%d, %d)", textureSize.x, textureSize.y);
     return textureSize;
 }
 
@@ -269,14 +269,14 @@ ID3D11ShaderResourceView* TextRenderer::bytemapToTexture(const Bytemap& bytemap)
     Microsoft::WRL::ComPtr<ID3D11Texture2D> glyphTexture;
     HRESULT hr = device->CreateTexture2D(&txDesc, &glyphTxSubdata, glyphTexture.GetAddressOf());
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create texture from bytemap: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create texture from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
     ID3D11ShaderResourceView* glyphSRV;
     hr = device->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create shader resource view from bytemap: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create shader resource view from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
@@ -287,7 +287,7 @@ void TextRenderer::bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap)
 {
     // The bitmap's pitch might be negative in case the first bytes describe the bottom row of the image. This might need to be handled.
     if (bitmap.pitch < 0) {
-        Logger::LOG_WARNING("Pitch is negative, this is not handled correctly!");
+        Log_Warning("Pitch is negative, this is not handled correctly!");
     }
 
     bytemap.rows = bitmap.rows;

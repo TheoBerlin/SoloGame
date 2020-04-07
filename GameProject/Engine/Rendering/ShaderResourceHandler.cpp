@@ -34,7 +34,7 @@ bool ShaderResourceHandler::init()
 
     HRESULT hr = device->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -69,7 +69,7 @@ bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vert
 
     HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -94,7 +94,7 @@ bool ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCou
 
     HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create index buffer: %s", hresultToString(hr).c_str());
         return false;
     }
 

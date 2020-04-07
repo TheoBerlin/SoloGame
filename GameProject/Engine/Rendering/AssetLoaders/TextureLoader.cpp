@@ -55,9 +55,9 @@ TextureReference TextureLoader::loadTexture(const std::string& filePath)
     }
 
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to load texture: [%s]", filePath.c_str());
+        Log_Warning("Failed to load texture: [%s]", filePath.c_str());
     } else {
-        Logger::LOG_INFO("Loaded texture: [%s]", filePath.c_str());
+        Log_Info("Loaded texture: [%s]", filePath.c_str());
         Texture* pTexture = new Texture(pSRV);
         m_Textures[filePath] = pTexture;
 

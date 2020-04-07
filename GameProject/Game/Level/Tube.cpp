@@ -46,7 +46,7 @@ bool TubeHandler::init()
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
 {
     if (faces < 3) {
-        Logger::LOG_WARNING("Tube must have at least 3 faces, attempted to create one with: %d", faces);
+        Log_Warning("Tube must have at least 3 faces, attempted to create one with: %d", faces);
         return nullptr;
     }
 
@@ -153,7 +153,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
     HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
@@ -168,7 +168,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
     hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create index buffer: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 

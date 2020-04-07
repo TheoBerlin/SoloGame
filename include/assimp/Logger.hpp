@@ -244,7 +244,7 @@ inline void Logger::debug(const std::string &message)
 }
 
 // ----------------------------------------------------------------------------------
-inline void Logger::error(const std::string &message)
+inline void Log::Error(const std::string &message)
 {
     return error(message.c_str());
 }
@@ -256,7 +256,7 @@ inline void Logger::warn(const std::string &message)
 }
 
 // ----------------------------------------------------------------------------------
-inline void Logger::info(const std::string &message)
+inline void Log::Info(const std::string &message)
 {
     return info(message.c_str());
 }
