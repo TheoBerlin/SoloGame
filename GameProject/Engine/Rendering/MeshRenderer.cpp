@@ -82,7 +82,7 @@ bool MeshRenderer::init()
 
     HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectMatrices);
     if (FAILED(hr)) {
-        Log_Error("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
+        LOG_ERROR("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -90,7 +90,7 @@ bool MeshRenderer::init()
 
     hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pMaterialBuffer);
     if (FAILED(hr)) {
-        Log_Error("Failed to create material cbuffer: %s", hresultToString(hr).c_str());
+        LOG_ERROR("Failed to create material cbuffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -98,7 +98,7 @@ bool MeshRenderer::init()
 
     hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPointLightBuffer);
     if (FAILED(hr)) {
-        Log_Error("Failed to create point light cbuffer: %s", hresultToString(hr).c_str());
+        LOG_ERROR("Failed to create point light cbuffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -118,7 +118,7 @@ bool MeshRenderer::init()
 
     hr = m_pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
     if (FAILED(hr)) {
-        Log_Error("Failed to create rasterizer state: %s", hresultToString(hr).c_str());
+        LOG_ERROR("Failed to create rasterizer state: %s", hresultToString(hr).c_str());
         return false;
     }
 

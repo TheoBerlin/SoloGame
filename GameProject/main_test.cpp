@@ -19,9 +19,9 @@ int main(int argc, char* argv[])
 	FT_Library ftLib;
 	FT_Error err = FT_Init_FreeType(&ftLib);
 	if (!err) {
-		Log_Info("Initialized FreeType library");
+		LOG_INFO("Initialized FreeType library");
 	} else {
-		Log_Error("Failed to initialize FreeType library: %s", FT_Error_String(err));
+		LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
 	}
 
     // Run tests

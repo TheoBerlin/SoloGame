@@ -55,7 +55,7 @@ void ECSBooter::bootHandlers()
             ComponentHandlerBootInfo& bootInfo = dependencyItr->second;
             if (bootInfo.inOpenList) {
                 if (dependencyItr != openList.back()) {
-                    Log_Error("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
+                    LOG_ERROR("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
                     break;
                 }
             } else {
@@ -100,7 +100,7 @@ void ECSBooter::bootSystems()
 
     for (const SystemRegistration& systemReg : m_SystemsToRegister) {
         if (!systemReg.system->init()) {
-            Log_Error("Failed to initialize system, ID: %d", systemReg.system->ID);
+            LOG_ERROR("Failed to initialize system, ID: %d", systemReg.system->ID);
         } else {
             pSystemSubscriber->registerSystem(systemReg);
         }
@@ -137,7 +137,7 @@ void ECSBooter::finalizeHandlerBootDependencies()
             } else {
                 // The dependency is not enqueued for bootup, it might already be booted
                 if (!m_pECS->getSystemSubscriber()->getComponentHandler(dependencyTID)) {
-                    Log_Error("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
+                    LOG_ERROR("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
                     hasDependencies = false;
                     break;
                 }
@@ -158,7 +158,7 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     bootInfo.inClosedList = true;
 
     if (!bootInfo.handlerRegistration->pComponentHandler->init()) {
-        Log_Error("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
+        LOG_ERROR("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
         m_pECS->getSystemSubscriber()->registerComponentHandler(*bootInfo.handlerRegistration);
     }

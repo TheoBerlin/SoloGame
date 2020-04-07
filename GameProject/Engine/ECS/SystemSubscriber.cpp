@@ -24,7 +24,7 @@ void SystemSubscriber::registerComponentHandler(const ComponentHandlerRegistrati
         auto mapItr = this->m_ComponentStorage.find(componentReg.tid);
 
         if (mapItr != this->m_ComponentStorage.end()) {
-            Log_Warning("Attempted to register an already handled component type: %s", componentReg.tid.name());
+            LOG_WARNING("Attempted to register an already handled component type: %s", componentReg.tid.name());
             continue;
         }
 
@@ -41,7 +41,7 @@ void SystemSubscriber::deregisterComponentHandler(ComponentHandler* handler)
         auto handlerItr = m_ComponentStorage.find(componentType);
 
         if (handlerItr == m_ComponentStorage.end()) {
-            Log_Warning("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
+            LOG_WARNING("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
             continue;
         }
 
@@ -56,7 +56,7 @@ void SystemSubscriber::deregisterComponentHandler(ComponentHandler* handler)
     auto handlerItr = componentHandlers.find(handler->getHandlerType());
 
     if (handlerItr == componentHandlers.end()) {
-        Log_Warning("Attempted to deregister an unregistered component handler: %s", handler->getHandlerType().name());
+        LOG_WARNING("Attempted to deregister an unregistered component handler: %s", handler->getHandlerType().name());
         return;
     }
 
@@ -68,7 +68,7 @@ ComponentHandler* SystemSubscriber::getComponentHandler(const std::type_index& h
     auto itr = componentHandlers.find(handlerType);
 
     if (itr == componentHandlers.end()) {
-        Log_Warning("Failed to retrieve component handler: %s", handlerType.name());
+        LOG_WARNING("Failed to retrieve component handler: %s", handlerType.name());
         return nullptr;
     }
 
@@ -94,7 +94,7 @@ void SystemSubscriber::registerSystem(const SystemRegistration& sysReg)
             auto queryItr = m_ComponentStorage.find(componentReg.tid);
 
             if (queryItr == m_ComponentStorage.end()) {
-                Log_Warning("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.tid.name(), componentReg.tid.hash_code());
+                LOG_WARNING("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.tid.name(), componentReg.tid.hash_code());
                 return;
             }
 
@@ -105,7 +105,7 @@ void SystemSubscriber::registerSystem(const SystemRegistration& sysReg)
     }
 
     if (subscriptions.size() == 0) {
-        Log_Warning("No subscriptions were able to be made during a system registration");
+        LOG_WARNING("No subscriptions were able to be made during a system registration");
         return;
     }
 
@@ -151,7 +151,7 @@ void SystemSubscriber::registerSystem(const SystemRegistration& sysReg)
 void SystemSubscriber::deregisterSystem(System* system, std::vector<std::type_index>& componentTypes)
 {
     if (subscriptionStorage.hasElement(system->ID) == false) {
-        Log_Warning("Attempted to deregistered an unregistered system, ID: %d", system->ID);
+        LOG_WARNING("Attempted to deregistered an unregistered system, ID: %d", system->ID);
         return;
     }
 
@@ -165,7 +165,7 @@ void SystemSubscriber::deregisterSystem(System* system, std::vector<std::type_in
             auto subBucketItr = componentSubscriptions.find(componentType);
 
             if (subBucketItr == componentSubscriptions.end()) {
-                Log_Warning("Attempted to delete non-existent component subscription");
+                LOG_WARNING("Attempted to delete non-existent component subscription");
                 // The other component subscriptions might exist, so don't return
                 continue;
             }
