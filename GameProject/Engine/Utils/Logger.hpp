@@ -6,9 +6,9 @@
 
 #define LOG_PATH "log.txt"
 
-#define Log_Info(format, ...) Logger::logInfo(__FILE__, __LINE__, format, __VA_ARGS__);
-#define Log_Warning(format, ...) Logger::logWarning(__FILE__, __LINE__, format, __VA_ARGS__);
-#define Log_Error(format, ...) Logger::logError(__FILE__, __LINE__, format, __VA_ARGS__);
+#define LOG_INFO(format, ...) Logger::logInfo(__FILE__, __LINE__, format, __VA_ARGS__);
+#define LOG_WARNING(format, ...) Logger::logWarning(__FILE__, __LINE__, format, __VA_ARGS__);
+#define LOG_ERROR(format, ...) Logger::logError(__FILE__, __LINE__, format, __VA_ARGS__);
 
 class Logger
 {
