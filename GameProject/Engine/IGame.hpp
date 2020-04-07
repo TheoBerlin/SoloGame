@@ -49,7 +49,7 @@ protected:
     SoundHandler m_SoundHandler;
 
     // Systems
-    Renderer m_Renderer;
+    MeshRenderer m_MeshRenderer;
     UIRenderer m_UIRenderer;
     CameraSystem m_CameraSystem;
     ButtonSystem m_ButtonSystem;

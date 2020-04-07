@@ -10,7 +10,7 @@
 #include <Engine/Utils/Logger.hpp>
 #include <DirectXMath.h>
 
-Renderer::Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV)
+MeshRenderer::MeshRenderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV)
     :System(pECS),
     m_pDevice(pDevice),
     m_pContext(pContext),
@@ -20,16 +20,16 @@ Renderer::Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pC
 
     SystemRegistration sysReg = {
     {
-        {{{R, tid_renderable}, {R, tid_worldMatrix}}, &renderables},
-        {{{R, tid_transform}, {R, tid_view}, {R, tid_projection}}, &camera},
-        {{{R, tid_pointLight}}, &pointLights}
+        {{{R, tid_renderable}, {R, tid_worldMatrix}}, &m_Renderables},
+        {{{R, tid_transform}, {R, tid_view}, {R, tid_projection}}, &m_Camera},
+        {{{R, tid_pointLight}}, &m_PointLights}
     },
     this};
 
     subscribeToComponents(sysReg);
 }
 
-Renderer::~Renderer()
+MeshRenderer::~MeshRenderer()
 {
     if (m_pMeshInputLayout) {
         m_pMeshInputLayout->Release();
@@ -52,7 +52,7 @@ Renderer::~Renderer()
     }
 }
 
-bool Renderer::init()
+bool MeshRenderer::init()
 {
     m_pRenderableHandler = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
     m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
@@ -125,21 +125,21 @@ bool Renderer::init()
     return true;
 }
 
-void Renderer::update(float dt)
+void MeshRenderer::update(float dt)
 {
-    if (renderables.size() == 0 || camera.size() == 0)
+    if (m_Renderables.size() == 0 || m_Camera.size() == 0)
        return;
 
     m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Point light cbuffer
     PerFrameBuffer perFrame;
-    uint32_t numLights = std::min(MAX_POINTLIGHTS, (int)pointLights.size());
+    uint32_t numLights = std::min(MAX_POINTLIGHTS, (int)m_PointLights.size());
     for (unsigned int i = 0; i < numLights; i += 1) {
         perFrame.pointLights[i] = m_pLightHandler->pointLights[i];
     }
 
-    perFrame.cameraPosition = m_pTransformHandler->transforms[camera[0]].position;
+    perFrame.cameraPosition = m_pTransformHandler->transforms[m_Camera[0]].position;
     perFrame.numLights = numLights;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
@@ -153,7 +153,7 @@ void Renderer::update(float dt)
     m_pContext->RSSetState(m_RsState);
     m_pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
 
-    for (size_t i = 0; i < renderables.size(); i += 1) {
+    for (size_t i = 0; i < m_Renderables.size(); i += 1) {
         Renderable& renderable = m_pRenderableHandler->m_Renderables[i];
         Program* program = renderable.program;
         Model* model = renderable.model;
@@ -165,8 +165,8 @@ void Renderer::update(float dt)
         m_pContext->PSSetShader(program->pixelShader, nullptr, 0);
 
         // Prepare camera's view*proj matrix
-        ViewMatrix camView = m_pVPHandler->viewMatrices.indexID(camera[0]);
-        ProjectionMatrix camProj = m_pVPHandler->projMatrices.indexID(camera[0]);
+        ViewMatrix camView = m_pVPHandler->viewMatrices.indexID(m_Camera[0]);
+        ProjectionMatrix camProj = m_pVPHandler->projMatrices.indexID(m_Camera[0]);
 
         DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&camView.view) * DirectX::XMLoadFloat4x4(&camProj.projection);
 
@@ -187,7 +187,7 @@ void Renderer::update(float dt)
             PerObjectMatrices matrices;
 
             // PerObjectMatrices cbuffer
-            matrices.world = m_pTransformHandler->getWorldMatrix(renderables[i]).worldMatrix;
+            matrices.world = m_pTransformHandler->getWorldMatrix(m_Renderables[i]).worldMatrix;
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
 
             m_pContext->Map(m_pPerObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
