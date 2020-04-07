@@ -71,7 +71,7 @@ bool UIHandler::init()
 
     HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create per-char cbuffer: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create per-char cbuffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -94,7 +94,7 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount)
 {
     if (!panels.hasElement(entity)) {
-        Logger::LOG_WARNING("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
+        Log_Warning("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
         return;
     }
 
@@ -117,7 +117,7 @@ void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, Di
     std::function<void()> onPress)
 {
     if (!panels.hasElement(entity)) {
-        Logger::LOG_WARNING("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
+        Log_Warning("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
         return;
     }
 
@@ -152,7 +152,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     ID3D11Texture2D* texture2D = nullptr;
     HRESULT hr = m_pDevice->CreateTexture2D(&txDesc, nullptr, &texture2D);
     if (hr != S_OK) {
-        Logger::LOG_WARNING("Failed to create texture for UI panel: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create texture for UI panel: %s", hresultToString(hr).c_str());
         return;
     }
 
@@ -160,7 +160,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     ID3D11ShaderResourceView* pSRV = nullptr;
     hr = m_pDevice->CreateShaderResourceView(texture2D, nullptr, &pSRV);
     if (hr != S_OK) {
-        Logger::LOG_WARNING("Failed to create shader resource view for UI panel: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create shader resource view for UI panel: %s", hresultToString(hr).c_str());
     }
 
     texture2D->Release();
@@ -278,7 +278,7 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
     ID3D11RenderTargetView* panelRtv = nullptr;
     HRESULT hr = m_pDevice->CreateRenderTargetView(panelResource, &rtvDesc, &panelRtv);
     if (hr != S_OK) {
-        Logger::LOG_WARNING("Failed to create render target view of panel texture: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to create render target view of panel texture: %s", hresultToString(hr).c_str());
         return;
     }
 
@@ -297,7 +297,7 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
         D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
         hr = m_pContext->Map(m_pPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
         if (hr != S_OK) {
-            Logger::LOG_WARNING("Failed to map per-object constant buffer: %s", hresultToString(hr).c_str());
+            Log_Warning("Failed to map per-object constant buffer: %s", hresultToString(hr).c_str());
             panelRtv->Release();
             return;
         }

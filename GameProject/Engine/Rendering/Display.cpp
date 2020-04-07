@@ -21,7 +21,7 @@ Display::Display(HINSTANCE hInstance, unsigned int clientHeight, float aspectRat
     clientHeight(clientHeight),
     clientWidth((unsigned int)(clientHeight * aspectRatio))
 {
-    Logger::LOG_INFO("Creating window");
+    Log_Info("Creating window");
 
     this->initWindow();
     this->initDX();
@@ -69,7 +69,7 @@ void Display::presentBackBuffer()
 {
     HRESULT hr = swapChain->Present(0, 0);
     if (FAILED(hr))
-        Logger::LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+        Log_Warning("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
 }
 
 void Display::clearBackBuffer()
@@ -99,7 +99,7 @@ void Display::initWindow()
     wcex.lpszClassName = "Game Name";
 
     if (!RegisterClassEx(&wcex)) {
-        Logger::LOG_ERROR("Failed to register window class");
+        Log_Error("Failed to register window class");
         system("pause");
         exit(1);
     }
@@ -123,7 +123,7 @@ void Display::initWindow()
         nullptr);
 
     if (!this->hwnd) {
-        Logger::LOG_ERROR("Failed to create window");
+        Log_Error("Failed to create window");
         system("pause");
         exit(1);
     }
@@ -132,7 +132,7 @@ void Display::initWindow()
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to initialize COM library: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to initialize COM library: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -189,7 +189,7 @@ void Display::initDX()
         this->deviceContext.GetAddressOf());
 
     if (FAILED(hr) || !device || !swapChain) {
-        Logger::LOG_ERROR("Failed to create device and swap chain: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create device and swap chain: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -197,14 +197,14 @@ void Display::initDX()
     ID3D11Texture2D* backBuffer = nullptr;
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to retrieve swap chain's back buffer: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to retrieve swap chain's back buffer: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
 
     hr = device->CreateRenderTargetView(backBuffer, nullptr, &renderTarget);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create render target: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create render target: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -227,7 +227,7 @@ void Display::initDX()
 
     hr = device->CreateTexture2D(&depthTxDesc, nullptr, &depthStencilTx);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create depth stencil texture: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create depth stencil texture: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -245,7 +245,7 @@ void Display::initDX()
 
     hr = device->CreateDepthStencilState(&dsDesc, &depthStencilState);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -259,7 +259,7 @@ void Display::initDX()
 
     hr = device->CreateDepthStencilView(depthStencilTx.Get(), &dsViewDesc, &depthStencilView);
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create depth stencil view: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create depth stencil view: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }
@@ -293,7 +293,7 @@ void Display::initDX()
 
     hr = device->CreateBlendState(&blendDesc, mBlendState.GetAddressOf());
     if (hr != S_OK) {
-        Logger::LOG_ERROR("Failed create blend state: %s", hresultToString(hr).c_str());
+        Log_Error("Failed create blend state: %s", hresultToString(hr).c_str());
         system("pause");
         exit(1);
     }

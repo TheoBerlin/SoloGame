@@ -55,6 +55,7 @@ Logger::~Logger()
     if (consoleHandle) {
         FreeConsole();
     }
+
     logFile.close();
 }
 
@@ -72,9 +73,13 @@ BOOL WINAPI Logger::consoleEventHandler(DWORD eventType)
     return FALSE;
 }
 
-void Logger::log(unsigned short color, const std::string prefix, const std::string text)
+void Logger::log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& text)
 {
-    std::string finalText = prefix + " " + Logger::timeToString() + ": " + text + "\n";
+    // Remove the path from the file string
+    std::string fileName(pFile);
+    fileName = std::string(&pFile[fileName.find_last_of('\\') + 1]);
+
+    std::string finalText = Logger::timeToString() + " " + severity + " " + fileName + "(" + std::to_string(lineNr) + ")" + ": " + text + "\n";
 
     // Print to console
     SetConsoleTextAttribute(consoleHandle, color);
@@ -97,7 +102,7 @@ std::string Logger::timeToString()
     localtime_s(&tm, &t);
 
     std::ostringstream outputStringStream;
-    outputStringStream << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+    outputStringStream << std::put_time(&tm, "%d-%m-%Y %H:%M:%S");
 
     return outputStringStream.str();
 }

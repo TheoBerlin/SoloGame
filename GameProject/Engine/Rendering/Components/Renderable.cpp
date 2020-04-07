@@ -37,7 +37,7 @@ bool RenderableHandler::createRenderable(Entity entity, std::string modelPath, P
     renderable.model = m_pModelLoader->loadModel(modelPath);
 
     if (!renderable.program || !renderable.model) {
-        Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);
+        Log_Warning("Failed to create renderable component for entity: %d", entity);
         return false;
     }
 
@@ -54,7 +54,7 @@ bool RenderableHandler::createRenderable(Entity entity, Model* model, PROGRAM pr
     renderable.model = model;
 
     if (!renderable.program || !renderable.model) {
-        Logger::LOG_WARNING("Failed to create renderable component for entity: %d", entity);
+        Log_Warning("Failed to create renderable component for entity: %d", entity);
         return false;
     }
 

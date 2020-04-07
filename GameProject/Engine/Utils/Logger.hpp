@@ -6,6 +6,10 @@
 
 #define LOG_PATH "log.txt"
 
+#define Log_Info(format, ...) Logger::logInfo(__FILE__, __LINE__, format, __VA_ARGS__);
+#define Log_Warning(format, ...) Logger::logWarning(__FILE__, __LINE__, format, __VA_ARGS__);
+#define Log_Error(format, ...) Logger::logError(__FILE__, __LINE__, format, __VA_ARGS__);
+
 class Logger
 {
 public:
@@ -15,17 +19,17 @@ public:
     static BOOL WINAPI consoleEventHandler(DWORD eventType);
 
     template<typename ... Args>
-    static void LOG_INFO(const std::string& format, Args&& ... args);
+    static void logInfo(const char* pFile, int line, const std::string& format, Args&& ... args);
 
     template<typename ... Args>
-    static void LOG_WARNING(const std::string& format, Args&& ... args);
+    static void logWarning(const char* pFile, int line, const std::string& format, Args&& ... args);
 
     template<typename ... Args>
-    static void LOG_ERROR(const std::string& format, Args&& ... args);
+    static void logError(const char* pFile, int line, const std::string& format, Args&& ... args);
 
 private:
     // Prints prefix, formatted string, current time to console and file
-    static void log(unsigned short color, const std::string prefix, const std::string text);
+    static void log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& text);
 
     template<typename ... Args>
     static std::string formatString(const std::string& format, Args&& ... args);
@@ -39,27 +43,27 @@ private:
 };
 
 template<typename ... Args>
-void Logger::LOG_INFO(const std::string& format, Args&& ... args)
+void Logger::logInfo(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
     std::string text = Logger::formatString(format, args ...);
 
-    Logger::log(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, "[INFO]", text);
+    Logger::log(pFile, lineNr, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY, "[INFO]", text);
 }
 
 template<typename ... Args>
-void Logger::LOG_WARNING(const std::string& format, Args&& ... args)
+void Logger::logWarning(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
     std::string text = Logger::formatString(format, args ...);
 
-    Logger::log(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY, "[WARNING]", text);
+    Logger::log(pFile, lineNr, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY, "[WARNING]", text);
 }
 
 template<typename ... Args>
-void Logger::LOG_ERROR(const std::string& format, Args&& ... args)
+void Logger::logError(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
     std::string text = Logger::formatString(format, args ...);
 
-    Logger::log(FOREGROUND_RED | FOREGROUND_INTENSITY, "[ERROR]", text);
+    Logger::log(pFile, lineNr, FOREGROUND_RED | FOREGROUND_INTENSITY, "[ERROR]", text);
 }
 
 template<typename ... Args>

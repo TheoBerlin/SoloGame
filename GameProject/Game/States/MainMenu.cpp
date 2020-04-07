@@ -56,7 +56,7 @@ MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* devi
         pSoundHandler->playSound(soundEntity);
     }
 
-    Logger::LOG_INFO("Entered main menu, press E to start a game session");
+    Log_Info("Entered main menu, press E to start a game session");
 }
 
 MainMenu::~MainMenu()

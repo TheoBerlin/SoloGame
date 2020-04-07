@@ -61,7 +61,7 @@ bool UIRenderer::init()
 
     HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, m_PerPanelBuffer.GetAddressOf());
     if (FAILED(hr)) {
-        Logger::LOG_ERROR("Failed to create per-object cbuffer: %s", hresultToString(hr).c_str());
+        Log_Error("Failed to create per-object cbuffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
