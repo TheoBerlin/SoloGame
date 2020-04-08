@@ -1,7 +1,7 @@
 #include "ECSCore.hpp"
 
 ECSCore::ECSCore()
-    :m_SystemSubscriber(&m_EntityRegistry),
+    :m_ComponentSubscriber(&m_EntityRegistry),
     m_ECSBooter(this)
 {}
 
@@ -43,7 +43,7 @@ void ECSCore::deleteEntityDelayed(Entity entity)
 
 void ECSCore::performMaintenance()
 {
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_SystemSubscriber.getComponentStorage();
+    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_ComponentSubscriber.getComponentStorage();
     const EntityRegistryPage& registryPage = m_EntityRegistry.getTopRegistryPage();
 
     for (Entity entity : m_EntitiesToDelete) {
@@ -61,7 +61,7 @@ void ECSCore::performMaintenance()
             component.m_pContainer->pop(entity);
 
             // Notify systems that the component has been removed
-            m_SystemSubscriber.removedComponent(entity, componentType);
+            m_ComponentSubscriber.removedComponent(entity, componentType);
         }
 
         // Free the entity ID
@@ -88,7 +88,7 @@ void ECSCore::deregisterTopRegistryPage()
 
         for (std::type_index type : typeSet) {
             // Deregister entity's components from systems
-            m_SystemSubscriber.removedComponent(entities[i], type);
+            m_ComponentSubscriber.removedComponent(entities[i], type);
         }
     }
 }
@@ -99,14 +99,14 @@ void ECSCore::deleteTopRegistryPage()
     const auto& entityComponentSets = page.getVec();
     const std::vector<Entity>& entities = page.getIDs();
 
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_SystemSubscriber.getComponentStorage();
+    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_ComponentSubscriber.getComponentStorage();
 
     for (size_t i = 0; i < entities.size(); i++) {
         const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
 
         for (std::type_index componentType : typeSet) {
             // Deregister entity's component from systems
-            m_SystemSubscriber.removedComponent(entities[i], componentType);
+            m_ComponentSubscriber.removedComponent(entities[i], componentType);
 
             // Delete the component
             auto containerItr = componentStorage.find(componentType);
@@ -134,7 +134,7 @@ void ECSCore::reinstateTopRegistryPage()
         const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
 
         for (std::type_index componentType : typeSet) {
-            m_SystemSubscriber.newComponent(entities[i], componentType);
+            m_ComponentSubscriber.newComponent(entities[i], componentType);
         }
     }
 }
@@ -142,11 +142,11 @@ void ECSCore::reinstateTopRegistryPage()
 void ECSCore::componentAdded(Entity entity, std::type_index componentType)
 {
     m_EntityRegistry.registerComponentType(entity, componentType);
-    m_SystemSubscriber.newComponent(entity, componentType);
+    m_ComponentSubscriber.newComponent(entity, componentType);
 }
 
 void ECSCore::componentDeleted(Entity entity, std::type_index componentType)
 {
     m_EntityRegistry.deregisterComponentType(entity, componentType);
-    m_SystemSubscriber.removedComponent(entity, componentType);
+    m_ComponentSubscriber.removedComponent(entity, componentType);
 }

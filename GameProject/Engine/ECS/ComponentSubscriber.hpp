@@ -37,11 +37,11 @@ struct ComponentStorage {
     std::function<void(Entity)> m_ComponentDestructor;
 };
 
-class SystemSubscriber
+class ComponentSubscriber
 {
 public:
-    SystemSubscriber(EntityRegistry* pEntityRegistry);
-    ~SystemSubscriber();
+    ComponentSubscriber(EntityRegistry* pEntityRegistry);
+    ~ComponentSubscriber();
 
     void registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration);
     void deregisterComponentHandler(ComponentHandler* handler);

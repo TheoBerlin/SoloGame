@@ -138,7 +138,7 @@
     <ClCompile Include="Engine\ECS\EntityRegistry.cpp" />
     <ClCompile Include="Engine\ECS\Renderer.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
-    <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
+    <ClCompile Include="Engine\ECS\ComponentSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
     <ClCompile Include="Engine\GameState\State.cpp" />
     <ClCompile Include="Engine\GameState\StateManager.cpp" />
@@ -187,7 +187,7 @@
     <ClInclude Include="Engine\ECS\EntityRegistry.hpp" />
     <ClInclude Include="Engine\ECS\Renderer.hpp" />
     <ClInclude Include="Engine\ECS\System.hpp" />
-    <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
+    <ClInclude Include="Engine\ECS\ComponentSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
     <ClInclude Include="Engine\GameState\State.hpp" />
     <ClInclude Include="Engine\GameState\StateManager.hpp" />

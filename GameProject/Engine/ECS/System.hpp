@@ -33,7 +33,7 @@ struct SystemRegistration {
 
 class ComponentHandler;
 class ECSCore;
-class SystemSubscriber;
+class ComponentSubscriber;
 struct ComponentSubscriptionRequest;
 
 /*

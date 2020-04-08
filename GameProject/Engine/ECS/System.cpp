@@ -1,7 +1,7 @@
 #include "System.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ComponentSubscriber.hpp>
 
 System::System(ECSCore* pECS)
     :m_pECS(pECS)
@@ -9,7 +9,7 @@ System::System(ECSCore* pECS)
 
 System::~System()
 {
-    m_pECS->getSystemSubscriber()->unsubscribeFromComponents(m_ComponentSubscriptionID, m_ComponentSubscriptionTypes);
+    m_pECS->getComponentSubscriber()->unsubscribeFromComponents(m_ComponentSubscriptionID, m_ComponentSubscriptionTypes);
 }
 
 void System::subscribeToComponents(const SystemRegistration& sysReg)
@@ -24,5 +24,5 @@ void System::registerUpdate(const SystemRegistration& sysReg)
 
 ComponentHandler* System::getComponentHandler(const std::type_index& handlerType)
 {
-    return m_pECS->getSystemSubscriber()->getComponentHandler(handlerType);
+    return m_pECS->getComponentSubscriber()->getComponentHandler(handlerType);
 }

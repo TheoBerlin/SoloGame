@@ -1,10 +1,10 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/ECS/ComponentSubscriber.hpp>
 #include <Engine/ECS/ECSBooter.hpp>
 #include <Engine/ECS/EntityRegistry.hpp>
 #include <Engine/ECS/System.hpp>
-#include <Engine/ECS/SystemSubscriber.hpp>
 #include <Engine/ECS/SystemUpdater.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
 
@@ -32,7 +32,7 @@ public:
     void deleteEntityDelayed(Entity entity);
     void performMaintenance();
 
-    SystemSubscriber* getSystemSubscriber() { return &m_SystemSubscriber; }
+    ComponentSubscriber* getComponentSubscriber() { return &m_ComponentSubscriber; }
     SystemUpdater* getSystemUpdater() { return &m_SystemUpdater; }
     EntityRegistry* getEntityRegistry() { return &m_EntityRegistry; }
 
@@ -46,7 +46,7 @@ public:
 
 private:
     EntityRegistry m_EntityRegistry;
-    SystemSubscriber m_SystemSubscriber;
+    ComponentSubscriber m_ComponentSubscriber;
     SystemUpdater m_SystemUpdater;
     ECSBooter m_ECSBooter;
 

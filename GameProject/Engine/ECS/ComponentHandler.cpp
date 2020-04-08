@@ -10,7 +10,7 @@ ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, EC
 
 ComponentHandler::~ComponentHandler()
 {
-    m_pECS->getSystemSubscriber()->deregisterComponentHandler(this);
+    m_pECS->getComponentSubscriber()->deregisterComponentHandler(this);
 }
 
 void ComponentHandler::registerHandler(const ComponentHandlerRegistration& handlerRegistration)
