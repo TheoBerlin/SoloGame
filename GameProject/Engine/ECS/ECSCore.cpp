@@ -30,6 +30,11 @@ void ECSCore::enqueueSystemRegistration(const SystemRegistration& systemRegistra
     m_ECSBooter.enqueueSystemRegistration(systemRegistration);
 }
 
+void ECSCore::enqueueRendererRegistration(const RendererRegistration& rendererRegistration)
+{
+    m_ECSBooter.enqueueRendererRegistration(rendererRegistration);
+}
+
 void ECSCore::performRegistrations()
 {
     // Initialize and register systems and component handlers

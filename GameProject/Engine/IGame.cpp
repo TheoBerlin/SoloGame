@@ -17,16 +17,15 @@ IGame::IGame(HINSTANCE hInstance)
     m_TextRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext()),
     m_UIHandler(&m_ECS, &m_Display),
     m_SoundHandler(&m_ECS),
-    m_MeshRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
-    m_UIRenderer(&m_ECS, m_Display.getDeviceContext(), m_Display.getDevice(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
+    m_MeshRenderer(&m_ECS, &m_Display),
+    m_UIRenderer(&m_ECS, &m_Display),
     m_CameraSystem(&m_ECS),
-    m_ButtonSystem(&m_ECS, m_Display.getWindowWidth(), m_Display.getWindowHeight()),
+    m_ButtonSystem(&m_ECS, m_Display.getClientWidth(), m_Display.getClientHeight()),
     m_SoundPlayer(&m_ECS)
 {
     m_ECS.performRegistrations();
 
     m_Display.showWindow();
-    m_MeshRenderer.update(0.0f);
 }
 
 IGame::~IGame()
@@ -63,7 +62,8 @@ void IGame::run()
 
             // Render
             m_Display.clearBackBuffer();
-            m_MeshRenderer.update(dt);
+            m_MeshRenderer.recordCommands();
+            m_MeshRenderer.executeCommands();
             m_UIRenderer.update(dt);
             m_Display.presentBackBuffer();
 

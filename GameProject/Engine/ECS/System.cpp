@@ -9,7 +9,7 @@ System::System(ECSCore* pECS)
 
 System::~System()
 {
-    m_pECS->getComponentSubscriber()->unsubscribeFromComponents(m_ComponentSubscriptionID, m_ComponentSubscriptionTypes);
+    m_pECS->getComponentSubscriber()->unsubscribeFromComponents(m_ComponentSubscriptionID);
 }
 
 void System::subscribeToComponents(const SystemRegistration& sysReg)

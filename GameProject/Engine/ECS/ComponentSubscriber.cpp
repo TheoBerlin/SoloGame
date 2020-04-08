@@ -144,7 +144,7 @@ size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSub
     return subID;
 }
 
-void ComponentSubscriber::unsubscribeFromComponents(size_t subscriptionID, std::vector<std::type_index>& componentTypes)
+void ComponentSubscriber::unsubscribeFromComponents(size_t subscriptionID)
 {
     if (subscriptionStorage.hasElement(subscriptionID) == false) {
         LOG_WARNING("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);

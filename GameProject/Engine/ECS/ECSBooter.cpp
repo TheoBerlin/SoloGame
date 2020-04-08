@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/ECS/Renderer.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -22,17 +23,20 @@ void ECSBooter::enqueueSystemRegistration(const SystemRegistration& systemRegist
     m_SystemsToRegister.push_back(systemRegistration);
 }
 
+void ECSBooter::enqueueRendererRegistration(const RendererRegistration& rendererRegistration)
+{
+    m_RenderersToRegister.push_back(rendererRegistration);
+}
+
 void ECSBooter::performBootups()
 {
-    if (m_ComponentHandlersToRegister.empty() && m_SystemsToRegister.empty()) {
+    if (m_ComponentHandlersToRegister.empty() && m_SystemsToRegister.empty() && m_RenderersToRegister.empty()) {
         return;
     }
 
     bootHandlers();
     bootSystems();
-
-    m_ComponentHandlersToRegister.clear();
-    m_SystemsToRegister.clear();
+    bootRenderers();
 }
 
 void ECSBooter::bootHandlers()
@@ -91,6 +95,7 @@ void ECSBooter::bootHandlers()
         openList.clear();
     }
 
+    m_ComponentHandlersToRegister.clear();
     m_HandlersBootInfos.clear();
 }
 
@@ -101,13 +106,33 @@ void ECSBooter::bootSystems()
     for (const SystemRegistration& systemReg : m_SystemsToRegister) {
         System* pSystem = systemReg.pSystem;
 
-        if (!systemReg.pSystem->init()) {
+        if (!pSystem->init()) {
             LOG_ERROR("Failed to initialize system");
         } else {
             size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriptionRequests);
             pSystem->setComponentSubscriptionID(subscriptionID);
         }
     }
+
+    m_SystemsToRegister.clear();
+}
+
+void ECSBooter::bootRenderers()
+{
+    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+
+    for (const RendererRegistration& rendererReg : m_RenderersToRegister) {
+        Renderer* pRenderer = rendererReg.pRenderer;
+
+        if (!pRenderer->init()) {
+            LOG_ERROR("Failed to initialize renderer");
+        } else {
+            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(rendererReg.ComponentSubscriptionRequests);
+            pRenderer->setComponentSubscriptionID(subscriptionID);
+        }
+    }
+
+    m_RenderersToRegister.clear();
 }
 
 void ECSBooter::buildBootInfos()

@@ -1,12 +1,13 @@
 #pragma once
 
 #define NOMINMAX
-#include <Engine/ECS/System.hpp>
+#include <Engine/ECS/Renderer.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <d3d11.h>
 
-#define MAX_POINTLIGHTS 7
+#define MAX_POINTLIGHTS 7u
 
+class Display;
 class RenderableHandler;
 class TransformHandler;
 class VPHandler;
@@ -22,28 +23,27 @@ struct PerFrameBuffer {
     DirectX::XMFLOAT4 padding;
 };
 
-class MeshRenderer : public System
+class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
+    MeshRenderer(ECSCore* pECS, Display* pDisplay);
     ~MeshRenderer();
 
     virtual bool init() override;
-
-    void update(float dt);
+    virtual void recordCommands() override;
+    virtual bool executeCommands() override;
 
 private:
     IDVector<Entity> m_Renderables;
     IDVector<Entity> m_Camera;
     IDVector<Entity> m_PointLights;
 
+    ID3D11DeviceContext* m_pCommandBuffer;
+
     RenderableHandler* m_pRenderableHandler;
     TransformHandler* m_pTransformHandler;
     VPHandler* m_pVPHandler;
     LightHandler* m_pLightHandler;
-
-    ID3D11Device* m_pDevice;
-    ID3D11DeviceContext* m_pContext;
 
     /* Mesh input layout */
     ID3D11InputLayout* m_pMeshInputLayout;
@@ -63,4 +63,7 @@ private:
     ID3D11DepthStencilView* m_pDepthStencilView;
 
     ID3D11RasterizerState* m_RsState;
+
+    D3D11_VIEWPORT m_Viewport;
+    unsigned int m_BackbufferWidth, m_BackbufferHeight;
 };

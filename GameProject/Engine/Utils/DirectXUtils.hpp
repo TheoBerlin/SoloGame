@@ -1,8 +1,13 @@
 #pragma once
 
+#define NOMINMAX
+
+#include <d3d11.h>
 #include <DirectXMath.h>
 #include <system_error>
 #include <winerror.h>
+
+#define SAFERELEASE(pCOMObject) if (pCOMObject) { pCOMObject->Release(); }
 
 inline std::string hresultToString(HRESULT hr)
 {

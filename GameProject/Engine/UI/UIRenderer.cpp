@@ -1,6 +1,7 @@
 #include "UIRenderer.hpp"
 
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+#include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/UI/Panel.hpp>
@@ -8,12 +9,14 @@
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIRenderer::UIRenderer(ECSCore* pECS, ID3D11DeviceContext* pContext, ID3D11Device* pDevice, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV)
+UIRenderer::UIRenderer(ECSCore* pECS, Display* pDisplay)
     :System(pECS),
-    m_pDevice(pDevice),
-    m_pContext(pContext),
-    m_pRenderTarget(pRTV),
-    m_pDepthStencilView(pDSV)
+    m_pDevice(pDisplay->getDevice()),
+    m_pContext(pDisplay->getDeviceContext()),
+    m_pRenderTarget(pDisplay->getRenderTarget()),
+    m_pDepthStencilView(pDisplay->getDepthStencilView()),
+    m_BackbufferWidth(pDisplay->getClientWidth()),
+    m_BackbufferHeight(pDisplay->getClientHeight())
 {
     SystemRegistration sysReg = {
     {
@@ -65,6 +68,15 @@ bool UIRenderer::init()
         return false;
     }
 
+    // Create viewport
+    m_Viewport = {};
+    m_Viewport.TopLeftX = 0;
+    m_Viewport.TopLeftY = 0;
+    m_Viewport.Width = (float)m_BackbufferWidth;
+    m_Viewport.Height = (float)m_BackbufferHeight;
+    m_Viewport.MinDepth = 0.0f;
+    m_Viewport.MaxDepth = 1.0f;
+
     return true;
 }
 
@@ -84,6 +96,8 @@ void UIRenderer::update(float dt)
     m_pContext->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
     m_pContext->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
     m_pContext->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
+
+    m_pContext->RSSetViewports(1, &m_Viewport);
 
     m_pContext->PSSetSamplers(0, 1, m_ppAniSampler);
     m_pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);

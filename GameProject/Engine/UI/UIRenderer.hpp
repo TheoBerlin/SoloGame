@@ -6,6 +6,7 @@
 #include <wrl/client.h>
 #include <d3d11.h>
 
+class Display;
 class ShaderHandler;
 class UIHandler;
 struct Program;
@@ -13,7 +14,7 @@ struct Program;
 class UIRenderer : public System
 {
 public:
-    UIRenderer(ECSCore* pECS, ID3D11DeviceContext* pContext, ID3D11Device* pDevice, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
+    UIRenderer(ECSCore* pECS, Display* pDisplay);
     ~UIRenderer();
 
     virtual bool init() override;
@@ -43,4 +44,7 @@ private:
 
     /* Samplers */
     ID3D11SamplerState *const* m_ppAniSampler;
+
+    D3D11_VIEWPORT m_Viewport;
+    unsigned int m_BackbufferWidth, m_BackbufferHeight;
 };
