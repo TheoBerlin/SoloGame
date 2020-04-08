@@ -11,13 +11,12 @@
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Display.hpp>
-#include <Engine/Rendering/MeshRenderer.hpp>
+#include <Engine/Rendering/RenderingHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
 #include <Engine/UI/ButtonSystem.hpp>
 #include <Engine/UI/Panel.hpp>
-#include <Engine/UI/UIRenderer.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 
@@ -26,6 +25,8 @@ class IGame
 public:
     IGame(HINSTANCE hInstance);
     ~IGame();
+
+    bool init();
 
     // Starts the main loop
     void run();
@@ -49,11 +50,12 @@ protected:
     SoundHandler m_SoundHandler;
 
     // Systems
-    MeshRenderer m_MeshRenderer;
-    UIRenderer m_UIRenderer;
     CameraSystem m_CameraSystem;
     ButtonSystem m_ButtonSystem;
     SoundPlayer m_SoundPlayer;
+
+    // Rendering
+    RenderingHandler m_RenderingHandler;
 
     StateManager m_StateManager;
 };

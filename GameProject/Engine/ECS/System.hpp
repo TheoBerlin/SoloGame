@@ -64,8 +64,6 @@ protected:
 
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
-    std::vector<std::type_index> m_ComponentSubscriptionTypes;
-
 private:
     ECSCore* m_pECS;
 

@@ -4,6 +4,7 @@
 #include <Engine/ECS/ComponentSubscriber.hpp>
 #include <Engine/ECS/ECSBooter.hpp>
 #include <Engine/ECS/EntityRegistry.hpp>
+#include <Engine/ECS/Renderer.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/ECS/SystemUpdater.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
@@ -25,6 +26,8 @@ public:
 
     void enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration);
     void enqueueSystemRegistration(const SystemRegistration& systemRegistration);
+    void enqueueRendererRegistration(const RendererRegistration& rendererRegistration);
+
     // Registers and initializes component handlers and systems
     void performRegistrations();
 

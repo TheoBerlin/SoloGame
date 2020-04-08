@@ -2,35 +2,35 @@
 
 #define NOMINMAX
 
-#include <Engine/ECS/System.hpp>
+#include <Engine/ECS/Renderer.hpp>
 #include <wrl/client.h>
 #include <d3d11.h>
 
+class Display;
 class ShaderHandler;
 class UIHandler;
 struct Program;
 
-class UIRenderer : public System
+class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, ID3D11DeviceContext* pContext, ID3D11Device* pDevice, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
+    UIRenderer(ECSCore* pECS, Display* pDisplay);
     ~UIRenderer();
 
     virtual bool init() override;
-
-    void update(float dt);
+    virtual void recordCommands() override;
+    virtual bool executeCommands() override;
 
 private:
     IDVector<Entity> m_Panels;
+
+    ID3D11DeviceContext* m_pCommandBuffer;
 
     UIHandler* m_pUIHandler;
 
     ShaderHandler* m_pShaderHandler;
 
     Program* m_pUIProgram;
-
-    ID3D11Device* m_pDevice;
-    ID3D11DeviceContext* m_pContext;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
 
@@ -43,4 +43,7 @@ private:
 
     /* Samplers */
     ID3D11SamplerState *const* m_ppAniSampler;
+
+    D3D11_VIEWPORT m_Viewport;
+    unsigned int m_BackbufferWidth, m_BackbufferHeight;
 };

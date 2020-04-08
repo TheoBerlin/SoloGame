@@ -26,8 +26,8 @@ public:
     void presentBackBuffer();
     void clearBackBuffer();
 
-    unsigned int getWindowWidth() const;
-    unsigned int getWindowHeight() const;
+    unsigned int getClientWidth() const     { return m_ClientWidth; }
+    unsigned int getClientHeight() const    { return m_ClientHeight; }
 
     // Set to false when window is being closed (eg. alt+f4)
     static bool keepRunning;
@@ -55,14 +55,14 @@ private:
     Microsoft::WRL::ComPtr<ID3D11BlendState> mBlendState;
 
     // Color used to clear the back buffer
-    FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
     bool windowed;
 
-    const unsigned int frameRateLimit = 60;
-    unsigned int clientWidth, clientHeight;
-    unsigned int windowWidth, windowHeight;
+    const unsigned int m_FrameRateLimit = 60;
+    unsigned int m_ClientWidth, m_ClientHeight;
+    unsigned int m_WindowWidth, m_WindowHeight;
 
     // MSAA, 1 multisample means no 'extra samples'
-    const unsigned int multisamples = 1;
+    const unsigned int m_Multisamples = 1;
 };

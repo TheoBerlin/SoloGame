@@ -17,20 +17,26 @@ IGame::IGame(HINSTANCE hInstance)
     m_TextRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext()),
     m_UIHandler(&m_ECS, &m_Display),
     m_SoundHandler(&m_ECS),
-    m_MeshRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
-    m_UIRenderer(&m_ECS, m_Display.getDeviceContext(), m_Display.getDevice(), m_Display.getRenderTarget(), m_Display.getDepthStencilView()),
     m_CameraSystem(&m_ECS),
-    m_ButtonSystem(&m_ECS, m_Display.getWindowWidth(), m_Display.getWindowHeight()),
-    m_SoundPlayer(&m_ECS)
+    m_ButtonSystem(&m_ECS, m_Display.getClientWidth(), m_Display.getClientHeight()),
+    m_SoundPlayer(&m_ECS),
+    m_RenderingHandler(&m_ECS, &m_Display)
 {
     m_ECS.performRegistrations();
-
     m_Display.showWindow();
-    m_MeshRenderer.update(0.0f);
 }
 
 IGame::~IGame()
 {}
+
+bool IGame::init()
+{
+    if (!m_RenderingHandler.init()) {
+        return false;
+    }
+
+    return true;
+}
 
 void IGame::run()
 {
@@ -58,14 +64,9 @@ void IGame::run()
 
             // Update logic
             m_StateManager.update(dt);
-
             m_ButtonSystem.update(dt);
 
-            // Render
-            m_Display.clearBackBuffer();
-            m_MeshRenderer.update(dt);
-            m_UIRenderer.update(dt);
-            m_Display.presentBackBuffer();
+            m_RenderingHandler.render();
 
             m_ECS.performMaintenance();
         }

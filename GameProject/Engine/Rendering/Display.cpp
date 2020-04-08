@@ -18,8 +18,8 @@ Display::Display(HINSTANCE hInstance, unsigned int clientHeight, float aspectRat
     windowed(windowed),
     swapChain(nullptr),
     renderTarget(nullptr),
-    clientHeight(clientHeight),
-    clientWidth((unsigned int)(clientHeight * aspectRatio))
+    m_ClientHeight(clientHeight),
+    m_ClientWidth((unsigned int)(clientHeight * aspectRatio))
 {
     LOG_INFO("Creating window");
 
@@ -74,18 +74,8 @@ void Display::presentBackBuffer()
 
 void Display::clearBackBuffer()
 {
-    deviceContext->ClearRenderTargetView(renderTarget.Get(), clearColor);
+    deviceContext->ClearRenderTargetView(renderTarget.Get(), m_pClearColor);
     deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
-}
-
-unsigned int Display::getWindowWidth() const
-{
-    return clientWidth;
-}
-
-unsigned int Display::getWindowHeight() const
-{
-    return clientHeight;
 }
 
 void Display::initWindow()
@@ -104,10 +94,10 @@ void Display::initWindow()
         exit(1);
     }
 
-    RECT clientArea = {0, 0, (LONG)this->clientWidth, (LONG)this->clientHeight};
+    RECT clientArea = {0, 0, (LONG)m_ClientWidth, (LONG)m_ClientHeight};
     AdjustWindowRect(&clientArea, WS_OVERLAPPEDWINDOW, FALSE);
-    windowWidth = clientArea.right - clientArea.left;
-    windowHeight = clientArea.bottom - clientArea.top;
+    m_WindowWidth = clientArea.right - clientArea.left;
+    m_WindowHeight = clientArea.bottom - clientArea.top;
 
     this->hwnd = CreateWindow(
         "Game Name",
@@ -115,8 +105,8 @@ void Display::initWindow()
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        this->windowWidth,
-        this->windowHeight,
+        this->m_WindowWidth,
+        this->m_WindowHeight,
         nullptr,
         nullptr,
         this->hInstance,
@@ -142,7 +132,7 @@ void Display::initWindow()
 void Display::initDX()
 {
     // Single-threaded flag improves performance when D3D11 calls are only made on one thread
-    UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+    UINT deviceFlags = 0;
 
     // If in debug mode, turn on D3D11 debugging
     #if defined _DEBUG
@@ -158,14 +148,14 @@ void Display::initDX()
     // Create swap chain description
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-    swapChainDesc.BufferDesc.Width = clientWidth;
-    swapChainDesc.BufferDesc.Height = clientHeight;
-    swapChainDesc.BufferDesc.RefreshRate.Numerator = frameRateLimit;
+    swapChainDesc.BufferDesc.Width = m_ClientWidth;
+    swapChainDesc.BufferDesc.Height = m_ClientHeight;
+    swapChainDesc.BufferDesc.RefreshRate.Numerator = m_FrameRateLimit;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-    swapChainDesc.SampleDesc.Count = this->multisamples;
+    swapChainDesc.SampleDesc.Count = this->m_Multisamples;
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
     swapChainDesc.BufferCount = 2;
@@ -213,8 +203,8 @@ void Display::initDX()
     /* Depth stencil */
     D3D11_TEXTURE2D_DESC depthTxDesc;
     ZeroMemory(&depthTxDesc, sizeof(D3D11_TEXTURE2D_DESC));
-    depthTxDesc.Width = clientWidth;
-    depthTxDesc.Height = clientHeight;
+    depthTxDesc.Width = m_ClientWidth;
+    depthTxDesc.Height = m_ClientHeight;
     depthTxDesc.MipLevels = 1;
     depthTxDesc.ArraySize = 1;
     depthTxDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -270,8 +260,8 @@ void Display::initDX()
     D3D11_VIEWPORT viewPort;
     viewPort.TopLeftX = 0;
     viewPort.TopLeftY = 0;
-    viewPort.Width = (float)clientWidth;
-    viewPort.Height = (float)clientHeight;
+    viewPort.Width = (float)m_ClientWidth;
+    viewPort.Height = (float)m_ClientHeight;
     viewPort.MinDepth = 0.0f;
     viewPort.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewPort);

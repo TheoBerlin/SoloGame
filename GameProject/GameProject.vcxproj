@@ -152,6 +152,7 @@
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
     <ClCompile Include="Engine\Rendering\MeshRenderer.cpp" />
+    <ClCompile Include="Engine\Rendering\RenderingHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderResourceHandler.cpp" />
     <ClCompile Include="Engine\Rendering\Text\TextRenderer.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\MeshRenderer.hpp" />
+    <ClInclude Include="Engine\Rendering\RenderingHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderResourceHandler.hpp" />
     <ClInclude Include="Engine\Rendering\Text\TextRenderer.hpp" />

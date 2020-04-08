@@ -9,8 +9,8 @@
 
 UIHandler::UIHandler(ECSCore* pECS, Display* pDisplay)
     :ComponentHandler({tid_UIPanel}, pECS, std::type_index(typeid(UIHandler))),
-    m_ClientWidth(pDisplay->getWindowWidth()),
-    m_ClientHeight(pDisplay->getWindowHeight()),
+    m_ClientWidth(pDisplay->getClientWidth()),
+    m_ClientHeight(pDisplay->getClientHeight()),
     m_pDevice(pDisplay->getDevice()),
     m_pContext(pDisplay->getDeviceContext())
 {
