@@ -10,35 +10,35 @@
 #include <Engine/Utils/Logger.hpp>
 
 UIRenderer::UIRenderer(ECSCore* pECS, Display* pDisplay)
-    :System(pECS),
-    m_pDevice(pDisplay->getDevice()),
-    m_pContext(pDisplay->getDeviceContext()),
+    :Renderer(pECS, pDisplay->getDevice(), pDisplay->getDeviceContext()),
     m_pRenderTarget(pDisplay->getRenderTarget()),
     m_pDepthStencilView(pDisplay->getDepthStencilView()),
     m_BackbufferWidth(pDisplay->getClientWidth()),
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
-    SystemRegistration sysReg = {
+    RendererRegistration rendererReg = {
     {
         {{{R, tid_UIPanel}}, &m_Panels},
     },
     this};
 
-    subscribeToComponents(sysReg);
+    registerRenderer(rendererReg);
 }
 
 UIRenderer::~UIRenderer()
-{}
+{
+    SAFERELEASE(m_pCommandBuffer);
+}
 
 bool UIRenderer::init()
 {
-    const std::type_index tid_shaderResourceHandler = TID(ShaderResourceHandler);
-    const std::type_index tid_shaderHandler = TID(ShaderHandler);
-    const std::type_index tid_UIHandler = TID(UIHandler);
+    if (!createCommandBuffer(&m_pCommandBuffer)) {
+        return false;
+    }
 
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
-    m_pShaderHandler = static_cast<ShaderHandler*>(getComponentHandler(tid_shaderHandler));
-    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(tid_UIHandler));
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
+    m_pShaderHandler = static_cast<ShaderHandler*>(getComponentHandler(TID(ShaderHandler)));
+    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
     if (!m_pShaderHandler || !m_pUIHandler) {
         return false;
     }
@@ -80,27 +80,27 @@ bool UIRenderer::init()
     return true;
 }
 
-void UIRenderer::update(float dt)
+void UIRenderer::recordCommands()
 {
     if (m_Panels.size() == 0) {
         return;
     }
 
-    m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    m_pContext->IASetInputLayout(m_pUIProgram->inputLayout);
+    m_pCommandBuffer->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    m_pCommandBuffer->IASetInputLayout(m_pUIProgram->inputLayout);
     UINT offsets = 0;
-    m_pContext->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
+    m_pCommandBuffer->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
 
-    m_pContext->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
-    m_pContext->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
-    m_pContext->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
-    m_pContext->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
-    m_pContext->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
+    m_pCommandBuffer->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
+    m_pCommandBuffer->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
+    m_pCommandBuffer->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
+    m_pCommandBuffer->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
+    m_pCommandBuffer->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
 
-    m_pContext->RSSetViewports(1, &m_Viewport);
+    m_pCommandBuffer->RSSetViewports(1, &m_Viewport);
 
-    m_pContext->PSSetSamplers(0, 1, m_ppAniSampler);
-    m_pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
+    m_pCommandBuffer->PSSetSamplers(0, 1, m_ppAniSampler);
+    m_pCommandBuffer->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
 
     D3D11_MAPPED_SUBRESOURCE mappedResources;
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
@@ -117,16 +117,21 @@ void UIRenderer::update(float dt)
         }
 
         // Set per-object buffer
-        m_pContext->Map(m_PerPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
+        m_pCommandBuffer->Map(m_PerPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
         memcpy(mappedResources.pData, &panel, bufferSize);
-        m_pContext->Unmap(m_PerPanelBuffer.Get(), 0);
+        m_pCommandBuffer->Unmap(m_PerPanelBuffer.Get(), 0);
 
-        m_pContext->VSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
-        m_pContext->PSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
+        m_pCommandBuffer->VSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
+        m_pCommandBuffer->PSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
 
         ID3D11ShaderResourceView* pPanelSRV = panel.texture->getSRV();
-        m_pContext->PSSetShaderResources(0, 1, &pPanelSRV);
+        m_pCommandBuffer->PSSetShaderResources(0, 1, &pPanelSRV);
 
-        m_pContext->Draw(4, 0);
+        m_pCommandBuffer->Draw(4, 0);
     }
+}
+
+bool UIRenderer::executeCommands()
+{
+    return executeCommandBuffer(m_pCommandBuffer);
 }

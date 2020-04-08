@@ -2,7 +2,7 @@
 
 #define NOMINMAX
 
-#include <Engine/ECS/System.hpp>
+#include <Engine/ECS/Renderer.hpp>
 #include <wrl/client.h>
 #include <d3d11.h>
 
@@ -11,27 +11,26 @@ class ShaderHandler;
 class UIHandler;
 struct Program;
 
-class UIRenderer : public System
+class UIRenderer : public Renderer
 {
 public:
     UIRenderer(ECSCore* pECS, Display* pDisplay);
     ~UIRenderer();
 
     virtual bool init() override;
-
-    void update(float dt);
+    virtual void recordCommands() override;
+    virtual bool executeCommands() override;
 
 private:
     IDVector<Entity> m_Panels;
+
+    ID3D11DeviceContext* m_pCommandBuffer;
 
     UIHandler* m_pUIHandler;
 
     ShaderHandler* m_pShaderHandler;
 
     Program* m_pUIProgram;
-
-    ID3D11Device* m_pDevice;
-    ID3D11DeviceContext* m_pContext;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
 

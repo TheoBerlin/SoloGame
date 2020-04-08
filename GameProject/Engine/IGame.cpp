@@ -64,7 +64,8 @@ void IGame::run()
             m_Display.clearBackBuffer();
             m_MeshRenderer.recordCommands();
             m_MeshRenderer.executeCommands();
-            m_UIRenderer.update(dt);
+            m_UIRenderer.recordCommands();
+            m_UIRenderer.executeCommands();
             m_Display.presentBackBuffer();
 
             m_ECS.performMaintenance();
