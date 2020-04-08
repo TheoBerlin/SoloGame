@@ -1,7 +1,7 @@
 #include "PointLight.hpp"
 
 LightHandler::LightHandler(ECSCore* pECS)
-    :ComponentHandler({tid_pointLight}, pECS, TID(LightHandler))
+    :ComponentHandler(pECS, TID(LightHandler))
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;

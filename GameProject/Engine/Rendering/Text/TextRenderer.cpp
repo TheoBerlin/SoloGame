@@ -10,7 +10,7 @@
 #include <algorithm>
 
 TextRenderer::TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context)
-    :ComponentHandler({}, pECS, TID(TextRenderer)),
+    :ComponentHandler(pECS, TID(TextRenderer)),
     device(device),
     context(context)
 {

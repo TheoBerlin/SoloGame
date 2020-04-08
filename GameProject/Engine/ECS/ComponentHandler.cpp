@@ -2,9 +2,8 @@
 
 #include <Engine/ECS/ECSCore.hpp>
 
-ComponentHandler::ComponentHandler(std::vector<std::type_index> handledTypes, ECSCore* pECS, std::type_index tid_handler)
-    :m_HandledTypes(handledTypes),
-    m_pECS(pECS),
+ComponentHandler::ComponentHandler(ECSCore* pECS, std::type_index tid_handler)
+    :m_pECS(pECS),
     m_TID(tid_handler)
 {}
 
@@ -15,6 +14,13 @@ ComponentHandler::~ComponentHandler()
 
 void ComponentHandler::registerHandler(const ComponentHandlerRegistration& handlerRegistration)
 {
+    // Write handled types
+    m_HandledTypes.reserve(handlerRegistration.ComponentRegistrations.size());
+
+    for (const ComponentRegistration& componentRegistration : handlerRegistration.ComponentRegistrations) {
+        m_HandledTypes.push_back(componentRegistration.tid);
+    }
+
     m_pECS->enqueueComponentHandlerRegistration(handlerRegistration);
 }
 

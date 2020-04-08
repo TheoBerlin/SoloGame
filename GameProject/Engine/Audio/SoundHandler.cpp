@@ -7,7 +7,7 @@
 #include <string>
 
 SoundHandler::SoundHandler(ECSCore* pECS)
-    :ComponentHandler({tid_sound}, pECS, TID(SoundHandler)),
+    :ComponentHandler(pECS, TID(SoundHandler)),
     m_pSystem(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};

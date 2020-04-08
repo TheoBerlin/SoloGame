@@ -17,7 +17,7 @@ const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* device)
-    :ComponentHandler({}, pECS, std::type_index(typeid(TubeHandler))),
+    :ComponentHandler(pECS, std::type_index(typeid(TubeHandler))),
     m_pDevice(device)
 {
 

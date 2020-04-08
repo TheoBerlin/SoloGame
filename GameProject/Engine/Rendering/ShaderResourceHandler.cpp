@@ -5,7 +5,7 @@
 #include <Engine/Utils/Logger.hpp>
 
 ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device)
-    :ComponentHandler({}, pECS, std::type_index(typeid(ShaderResourceHandler))),
+    :ComponentHandler(pECS, std::type_index(typeid(ShaderResourceHandler))),
     device(device)
 {
     ComponentHandlerRegistration handlerReg = {};

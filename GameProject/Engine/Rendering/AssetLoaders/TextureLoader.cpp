@@ -7,8 +7,8 @@
 #include <DirectXTK/WICTextureLoader.h>
 
 TextureLoader::TextureLoader(ECSCore* pECS, ID3D11Device* pDevice)
-    :m_pDevice(pDevice),
-    ComponentHandler({}, pECS, TID(TextureLoader))
+    :ComponentHandler(pECS, TID(TextureLoader)),
+    m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;

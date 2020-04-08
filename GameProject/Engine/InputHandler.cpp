@@ -3,7 +3,7 @@
 #include <Engine/Utils/ECSUtils.hpp>
 
 InputHandler::InputHandler(ECSCore* pECS, HWND window)
-    :ComponentHandler({}, pECS, TID(InputHandler)),
+    :ComponentHandler(pECS, TID(InputHandler)),
     m_Window(window)
 {
     ComponentHandlerRegistration handlerReg = {};

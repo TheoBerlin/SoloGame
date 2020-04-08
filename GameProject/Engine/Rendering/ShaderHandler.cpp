@@ -5,7 +5,7 @@
 #include <d3dcompiler.h>
 
 ShaderHandler::ShaderHandler(ID3D11Device* device, ECSCore* pECS)
-    :ComponentHandler({}, pECS, std::type_index(typeid(ShaderHandler))),
+    :ComponentHandler(pECS, std::type_index(typeid(ShaderHandler))),
     m_pDevice(device)
 {
     ComponentHandlerRegistration handlerReg = {};

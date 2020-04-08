@@ -1,7 +1,7 @@
 #include "TrackPosition.hpp"
 
 TrackPositionHandler::TrackPositionHandler(ECSCore* pECS)
-    :ComponentHandler({tid_trackPosition}, pECS, TID(TrackPositionHandler))
+    :ComponentHandler(pECS, TID(TrackPositionHandler))
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
