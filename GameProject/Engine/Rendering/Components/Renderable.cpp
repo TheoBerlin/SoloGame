@@ -6,7 +6,7 @@
 #include <Engine/Utils/Logger.hpp>
 
 RenderableHandler::RenderableHandler(ECSCore* pECS)
-    :ComponentHandler({tid_renderable}, pECS, TID(RenderableHandler))
+    :ComponentHandler(pECS, TID(RenderableHandler))
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;

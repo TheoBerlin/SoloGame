@@ -12,8 +12,8 @@
 #include <algorithm>
 
 ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)
-    :m_pTXLoader(txLoader),
-    ComponentHandler({}, pECS, std::type_index(typeid(ModelLoader)))
+    :ComponentHandler(pECS, std::type_index(typeid(ModelLoader))),
+    m_pTXLoader(txLoader)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;

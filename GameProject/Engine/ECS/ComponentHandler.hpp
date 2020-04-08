@@ -29,8 +29,7 @@ struct ComponentHandlerRegistration {
 class ComponentHandler
 {
 public:
-    ComponentHandler(std::vector<std::type_index> handledTypes, ECSCore* pECS, std::type_index tid_handler);
-
+    ComponentHandler(ECSCore* pECS, std::type_index tid_handler);
     // Deregisters component handler and deletes components
     ~ComponentHandler();
 

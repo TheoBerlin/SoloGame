@@ -8,7 +8,7 @@
 #include <Engine/Utils/Logger.hpp>
 
 UIHandler::UIHandler(ECSCore* pECS, Display* pDisplay)
-    :ComponentHandler({tid_UIPanel}, pECS, std::type_index(typeid(UIHandler))),
+    :ComponentHandler(pECS, std::type_index(typeid(UIHandler))),
     m_ClientWidth(pDisplay->getClientWidth()),
     m_ClientHeight(pDisplay->getClientHeight()),
     m_pDevice(pDisplay->getDevice()),

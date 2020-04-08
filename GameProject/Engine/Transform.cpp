@@ -5,7 +5,7 @@
 #include <cmath>
 
 TransformHandler::TransformHandler(ECSCore* pECS)
-    :ComponentHandler({tid_transform, tid_worldMatrix}, pECS, TID(TransformHandler))
+    :ComponentHandler(pECS, TID(TransformHandler))
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;

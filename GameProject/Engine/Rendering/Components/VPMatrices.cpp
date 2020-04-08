@@ -3,7 +3,7 @@
 const float degreesToRadians = DirectX::XM_PI / 180.0f;
 
 VPHandler::VPHandler(ECSCore* pECS)
-    :ComponentHandler({tid_view, tid_projection}, pECS, TID(VPHandler))
+    :ComponentHandler(pECS, TID(VPHandler))
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
