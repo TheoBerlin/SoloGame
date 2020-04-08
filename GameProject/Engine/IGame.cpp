@@ -23,6 +23,7 @@ IGame::IGame(HINSTANCE hInstance)
     m_RenderingHandler(&m_ECS, &m_Display)
 {
     m_ECS.performRegistrations();
+    m_Display.showWindow();
 }
 
 IGame::~IGame()
@@ -33,8 +34,6 @@ bool IGame::init()
     if (!m_RenderingHandler.init()) {
         return false;
     }
-
-    m_Display.showWindow();
 
     return true;
 }
