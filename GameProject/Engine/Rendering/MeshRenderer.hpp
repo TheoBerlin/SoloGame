@@ -22,20 +22,20 @@ struct PerFrameBuffer {
     DirectX::XMFLOAT4 padding;
 };
 
-class Renderer : public System
+class MeshRenderer : public System
 {
 public:
-    Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
-    ~Renderer();
+    MeshRenderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView* pRTV, ID3D11DepthStencilView* pDSV);
+    ~MeshRenderer();
 
     virtual bool init() override;
 
     void update(float dt);
 
 private:
-    IDVector<Entity> renderables;
-    IDVector<Entity> camera;
-    IDVector<Entity> pointLights;
+    IDVector<Entity> m_Renderables;
+    IDVector<Entity> m_Camera;
+    IDVector<Entity> m_PointLights;
 
     RenderableHandler* m_pRenderableHandler;
     TransformHandler* m_pTransformHandler;

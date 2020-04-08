@@ -43,11 +43,11 @@ UIHandler::~UIHandler()
 bool UIHandler::init()
 {
     // Retrieve quad from shader resource handler
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
     m_Quad = pShaderResourceHandler->getQuarterScreenQuad();
 
     // Retrieve UI rendering shader program from shader handler
-    ShaderHandler* pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ShaderHandler)));
+    ShaderHandler* pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderHandler)));
     if (!pShaderResourceHandler || !pShaderHandler) {
         return false;
     }

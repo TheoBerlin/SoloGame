@@ -11,7 +11,7 @@
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Display.hpp>
-#include <Engine/Rendering/Renderer.hpp>
+#include <Engine/Rendering/MeshRenderer.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
@@ -49,7 +49,7 @@ protected:
     SoundHandler m_SoundHandler;
 
     // Systems
-    Renderer m_Renderer;
+    MeshRenderer m_MeshRenderer;
     UIRenderer m_UIRenderer;
     CameraSystem m_CameraSystem;
     ButtonSystem m_ButtonSystem;

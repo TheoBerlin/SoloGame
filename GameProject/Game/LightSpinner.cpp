@@ -13,7 +13,7 @@ LightSpinner::LightSpinner(ECSCore* pECS)
     this};
 
     subscribeToComponents(sysReg);
-    registerUpdate(&sysReg);
+    registerUpdate(sysReg);
 }
 
 LightSpinner::~LightSpinner()

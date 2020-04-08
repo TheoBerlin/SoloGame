@@ -10,33 +10,41 @@ SystemUpdater::SystemUpdater()
 SystemUpdater::~SystemUpdater()
 {}
 
-void SystemUpdater::registerSystem(SystemRegistration* sysReg)
+void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 {
     // Extract data from SystemRegistration to create SystemUpdateInfo objects
     std::vector<ComponentUpdateReg> updateRegs;
 
-    for (size_t i = 0; i < sysReg->subReqs.size(); i += 1) {
-        for (size_t j = 0; j < sysReg->subReqs[i].componentTypes.size(); j += 1) {
-            updateRegs.push_back(sysReg->subReqs[i].componentTypes[j]);
+    for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriptionRequests) {
+        updateRegs.reserve(updateRegs.size() + subReq.componentTypes.size());
+        for (const ComponentUpdateReg& componentUpdateReg : subReq.componentTypes) {
+            updateRegs.push_back(componentUpdateReg);
         }
     }
 
-    SystemUpdateInfo sysUpdateInfo;
-    sysUpdateInfo.system = sysReg->system;
-    sysUpdateInfo.components = updateRegs;
+    size_t systemID = m_SystemIDGen.genID();
+    System* pSystem = sysReg.pSystem;
+    pSystem->setSystemID(systemID);
 
-    this->updateInfos.push_back(sysUpdateInfo, sysReg->system->ID);
+    SystemUpdateInfo sysUpdateInfo;
+    sysUpdateInfo.pSystem = pSystem;
+    sysUpdateInfo.Components = updateRegs;
+
+    this->m_UpdateInfos.push_back(sysUpdateInfo, systemID);
 }
 
-void SystemUpdater::deregisterSystem(System* system)
+void SystemUpdater::deregisterSystem(System* pSystem)
 {
-    this->updateInfos.pop(system->ID);
+    this->m_UpdateInfos.pop(pSystem->getSystemID());
+    m_SystemIDGen.popID(pSystem->getSystemID());
 }
 
 void SystemUpdater::updateST(float dt)
 {
-    for (size_t i = 0; i < updateInfos.size(); i += 1) {
-        updateInfos[i].system->update(dt);
+    std::vector<SystemUpdateInfo>& updateInfos = m_UpdateInfos.getVec();
+
+    for (SystemUpdateInfo& sysUpdateInfo : updateInfos) {
+        sysUpdateInfo.pSystem->update(dt);
     }
 }
 
@@ -44,12 +52,12 @@ void SystemUpdater::updateMT(float dt)
 {
     std::thread threads[MAX_THREADS];
 
-    for (unsigned short i = 0; i < MAX_THREADS; i += 1) {
-        threads[i] = std::thread(&SystemUpdater::updateSystems, this, dt);
+    for (std::thread& thread : threads) {
+        thread = std::thread(&SystemUpdater::updateSystems, this, dt);
     }
 
-    for (unsigned short i = 0; i < MAX_THREADS; i += 1) {
-        threads[i].join();
+    for (std::thread& thread : threads) {
+        thread.join();
     }
 
     processedSystems.clear();
@@ -60,7 +68,7 @@ void SystemUpdater::updateSystems(float dt)
 {
     std::unique_lock<std::mutex> lk(mux);
 
-    while (updateInfos.size() != processedSystems.size()) {
+    while (m_UpdateInfos.size() != processedSystems.size()) {
         const SystemUpdateInfo* systemToUpdate = findUpdateableSystem();
 
         if (systemToUpdate == nullptr) {
@@ -72,27 +80,27 @@ void SystemUpdater::updateSystems(float dt)
             registerUpdate(systemToUpdate, &updateIterators);
 
             mux.unlock();
-            systemToUpdate->system->update(dt);
+            systemToUpdate->pSystem->update(dt);
             mux.lock();
 
             timeoutDisabled = true;
             timeoutCV.notify_all();
 
-            deregisterUpdate(&updateIterators);
+            deregisterUpdate(updateIterators);
         }
     }
 }
 
 const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
 {
-    for (const SystemUpdateInfo& sysReg : updateInfos.getVec()) {
+    for (const SystemUpdateInfo& sysReg : m_UpdateInfos.getVec()) {
         // Check that the system hasn't already been processed
-        if (processedSystems.hasElement(sysReg.system->ID)) {
+        if (processedSystems.hasElement(sysReg.pSystem->getSystemID())) {
             continue;
         }
 
         // Prevent multiple systems from accessing the same components where at least one of them has write permissions
-        for (const ComponentUpdateReg& componentReg : sysReg.components) {
+        for (const ComponentUpdateReg& componentReg : sysReg.Components) {
             auto permissionsItrs = processingSystems.equal_range(componentReg.tid);
 
             while (permissionsItrs.first != permissionsItrs.second) {
@@ -113,18 +121,19 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
 
 void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators)
 {
-    processedSystems.push_back(systemToRegister->system->ID, systemToRegister->system->ID);
+    size_t systemID = systemToRegister->pSystem->getSystemID();
+    processedSystems.push_back(systemID, systemID);
 
-    processingSystemsIterators->reserve(systemToRegister->components.size());
+    processingSystemsIterators->reserve(systemToRegister->Components.size());
 
-    for (const ComponentUpdateReg& componentReg : systemToRegister->components) {
+    for (const ComponentUpdateReg& componentReg : systemToRegister->Components) {
         processingSystemsIterators->push_back(processingSystems.insert({componentReg.tid, componentReg.permissions}));
     }
 }
 
-void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators* processingSystemsIterators)
+void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators& processingSystemsIterators)
 {
-    for (auto itr : *processingSystemsIterators) {
+    for (auto itr : processingSystemsIterators) {
         processingSystems.erase(itr);
     }
 }

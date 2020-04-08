@@ -1,16 +1,17 @@
 #pragma once
 
 // TODO: Move to config file
-// TODO: Get maximum number of threads programmatically
+// TODO: Get maximum number of threads at runtime
 #define MAX_THREADS 4
 
 #include <Engine/ECS/System.hpp>
+#include <Engine/Utils/IDGenerator.hpp>
 #include <mutex>
 #include <unordered_map>
 
 struct SystemUpdateInfo {
-    System* system;
-    std::vector<ComponentUpdateReg> components;
+    System* pSystem;
+    std::vector<ComponentUpdateReg> Components;
 };
 
 typedef std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> ProcessingSystemsIterators;
@@ -21,8 +22,8 @@ public:
     SystemUpdater();
     ~SystemUpdater();
 
-    void registerSystem(SystemRegistration* sysReg);
-    void deregisterSystem(System* system);
+    void registerSystem(const SystemRegistration& sysReg);
+    void deregisterSystem(System* pSystem);
 
     // Updates all systems with a single thread
     void updateST(float dt);
@@ -30,9 +31,11 @@ public:
     void updateMT(float dt);
 
 private:
+    IDGenerator m_SystemIDGen;
+
     // Contains pointers to systems as well as information on what components they process and with what permissions
     // so that safe multi-threading can be performed
-    IDVector<SystemUpdateInfo> updateInfos;
+    IDVector<SystemUpdateInfo> m_UpdateInfos;
 
     /* Resources for multi-threaded updates below */
     // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
@@ -55,7 +58,7 @@ private:
      * @param processingSystemsIterators In/Out: Receives empty vector of iterators, inserts elements
      */
     void registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators);
-    void deregisterUpdate(const ProcessingSystemsIterators* processingSystemsIterators);
+    void deregisterUpdate(const ProcessingSystemsIterators& processingSystemsIterators);
 
     // Used to time out threads unable to find updateable systems
     std::condition_variable timeoutCV;

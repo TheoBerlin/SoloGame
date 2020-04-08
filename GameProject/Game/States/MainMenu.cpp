@@ -15,16 +15,16 @@ MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* devi
     :State(stateManager, pECS, STATE_TRANSITION::PUSH),
     device(device)
 {
-    SystemSubscriber* pSystemSubscriber = pECS->getSystemSubscriber();
+    ComponentSubscriber* pComponentSubscriber = pECS->getComponentSubscriber();
 
-    this->inputHandler = static_cast<InputHandler*>(pSystemSubscriber->getComponentHandler(TID(InputHandler)));
+    this->inputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
     inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
     inputHandler->setMouseVisibility(true);
     this->keyboardState = inputHandler->getKeyboardState();
 
-    UIHandler* uiHandler            = static_cast<UIHandler*>(pSystemSubscriber->getComponentHandler(TID(UIHandler)));
-    TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pSystemSubscriber->getComponentHandler(TID(TextRenderer)));
-    TextureLoader* pTextureLoader   = static_cast<TextureLoader*>(pSystemSubscriber->getComponentHandler(TID(TextureLoader)));
+    UIHandler* uiHandler            = static_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
+    TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
+    TextureLoader* pTextureLoader   = static_cast<TextureLoader*>(pComponentSubscriber->getComponentHandler(TID(TextureLoader)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
@@ -51,7 +51,7 @@ MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* devi
     Entity soundEntity = m_pECS->createEntity();
     const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
 
-    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pSystemSubscriber->getComponentHandler(TID(SoundHandler)));
+    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
     if (pSoundHandler->createSound(soundEntity, soundFile)) {
         pSoundHandler->playSound(soundEntity);
     }

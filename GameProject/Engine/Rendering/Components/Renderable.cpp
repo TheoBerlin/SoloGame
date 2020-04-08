@@ -1,7 +1,7 @@
 #include "Renderable.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/ECS/SystemSubscriber.hpp>
+#include <Engine/ECS/ComponentSubscriber.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -23,8 +23,8 @@ RenderableHandler::RenderableHandler(ECSCore* pECS)
 
 bool RenderableHandler::init()
 {
-    m_pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ShaderHandler)));
-    m_pModelLoader = static_cast<ModelLoader*>(m_pECS->getSystemSubscriber()->getComponentHandler(TID(ModelLoader)));
+    m_pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderHandler)));
+    m_pModelLoader = static_cast<ModelLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ModelLoader)));
 
     return m_pShaderHandler && m_pModelLoader;
 }

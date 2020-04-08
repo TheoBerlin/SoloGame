@@ -8,7 +8,7 @@
 
 struct Model;
 class ModelLoader;
-class SystemSubscriber;
+class ComponentSubscriber;
 class TextureLoader;
 
 struct TubePoint {

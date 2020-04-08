@@ -31,7 +31,7 @@ ModelLoader::~ModelLoader()
 bool ModelLoader::init()
 {
     std::type_index tid_shaderResourceHandler = TID(ShaderResourceHandler);
-    m_pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getSystemSubscriber()->getComponentHandler(tid_shaderResourceHandler));
+    m_pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(tid_shaderResourceHandler));
 
     return m_pShaderResourceHandler;
 }

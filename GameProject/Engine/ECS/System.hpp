@@ -17,7 +17,7 @@ struct ComponentUpdateReg {
 };
 
 // A request for a system to subscribe to one or more component types
-struct ComponentSubReq {
+struct ComponentSubscriptionRequest {
     std::vector<ComponentUpdateReg> componentTypes;
     IDVector<Entity>* subscriber;
     // Optional: Called after an entity was added due to the subscription
@@ -27,14 +27,14 @@ struct ComponentSubReq {
 class System;
 
 struct SystemRegistration {
-    std::vector<ComponentSubReq> subReqs;
-    System* system;
+    std::vector<ComponentSubscriptionRequest> SubscriptionRequests;
+    System* pSystem;
 };
 
 class ComponentHandler;
 class ECSCore;
-class SystemSubscriber;
-struct ComponentSubReq;
+class ComponentSubscriber;
+struct ComponentSubscriptionRequest;
 
 /*
     A system stores pointers to component storages and processes the components each frame
@@ -53,17 +53,22 @@ public:
 
     virtual void update(float dt) = 0;
 
-    size_t ID;
+    inline size_t getSystemID() const { return m_SystemID; }
+    void setSystemID(size_t systemID) { m_SystemID = systemID; }
+
+    void setComponentSubscriptionID(size_t ID) { m_ComponentSubscriptionID = ID; }
 
 protected:
     void subscribeToComponents(const SystemRegistration& sysReg);
-    void registerUpdate(SystemRegistration* sysReg);
+    void registerUpdate(const SystemRegistration& sysReg);
 
-    void unsubscribeFromComponents(std::vector<std::type_index> unsubTypes);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
-    std::vector<std::type_index> componentTypes;
+    std::vector<std::type_index> m_ComponentSubscriptionTypes;
 
 private:
     ECSCore* m_pECS;
+
+    size_t m_ComponentSubscriptionID;
+    size_t m_SystemID;
 };

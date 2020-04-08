@@ -136,8 +136,9 @@
     <ClCompile Include="Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="Engine\ECS\EntityRegistry.cpp" />
+    <ClCompile Include="Engine\ECS\Renderer.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
-    <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
+    <ClCompile Include="Engine\ECS\ComponentSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
     <ClCompile Include="Engine\GameState\State.cpp" />
     <ClCompile Include="Engine\GameState\StateManager.cpp" />
@@ -150,7 +151,7 @@
     <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
-    <ClCompile Include="Engine\Rendering\Renderer.cpp" />
+    <ClCompile Include="Engine\Rendering\MeshRenderer.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderResourceHandler.cpp" />
     <ClCompile Include="Engine\Rendering\Text\TextRenderer.cpp" />
@@ -184,8 +185,9 @@
     <ClInclude Include="Engine\ECS\ECSCore.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
     <ClInclude Include="Engine\ECS\EntityRegistry.hpp" />
+    <ClInclude Include="Engine\ECS\Renderer.hpp" />
     <ClInclude Include="Engine\ECS\System.hpp" />
-    <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
+    <ClInclude Include="Engine\ECS\ComponentSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
     <ClInclude Include="Engine\GameState\State.hpp" />
     <ClInclude Include="Engine\GameState\StateManager.hpp" />
@@ -202,7 +204,7 @@
     <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
-    <ClInclude Include="Engine\Rendering\Renderer.hpp" />
+    <ClInclude Include="Engine\Rendering\MeshRenderer.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderResourceHandler.hpp" />
     <ClInclude Include="Engine\Rendering\Text\TextRenderer.hpp" />
