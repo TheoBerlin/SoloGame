@@ -10,13 +10,17 @@
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-	// Check for memory leaks. Disabled when not debugging
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    // Check for memory leaks. Disabled when not debugging
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	Logger::init();
+    Logger::init();
 
-	Game game(hInstance);
+    Game game(hInstance);
+    if (!game.init()) {
+        return 1;
+    }
+
     game.run();
 
-	return 0;
+    return 0;
 }
