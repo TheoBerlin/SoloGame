@@ -15,7 +15,7 @@ CameraSystem::CameraSystem(ECSCore* pECS)
     this};
 
     this->subscribeToComponents(sysReg);
-    this->registerUpdate(&sysReg);
+    this->registerUpdate(sysReg);
 }
 
 CameraSystem::~CameraSystem()

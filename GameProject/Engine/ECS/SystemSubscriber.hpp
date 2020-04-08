@@ -47,8 +47,9 @@ public:
     void deregisterComponentHandler(ComponentHandler* handler);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
-    void registerSystem(const SystemRegistration& sysReg);
-    void deregisterSystem(System* system, std::vector<std::type_index>& componentTypes);
+    // Returns a subscription ID
+    size_t subscribeToComponents(const std::vector<ComponentSubscriptionRequest>& subscriptionRequests);
+    void unsubscribeFromComponents(size_t subscriptionID, std::vector<std::type_index>& componentTypes);
 
     // Notifies subscribed systems that a new component has been made
     void newComponent(Entity entityID, std::type_index componentType);

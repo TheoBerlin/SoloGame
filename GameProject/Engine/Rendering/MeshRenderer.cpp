@@ -1,4 +1,4 @@
-#include "Renderer.hpp"
+#include "MeshRenderer.hpp"
 
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
@@ -17,7 +17,6 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceCon
     m_pRenderTarget(pRTV),
     m_pDepthStencilView(pDSV)
 {
-
     SystemRegistration sysReg = {
     {
         {{{R, tid_renderable}, {R, tid_worldMatrix}}, &m_Renderables},

@@ -136,6 +136,7 @@
     <ClCompile Include="Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="Engine\ECS\EntityRegistry.cpp" />
+    <ClCompile Include="Engine\ECS\Renderer.cpp" />
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\SystemSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Engine\ECS\ECSCore.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
     <ClInclude Include="Engine\ECS\EntityRegistry.hpp" />
+    <ClInclude Include="Engine\ECS\Renderer.hpp" />
     <ClInclude Include="Engine\ECS\System.hpp" />
     <ClInclude Include="Engine\ECS\SystemSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />

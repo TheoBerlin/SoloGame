@@ -3,7 +3,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
-#include <Engine/Rendering/Renderer.hpp>
+#include <Engine/Rendering/MeshRenderer.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>

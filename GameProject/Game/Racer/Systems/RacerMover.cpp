@@ -18,7 +18,7 @@ RacerMover::RacerMover(ECSCore* pECS)
     this};
 
     subscribeToComponents(sysReg);
-    registerUpdate(&sysReg);
+    registerUpdate(sysReg);
 }
 
 RacerMover::~RacerMover()

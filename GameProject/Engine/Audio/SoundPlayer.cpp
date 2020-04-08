@@ -7,13 +7,13 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     m_pSoundHandler(nullptr)
 {
     SystemRegistration sysReg = {};
-    sysReg.system = this;
-    sysReg.subReqs = {
+    sysReg.pSystem = this;
+    sysReg.SubscriptionRequests = {
         {{{R, tid_sound}}, &m_Sounds}
     };
 
     subscribeToComponents(sysReg);
-    registerUpdate(&sysReg);
+    registerUpdate(sysReg);
 }
 
 SoundPlayer::~SoundPlayer()

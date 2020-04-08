@@ -96,13 +96,16 @@ void ECSBooter::bootHandlers()
 
 void ECSBooter::bootSystems()
 {
-    SystemSubscriber* pSystemSubscriber = m_pECS->getSystemSubscriber();
+    SystemSubscriber* pComponentSubscriber = m_pECS->getSystemSubscriber();
 
     for (const SystemRegistration& systemReg : m_SystemsToRegister) {
-        if (!systemReg.system->init()) {
-            LOG_ERROR("Failed to initialize system, ID: %d", systemReg.system->ID);
+        System* pSystem = systemReg.pSystem;
+
+        if (!systemReg.pSystem->init()) {
+            LOG_ERROR("Failed to initialize system");
         } else {
-            pSystemSubscriber->registerSystem(systemReg);
+            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriptionRequests);
+            pSystem->setComponentSubscriptionID(subscriptionID);
         }
     }
 }
