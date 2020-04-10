@@ -5,8 +5,8 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 
-const DirectX::XMVECTOR defaultForward = {0.0f, 0.0f, -1.0f};
-const DirectX::XMVECTOR defaultUp = {0.0f, 1.0f, 0.0f};
+const DirectX::XMVECTOR g_DefaultForward = {0.0f, 0.0f, -1.0f};
+const DirectX::XMVECTOR g_DefaultUp = {0.0f, 1.0f, 0.0f};
 
 struct Transform {
     DirectX::XMFLOAT3 position, scale;
@@ -48,6 +48,8 @@ public:
     static float getPitch(const DirectX::XMVECTOR& forward);
     static float getYaw(const DirectX::XMVECTOR& forward);
     static float getRoll(const DirectX::XMFLOAT4& rotationQuat);
+    // Vectors are assumed to be normalized
+    static float getOrientedAngle(const DirectX::XMVECTOR& V1, const DirectX::XMVECTOR& V2, const DirectX::XMVECTOR& normal);
 
     // Assumes the forward is normalized
     static void setForward(DirectX::XMFLOAT4& rotationQuat, const DirectX::XMVECTOR& forward);

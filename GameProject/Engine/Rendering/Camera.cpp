@@ -40,7 +40,7 @@ void CameraSystem::update(float dt)
         ViewMatrix& viewMatrix = m_pVPHandler->viewMatrices.indexID(m_Cameras[i]);
 
         DirectX::XMVECTOR lookDir = m_pTransformHandler->getForward(camTransform.rotQuat);
-        DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(defaultUp, lookDir));
+        DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(g_DefaultUp, lookDir));
 
         // React to mouse input
         if (m_pMouseState->x || m_pMouseState->y) {
@@ -55,7 +55,7 @@ void CameraSystem::update(float dt)
                 addedPitch = newPitch > 0.0f ? maxPitch - pitch : -maxPitch - pitch;
             }
 
-            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(defaultUp, m_pMouseState->x * dt * 1.3f));
+            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(g_DefaultUp, m_pMouseState->x * dt * 1.3f));
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(pitchAxis, addedPitch));
             DirectX::XMStoreFloat4(&camTransform.rotQuat, rotation);
             lookDir = m_pTransformHandler->getForward(camTransform.rotQuat);
@@ -69,7 +69,7 @@ void CameraSystem::update(float dt)
 
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(lookDir, (float)(m_pKeyboardState->W-m_pKeyboardState->S)));
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(pitchAxis, (float)(m_pKeyboardState->D-m_pKeyboardState->A)));
-            camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(defaultUp, (float)(m_pKeyboardState->LeftShift-m_pKeyboardState->LeftControl)));
+            camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(g_DefaultUp, (float)(m_pKeyboardState->LeftShift-m_pKeyboardState->LeftControl)));
 
             camMove = DirectX::XMVectorScale(DirectX::XMVector3Normalize(camMove), dt * 1.5f);
             camPos = DirectX::XMVectorAdd(camPos, camMove);
