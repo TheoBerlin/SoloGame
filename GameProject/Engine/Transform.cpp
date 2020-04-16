@@ -145,7 +145,7 @@ float TransformHandler::getRoll(const DirectX::XMFLOAT4& rotationQuat)
 
 float TransformHandler::getOrientedAngle(const DirectX::XMVECTOR& V1, const DirectX::XMVECTOR& V2, const DirectX::XMVECTOR& normal)
 {
-    float angle = DirectX::XMVectorGetX(DirectX::XMVector3Dot(V1, V2));
+    float angle = std::acosf(DirectX::XMVectorGetX(DirectX::XMVector3Dot(V1, V2)));
     DirectX::XMVECTOR cross = DirectX::XMVector3Cross(V1, V2);
     if (DirectX::XMVectorGetX(DirectX::XMVector3Dot(cross, normal)) > 0.0f) {
         angle = -angle;

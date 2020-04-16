@@ -48,6 +48,10 @@ void SoundPlayer::update([[maybe_unused]] float dt)
 
     DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
     DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camTransform.rotQuat);
+    DirectX::XMVECTOR camDirFlat = camDir;
+    camDirFlat = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camDirFlat, 0.0f));
+
+    float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
 
     size_t soundCount = m_Sounds.size();
     IDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
@@ -64,16 +68,21 @@ void SoundPlayer::update([[maybe_unused]] float dt)
         // Calculate volume using distance to camera
         DirectX::XMVECTOR camToSound = DirectX::XMVectorSubtract(soundPos, camPos);
         float soundDistance = DirectX::XMVectorGetX(DirectX::XMVector3Length(camToSound));
-        float volume = 1.0f / (soundDistance * soundDistance);
+        float volume = 1.0f / soundDistance;
 
-        //sound.pChannel->setVolume(volume);
+        sound.pChannel->setVolume(volume);
 
         // Set left-right panning, [-1,1], where -1 is all left, 1 is all right
         // Ignore vertical difference between camera and sound
-        camToSound = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, camTransform.position.y));
-        float angle = m_pTransformHandler->getOrientedAngle(camDir, camToSound, g_DefaultUp);
-        float pan = std::sinf(angle);
+        camToSound = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
 
-        sound.pChannel->setPan(pan);
+        float angle = -m_pTransformHandler->getOrientedAngle(camToSound, camDirFlat, g_DefaultUp);
+        float cosAngle = std::cosf(angle);
+        float sinAngle = std::sinf(angle);
+
+        float ampLeft   = 0.5f * (sqrtTwoRec * (cosAngle + sinAngle)) + 0.5f;
+        float ampRight  = 0.5f * (sqrtTwoRec * (cosAngle - sinAngle)) + 0.5f;
+
+        sound.pChannel->setMixLevelsOutput(ampLeft, ampRight, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     }
 }

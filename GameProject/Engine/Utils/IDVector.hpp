@@ -8,7 +8,7 @@
     Extends a vector to be able to:
     * Use IDs to index elements
     * Pop elements in the middle of the array without breaking ID-index relation
-    
+
     Stores elements, index for each ID and ID for each element
 */
 
@@ -129,6 +129,6 @@ private:
     */
     std::vector<size_t> indices;
 
-    // Stores index for each ID, eg. ids[5] == vec[5].id had vec's elements contained IDs
+    // Stores index for each ID, eg. ids[5] == vec[5].id (had vec's elements contained IDs)
     std::vector<size_t> ids;
 };
