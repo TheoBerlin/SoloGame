@@ -10,6 +10,7 @@ ECSCore::~ECSCore()
 
 void ECSCore::update(float dt)
 {
+    performDeletions();
     performRegistrations();
 
     m_SystemUpdater.updateMT(dt);
@@ -46,7 +47,7 @@ void ECSCore::deleteEntityDelayed(Entity entity)
     m_EntitiesToDelete.push_back(entity);
 }
 
-void ECSCore::performMaintenance()
+void ECSCore::performDeletions()
 {
     std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_ComponentSubscriber.getComponentStorage();
     const EntityRegistryPage& registryPage = m_EntityRegistry.getTopRegistryPage();

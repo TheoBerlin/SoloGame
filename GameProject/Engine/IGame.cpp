@@ -63,12 +63,11 @@ void IGame::run()
             m_InputHandler.update();
 
             // Update logic
+            m_ECS.update(dt);
             m_StateManager.update(dt);
             m_ButtonSystem.update(dt);
 
             m_RenderingHandler.render();
-
-            m_ECS.performMaintenance();
         }
     }
 }
