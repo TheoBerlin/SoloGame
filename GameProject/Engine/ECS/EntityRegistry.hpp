@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 // Map Entities to the set of component types they are registered to
-typedef IDVector<std::unordered_set<std::type_index>> EntityRegistryPage;
+typedef IDDVector<std::unordered_set<std::type_index>> EntityRegistryPage;
 
 class EntityRegistry
 {

@@ -35,11 +35,11 @@ private:
 
     // Contains pointers to systems as well as information on what components they process and with what permissions
     // so that safe multi-threading can be performed
-    IDVector<SystemUpdateInfo> m_UpdateInfos;
+    IDDVector<SystemUpdateInfo> m_UpdateInfos;
 
     /* Resources for multi-threaded updates below */
     // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
-    IDVector<size_t> processedSystems;
+    IDDVector<size_t> processedSystems;
 
     // Stores what components are currently being processed and with what rights
     std::unordered_multimap<std::type_index, ComponentPermissions> processingSystems;

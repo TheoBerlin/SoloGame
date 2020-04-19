@@ -31,7 +31,7 @@ public:
     // Creates a renderable component out of an existing model
     bool createRenderable(Entity entity, Model* model, PROGRAM program);
 
-    IDVector<Renderable> m_Renderables;
+    IDDVector<Renderable> m_Renderables;
 
 private:
     ShaderHandler* m_pShaderHandler;

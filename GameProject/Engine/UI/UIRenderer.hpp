@@ -22,7 +22,7 @@ public:
     virtual bool executeCommands() override;
 
 private:
-    IDVector<Entity> m_Panels;
+    IDVector m_Panels;
 
     ID3D11DeviceContext* m_pCommandBuffer;
 

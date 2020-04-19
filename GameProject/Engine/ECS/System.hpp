@@ -19,7 +19,7 @@ struct ComponentUpdateReg {
 // A request for a system to subscribe to one or more component types
 struct ComponentSubscriptionRequest {
     std::vector<ComponentUpdateReg> componentTypes;
-    IDVector<Entity>* subscriber;
+    IDVector* subscriber;
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> onEntityAdded;
 };

@@ -16,5 +16,5 @@ public:
 
 private:
     LightHandler* m_pLightHandler;
-    IDVector<Entity> m_Lights;
+    IDVector m_Lights;
 };

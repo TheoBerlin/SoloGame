@@ -24,5 +24,5 @@ public:
 
     void createTrackPosition(Entity entity);
 
-    IDVector<TrackPosition> trackPositions;
+    IDDVector<TrackPosition> trackPositions;
 };

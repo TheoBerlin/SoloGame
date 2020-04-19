@@ -110,7 +110,7 @@ void UIRenderer::recordCommands()
         sizeof(DirectX::XMFLOAT4) + // Highlight color
         sizeof(float);              // Highlight factor
 
-    for (const Entity& entity : m_Panels.getVec()) {
+    for (const Entity& entity : m_Panels.getIDs()) {
         UIPanel& panel = m_pUIHandler->panels.indexID(entity);
         if (panel.texture->getSRV() == nullptr) {
             continue;

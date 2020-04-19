@@ -27,7 +27,7 @@ public:
     FMOD::System* getSystem() { return m_pSystem; }
 
 public:
-    IDVector<Sound> m_Sounds;
+    IDDVector<Sound> m_Sounds;
 
 private:
     FMOD::System* m_pSystem;
