@@ -1,5 +1,6 @@
 #include "GameSession.hpp"
 
+#include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -19,43 +20,54 @@ GameSession::GameSession(MainMenu* mainMenu)
     m_pECS->performRegistrations();
     LOG_INFO("Started game session");
 
+    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+
     // Set mouse mode to relative, which also hides the mouse
-    this->inputHandler = static_cast<InputHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(InputHandler)));
+    this->inputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
     inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
     inputHandler->setMouseVisibility(false);
 
     // Create camera
     camera = m_pECS->createEntity();
 
-    TransformHandler* transformHandler = static_cast<TransformHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TransformHandler)));
+    TransformHandler* transformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
     transformHandler->createTransform(camera);
     Transform& camTransform  = transformHandler->transforms.indexID(camera);
     camTransform.position    = {2.0f, 1.8f, 3.3f};
 
-    VPHandler* vpHandler = static_cast<VPHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(VPHandler)));
+    VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
     DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camTransform.position);
     DirectX::XMVECTOR camLookDir = transformHandler->getForward(camTransform.rotQuat);
     DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
     vpHandler->createViewMatrix(camera, camPos, camLookDir, camUpDir);
     vpHandler->createProjMatrix(camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
 
+    //trackPositionHandler.createTrackPosition(camera);
+
     // Create renderable object
-    RenderableHandler* renderableHandler = static_cast<RenderableHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(RenderableHandler)));
+    RenderableHandler* renderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
 
     renderableObject = m_pECS->createEntity();
     transformHandler->createTransform(renderableObject);
     transformHandler->createWorldMatrix(renderableObject);
     renderableHandler->createRenderable(renderableObject, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
 
-    // Create point lights
-    LightHandler* lightHandler = static_cast<LightHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(LightHandler)));
+    // Create point lights and attach sound to them
+    LightHandler* lightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
+    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
 
-    for (unsigned i = 0; i < MAX_POINTLIGHTS; i += 1) {
+    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
+
+    for (unsigned i = 0; i < 1u; i++) {
         Entity lightID = m_pECS->createEntity();
         DirectX::XMFLOAT3 lightPos  = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
         DirectX::XMFLOAT3 light     = {std::sinf(1.6f * i), 0.8f, std::cosf(1.2f * i)};
 
         lightHandler->createPointLight(lightID, lightPos, light, 10.0f);
+
+        if (pSoundHandler->createSound(lightID, soundFile)) {
+            pSoundHandler->playSound(lightID);
+        }
     }
 
     // Create tube
@@ -75,8 +87,6 @@ GameSession::GameSession(MainMenu* mainMenu)
     renderableHandler->createRenderable(tube, tubeModel, PROGRAM::BASIC);
     transformHandler->createTransform(tube);
     transformHandler->createWorldMatrix(tube);
-
-    trackPositionHandler.createTrackPosition(camera);
 }
 
 GameSession::~GameSession()

@@ -99,21 +99,28 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
             continue;
         }
 
+        bool systemIsEligible = true;
+
         // Prevent multiple systems from accessing the same components where at least one of them has write permissions
         for (const ComponentUpdateReg& componentReg : sysReg.Components) {
-            auto permissionsItrs = processingSystems.equal_range(componentReg.tid);
+            auto rangeLimit = processingSystems.equal_range(componentReg.tid);
 
-            while (permissionsItrs.first != permissionsItrs.second) {
-                if ((permissionsItrs.second->second & componentReg.permissions) == RW) {
+            for (auto permissionsItr = rangeLimit.first; permissionsItr != rangeLimit.second; permissionsItr++) {
+                if ((permissionsItr->second | componentReg.permissions) == RW) {
                     // System collides with another currently updating system
-                    return nullptr;
+                    systemIsEligible = false;
+                    break;
                 }
+            }
 
-                permissionsItrs.first++;
+            if (!systemIsEligible) {
+                break;
             }
         }
 
-        return &sysReg;
+        if (systemIsEligible) {
+            return &sysReg;
+        }
     }
 
     return nullptr;

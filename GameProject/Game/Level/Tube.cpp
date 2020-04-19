@@ -72,8 +72,8 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     for (size_t pointIdx = 0; pointIdx < tubePoints.size(); pointIdx += 1) {
         pointPosition = DirectX::XMLoadFloat3(&tubePoints[pointIdx].position);
         rotationQuat = DirectX::XMLoadFloat4(&tubePoints[pointIdx].rotationQuat);
-        pointUp = DirectX::XMVector3Rotate(defaultUp, rotationQuat);
-        pointForward = DirectX::XMVector3Rotate(defaultForward, rotationQuat);
+        pointUp = DirectX::XMVector3Rotate(g_DefaultUp, rotationQuat);
+        pointForward = DirectX::XMVector3Rotate(g_DefaultForward, rotationQuat);
         vertexPosition = DirectX::XMVectorAdd(pointPosition, DirectX::XMVectorScale(pointUp, radius));
 
         // Calculate the 'vertical' texture coordinate, which is common for each face of the ring
