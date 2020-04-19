@@ -132,7 +132,7 @@ size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSub
             bool registerEntity = m_pEntityRegistry->entityHasTypes(entity, subscription.componentTypes);
 
             if (registerEntity) {
-                subscription.subscriber->push_back(entity, entity);
+                subscription.subscriber->push_back(entity);
 
                 if (subscription.onEntityAdded != nullptr) {
                     subscription.onEntityAdded(entity);
@@ -195,7 +195,7 @@ void ComponentSubscriber::newComponent(Entity entityID, std::type_index componen
         ComponentSubscriptions& sysSub = subscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
 
         if (m_pEntityRegistry->entityHasTypes(entityID, sysSub.componentTypes)) {
-            sysSub.subscriber->push_back(entityID, entityID);
+            sysSub.subscriber->push_back(entityID);
 
             if (sysSub.onEntityAdded != nullptr) {
                 sysSub.onEntityAdded(entityID);

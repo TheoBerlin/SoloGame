@@ -23,7 +23,7 @@ public:
     void update(float dt);
 
 private:
-    IDVector<Entity> m_Cameras;
+    IDVector m_Cameras;
 
     TransformHandler* m_pTransformHandler;
     VPHandler* m_pVPHandler;

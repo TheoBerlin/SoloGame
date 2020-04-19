@@ -16,7 +16,7 @@ public:
     void update(float dt);
 
 private:
-    IDVector<Entity> m_Buttons;
+    IDVector m_Buttons;
 
     UIHandler* m_pUIhandler;
 

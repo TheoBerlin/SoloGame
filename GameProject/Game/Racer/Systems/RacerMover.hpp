@@ -36,7 +36,7 @@ public:
 private:
     void racerAdded(Entity entity);
 
-    IDVector<Entity> m_Racers;
+    IDVector m_Racers;
 
     TransformHandler* m_pTransformHandler;
     TrackPositionHandler* m_pTrackPositionHandler;

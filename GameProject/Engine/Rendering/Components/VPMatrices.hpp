@@ -27,6 +27,6 @@ public:
     void createViewMatrix(Entity entity, DirectX::XMVECTOR eyePos, DirectX::XMVECTOR lookDir, DirectX::XMVECTOR upDir);
     void createProjMatrix(Entity entity, float horizontalFOV, float aspectRatio, float nearZ, float farZ);
 
-    IDVector<ViewMatrix> viewMatrices;
-    IDVector<ProjectionMatrix> projMatrices;
+    IDDVector<ViewMatrix> viewMatrices;
+    IDDVector<ProjectionMatrix> projMatrices;
 };

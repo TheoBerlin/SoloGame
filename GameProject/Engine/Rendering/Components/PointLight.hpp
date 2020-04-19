@@ -25,5 +25,5 @@ public:
 
     void createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius);
 
-    IDVector<PointLight> pointLights;
+    IDDVector<PointLight> pointLights;
 };

@@ -18,7 +18,7 @@ struct ComponentHandlerRegistration;
 
 struct ComponentSubscriptions {
     // Stores IDs of entities found using subscription
-    IDVector<Entity>* subscriber; // TODO: Rename to... "foundEntities"?
+    IDVector* subscriber; // TODO: Rename to... "foundEntities"?
     std::vector<std::type_index> componentTypes;
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> onEntityAdded;
@@ -65,7 +65,7 @@ private:
     std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
 
     // Map systems' IDs to their subscriptions
-    IDVector<std::vector<ComponentSubscriptions>> subscriptionStorage;
+    IDDVector<std::vector<ComponentSubscriptions>> subscriptionStorage;
     IDGenerator systemIdGen;
 
     std::unordered_map<std::type_index, ComponentHandler*> componentHandlers;

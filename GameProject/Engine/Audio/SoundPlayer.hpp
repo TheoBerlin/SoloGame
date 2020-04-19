@@ -18,8 +18,8 @@ public:
     virtual void update(float dt) override;
 
 private:
-    IDVector<Entity> m_Sounds;
-    IDVector<Entity> m_Cameras;
+    IDVector m_Sounds;
+    IDVector m_Cameras;
 
     LightHandler* m_pLightHandler;
     SoundHandler* m_pSoundHandler;

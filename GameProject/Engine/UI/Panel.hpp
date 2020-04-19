@@ -87,8 +87,8 @@ public:
     void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
         std::function<void()> onPress);
 
-    IDVector<UIPanel> panels;
-    IDVector<UIButton> buttons;
+    IDDVector<UIPanel> panels;
+    IDDVector<UIButton> buttons;
 
 private:
     // Creates a texture for a panel, which can be used as both a RTV and SRV

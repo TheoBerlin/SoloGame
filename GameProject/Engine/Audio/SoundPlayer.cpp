@@ -43,7 +43,7 @@ void SoundPlayer::update([[maybe_unused]] float dt)
         return;
     }
 
-    IDVector<Transform>& transforms = m_pTransformHandler->transforms;
+    IDDVector<Transform>& transforms = m_pTransformHandler->transforms;
     Transform& camTransform = transforms.indexID(m_Cameras[0]);
 
     DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
@@ -54,9 +54,9 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
 
     size_t soundCount = m_Sounds.size();
-    IDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
+    IDDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
 
-    IDVector<PointLight>& pointLights = m_pLightHandler->pointLights;
+    IDDVector<PointLight>& pointLights = m_pLightHandler->pointLights;
 
     for (size_t soundNr = 0; soundNr < soundCount; soundNr++) {
         Entity soundEntity = m_Sounds[soundNr];

@@ -39,7 +39,7 @@ void ButtonSystem::update(float dt)
         return;
     }
 
-    for (Entity entity : m_Buttons.getVec()) {
+    for (Entity entity : m_Buttons.getIDs()) {
         UIPanel& panel = m_pUIhandler->panels.indexID(entity);
         UIButton& button = m_pUIhandler->buttons.indexID(entity);
         panel.highlight = button.defaultHighlight;

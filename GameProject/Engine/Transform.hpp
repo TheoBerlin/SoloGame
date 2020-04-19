@@ -37,8 +37,8 @@ public:
     // Requires that the entity has both a transform and world matrix component
     WorldMatrix& getWorldMatrix(Entity entity);
 
-    IDVector<Transform> transforms;
-    IDVector<WorldMatrix> worldMatrices;
+    IDDVector<Transform> transforms;
+    IDDVector<WorldMatrix> worldMatrices;
 
     // Transform calculation functions
     static DirectX::XMVECTOR getUp(const DirectX::XMFLOAT4& rotationQuat);

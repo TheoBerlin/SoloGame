@@ -34,9 +34,9 @@ public:
     virtual bool executeCommands() override;
 
 private:
-    IDVector<Entity> m_Renderables;
-    IDVector<Entity> m_Camera;
-    IDVector<Entity> m_PointLights;
+    IDVector m_Renderables;
+    IDVector m_Camera;
+    IDVector m_PointLights;
 
     ID3D11DeviceContext* m_pCommandBuffer;
 
