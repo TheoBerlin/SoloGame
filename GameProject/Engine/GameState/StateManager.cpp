@@ -58,8 +58,5 @@ void StateManager::update(float dt)
 {
     if (!m_States.empty()) {
         m_States.top()->update(dt);
-
-        m_pECS->performRegistrations();
-        m_pECS->getSystemUpdater()->updateMT(dt);
     }
 }

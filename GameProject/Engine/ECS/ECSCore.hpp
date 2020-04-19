@@ -33,7 +33,7 @@ public:
 
     // Enqueues an entity deletion, performed during maintenance
     void deleteEntityDelayed(Entity entity);
-    void performMaintenance();
+    void performDeletions();
 
     ComponentSubscriber* getComponentSubscriber() { return &m_ComponentSubscriber; }
     SystemUpdater* getSystemUpdater() { return &m_SystemUpdater; }
