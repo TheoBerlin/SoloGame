@@ -18,7 +18,7 @@ struct ComponentHandlerRegistration;
 
 struct ComponentSubscriptions {
     // Stores IDs of entities found using subscription
-    IDVector* subscriber; // TODO: Rename to... "foundEntities"?
+    IDVector* subscriber;
     std::vector<std::type_index> componentTypes;
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> onEntityAdded;

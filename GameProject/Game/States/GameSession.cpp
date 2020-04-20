@@ -31,13 +31,13 @@ GameSession::GameSession(MainMenu* mainMenu)
     camera = m_pECS->createEntity();
 
     TransformHandler* transformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    transformHandler->createTransform(camera);
-    Transform& camTransform  = transformHandler->transforms.indexID(camera);
-    camTransform.position    = {2.0f, 1.8f, 3.3f};
+    DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
+    transformHandler->createTransform(camera, camPosition);
+    Transform camTransform  = transformHandler->getTransform(camera);
 
     VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
-    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camTransform.position);
-    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camTransform.rotQuat);
+    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camPosition);
+    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camTransform.RotationQuaternion);
     DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
     vpHandler->createViewMatrix(camera, camPos, camLookDir, camUpDir);
     vpHandler->createProjMatrix(camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);

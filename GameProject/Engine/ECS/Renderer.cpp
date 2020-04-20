@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 
+#include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
