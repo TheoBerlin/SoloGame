@@ -42,7 +42,7 @@ void TransformHandler::createScale(Entity entity, const DirectX::XMFLOAT3& scale
 void TransformHandler::createRotation(Entity entity)
 {
     Rotation rotation = {};
-    DirectX::XMStoreFloat4(&rotation.RotationQuaternion, DirectX::XMQuaternionIdentity());
+    DirectX::XMStoreFloat4(&rotation.Quaternion, DirectX::XMQuaternionIdentity());
     m_Rotations.push_back(rotation, entity);
     this->registerComponent(entity, g_TIDRotation);
 }
@@ -235,6 +235,6 @@ Transform TransformHandler::getTransform(Entity entity)
     return {
         m_Positions.indexID(entity).Position,
         m_Scales.indexID(entity).Scale,
-        m_Rotations.indexID(entity).RotationQuaternion
+        m_Rotations.indexID(entity).Quaternion
     };
 }

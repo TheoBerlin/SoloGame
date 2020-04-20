@@ -20,7 +20,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     m_BackbufferWidth(pDisplay->getClientWidth()),
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
-    TransformGroup transformSub;
+    TransformComponents transformSub;
 
     RendererRegistration rendererReg = {
         {

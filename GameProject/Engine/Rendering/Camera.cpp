@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 
+#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
@@ -8,13 +9,13 @@
 CameraSystem::CameraSystem(ECSCore* pECS)
     :System(pECS)
 {
-    TransformGroup transformSub;
-    transformSub.m_Position.Permissions = RW;
-    transformSub.m_Rotation.Permissions = RW;
+    CameraComponents cameraComponents;
+    cameraComponents.m_Position.Permissions = RW;
+    cameraComponents.m_Rotation.Permissions = RW;
 
     SystemRegistration sysReg = {
         {
-            {{{RW, tid_view}, {R, tid_projection}}, {&transformSub}, &m_Cameras},
+            {{{RW, tid_view}, {R, tid_projection}}, {&cameraComponents}, &m_Cameras},
         },
         this
     };
@@ -40,9 +41,9 @@ bool CameraSystem::init()
 
 void CameraSystem::update(float dt)
 {
-    for (size_t i = 0; i < m_Cameras.size(); i += 1) {
-        Transform camTransform = m_pTransformHandler->getTransform(m_Cameras[i]);
-        ViewMatrix& viewMatrix = m_pVPHandler->viewMatrices.indexID(m_Cameras[i]);
+    for (Entity entity : m_Cameras.getIDs()) {
+        Transform camTransform = m_pTransformHandler->getTransform(entity);
+        ViewMatrix& viewMatrix = m_pVPHandler->viewMatrices.indexID(entity);
 
         DirectX::XMVECTOR lookDir = m_pTransformHandler->getForward(camTransform.RotationQuaternion);
         DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(g_DefaultUp, lookDir));

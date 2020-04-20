@@ -19,7 +19,7 @@ struct Scale {
 };
 
 struct Rotation {
-    DirectX::XMFLOAT4 RotationQuaternion;
+    DirectX::XMFLOAT4 Quaternion;
 };
 
 const std::type_index g_TIDPosition = TID(Position);
@@ -32,7 +32,7 @@ struct Transform {
     DirectX::XMFLOAT4& RotationQuaternion;
 };
 
-class TransformGroup : public IComponentGroup
+class TransformComponents : public IComponentGroup
 {
 public:
     std::vector<ComponentAccess> toVector() const override final
@@ -70,11 +70,16 @@ public:
     // Requires that the entity has a transform component
     void createWorldMatrix(Entity entity);
 
+public:
+    // Required components: Position, Rotation and Scale
     Transform getTransform(Entity entity);
-    // Requires that the entity has both a transform and world matrix component
+    // Required components: Position, Rotation, Scale and World Matrix
     WorldMatrix& getWorldMatrix(Entity entity);
+    inline DirectX::XMFLOAT3& getPosition(Entity entity)   { return m_Positions.indexID(entity).Position; }
+    inline DirectX::XMFLOAT3& getScale(Entity entity)      { return m_Scales.indexID(entity).Scale; }
+    inline DirectX::XMFLOAT4& getRotation(Entity entity)   { return m_Rotations.indexID(entity).Quaternion; }
 
-
+public:
     // Transform calculation functions
     static DirectX::XMVECTOR getUp(const DirectX::XMFLOAT4& rotationQuat);
     static DirectX::XMVECTOR getForward(const DirectX::XMFLOAT4& rotationQuat);
@@ -94,7 +99,7 @@ public:
     // Rotate V around P using a given axis and angle
     static void rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle);
 
-public:
+private:
     IDDVector<Position>     m_Positions;
     IDDVector<Scale>        m_Scales;
     IDDVector<Rotation>     m_Rotations;
