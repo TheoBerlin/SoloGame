@@ -31,18 +31,17 @@ GameSession::GameSession(MainMenu* mainMenu)
     camera = m_pECS->createEntity();
 
     TransformHandler* transformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    transformHandler->createTransform(camera);
-    Transform& camTransform  = transformHandler->transforms.indexID(camera);
-    camTransform.position    = {2.0f, 1.8f, 3.3f};
+    const DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
+    transformHandler->createPosition(camera, camPosition);
+    transformHandler->createRotation(camera);
+    const DirectX::XMFLOAT4& camRotationQuat = transformHandler->getRotation(camera);
 
     VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
-    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camTransform.position);
-    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camTransform.rotQuat);
+    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camPosition);
+    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camRotationQuat);
     DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
     vpHandler->createViewMatrix(camera, camPos, camLookDir, camUpDir);
     vpHandler->createProjMatrix(camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
-
-    //trackPositionHandler.createTrackPosition(camera);
 
     // Create renderable object
     RenderableHandler* renderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
@@ -87,6 +86,8 @@ GameSession::GameSession(MainMenu* mainMenu)
     renderableHandler->createRenderable(tube, tubeModel, PROGRAM::BASIC);
     transformHandler->createTransform(tube);
     transformHandler->createWorldMatrix(tube);
+
+    trackPositionHandler.createTrackPosition(camera);
 }
 
 GameSession::~GameSession()

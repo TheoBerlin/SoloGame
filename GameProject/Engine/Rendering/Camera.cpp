@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 
+#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
@@ -8,11 +9,16 @@
 CameraSystem::CameraSystem(ECSCore* pECS)
     :System(pECS)
 {
+    CameraComponents cameraComponents;
+    cameraComponents.m_Position.Permissions = RW;
+    cameraComponents.m_Rotation.Permissions = RW;
+
     SystemRegistration sysReg = {
-    {
-        {{{RW, tid_transform}, {RW, tid_view}, {R, tid_projection}}, &m_Cameras},
-    },
-    this};
+        {
+            {{{RW, tid_view}, {R, tid_projection}}, {&cameraComponents}, &m_Cameras},
+        },
+        this
+    };
 
     this->subscribeToComponents(sysReg);
     this->registerUpdate(sysReg);
@@ -35,16 +41,16 @@ bool CameraSystem::init()
 
 void CameraSystem::update(float dt)
 {
-    for (size_t i = 0; i < m_Cameras.size(); i += 1) {
-        Transform& camTransform = m_pTransformHandler->transforms.indexID(m_Cameras[i]);
-        ViewMatrix& viewMatrix = m_pVPHandler->viewMatrices.indexID(m_Cameras[i]);
+    for (Entity entity : m_Cameras.getIDs()) {
+        Transform camTransform = m_pTransformHandler->getTransform(entity);
+        ViewMatrix& viewMatrix = m_pVPHandler->viewMatrices.indexID(entity);
 
-        DirectX::XMVECTOR lookDir = m_pTransformHandler->getForward(camTransform.rotQuat);
+        DirectX::XMVECTOR lookDir = m_pTransformHandler->getForward(camTransform.RotationQuaternion);
         DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(g_DefaultUp, lookDir));
 
         // React to mouse input
         if (m_pMouseState->x || m_pMouseState->y) {
-            DirectX::XMVECTOR rotation = DirectX::XMLoadFloat4(&camTransform.rotQuat);
+            DirectX::XMVECTOR rotation = DirectX::XMLoadFloat4(&camTransform.RotationQuaternion);
 
             // Limit pitch
             float pitch = m_pTransformHandler->getPitch(lookDir);
@@ -57,11 +63,11 @@ void CameraSystem::update(float dt)
 
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(g_DefaultUp, m_pMouseState->x * dt * 1.3f));
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(pitchAxis, addedPitch));
-            DirectX::XMStoreFloat4(&camTransform.rotQuat, rotation);
-            lookDir = m_pTransformHandler->getForward(camTransform.rotQuat);
+            DirectX::XMStoreFloat4(&camTransform.RotationQuaternion, rotation);
+            lookDir = m_pTransformHandler->getForward(camTransform.RotationQuaternion);
         }
 
-        DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
+        DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.Position);
 
         // React to keyboard input
         if ((m_pKeyboardState->W-m_pKeyboardState->S) || (m_pKeyboardState->D-m_pKeyboardState->A) || (m_pKeyboardState->LeftShift-m_pKeyboardState->LeftControl)) {
@@ -73,10 +79,10 @@ void CameraSystem::update(float dt)
 
             camMove = DirectX::XMVectorScale(DirectX::XMVector3Normalize(camMove), dt * 1.5f);
             camPos = DirectX::XMVectorAdd(camPos, camMove);
-            DirectX::XMStoreFloat3(&camTransform.position, camPos);
+            DirectX::XMStoreFloat3(&camTransform.Position, camPos);
         }
 
-        DirectX::XMVECTOR upDir = TransformHandler::getUp(camTransform.rotQuat);
+        DirectX::XMVECTOR upDir = TransformHandler::getUp(camTransform.RotationQuaternion);
         DirectX::XMStoreFloat4x4(&viewMatrix.view, DirectX::XMMatrixLookAtLH(camPos, DirectX::XMVectorAdd(camPos, lookDir), upDir));
     }
 }

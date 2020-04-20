@@ -1,6 +1,7 @@
 #include "SoundPlayer.hpp"
 
 #include <Engine/Audio/SoundHandler.hpp>
+#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Transform.hpp>
@@ -15,7 +16,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     sysReg.pSystem = this;
     sysReg.SubscriptionRequests = {
         {{{RW, tid_sound}, {R, tid_pointLight}}, &m_Sounds},
-        {{{R, tid_transform}, {R, tid_view}, {R, tid_projection}}, &m_Cameras}
+        {{{R, g_TIDPosition}, {R, g_TIDScale}, {R, tid_view}, {R, tid_projection}}, &m_Cameras}
     };
 
     subscribeToComponents(sysReg);
@@ -27,9 +28,9 @@ SoundPlayer::~SoundPlayer()
 
 bool SoundPlayer::init()
 {
-    m_pSoundHandler = reinterpret_cast<SoundHandler*>(getComponentHandler(TID(SoundHandler)));
+    m_pSoundHandler     = reinterpret_cast<SoundHandler*>(getComponentHandler(TID(SoundHandler)));
     m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pLightHandler = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    m_pLightHandler     = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
 
     return m_pSoundHandler && m_pTransformHandler && m_pLightHandler;
 }
@@ -43,11 +44,10 @@ void SoundPlayer::update([[maybe_unused]] float dt)
         return;
     }
 
-    IDDVector<Transform>& transforms = m_pTransformHandler->transforms;
-    Transform& camTransform = transforms.indexID(m_Cameras[0]);
+    Transform camTransform = m_pTransformHandler->getTransform(m_Cameras[0]);
 
-    DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.position);
-    DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camTransform.rotQuat);
+    DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.Position);
+    DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camTransform.RotationQuaternion);
     DirectX::XMVECTOR camDirFlat = camDir;
     camDirFlat = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camDirFlat, 0.0f));
 

@@ -11,7 +11,7 @@
 
 struct SystemUpdateInfo {
     System* pSystem;
-    std::vector<ComponentUpdateReg> Components;
+    std::vector<ComponentAccess> Components;
 };
 
 typedef std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> ProcessingSystemsIterators;

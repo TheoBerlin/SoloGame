@@ -133,6 +133,7 @@
     <ClCompile Include="Engine\Audio\SoundHandler.cpp" />
     <ClCompile Include="Engine\Audio\SoundPlayer.cpp" />
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
+    <ClCompile Include="Engine\ECS\ComponentSubscriptionRequest.cpp" />
     <ClCompile Include="Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="Engine\ECS\EntityRegistry.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="Engine\Audio\SoundHandler.hpp" />
     <ClInclude Include="Engine\Audio\SoundPlayer.hpp" />
     <ClInclude Include="Engine\ECS\ComponentHandler.hpp" />
+    <ClInclude Include="Engine\ECS\ComponentSubscriptionRequest.hpp" />
     <ClInclude Include="Engine\ECS\ECSBooter.hpp" />
     <ClInclude Include="Engine\ECS\ECSCore.hpp" />
     <ClInclude Include="Engine\ECS\Entity.hpp" />
@@ -201,6 +203,7 @@
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
     <ClInclude Include="Engine\Rendering\Camera.hpp" />
+    <ClInclude Include="Engine\Rendering\Components\ComponentGroups.hpp" />
     <ClInclude Include="Engine\Rendering\Components\VPMatrices.hpp" />
     <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />

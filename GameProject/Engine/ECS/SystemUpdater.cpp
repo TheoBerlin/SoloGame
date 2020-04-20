@@ -13,11 +13,11 @@ SystemUpdater::~SystemUpdater()
 void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 {
     // Extract data from SystemRegistration to create SystemUpdateInfo objects
-    std::vector<ComponentUpdateReg> updateRegs;
+    std::vector<ComponentAccess> updateRegs;
 
     for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriptionRequests) {
-        updateRegs.reserve(updateRegs.size() + subReq.componentTypes.size());
-        for (const ComponentUpdateReg& componentUpdateReg : subReq.componentTypes) {
+        updateRegs.reserve(updateRegs.size() + subReq.m_ComponentAccesses.size());
+        for (const ComponentAccess& componentUpdateReg : subReq.m_ComponentAccesses) {
             updateRegs.push_back(componentUpdateReg);
         }
     }
@@ -102,11 +102,11 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
         bool systemIsEligible = true;
 
         // Prevent multiple systems from accessing the same components where at least one of them has write permissions
-        for (const ComponentUpdateReg& componentReg : sysReg.Components) {
-            auto rangeLimit = processingSystems.equal_range(componentReg.tid);
+        for (const ComponentAccess& componentReg : sysReg.Components) {
+            auto rangeLimit = processingSystems.equal_range(componentReg.TID);
 
             for (auto permissionsItr = rangeLimit.first; permissionsItr != rangeLimit.second; permissionsItr++) {
-                if ((permissionsItr->second | componentReg.permissions) == RW) {
+                if ((permissionsItr->second | componentReg.Permissions) == RW) {
                     // System collides with another currently updating system
                     systemIsEligible = false;
                     break;
@@ -133,8 +133,8 @@ void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, Pro
 
     processingSystemsIterators->reserve(systemToRegister->Components.size());
 
-    for (const ComponentUpdateReg& componentReg : systemToRegister->Components) {
-        processingSystemsIterators->push_back(processingSystems.insert({componentReg.tid, componentReg.permissions}));
+    for (const ComponentAccess& componentReg : systemToRegister->Components) {
+        processingSystemsIterators->push_back(processingSystems.insert({componentReg.TID, componentReg.Permissions}));
     }
 }
 

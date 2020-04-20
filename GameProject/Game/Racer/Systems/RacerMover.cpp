@@ -12,10 +12,11 @@ RacerMover::RacerMover(ECSCore* pECS)
     :System(pECS)
 {
     SystemRegistration sysReg = {
-    {
-        {{{RW, tid_transform}, {RW, tid_trackPosition}}, &m_Racers, [this](Entity entity){racerAdded(entity);}}
-    },
-    this};
+        {
+            {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, tid_trackPosition}}, &m_Racers, [this](Entity entity){racerAdded(entity);}}
+        },
+        this
+    };
 
     subscribeToComponents(sysReg);
     registerUpdate(sysReg);
@@ -26,12 +27,12 @@ RacerMover::~RacerMover()
 
 bool RacerMover::init()
 {
-    this->m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    this->m_pTrackPositionHandler = static_cast<TrackPositionHandler*>(getComponentHandler(TID(TrackPositionHandler)));
-    this->m_pTubeHandler = static_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
+    m_pTransformHandler       = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pTrackPositionHandler   = static_cast<TrackPositionHandler*>(getComponentHandler(TID(TrackPositionHandler)));
+    m_pTubeHandler            = static_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
 
     InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
-    this->m_pKeyboardState = pInputHandler->getKeyboardState();
+    m_pKeyboardState = pInputHandler->getKeyboardState();
 
     return m_pTransformHandler && m_pTrackPositionHandler && m_pTubeHandler && pInputHandler;
 }
@@ -41,13 +42,14 @@ void RacerMover::update(float dt)
     const std::vector<DirectX::XMFLOAT3>& tubeSections = m_pTubeHandler->getTubeSections();
 
     for (Entity entity : m_Racers.getIDs()) {
-        Transform& transform = m_pTransformHandler->transforms.indexID(entity);
+        DirectX::XMFLOAT3& transformPosition = m_pTransformHandler->getPosition(entity);
+        DirectX::XMFLOAT4& rotationQuat = m_pTransformHandler->getRotation(entity);
         TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
 
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
         DirectX::XMVECTOR P[4];
         P[1] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section]);
-        P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section+1]);
+        P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section + 1]);
 
         DirectX::XMVECTOR temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
         float sectionLength = DirectX::XMVectorGetX(temp);
@@ -63,7 +65,7 @@ void RacerMover::update(float dt)
 
             // Update T by accounting for the next section's T/s
             P[1] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section]);
-            P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section+1]);
+            P[2] = DirectX::XMLoadFloat3(&tubeSections[trackPosition.section + 1]);
 
             temp = DirectX::XMVector3Length(DirectX::XMVectorSubtract(P[2], P[1]));
             float newSectionLength = DirectX::XMVectorGetX(temp);
@@ -74,8 +76,8 @@ void RacerMover::update(float dt)
 
         // P[1] and P[2] are loaded since earlier
         size_t idx0, idx3;
-        idx0 = std::max((int)trackPosition.section-1, 0);
-        idx3 = std::min(trackPosition.section+2, tubeSections.size()-1);
+        idx0 = std::max((int)trackPosition.section - 1, 0);
+        idx3 = std::min(trackPosition.section + 2, tubeSections.size() - 1);
 
         P[0] = DirectX::XMLoadFloat3(&tubeSections[idx0]);
         P[3] = DirectX::XMLoadFloat3(&tubeSections[idx3]);
@@ -84,16 +86,16 @@ void RacerMover::update(float dt)
         temp = DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], trackPosition.T);
 
         DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(catmullRomDerivative(P[0], P[1], P[2], P[3], trackPosition.T));
-        TransformHandler::setForward(transform.rotQuat, forward);
+        TransformHandler::setForward(rotationQuat, forward);
 
-        DirectX::XMVECTOR position = DirectX::XMVectorSubtract(temp, DirectX::XMVectorScale(TransformHandler::getUp(transform.rotQuat), trackPosition.distanceFromCenter));
-        DirectX::XMStoreFloat3(&transform.position, position);
+        DirectX::XMVECTOR position = DirectX::XMVectorSubtract(temp, DirectX::XMVectorScale(TransformHandler::getUp(rotationQuat), trackPosition.distanceFromCenter));
+        DirectX::XMStoreFloat3(&transformPosition, position);
 
         // Roll using keyboard input
         int keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
         if (keyInput) {
             float rotationAngle = keyInput * rotationSpeed * dt;
-            TransformHandler::roll(transform.rotQuat, rotationAngle);
+            TransformHandler::roll(rotationQuat, rotationAngle);
         }
 
         // Move towards or away from the center
@@ -107,36 +109,37 @@ void RacerMover::update(float dt)
 
 void RacerMover::racerAdded(Entity entity)
 {
-    Transform& transform = m_pTransformHandler->transforms.indexID(entity);
+    DirectX::XMFLOAT3& transformPosition = m_pTransformHandler->getPosition(entity);
+    DirectX::XMFLOAT4& rotationQuat = m_pTransformHandler->getRotation(entity);
 
     // Calculate the position of the center point of the tube right at the beginning
     const std::vector<DirectX::XMFLOAT3>& tubeSections = m_pTubeHandler->getTubeSections();
 
     DirectX::XMVECTOR P01, P2, P3;
     P01 = DirectX::XMLoadFloat3(&tubeSections[0]);
-    P2 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)1, tubeSections.size()-1)]);
-    P3 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)2, tubeSections.size()-1)]);
+    P2 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)1, tubeSections.size() - 1)]);
+    P3 = DirectX::XMLoadFloat3(&tubeSections[std::min((size_t)2, tubeSections.size() - 1)]);
 
-    DirectX::XMVECTOR f = DirectX::XMVector3Normalize(catmullRomDerivative(P01, P01, P2, P3, 0.001f));
+    DirectX::XMVECTOR forward = DirectX::XMVector3Normalize(catmullRomDerivative(P01, P01, P2, P3, 0.001f));
 
-    TransformHandler::setForward(transform.rotQuat, f);
+    TransformHandler::setForward(rotationQuat, forward);
 
     // Correct the roll
     DirectX::XMVECTOR tubeStartCenter = DirectX::XMVectorCatmullRom(P01, P01, P2, P3, 0.0f);
 
-    DirectX::XMVECTOR desiredUp = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMLoadFloat3(&transform.position)));
-    DirectX::XMVECTOR currentUp = TransformHandler::getUp(transform.rotQuat);
+    DirectX::XMVECTOR desiredUp = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMLoadFloat3(&transformPosition)));
+    DirectX::XMVECTOR currentUp = TransformHandler::getUp(rotationQuat);
 
     float rollAngle = DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(desiredUp, currentUp));
-    DirectX::XMVECTOR roll = DirectX::XMQuaternionRotationNormal(f, rollAngle);
+    DirectX::XMVECTOR roll = DirectX::XMQuaternionRotationNormal(forward, rollAngle);
 
-    DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&transform.rotQuat);
-    DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
+    DirectX::XMVECTOR currentRotQuat = DirectX::XMLoadFloat4(&rotationQuat);
+    DirectX::XMStoreFloat4(&rotationQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
 
     // Set the distance to the tube's center
     TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
     trackPosition.distanceFromCenter = minCenterDistance + startingCenterDistance * ((m_pTubeHandler->getTubeRadius() - minEdgeDistance) - minCenterDistance);
 
     // Set starting position
-    DirectX::XMStoreFloat3(&transform.position, DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMVectorScale(desiredUp, trackPosition.distanceFromCenter)));
+    DirectX::XMStoreFloat3(&transformPosition, DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMVectorScale(desiredUp, trackPosition.distanceFromCenter)));
 }

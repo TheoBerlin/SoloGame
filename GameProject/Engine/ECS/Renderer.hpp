@@ -2,10 +2,12 @@
 
 #define NOMINMAX
 
-#include <Engine/ECS/ECSCore.hpp>
+#include <Engine/ECS/ComponentSubscriptionRequest.hpp>
 
 #include <d3d11.h>
 
+class ComponentHandler;
+class ECSCore;
 class Renderer;
 
 struct RendererRegistration {

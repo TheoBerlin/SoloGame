@@ -82,23 +82,23 @@ size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSub
     subscriptions.reserve(subscriptionRequests.size());
 
     for (const ComponentSubscriptionRequest& subReq : subscriptionRequests) {
-        const std::vector<ComponentUpdateReg>& componentRegs = subReq.componentTypes;
+        const std::vector<ComponentAccess>& componentRegs = subReq.m_ComponentAccesses;
 
         ComponentSubscriptions newSub;
         newSub.componentTypes.reserve(componentRegs.size());
 
-        newSub.subscriber = subReq.subscriber;
-        newSub.onEntityAdded = subReq.onEntityAdded;
+        newSub.subscriber = subReq.m_pSubscriber;
+        newSub.onEntityAdded = subReq.m_OnEntityAdded;
 
-        for (const ComponentUpdateReg& componentReg : componentRegs) {
-            auto queryItr = m_ComponentStorage.find(componentReg.tid);
+        for (const ComponentAccess& componentReg : componentRegs) {
+            auto queryItr = m_ComponentStorage.find(componentReg.TID);
 
             if (queryItr == m_ComponentStorage.end()) {
-                LOG_ERROR("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.tid.name(), componentReg.tid.hash_code());
+                LOG_ERROR("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.TID.name(), componentReg.TID.hash_code());
                 return 0;
             }
 
-            newSub.componentTypes.push_back(componentReg.tid);
+            newSub.componentTypes.push_back(componentReg.TID);
         }
 
         subscriptions.push_back(newSub);

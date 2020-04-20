@@ -10,8 +10,10 @@ TransformHandler::TransformHandler(ECSCore* pECS)
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
-        {tid_transform, &transforms},
-        {tid_worldMatrix, &worldMatrices}
+        {g_TIDPosition,     &m_Positions},
+        {g_TIDScale,        &m_Scales},
+        {g_TIDRotation,     &m_Rotations},
+        {g_TIDWorldMatrix,  &m_WorldMatrices}
     };
 
     this->registerHandler(handlerReg);
@@ -25,49 +27,65 @@ bool TransformHandler::init()
     return true;
 }
 
-void TransformHandler::createTransform(Entity entity)
+void TransformHandler::createPosition(Entity entity, const DirectX::XMFLOAT3& position)
 {
-    Transform transform;
-    transform.position = {0.0f, 0.0f, 0.0f};
-    transform.scale = {1.0f, 1.0f, 1.0f};
-    DirectX::XMStoreFloat4(&transform.rotQuat, DirectX::XMQuaternionIdentity());
+    m_Positions.push_back({position}, entity);
+    this->registerComponent(entity, g_TIDPosition);
+}
 
-    transforms.push_back(transform, entity);
-    this->registerComponent(entity, tid_transform);
+void TransformHandler::createScale(Entity entity, const DirectX::XMFLOAT3& scale)
+{
+    m_Scales.push_back({scale}, entity);
+    this->registerComponent(entity, g_TIDScale);
+}
+
+void TransformHandler::createRotation(Entity entity)
+{
+    Rotation rotation = {};
+    DirectX::XMStoreFloat4(&rotation.Quaternion, DirectX::XMQuaternionIdentity());
+    m_Rotations.push_back(rotation, entity);
+    this->registerComponent(entity, g_TIDRotation);
+}
+
+void TransformHandler::createTransform(Entity entity, const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& scale)
+{
+    createPosition(entity, position);
+    createScale(entity, scale);
+    createRotation(entity);
 }
 
 void TransformHandler::createWorldMatrix(Entity entity)
 {
-    if (!transforms.hasElement(entity)) {
+    if (!m_Positions.hasElement(entity) || !m_Scales.hasElement(entity) || !m_Rotations.hasElement(entity)) {
         LOG_WARNING("Tried to create a world matrix component for an entity which does not have a transform: %d", entity);
         return;
     }
 
-    Transform& transform = transforms.indexID(entity);
+    const Transform& transform = getTransform(entity);
 
     WorldMatrix worldMatrix;
     DirectX::XMStoreFloat4x4(&worldMatrix.worldMatrix,
-        DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
-        DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
-        DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z));
+        DirectX::XMMatrixScaling(transform.Scale.x, transform.Scale.y, transform.Scale.z) *
+        DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.RotationQuaternion)) *
+        DirectX::XMMatrixTranslation(transform.Position.x, transform.Position.y, transform.Position.z));
 
     worldMatrix.dirty = false;
 
-    worldMatrices.push_back(worldMatrix, entity);
-    this->registerComponent(entity, tid_worldMatrix);
+    m_WorldMatrices.push_back(worldMatrix, entity);
+    this->registerComponent(entity, g_TIDWorldMatrix);
 }
 
 WorldMatrix& TransformHandler::getWorldMatrix(Entity entity)
 {
-    WorldMatrix& worldMatrix = worldMatrices.indexID(entity);
+    WorldMatrix& worldMatrix = m_WorldMatrices.indexID(entity);
 
     if (worldMatrix.dirty) {
-        Transform& transform = transforms.indexID(entity);
+        const Transform transform = getTransform(entity);
 
         DirectX::XMStoreFloat4x4(&worldMatrix.worldMatrix,
-            DirectX::XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z) *
-            DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.rotQuat)) *
-            DirectX::XMMatrixTranslation(transform.position.x, transform.position.y, transform.position.z));
+            DirectX::XMMatrixScaling(transform.Scale.x, transform.Scale.y, transform.Scale.z) *
+            DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&transform.RotationQuaternion)) *
+            DirectX::XMMatrixTranslation(transform.Position.x, transform.Position.y, transform.Position.z));
 
         worldMatrix.dirty = false;
     }
@@ -210,4 +228,13 @@ void TransformHandler::rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XM
     V = DirectX::XMVector3Rotate(V, DirectX::XMQuaternionRotationAxis(axis, angle));
 
     V = DirectX::XMVectorAdd(V, P);
+}
+
+Transform TransformHandler::getTransform(Entity entity)
+{
+    return {
+        m_Positions.indexID(entity).Position,
+        m_Scales.indexID(entity).Scale,
+        m_Rotations.indexID(entity).Quaternion
+    };
 }

@@ -20,10 +20,12 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     m_BackbufferWidth(pDisplay->getClientWidth()),
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
+    TransformComponents transformSub;
+
     RendererRegistration rendererReg = {
         {
-            {{{R, tid_renderable}, {R, tid_worldMatrix}}, &m_Renderables},
-            {{{R, tid_transform}, {R, tid_view}, {R, tid_projection}}, &m_Camera},
+            {{{R, tid_renderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
+            {{{R, tid_view}, {R, tid_projection}}, {&transformSub}, &m_Camera},
             {{{R, tid_pointLight}}, &m_PointLights}
         },
         this
@@ -143,7 +145,7 @@ void MeshRenderer::recordCommands()
         perFrame.pointLights[i] = m_pLightHandler->pointLights[i];
     }
 
-    perFrame.cameraPosition = m_pTransformHandler->transforms[m_Camera[0]].position;
+    perFrame.cameraPosition = m_pTransformHandler->getTransform(m_Camera[0]).Position;
     perFrame.numLights = numLights;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
