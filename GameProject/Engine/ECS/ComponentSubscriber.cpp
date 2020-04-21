@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/ECS/System.hpp>
+#include <Engine/Utils/GeneralUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 ComponentSubscriber::ComponentSubscriber(EntityRegistry* pEntityRegistry)
@@ -101,6 +102,8 @@ size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSub
             newSub.componentTypes.push_back(componentReg.TID);
         }
 
+        eliminateDuplicates(newSub.componentTypes);
+        newSub.componentTypes.shrink_to_fit();
         subscriptions.push_back(newSub);
     }
 

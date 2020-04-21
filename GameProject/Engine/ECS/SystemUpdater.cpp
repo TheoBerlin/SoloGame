@@ -1,6 +1,8 @@
 #include "SystemUpdater.hpp"
 
 #include <Engine/ECS/System.hpp>
+
+#include <map>
 #include <thread>
 
 SystemUpdater::SystemUpdater()
@@ -12,14 +14,23 @@ SystemUpdater::~SystemUpdater()
 
 void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 {
-    // Extract data from SystemRegistration to create SystemUpdateInfo objects
-    std::vector<ComponentAccess> updateRegs;
+    // Eliminate duplicate component types across the system's subscriptions
+    std::map<std::type_index, ComponentPermissions> uniqueRegs;
 
     for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriptionRequests) {
-        updateRegs.reserve(updateRegs.size() + subReq.m_ComponentAccesses.size());
         for (const ComponentAccess& componentUpdateReg : subReq.m_ComponentAccesses) {
-            updateRegs.push_back(componentUpdateReg);
+            auto uniqueRegsItr = uniqueRegs.find(componentUpdateReg.TID);
+            if (uniqueRegsItr == uniqueRegs.end() || componentUpdateReg.Permissions > uniqueRegsItr->second) {
+                uniqueRegs.insert({componentUpdateReg.TID, componentUpdateReg.Permissions});
+            }
         }
+    }
+
+    // Merge all of the system's subscribed component types into one vector
+    std::vector<ComponentAccess> updateRegs;
+    updateRegs.reserve(uniqueRegs.size());
+    for (auto& uniqueRegsItr : uniqueRegs) {
+        updateRegs.push_back({uniqueRegsItr.second, uniqueRegsItr.first});
     }
 
     size_t systemID = m_SystemIDGen.genID();
