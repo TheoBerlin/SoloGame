@@ -99,6 +99,11 @@ public:
         return m_Data.size();
     }
 
+    inline bool empty() const
+    {
+        return m_Data.empty();
+    }
+
     std::vector<T>& getVec()
     {
         return this->m_Data;
@@ -195,6 +200,11 @@ public:
     inline size_t size() const
     {
         return m_IDs.size();
+    }
+
+    inline bool empty() const
+    {
+        return m_IDs.empty();
     }
 
     const std::vector<size_t>& getIDs() const

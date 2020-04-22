@@ -26,7 +26,7 @@ void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 
             auto uniqueRegsItr = uniqueRegs.find(componentUpdateReg.TID);
             if (uniqueRegsItr == uniqueRegs.end() || componentUpdateReg.Permissions > uniqueRegsItr->second) {
-                uniqueRegs.insert({componentUpdateReg.TID, componentUpdateReg.Permissions});
+                uniqueRegs.insert(uniqueRegsItr, {componentUpdateReg.TID, componentUpdateReg.Permissions});
             }
         }
     }
@@ -85,6 +85,10 @@ void SystemUpdater::updateMT(float dt)
     std::thread threads[MAX_THREADS];
 
     for (const UpdateQueue& updateQueue : m_UpdateQueues) {
+        if (updateQueue.empty()) {
+            continue;
+        }
+
         for (std::thread& thread : threads) {
             thread = std::thread(&SystemUpdater::updateSystems, this, updateQueue, dt);
         }
@@ -94,7 +98,7 @@ void SystemUpdater::updateMT(float dt)
         }
 
         m_ProcessedSystems.clear();
-        m_ProcessingSystems.clear();
+        m_ProcessingComponents.clear();
     }
 }
 
@@ -137,17 +141,10 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem(const UpdateQueue& u
 
         // Prevent multiple systems from accessing the same components where at least one of them has write permissions
         for (const ComponentAccess& componentReg : sysReg.Components) {
-            auto rangeLimit = m_ProcessingSystems.equal_range(componentReg.TID);
-
-            for (auto permissionsItr = rangeLimit.first; permissionsItr != rangeLimit.second; permissionsItr++) {
-                if ((permissionsItr->second | componentReg.Permissions) == RW) {
-                    // System collides with another currently updating system
-                    systemIsEligible = false;
-                    break;
-                }
-            }
-
-            if (!systemIsEligible) {
+            auto processingComponentItr = m_ProcessingComponents.find(componentReg.TID);
+            if (processingComponentItr != m_ProcessingComponents.end() && (componentReg.Permissions == RW || processingComponentItr->second == 0)) {
+                // The system wants to write to an already handled component type, or the component type is already being written to
+                systemIsEligible = false;
                 break;
             }
         }
@@ -168,13 +165,26 @@ void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, Pro
     processingSystemsIterators->reserve(systemToRegister->Components.size());
 
     for (const ComponentAccess& componentReg : systemToRegister->Components) {
-        processingSystemsIterators->push_back(m_ProcessingSystems.insert({componentReg.TID, componentReg.Permissions}));
+        size_t isReading = componentReg.Permissions == R ? 1 : 0;
+
+        auto processingComponentItr = m_ProcessingComponents.find(componentReg.TID);
+        if (processingComponentItr == m_ProcessingComponents.end()) {
+            processingSystemsIterators->push_back(m_ProcessingComponents.insert({componentReg.TID, isReading}).first);
+        } else {
+            processingSystemsIterators->push_back(processingComponentItr);
+            processingComponentItr->second += isReading;
+        }
     }
 }
 
 void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators& processingSystemsIterators)
 {
     for (auto itr : processingSystemsIterators) {
-        m_ProcessingSystems.erase(itr);
+        if (itr->second <= 1) {
+            // The system the only one reading or writing to the component type
+            m_ProcessingComponents.erase(itr);
+        } else {
+            itr->second -= 1;
+        }
     }
 }
