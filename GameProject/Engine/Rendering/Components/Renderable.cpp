@@ -11,7 +11,7 @@ RenderableHandler::RenderableHandler(ECSCore* pECS)
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
-        {tid_renderable, &m_Renderables}
+        {g_TIDRenderable, &m_Renderables}
     };
     handlerReg.HandlerDependencies = {
         TID(ShaderHandler),
@@ -42,7 +42,7 @@ bool RenderableHandler::createRenderable(Entity entity, std::string modelPath, P
     }
 
     m_Renderables.push_back(renderable, entity);
-    registerComponent(entity, tid_renderable);
+    registerComponent(entity, g_TIDRenderable);
     return true;
 }
 
@@ -59,6 +59,6 @@ bool RenderableHandler::createRenderable(Entity entity, Model* model, PROGRAM pr
     }
 
     m_Renderables.push_back(renderable, entity);
-    registerComponent(entity, tid_renderable);
+    registerComponent(entity, g_TIDRenderable);
     return true;
 }

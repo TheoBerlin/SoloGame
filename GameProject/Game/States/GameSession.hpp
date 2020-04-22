@@ -21,15 +21,15 @@ public:
     void update(float dt);
 
 private:
-    Entity camera, renderableObject;
+    Entity m_Camera, m_RenderableCube;
 
     // Component handlers
-    TrackPositionHandler trackPositionHandler;
-    TubeHandler tubeHandler;
+    TrackPositionHandler m_TrackPositionHandler;
+    TubeHandler m_TubeHandler;
 
     // Systems
-    LightSpinner lightSpinner;
-    RacerMover racerMover;
+    LightSpinner m_LightSpinner;
+    RacerMover m_RacerMover;
 
-    InputHandler* inputHandler;
+    InputHandler* m_pInputHandler;
 };

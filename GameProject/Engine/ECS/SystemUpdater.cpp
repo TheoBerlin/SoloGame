@@ -19,6 +19,10 @@ void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 
     for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriptionRequests) {
         for (const ComponentAccess& componentUpdateReg : subReq.m_ComponentAccesses) {
+            if (componentUpdateReg.Permissions == NDA) {
+                continue;
+            }
+
             auto uniqueRegsItr = uniqueRegs.find(componentUpdateReg.TID);
             if (uniqueRegsItr == uniqueRegs.end() || componentUpdateReg.Permissions > uniqueRegsItr->second) {
                 uniqueRegs.insert({componentUpdateReg.TID, componentUpdateReg.Permissions});

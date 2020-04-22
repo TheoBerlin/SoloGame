@@ -9,8 +9,9 @@
 class IDVector;
 
 enum ComponentPermissions {
-    R = 0,
-    RW = 1
+    NDA = 0, // No Data Access
+    R   = 1,
+    RW  = 2
 };
 
 struct ComponentAccess {
@@ -29,6 +30,7 @@ class ComponentSubscriptionRequest {
 public:
     ComponentSubscriptionRequest(std::vector<ComponentAccess> componentAccesses, std::vector<IComponentGroup*> componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr);
     ComponentSubscriptionRequest(std::vector<ComponentAccess> componentAccesses, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr);
+    ComponentSubscriptionRequest(std::vector<IComponentGroup*> componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr);
 
 public:
     std::vector<ComponentAccess> m_ComponentAccesses;

@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Display.hpp>
@@ -20,12 +21,12 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     m_BackbufferWidth(pDisplay->getClientWidth()),
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
-    TransformComponents transformSub;
+    CameraComponents camSub;
 
     RendererRegistration rendererReg = {
         {
-            {{{R, tid_renderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
-            {{{R, tid_view}, {R, tid_projection}}, {&transformSub}, &m_Camera},
+            {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
+            {{{R, tid_view}, {R, tid_projection}}, {&camSub}, &m_Camera},
             {{{R, tid_pointLight}}, &m_PointLights}
         },
         this
@@ -145,7 +146,7 @@ void MeshRenderer::recordCommands()
         perFrame.pointLights[i] = m_pLightHandler->pointLights[i];
     }
 
-    perFrame.cameraPosition = m_pTransformHandler->getTransform(m_Camera[0]).Position;
+    perFrame.cameraPosition = m_pTransformHandler->getPosition(m_Camera[0]);
     perFrame.numLights = numLights;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
@@ -159,8 +160,8 @@ void MeshRenderer::recordCommands()
     m_pCommandBuffer->RSSetState(m_RsState);
     m_pCommandBuffer->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
 
-    for (size_t i = 0; i < m_Renderables.size(); i += 1) {
-        Renderable& renderable = m_pRenderableHandler->m_Renderables[i];
+    for (Entity renderableID : m_Renderables.getIDs()) {
+        Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);
         Program* program = renderable.program;
         Model* model = renderable.model;
 
@@ -192,7 +193,7 @@ void MeshRenderer::recordCommands()
             PerObjectMatrices matrices;
 
             // PerObjectMatrices cbuffer
-            matrices.world = m_pTransformHandler->getWorldMatrix(m_Renderables[i]).worldMatrix;
+            matrices.world = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
 
             m_pCommandBuffer->Map(m_pPerObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);

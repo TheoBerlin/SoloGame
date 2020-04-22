@@ -17,7 +17,7 @@ struct Renderable {
     Program* program;
 };
 
-const std::type_index tid_renderable = TID(Renderable);
+const std::type_index g_TIDRenderable = TID(Renderable);
 
 class RenderableHandler : public ComponentHandler
 {

@@ -12,10 +12,10 @@
 
 GameSession::GameSession(MainMenu* mainMenu)
     :State(mainMenu, STATE_TRANSITION::POP_AND_PUSH),
-    tubeHandler(m_pECS, mainMenu->getDevice()),
-    trackPositionHandler(m_pECS),
-    lightSpinner(m_pECS),
-    racerMover(m_pECS)
+    m_TubeHandler(m_pECS, mainMenu->getDevice()),
+    m_TrackPositionHandler(m_pECS),
+    m_LightSpinner(m_pECS),
+    m_RacerMover(m_pECS)
 {
     m_pECS->performRegistrations();
     LOG_INFO("Started game session");
@@ -23,33 +23,18 @@ GameSession::GameSession(MainMenu* mainMenu)
     ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
 
     // Set mouse mode to relative, which also hides the mouse
-    this->inputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
-    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
-    inputHandler->setMouseVisibility(false);
+    this->m_pInputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
+    m_pInputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
+    m_pInputHandler->setMouseVisibility(false);
 
-    // Create camera
-    camera = m_pECS->createEntity();
-
+    // Create renderable cube
     TransformHandler* transformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    const DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
-    transformHandler->createPosition(camera, camPosition);
-    transformHandler->createRotation(camera);
-    const DirectX::XMFLOAT4& camRotationQuat = transformHandler->getRotation(camera);
-
-    VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
-    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camPosition);
-    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camRotationQuat);
-    DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
-    vpHandler->createViewMatrix(camera, camPos, camLookDir, camUpDir);
-    vpHandler->createProjMatrix(camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
-
-    // Create renderable object
     RenderableHandler* renderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
 
-    renderableObject = m_pECS->createEntity();
-    transformHandler->createTransform(renderableObject);
-    transformHandler->createWorldMatrix(renderableObject);
-    renderableHandler->createRenderable(renderableObject, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
+    m_RenderableCube = m_pECS->createEntity();
+    transformHandler->createTransform(m_RenderableCube);
+    transformHandler->createWorldMatrix(m_RenderableCube);
+    renderableHandler->createRenderable(m_RenderableCube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
 
     // Create point lights and attach sound to them
     LightHandler* lightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
@@ -80,14 +65,29 @@ GameSession::GameSession(MainMenu* mainMenu)
 
     const float tubeRadius = 1.5f;
     const unsigned int tubeFaces = 10;
-    Model* tubeModel = tubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
+    Model* tubeModel = m_TubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
     Entity tube = m_pECS->createEntity();
     renderableHandler->createRenderable(tube, tubeModel, PROGRAM::BASIC);
     transformHandler->createTransform(tube);
     transformHandler->createWorldMatrix(tube);
 
-    trackPositionHandler.createTrackPosition(camera);
+    // Create camera
+    m_Camera = m_pECS->createEntity();
+
+    const DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
+    transformHandler->createPosition(m_Camera, camPosition);
+    transformHandler->createRotation(m_Camera);
+    const DirectX::XMFLOAT4& camRotationQuat = transformHandler->getRotation(m_Camera);
+
+    VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
+    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camPosition);
+    DirectX::XMVECTOR camLookDir = transformHandler->getForward(camRotationQuat);
+    DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
+    vpHandler->createViewMatrix(m_Camera, camPos, camLookDir, camUpDir);
+    vpHandler->createProjMatrix(m_Camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
+
+    m_TrackPositionHandler.createTrackPosition(m_Camera);
 }
 
 GameSession::~GameSession()
@@ -95,8 +95,8 @@ GameSession::~GameSession()
 
 void GameSession::resume()
 {
-    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
-    inputHandler->setMouseVisibility(false);
+    m_pInputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
+    m_pInputHandler->setMouseVisibility(false);
 }
 
 void GameSession::pause()
