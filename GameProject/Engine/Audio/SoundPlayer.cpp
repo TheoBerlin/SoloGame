@@ -12,11 +12,13 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     m_pSoundHandler(nullptr),
     m_pTransformHandler(nullptr)
 {
+    CameraComponents cameraComponents;
+
     SystemRegistration sysReg = {};
     sysReg.pSystem = this;
     sysReg.SubscriptionRequests = {
         {{{RW, tid_sound}, {R, tid_pointLight}}, &m_Sounds},
-        {{{R, g_TIDPosition}, {R, g_TIDScale}, {R, tid_view}, {R, tid_projection}}, &m_Cameras}
+        {{&cameraComponents}, &m_Cameras}
     };
 
     subscribeToComponents(sysReg);
@@ -40,14 +42,15 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     FMOD::System* pSystem = m_pSoundHandler->getSystem();
     pSystem->update();
 
-    if (m_Cameras.size() == 0) {
+    if (m_Cameras.empty()) {
         return;
     }
 
-    Transform camTransform = m_pTransformHandler->getTransform(m_Cameras[0]);
+    const DirectX::XMFLOAT3& cameraPosition = m_pTransformHandler->getPosition(m_Cameras[0]);
+    const DirectX::XMFLOAT4& camRotationQuaternion = m_pTransformHandler->getRotation(m_Cameras[0]);
 
-    DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&camTransform.Position);
-    DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camTransform.RotationQuaternion);
+    DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&cameraPosition);
+    DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camRotationQuaternion);
     DirectX::XMVECTOR camDirFlat = camDir;
     camDirFlat = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camDirFlat, 0.0f));
 
@@ -58,8 +61,7 @@ void SoundPlayer::update([[maybe_unused]] float dt)
 
     IDDVector<PointLight>& pointLights = m_pLightHandler->pointLights;
 
-    for (size_t soundNr = 0; soundNr < soundCount; soundNr++) {
-        Entity soundEntity = m_Sounds[soundNr];
+    for (Entity soundEntity : m_Sounds.getIDs()) {
         Sound& sound = sounds.indexID(soundEntity);
         DirectX::XMFLOAT3& soundPosition = pointLights.indexID(soundEntity).position;
 

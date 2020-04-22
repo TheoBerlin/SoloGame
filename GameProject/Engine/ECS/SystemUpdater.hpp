@@ -20,7 +20,7 @@ struct SystemUpdateInfo {
 
 typedef IDDVector<SystemUpdateInfo> UpdateQueue;
 
-typedef std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> ProcessingSystemsIterators;
+typedef std::vector<std::unordered_map<std::type_index, size_t>::iterator> ProcessingSystemsIterators;
 
 class SystemUpdater
 {
@@ -61,8 +61,9 @@ private:
     // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
     IDDVector<size_t> m_ProcessedSystems;
 
+    // Maps component TIDs to how many systems are reading from them
     // Stores what components are currently being processed and with what rights
-    std::unordered_multimap<std::type_index, ComponentPermissions> m_ProcessingSystems;
+    std::unordered_map<std::type_index, size_t> m_ProcessingComponents;
 
     // Used when threads pick systems to update
     std::mutex m_Mux;
