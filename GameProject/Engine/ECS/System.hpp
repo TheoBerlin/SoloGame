@@ -13,6 +13,7 @@ class System;
 struct SystemRegistration {
     std::vector<ComponentSubscriptionRequest> SubscriptionRequests;
     System* pSystem;
+    size_t UpdateQueueIndex = 0;
 };
 
 class ComponentHandler;

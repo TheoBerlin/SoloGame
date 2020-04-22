@@ -1,18 +1,24 @@
 #pragma once
 
-// TODO: Move to config file
+#include <Engine/ECS/System.hpp>
+#include <Engine/Utils/IDGenerator.hpp>
+
+#include <array>
+#include <mutex>
+#include <unordered_map>
+
 // TODO: Get maximum number of threads at runtime
 #define MAX_THREADS 4
 
-#include <Engine/ECS/System.hpp>
-#include <Engine/Utils/IDGenerator.hpp>
-#include <mutex>
-#include <unordered_map>
+const size_t g_UpdateQueueCount = 2;
+const size_t g_LastUpdateQueue = g_UpdateQueueCount - 1;
 
 struct SystemUpdateInfo {
     System* pSystem;
     std::vector<ComponentAccess> Components;
 };
+
+typedef IDDVector<SystemUpdateInfo> UpdateQueue;
 
 typedef std::vector<std::unordered_multimap<std::type_index, ComponentPermissions>::iterator> ProcessingSystemsIterators;
 
@@ -31,26 +37,10 @@ public:
     void updateMT(float dt);
 
 private:
-    IDGenerator m_SystemIDGen;
-
-    // Contains pointers to systems as well as information on what components they process and with what permissions
-    // so that safe multi-threading can be performed
-    IDDVector<SystemUpdateInfo> m_UpdateInfos;
-
-    /* Resources for multi-threaded updates below */
-    // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
-    IDDVector<size_t> processedSystems;
-
-    // Stores what components are currently being processed and with what rights
-    std::unordered_multimap<std::type_index, ComponentPermissions> processingSystems;
-
-    // Used when threads pick systems to update
-    std::mutex mux;
-
     // Executed multiple threads simultaneously to continuously pick systems to update and update them until every one has been updated
-    void updateSystems(float dt);
+    void updateSystems(const UpdateQueue& updateQueue, float dt);
 
-    const SystemUpdateInfo* findUpdateableSystem();
+    const SystemUpdateInfo* findUpdateableSystem(const UpdateQueue& updateQueue);
 
     /**
      * Registers a system's updated components types and their respective permissions
@@ -60,7 +50,24 @@ private:
     void registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators);
     void deregisterUpdate(const ProcessingSystemsIterators& processingSystemsIterators);
 
+private:
+    IDGenerator m_SystemIDGen;
+
+    // Each queue contains pointers to systems as well as information on what components they process and with what permissions
+    // so that safe multi-threading can be performed
+    std::array<UpdateQueue, g_UpdateQueueCount> m_UpdateQueues;
+
+    /* Resources for multi-threaded updates below */
+    // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
+    IDDVector<size_t> m_ProcessedSystems;
+
+    // Stores what components are currently being processed and with what rights
+    std::unordered_multimap<std::type_index, ComponentPermissions> m_ProcessingSystems;
+
+    // Used when threads pick systems to update
+    std::mutex m_Mux;
+
     // Used to time out threads unable to find updateable systems
-    std::condition_variable timeoutCV;
-    bool timeoutDisabled;
+    std::condition_variable m_TimeoutCV;
+    bool m_TimeoutDisabled;
 };
