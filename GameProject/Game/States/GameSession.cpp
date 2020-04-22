@@ -55,12 +55,12 @@ GameSession::GameSession(MainMenu* mainMenu)
     }
 
     // Create tube
-    std::vector<DirectX::XMFLOAT3> sectionPoints = {
-            {0.0f, 0.0f, 0.0f},
-            {4.0f, 4.0f, -10.0f},
-            {2.0f, 2.0f, -22.0f},
-            {0.0f, 0.0f, -32.0f},
-            {-3.0f, -6.0f, -42.0f},
+    const std::vector<DirectX::XMFLOAT3> sectionPoints = {
+        {0.0f, 0.0f, 0.0f},
+        {4.0f, 4.0f, -10.0f},
+        {2.0f, 2.0f, -22.0f},
+        {0.0f, 0.0f, -32.0f},
+        {-3.0f, -6.0f, -42.0f},
     };
 
     const float tubeRadius = 1.5f;

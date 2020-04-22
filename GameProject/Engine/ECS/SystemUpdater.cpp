@@ -1,12 +1,13 @@
 #include "SystemUpdater.hpp"
 
 #include <Engine/ECS/System.hpp>
+#include <Engine/Utils/Logger.hpp>
 
 #include <map>
 #include <thread>
 
 SystemUpdater::SystemUpdater()
-    :timeoutDisabled(true)
+    :m_TimeoutDisabled(true)
 {}
 
 SystemUpdater::~SystemUpdater()
@@ -45,21 +46,37 @@ void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
     sysUpdateInfo.pSystem = pSystem;
     sysUpdateInfo.Components = updateRegs;
 
-    this->m_UpdateInfos.push_back(sysUpdateInfo, systemID);
+    m_UpdateQueues[sysReg.UpdateQueueIndex].push_back(sysUpdateInfo, systemID);
 }
 
 void SystemUpdater::deregisterSystem(System* pSystem)
 {
-    this->m_UpdateInfos.pop(pSystem->getSystemID());
-    m_SystemIDGen.popID(pSystem->getSystemID());
+    bool foundSystem = false;
+    size_t systemID = pSystem->getSystemID();
+
+    for (UpdateQueue& updateQueue : m_UpdateQueues) {
+        if (updateQueue.hasElement(systemID)) {
+            updateQueue.pop(systemID);
+            foundSystem = true;
+            break;
+        }
+    }
+
+    if (foundSystem) {
+        m_SystemIDGen.popID(pSystem->getSystemID());
+    } else {
+        LOG_ERROR("Failed to deregister system with ID: %ld", systemID);
+    }
 }
 
 void SystemUpdater::updateST(float dt)
 {
-    std::vector<SystemUpdateInfo>& updateInfos = m_UpdateInfos.getVec();
+    for (const UpdateQueue& updateQueue : m_UpdateQueues) {
+        const std::vector<SystemUpdateInfo>& updateInfos = updateQueue.getVec();
 
-    for (SystemUpdateInfo& sysUpdateInfo : updateInfos) {
-        sysUpdateInfo.pSystem->update(dt);
+        for (const SystemUpdateInfo& sysUpdateInfo : updateInfos) {
+            sysUpdateInfo.pSystem->update(dt);
+        }
     }
 }
 
@@ -67,50 +84,52 @@ void SystemUpdater::updateMT(float dt)
 {
     std::thread threads[MAX_THREADS];
 
-    for (std::thread& thread : threads) {
-        thread = std::thread(&SystemUpdater::updateSystems, this, dt);
-    }
+    for (const UpdateQueue& updateQueue : m_UpdateQueues) {
+        for (std::thread& thread : threads) {
+            thread = std::thread(&SystemUpdater::updateSystems, this, updateQueue, dt);
+        }
 
-    for (std::thread& thread : threads) {
-        thread.join();
-    }
+        for (std::thread& thread : threads) {
+            thread.join();
+        }
 
-    processedSystems.clear();
-    processingSystems.clear();
+        m_ProcessedSystems.clear();
+        m_ProcessingSystems.clear();
+    }
 }
 
-void SystemUpdater::updateSystems(float dt)
+void SystemUpdater::updateSystems(const UpdateQueue& updateQueue, float dt)
 {
-    std::unique_lock<std::mutex> lk(mux);
+    std::unique_lock<std::mutex> lk(m_Mux);
 
-    while (m_UpdateInfos.size() != processedSystems.size()) {
-        const SystemUpdateInfo* systemToUpdate = findUpdateableSystem();
+    while (updateQueue.size() != m_ProcessedSystems.size()) {
+        const SystemUpdateInfo* systemToUpdate = findUpdateableSystem(updateQueue);
 
         if (systemToUpdate == nullptr) {
             // No updateable system was found, have the thread wait until an update finishes
-            timeoutDisabled = false;
-            timeoutCV.wait(lk, [this]{return timeoutDisabled;});
+            m_TimeoutDisabled = false;
+            m_TimeoutCV.wait(lk, [this]{ return m_TimeoutDisabled; });
         } else {
             ProcessingSystemsIterators updateIterators;
             registerUpdate(systemToUpdate, &updateIterators);
 
-            mux.unlock();
+            m_Mux.unlock();
             systemToUpdate->pSystem->update(dt);
-            mux.lock();
+            m_Mux.lock();
 
-            timeoutDisabled = true;
-            timeoutCV.notify_all();
+            m_TimeoutDisabled = true;
+            m_TimeoutCV.notify_all();
 
             deregisterUpdate(updateIterators);
         }
     }
 }
 
-const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
+const SystemUpdateInfo* SystemUpdater::findUpdateableSystem(const UpdateQueue& updateQueue)
 {
-    for (const SystemUpdateInfo& sysReg : m_UpdateInfos.getVec()) {
+    for (const SystemUpdateInfo& sysReg : updateQueue.getVec()) {
         // Check that the system hasn't already been processed
-        if (processedSystems.hasElement(sysReg.pSystem->getSystemID())) {
+        if (m_ProcessedSystems.hasElement(sysReg.pSystem->getSystemID())) {
             continue;
         }
 
@@ -118,7 +137,7 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
 
         // Prevent multiple systems from accessing the same components where at least one of them has write permissions
         for (const ComponentAccess& componentReg : sysReg.Components) {
-            auto rangeLimit = processingSystems.equal_range(componentReg.TID);
+            auto rangeLimit = m_ProcessingSystems.equal_range(componentReg.TID);
 
             for (auto permissionsItr = rangeLimit.first; permissionsItr != rangeLimit.second; permissionsItr++) {
                 if ((permissionsItr->second | componentReg.Permissions) == RW) {
@@ -144,18 +163,18 @@ const SystemUpdateInfo* SystemUpdater::findUpdateableSystem()
 void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, ProcessingSystemsIterators* processingSystemsIterators)
 {
     size_t systemID = systemToRegister->pSystem->getSystemID();
-    processedSystems.push_back(systemID, systemID);
+    m_ProcessedSystems.push_back(systemID, systemID);
 
     processingSystemsIterators->reserve(systemToRegister->Components.size());
 
     for (const ComponentAccess& componentReg : systemToRegister->Components) {
-        processingSystemsIterators->push_back(processingSystems.insert({componentReg.TID, componentReg.Permissions}));
+        processingSystemsIterators->push_back(m_ProcessingSystems.insert({componentReg.TID, componentReg.Permissions}));
     }
 }
 
 void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators& processingSystemsIterators)
 {
     for (auto itr : processingSystemsIterators) {
-        processingSystems.erase(itr);
+        m_ProcessingSystems.erase(itr);
     }
 }
