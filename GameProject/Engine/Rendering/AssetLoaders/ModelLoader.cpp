@@ -28,7 +28,7 @@ ModelLoader::~ModelLoader()
     ModelLoader::deleteAllModels();
 }
 
-bool ModelLoader::init()
+bool ModelLoader::initHandler()
 {
     std::type_index tid_shaderResourceHandler = TID(ShaderResourceHandler);
     m_pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(tid_shaderResourceHandler));

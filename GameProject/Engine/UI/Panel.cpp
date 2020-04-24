@@ -40,7 +40,7 @@ UIHandler::~UIHandler()
     m_pPerObjectBuffer->Release();
 }
 
-bool UIHandler::init()
+bool UIHandler::initHandler()
 {
     // Retrieve quad from shader resource handler
     ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));

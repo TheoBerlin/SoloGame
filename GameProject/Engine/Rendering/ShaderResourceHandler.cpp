@@ -17,7 +17,7 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device
 ShaderResourceHandler::~ShaderResourceHandler()
 {}
 
-bool ShaderResourceHandler::init()
+bool ShaderResourceHandler::initHandler()
 {
     /* Samplers */
     D3D11_SAMPLER_DESC samplerDesc;

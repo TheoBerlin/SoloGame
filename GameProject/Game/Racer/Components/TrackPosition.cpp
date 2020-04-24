@@ -15,7 +15,7 @@ TrackPositionHandler::TrackPositionHandler(ECSCore* pECS)
 TrackPositionHandler::~TrackPositionHandler()
 {}
 
-bool TrackPositionHandler::init()
+bool TrackPositionHandler::initHandler()
 {
     return true;
 }

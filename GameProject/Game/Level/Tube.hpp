@@ -22,7 +22,7 @@ public:
     TubeHandler(ECSCore* pECS, ID3D11Device* device);
     ~TubeHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);
 

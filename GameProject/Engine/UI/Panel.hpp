@@ -78,7 +78,7 @@ public:
     UIHandler(ECSCore* pECS, Display* pDisplay);
     ~UIHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
     void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount);

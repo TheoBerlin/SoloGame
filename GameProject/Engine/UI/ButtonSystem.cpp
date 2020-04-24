@@ -23,7 +23,7 @@ ButtonSystem::ButtonSystem(ECSCore* pECS, unsigned int clientWidth, unsigned int
 ButtonSystem::~ButtonSystem()
 {}
 
-bool ButtonSystem::init()
+bool ButtonSystem::initSystem()
 {
     m_pUIhandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
     InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));

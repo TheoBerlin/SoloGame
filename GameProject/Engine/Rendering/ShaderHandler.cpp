@@ -27,7 +27,7 @@ ShaderHandler::~ShaderHandler()
     }
 }
 
-bool ShaderHandler::init()
+bool ShaderHandler::initHandler()
 {
     /* Compile all shaders and associate them with program enum names */
     // Compile Basic program

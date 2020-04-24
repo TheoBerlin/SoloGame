@@ -24,7 +24,7 @@ class RenderableHandler : public ComponentHandler
 public:
     RenderableHandler(ECSCore* pECS);
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     // Creates a renderable component by loading from file
     bool createRenderable(Entity entity, std::string modelPath, PROGRAM program);

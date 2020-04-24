@@ -15,7 +15,7 @@ LightHandler::LightHandler(ECSCore* pECS)
 LightHandler::~LightHandler()
 {}
 
-bool LightHandler::init()
+bool LightHandler::initHandler()
 {
     return true;
 }

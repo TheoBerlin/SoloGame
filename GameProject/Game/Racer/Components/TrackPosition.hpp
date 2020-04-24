@@ -20,7 +20,7 @@ public:
     TrackPositionHandler(ECSCore* pECS);
     ~TrackPositionHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     void createTrackPosition(Entity entity);
 

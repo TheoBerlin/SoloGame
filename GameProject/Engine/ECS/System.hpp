@@ -34,7 +34,7 @@ public:
     // Deregisters system
     ~System();
 
-    virtual bool init() = 0;
+    virtual bool initSystem() = 0;
 
     virtual void update(float dt) = 0;
 

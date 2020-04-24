@@ -18,7 +18,7 @@ VPHandler::VPHandler(ECSCore* pECS)
 VPHandler::~VPHandler()
 {}
 
-bool VPHandler::init()
+bool VPHandler::initHandler()
 {
     return true;
 }

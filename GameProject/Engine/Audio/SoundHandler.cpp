@@ -23,7 +23,7 @@ SoundHandler::~SoundHandler()
     m_pSystem->release();
 }
 
-bool SoundHandler::init()
+bool SoundHandler::initHandler()
 {
     FMOD_RESULT result = FMOD::System_Create(&m_pSystem);
     if (result != FMOD_OK) {
