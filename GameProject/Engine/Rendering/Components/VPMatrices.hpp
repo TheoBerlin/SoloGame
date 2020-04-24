@@ -22,7 +22,7 @@ public:
     VPHandler(ECSCore* pECS);
     ~VPHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     void createViewMatrix(Entity entity, DirectX::XMVECTOR eyePos, DirectX::XMVECTOR lookDir, DirectX::XMVECTOR upDir);
     void createProjMatrix(Entity entity, float horizontalFOV, float aspectRatio, float nearZ, float farZ);

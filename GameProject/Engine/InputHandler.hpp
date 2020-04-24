@@ -12,7 +12,7 @@ public:
     InputHandler(ECSCore* pECS, HWND window);
     ~InputHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     // Updates the states of the keyboard and mouse
     void update();

@@ -22,7 +22,7 @@ TransformHandler::TransformHandler(ECSCore* pECS)
 TransformHandler::~TransformHandler()
 {}
 
-bool TransformHandler::init()
+bool TransformHandler::initHandler()
 {
     return true;
 }

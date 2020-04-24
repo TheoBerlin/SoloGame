@@ -19,7 +19,7 @@ LightSpinner::LightSpinner(ECSCore* pECS)
 LightSpinner::~LightSpinner()
 {}
 
-bool LightSpinner::init()
+bool LightSpinner::initSystem()
 {
     m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
     return m_pLightHandler;

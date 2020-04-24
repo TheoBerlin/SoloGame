@@ -17,7 +17,7 @@ public:
     CameraSystem(ECSCore* pECS);
     ~CameraSystem();
 
-    virtual bool init() override;
+    virtual bool initSystem() override;
 
     // Keeps cameras' view matrices up-to date with their transforms
     void update(float dt);

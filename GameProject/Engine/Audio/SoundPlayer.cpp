@@ -28,7 +28,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
 SoundPlayer::~SoundPlayer()
 {}
 
-bool SoundPlayer::init()
+bool SoundPlayer::initSystem()
 {
     m_pSoundHandler     = reinterpret_cast<SoundHandler*>(getComponentHandler(TID(SoundHandler)));
     m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));

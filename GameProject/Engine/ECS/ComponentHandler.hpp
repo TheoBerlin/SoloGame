@@ -33,7 +33,7 @@ public:
     // Deregisters component handler and deletes components
     ~ComponentHandler();
 
-    virtual bool init() = 0;
+    virtual bool initHandler() = 0;
 
     const std::vector<std::type_index>& getHandledTypes() const;
     std::type_index getHandlerType() const;

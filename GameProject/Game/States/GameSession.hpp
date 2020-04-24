@@ -8,6 +8,7 @@
 
 class InputHandler;
 class MainMenu;
+class RenderableHandler;
 
 class GameSession : public State
 {
@@ -19,6 +20,12 @@ public:
     void pause();
 
     void update(float dt);
+
+private:
+    void createCube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createPointLights(ComponentSubscriber* pComponentSubscriber);
+    void createTube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
 
 private:
     Entity m_Camera, m_RenderableCube;

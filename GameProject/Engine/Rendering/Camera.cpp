@@ -29,7 +29,7 @@ CameraSystem::CameraSystem(ECSCore* pECS)
 CameraSystem::~CameraSystem()
 {}
 
-bool CameraSystem::init()
+bool CameraSystem::initSystem()
 {
     m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
     m_pVPHandler = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));

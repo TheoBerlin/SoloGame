@@ -7,6 +7,7 @@ IGame::IGame(HINSTANCE hInstance)
     m_Display(hInstance, 720, 16.0f/9.0f, true),
     m_InputHandler(&m_ECS, m_Display.getWindow()),
     m_TransformHandler(&m_ECS),
+    m_VelocityHandler(&m_ECS),
     m_ShaderHandler(m_Display.getDevice(), &m_ECS),
     m_ShaderResourceHandler(&m_ECS, m_Display.getDevice()),
     m_TXLoader(&m_ECS, m_Display.getDevice()),

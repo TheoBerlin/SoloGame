@@ -60,7 +60,7 @@ public:
     TransformHandler(ECSCore* pECs);
     ~TransformHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     void createPosition(Entity entity, const DirectX::XMFLOAT3& position = {0.0f, 0.0f, 0.0f});
     void createScale(Entity entity, const DirectX::XMFLOAT3& scale = {1.0f, 1.0f, 1.0f});

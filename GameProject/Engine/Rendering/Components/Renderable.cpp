@@ -21,7 +21,7 @@ RenderableHandler::RenderableHandler(ECSCore* pECS)
     this->registerHandler(handlerReg);
 }
 
-bool RenderableHandler::init()
+bool RenderableHandler::initHandler()
 {
     m_pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderHandler)));
     m_pModelLoader = static_cast<ModelLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ModelLoader)));

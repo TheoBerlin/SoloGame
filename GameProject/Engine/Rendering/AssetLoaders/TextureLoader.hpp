@@ -11,7 +11,7 @@ public:
     TextureLoader(ECSCore* pECS, ID3D11Device* pDevice);
     ~TextureLoader();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     TextureReference loadTexture(const std::string& filePath);
 

@@ -14,7 +14,7 @@ public:
     ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device);
     ~ShaderResourceHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     bool createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer);
     bool createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer);

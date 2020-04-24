@@ -32,7 +32,7 @@ TextRenderer::~TextRenderer()
 	}
 }
 
-bool TextRenderer::init()
+bool TextRenderer::initHandler()
 {
     // https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html
     // [Since 2.5.6] In multi-threaded applications it is easiest to use one FT_Library object per thread.

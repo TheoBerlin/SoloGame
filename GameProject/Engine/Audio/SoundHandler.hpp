@@ -19,7 +19,7 @@ public:
     SoundHandler(ECSCore* pECS);
     ~SoundHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     bool createSound(Entity entity, const std::string& fileName);
     bool playSound(Entity entity);

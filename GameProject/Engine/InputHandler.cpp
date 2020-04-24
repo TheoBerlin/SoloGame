@@ -14,7 +14,7 @@ InputHandler::InputHandler(ECSCore* pECS, HWND window)
 InputHandler::~InputHandler()
 {}
 
-bool InputHandler::init()
+bool InputHandler::initHandler()
 {
     m_Mouse.SetWindow(m_Window);
     m_Mouse.SetMode(m_Mouse.MODE_RELATIVE);

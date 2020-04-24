@@ -11,7 +11,7 @@ public:
     ButtonSystem(ECSCore* pECS, unsigned int windowWidth, unsigned int windowHeight);
     ~ButtonSystem();
 
-    virtual bool init() override;
+    virtual bool initSystem() override;
 
     void update(float dt);
 

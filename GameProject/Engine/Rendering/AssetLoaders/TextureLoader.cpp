@@ -20,7 +20,7 @@ TextureLoader::~TextureLoader()
     this->deleteAllTextures();
 }
 
-bool TextureLoader::init()
+bool TextureLoader::initHandler()
 {
     return true;
 }

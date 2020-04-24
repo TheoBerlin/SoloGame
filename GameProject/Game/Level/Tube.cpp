@@ -37,7 +37,7 @@ TubeHandler::~TubeHandler()
     }
 }
 
-bool TubeHandler::init()
+bool TubeHandler::initHandler()
 {
     m_pTextureLoader = static_cast<TextureLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureLoader)));
     return m_pTextureLoader;

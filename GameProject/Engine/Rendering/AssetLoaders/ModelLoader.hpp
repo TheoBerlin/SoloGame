@@ -20,7 +20,7 @@ public:
     ModelLoader(ECSCore* pECS, TextureLoader* txLoader);
     ~ModelLoader();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     Model* loadModel(const std::string& filePath);
 

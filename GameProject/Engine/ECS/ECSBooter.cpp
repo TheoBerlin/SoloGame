@@ -106,7 +106,7 @@ void ECSBooter::bootSystems()
     for (const SystemRegistration& systemReg : m_SystemsToRegister) {
         System* pSystem = systemReg.pSystem;
 
-        if (!pSystem->init()) {
+        if (!pSystem->initSystem()) {
             LOG_ERROR("Failed to initialize system");
         } else {
             size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriptionRequests);
@@ -185,7 +185,7 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     bootInfo.inOpenList = false;
     bootInfo.inClosedList = true;
 
-    if (!bootInfo.handlerRegistration->pComponentHandler->init()) {
+    if (!bootInfo.handlerRegistration->pComponentHandler->initHandler()) {
         LOG_ERROR("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
         m_pECS->getComponentSubscriber()->registerComponentHandler(*bootInfo.handlerRegistration);

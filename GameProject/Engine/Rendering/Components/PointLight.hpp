@@ -21,7 +21,7 @@ public:
     LightHandler(ECSCore* pECS);
     ~LightHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     void createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius);
 

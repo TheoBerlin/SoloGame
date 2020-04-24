@@ -10,7 +10,7 @@ public:
     LightSpinner(ECSCore* pECS);
     ~LightSpinner();
 
-    virtual bool init() override;
+    virtual bool initSystem() override;
 
     void update(float dt);
 

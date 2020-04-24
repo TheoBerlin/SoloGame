@@ -44,7 +44,7 @@ public:
     ShaderHandler(ID3D11Device* device, ECSCore* pECS);
     ~ShaderHandler();
 
-    virtual bool init() override;
+    virtual bool initHandler() override;
 
     Program* getProgram(PROGRAM program);
 

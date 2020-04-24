@@ -13,7 +13,7 @@ public:
     SoundPlayer(ECSCore* pECS);
     ~SoundPlayer();
 
-    virtual bool init() override;
+    virtual bool initSystem() override;
 
     virtual void update(float dt) override;
 

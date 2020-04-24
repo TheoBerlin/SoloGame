@@ -7,6 +7,7 @@
 class TrackPositionHandler;
 class TransformHandler;
 class TubeHandler;
+class VelocityHandler;
 
 const float racerSpeed = 3.0f;
 
@@ -29,7 +30,7 @@ public:
     RacerMover(ECSCore* pECS);
     ~RacerMover();
 
-    virtual bool init() override;
+    virtual bool initSystem() override;
 
     void update(float dt);
 
@@ -42,6 +43,7 @@ private:
     TransformHandler* m_pTransformHandler;
     TrackPositionHandler* m_pTrackPositionHandler;
     TubeHandler* m_pTubeHandler;
+    VelocityHandler* m_pVelocityHandler;
 
     DirectX::Keyboard::State* m_pKeyboardState;
 };

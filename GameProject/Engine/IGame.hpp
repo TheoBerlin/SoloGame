@@ -4,6 +4,7 @@
 #include <Engine/Audio/SoundPlayer.hpp>
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
+#include <Engine/Physics/Velocity.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/Camera.hpp>
@@ -36,6 +37,7 @@ protected:
 
     // Component handlers
     TransformHandler m_TransformHandler;
+    VelocityHandler m_VelocityHandler;
     VPHandler m_VPHandler;
     Display m_Display;
     InputHandler m_InputHandler;
