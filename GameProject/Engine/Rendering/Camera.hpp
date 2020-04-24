@@ -7,6 +7,7 @@
 #include <DirectXTK/Mouse.h>
 
 const float maxPitch = DirectX::XM_PIDIV2 - 0.01f;
+const float g_CameraSpeed = 1.5f;
 
 class TransformHandler;
 class VPHandler;

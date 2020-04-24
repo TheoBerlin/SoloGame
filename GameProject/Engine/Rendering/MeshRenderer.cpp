@@ -26,7 +26,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     RendererRegistration rendererReg = {
         {
             {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
-            {{{R, tid_view}, {R, tid_projection}}, {&camSub}, &m_Camera},
+            {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
             {{{R, tid_pointLight}}, &m_PointLights}
         },
         this
@@ -172,10 +172,9 @@ void MeshRenderer::recordCommands()
         m_pCommandBuffer->PSSetShader(program->pixelShader, nullptr, 0);
 
         // Prepare camera's view*proj matrix
-        ViewMatrix camView = m_pVPHandler->viewMatrices.indexID(m_Camera[0]);
-        ProjectionMatrix camProj = m_pVPHandler->projMatrices.indexID(m_Camera[0]);
+        const ViewProjectionMatrices& vpMatrices = m_pVPHandler->getViewProjectionMatrices(m_Camera[0]);
 
-        DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&camView.view) * DirectX::XMLoadFloat4x4(&camProj.projection);
+        DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&vpMatrices.View) * DirectX::XMLoadFloat4x4(&vpMatrices.Projection);
 
         for (const Mesh& mesh : model->meshes) {
             if (model->materials[mesh.materialIndex].textures.empty()) {
