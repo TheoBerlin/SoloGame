@@ -23,7 +23,7 @@ public:
 
 private:
     void createCube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
-    void createPointLights(ComponentSubscriber* pComponentSubscriber);
+    void createPointLights(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
     void createTube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
     void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
 

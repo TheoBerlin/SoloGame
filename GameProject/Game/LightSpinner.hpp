@@ -2,7 +2,7 @@
 
 #include <Engine/ECS/System.hpp>
 
-class LightHandler;
+class TransformHandler;
 
 class LightSpinner : public System
 {
@@ -15,6 +15,6 @@ public:
     void update(float dt);
 
 private:
-    LightHandler* m_pLightHandler;
+    TransformHandler* m_pTransformHandler;
     IDVector m_Lights;
 };

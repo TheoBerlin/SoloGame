@@ -32,7 +32,7 @@ GameSession::GameSession(MainMenu* mainMenu)
     RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
 
     createCube(pTransformHandler, pRenderableHandler);
-    createPointLights(pComponentSubscriber);
+    createPointLights(pTransformHandler, pComponentSubscriber);
     createTube(pTransformHandler, pRenderableHandler);
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
@@ -60,9 +60,9 @@ void GameSession::createCube(TransformHandler* pTransformHandler, RenderableHand
     pRenderableHandler->createRenderable(m_RenderableCube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
 }
 
-void GameSession::createPointLights(ComponentSubscriber* pComponentSubscriber)
+void GameSession::createPointLights(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
-    LightHandler* lightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
+    LightHandler* pLightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
 
     SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
@@ -72,7 +72,8 @@ void GameSession::createPointLights(ComponentSubscriber* pComponentSubscriber)
         DirectX::XMFLOAT3 lightPos  = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
         DirectX::XMFLOAT3 light     = {std::sinf(1.6f * i), 0.8f, std::cosf(1.2f * i)};
 
-        lightHandler->createPointLight(lightID, lightPos, light, 10.0f);
+        pLightHandler->createPointLight(lightID, light, 10.0f);
+        pTransformHandler->createPosition(lightID, lightPos);
 
         if (pSoundHandler->createSound(lightID, soundFile)) {
             pSoundHandler->playSound(lightID);

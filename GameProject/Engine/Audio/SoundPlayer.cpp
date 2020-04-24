@@ -2,7 +2,6 @@
 
 #include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
-#include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Transform.hpp>
 
@@ -17,7 +16,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     SystemRegistration sysReg = {};
     sysReg.pSystem = this;
     sysReg.SubscriptionRequests = {
-        {{{RW, tid_sound}, {R, tid_pointLight}}, &m_Sounds},
+        {{{RW, tid_sound}, {R, g_TIDPosition}}, &m_Sounds},
         {{&cameraComponents}, &m_Cameras}
     };
 
@@ -59,11 +58,9 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     size_t soundCount = m_Sounds.size();
     IDDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
 
-    IDDVector<PointLight>& pointLights = m_pLightHandler->pointLights;
-
     for (Entity soundEntity : m_Sounds.getIDs()) {
         Sound& sound = sounds.indexID(soundEntity);
-        DirectX::XMFLOAT3& soundPosition = pointLights.indexID(soundEntity).position;
+        DirectX::XMFLOAT3& soundPosition = m_pTransformHandler->getPosition(soundEntity);
 
         DirectX::XMVECTOR soundPos = DirectX::XMLoadFloat3(&soundPosition);
 

@@ -22,12 +22,13 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
     CameraComponents camSub;
+    PointLightComponents pointLightSub;
 
     RendererRegistration rendererReg = {
         {
             {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
             {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
-            {{{R, tid_pointLight}}, &m_PointLights}
+            {{&pointLightSub}, &m_PointLights}
         },
         this
     };
@@ -143,11 +144,19 @@ void MeshRenderer::recordCommands()
     PerFrameBuffer perFrame;
     uint32_t numLights = std::min(MAX_POINTLIGHTS, (uint32_t)m_PointLights.size());
     for (uint32_t i = 0; i < numLights; i += 1) {
-        perFrame.pointLights[i] = m_pLightHandler->pointLights[i];
+        Entity pointLightEntity = m_PointLights[i];
+
+        const PointLight& pointLight = m_pLightHandler->getPointLight(pointLightEntity);
+
+        perFrame.PointLights[i] = {
+            m_pTransformHandler->getPosition(pointLightEntity),
+            pointLight.RadiusReciprocal,
+            pointLight.Light
+        };
     }
 
-    perFrame.cameraPosition = m_pTransformHandler->getPosition(m_Camera[0]);
-    perFrame.numLights = numLights;
+    perFrame.CameraPosition = m_pTransformHandler->getPosition(m_Camera[0]);
+    perFrame.NumLights = numLights;
 
     // Hardcode the shader resource binding for now, this cold be made more flexible when more shader programs exist
     D3D11_MAPPED_SUBRESOURCE mappedResources;
@@ -192,8 +201,8 @@ void MeshRenderer::recordCommands()
             PerObjectMatrices matrices;
 
             // PerObjectMatrices cbuffer
-            matrices.world = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
-            DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.world) * camVP));
+            matrices.World = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
+            DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World) * camVP));
 
             m_pCommandBuffer->Map(m_pPerObjectMatrices, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
             memcpy(mappedResources.pData, &matrices, sizeof(PerObjectMatrices));

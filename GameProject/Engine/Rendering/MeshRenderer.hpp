@@ -12,17 +12,6 @@ class RenderableHandler;
 class TransformHandler;
 class VPHandler;
 
-struct PerObjectMatrices {
-    DirectX::XMFLOAT4X4 WVP, world;
-};
-
-struct PerFrameBuffer {
-    PointLight pointLights[MAX_POINTLIGHTS];
-    DirectX::XMFLOAT3 cameraPosition;
-    uint32_t numLights;
-    DirectX::XMFLOAT4 padding;
-};
-
 class MeshRenderer : public Renderer
 {
 public:
@@ -32,6 +21,25 @@ public:
     virtual bool init() override;
     virtual void recordCommands() override;
     virtual bool executeCommands() override;
+
+private:
+    struct PointLightBuffer {
+        DirectX::XMFLOAT3 Position;
+        float RadiusReciprocal;
+        DirectX::XMFLOAT3 Light;
+        float Padding;
+    };
+
+    struct PerObjectMatrices {
+        DirectX::XMFLOAT4X4 WVP, World;
+    };
+
+    struct PerFrameBuffer {
+        PointLightBuffer PointLights[MAX_POINTLIGHTS];
+        DirectX::XMFLOAT3 CameraPosition;
+        uint32_t NumLights;
+        DirectX::XMFLOAT4 Padding;
+    };
 
 private:
     IDVector m_Renderables;
