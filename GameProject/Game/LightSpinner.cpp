@@ -1,16 +1,22 @@
 #include "LightSpinner.hpp"
 
-#include <Engine/Rendering/Components/PointLight.hpp>
+#include <Engine/Rendering/Components/ComponentGroups.hpp>
+#include <Engine/Transform.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
 LightSpinner::LightSpinner(ECSCore* pECS)
     :System(pECS)
 {
+    PointLightComponents pointLightSub;
+    pointLightSub.m_Position.Permissions    = RW;
+    pointLightSub.m_PointLight.Permissions  = NDA;
+
     SystemRegistration sysReg = {
-    {
-        {{{RW, tid_pointLight}}, &m_Lights}
-    },
-    this};
+        {
+            {{&pointLightSub}, &m_Lights}
+        },
+        this
+    };
 
     subscribeToComponents(sysReg);
     registerUpdate(sysReg);
@@ -21,8 +27,8 @@ LightSpinner::~LightSpinner()
 
 bool LightSpinner::initSystem()
 {
-    m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
-    return m_pLightHandler;
+    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    return m_pTransformHandler;
 }
 
 void LightSpinner::update(float dt)
@@ -32,12 +38,12 @@ void LightSpinner::update(float dt)
     const float anglePerSec = DirectX::XM_PIDIV4;
     DirectX::XMVECTOR position;
 
-    for (size_t i = 0; i < lightCount; i += 1) {
-        PointLight& light = m_pLightHandler->pointLights.indexID(m_Lights[i]);
+    for (Entity entity : m_Lights.getIDs()) {
+        DirectX::XMFLOAT3& lightPos = m_pTransformHandler->getPosition(entity);
 
-        position = DirectX::XMLoadFloat3(&light.position);
+        position = DirectX::XMLoadFloat3(&lightPos);
 
         position = DirectX::XMVector3Transform(position, DirectX::XMMatrixRotationY(anglePerSec * dt));
-        DirectX::XMStoreFloat3(&light.position, position);
+        DirectX::XMStoreFloat3(&lightPos, position);
     }
 }

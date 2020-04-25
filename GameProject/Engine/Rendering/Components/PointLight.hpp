@@ -5,15 +5,12 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 
-struct PointLight
-{
-    DirectX::XMFLOAT3 position;
-    float radiusReciprocal;
-    DirectX::XMFLOAT3 light;
-    float padding;
+struct PointLight {
+    float RadiusReciprocal;
+    DirectX::XMFLOAT3 Light;
 };
 
-const std::type_index tid_pointLight = TID(PointLight);
+const std::type_index g_TIDPointLight = TID(PointLight);
 
 class LightHandler : public ComponentHandler
 {
@@ -23,7 +20,10 @@ public:
 
     virtual bool initHandler() override;
 
-    void createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius);
+    inline PointLight& getPointLight(Entity entity) { return m_PointLights.indexID(entity); }
 
-    IDDVector<PointLight> pointLights;
+    void createPointLight(Entity entity, const DirectX::XMFLOAT3& light, float radius);
+
+private:
+    IDDVector<PointLight> m_PointLights;
 };

@@ -5,16 +5,24 @@
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
 
-struct ViewMatrix {
-    DirectX::XMFLOAT4X4 view;
+struct ViewProjectionMatrices {
+    DirectX::XMFLOAT4X4 View;
+    DirectX::XMFLOAT4X4 Projection;
 };
 
-struct ProjectionMatrix {
-    DirectX::XMFLOAT4X4 projection;
+const std::type_index g_TIDViewProjectionMatrices = TID(ViewProjectionMatrices);
+
+struct ViewMatrixInfo {
+    DirectX::XMVECTOR EyePosition;
+    DirectX::XMVECTOR LookDirection;
+    DirectX::XMVECTOR UpDirection;
 };
 
-const std::type_index tid_view = TID(ViewMatrix);
-const std::type_index tid_projection = TID(ProjectionMatrix);
+struct ProjectionMatrixInfo {
+    float HorizontalFOV;
+    float AspectRatio;
+    float NearZ, FarZ;
+};
 
 class VPHandler : public ComponentHandler
 {
@@ -24,9 +32,10 @@ public:
 
     virtual bool initHandler() override;
 
-    void createViewMatrix(Entity entity, DirectX::XMVECTOR eyePos, DirectX::XMVECTOR lookDir, DirectX::XMVECTOR upDir);
-    void createProjMatrix(Entity entity, float horizontalFOV, float aspectRatio, float nearZ, float farZ);
+    inline ViewProjectionMatrices& getViewProjectionMatrices(Entity entity) { return m_VPMatrices.indexID(entity); }
 
-    IDDVector<ViewMatrix> viewMatrices;
-    IDDVector<ProjectionMatrix> projMatrices;
+    void createViewProjectionMatrices(Entity entity, const ViewMatrixInfo& viewMatrixInfo, const ProjectionMatrixInfo& projectionMatrixInfo);
+
+private:
+    IDDVector<ViewProjectionMatrices> m_VPMatrices;
 };

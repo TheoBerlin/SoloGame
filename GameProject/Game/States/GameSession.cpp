@@ -32,7 +32,7 @@ GameSession::GameSession(MainMenu* mainMenu)
     RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
 
     createCube(pTransformHandler, pRenderableHandler);
-    createPointLights(pComponentSubscriber);
+    createPointLights(pTransformHandler, pComponentSubscriber);
     createTube(pTransformHandler, pRenderableHandler);
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
@@ -60,9 +60,9 @@ void GameSession::createCube(TransformHandler* pTransformHandler, RenderableHand
     pRenderableHandler->createRenderable(m_RenderableCube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
 }
 
-void GameSession::createPointLights(ComponentSubscriber* pComponentSubscriber)
+void GameSession::createPointLights(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
-    LightHandler* lightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
+    LightHandler* pLightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
 
     SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
@@ -72,7 +72,8 @@ void GameSession::createPointLights(ComponentSubscriber* pComponentSubscriber)
         DirectX::XMFLOAT3 lightPos  = {std::sinf(DirectX::XM_PIDIV2 * i) * 3.0f, 1.0f, std::cosf(DirectX::XM_PIDIV2 * i) * 3.0f};
         DirectX::XMFLOAT3 light     = {std::sinf(1.6f * i), 0.8f, std::cosf(1.2f * i)};
 
-        lightHandler->createPointLight(lightID, lightPos, light, 10.0f);
+        pLightHandler->createPointLight(lightID, light, 10.0f);
+        pTransformHandler->createPosition(lightID, lightPos);
 
         if (pSoundHandler->createSound(lightID, soundFile)) {
             pSoundHandler->playSound(lightID);
@@ -112,12 +113,20 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentSubscriber->getComponentHandler(TID(VelocityHandler)));
     pVelocityHandler->createVelocityComponent(m_Camera);
 
-    VPHandler* vpHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
-    DirectX::XMVECTOR camPos     = DirectX::XMLoadFloat3(&camPosition);
-    DirectX::XMVECTOR camLookDir = pTransformHandler->getForward(camRotationQuat);
-    DirectX::XMVECTOR camUpDir   = {0.0f, 1.0f, 0.0f, 0.0f};
-    vpHandler->createViewMatrix(m_Camera, camPos, camLookDir, camUpDir);
-    vpHandler->createProjMatrix(m_Camera, 90.0f, 16.0f/9.0f, 0.1f, 20.0f);
+    VPHandler* pVPHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
+
+    ViewMatrixInfo viewMatrixInfo = {};
+    viewMatrixInfo.EyePosition      = DirectX::XMLoadFloat3(&camPosition);
+    viewMatrixInfo.LookDirection    = pTransformHandler->getForward(camRotationQuat);
+    viewMatrixInfo.UpDirection      = {0.0f, 1.0f, 0.0f, 0.0f};
+
+    ProjectionMatrixInfo projMatrixInfo = {};
+    projMatrixInfo.AspectRatio      = 16.0f/9.0f;
+    projMatrixInfo.HorizontalFOV    = 90.0f;
+    projMatrixInfo.NearZ            = 0.1f;
+    projMatrixInfo.FarZ             = 20.0f;
+
+    pVPHandler->createViewProjectionMatrices(m_Camera, viewMatrixInfo, projMatrixInfo);
 
     m_TrackPositionHandler.createTrackPosition(m_Camera);
 }

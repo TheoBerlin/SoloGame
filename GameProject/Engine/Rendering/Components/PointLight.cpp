@@ -6,7 +6,7 @@ LightHandler::LightHandler(ECSCore* pECS)
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
-        {tid_pointLight, &pointLights}
+        {g_TIDPointLight, &m_PointLights}
     };
 
     this->registerHandler(handlerReg);
@@ -20,12 +20,11 @@ bool LightHandler::initHandler()
     return true;
 }
 
-void LightHandler::createPointLight(Entity entity, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 light, float radius)
+void LightHandler::createPointLight(Entity entity, const DirectX::XMFLOAT3& light, float radius)
 {
     PointLight pointLight;
-    pointLight.position = position;
-    pointLight.light = light;
-    pointLight.radiusReciprocal = 1.0f/radius;
-    pointLights.push_back(pointLight, entity);
-    this->registerComponent(entity, tid_pointLight);
+    pointLight.Light            = light;
+    pointLight.RadiusReciprocal = 1.0f / radius;
+    m_PointLights.push_back(pointLight, entity);
+    this->registerComponent(entity, g_TIDPointLight);
 }
