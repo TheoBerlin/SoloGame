@@ -30,10 +30,22 @@ GameSession::GameSession(MainMenu* mainMenu)
 
     TransformHandler* pTransformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
     RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
+    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
 
-    createCube(pTransformHandler, pRenderableHandler);
-    createPointLights(pTransformHandler, pComponentSubscriber);
-    createTube(pTransformHandler, pRenderableHandler);
+    const std::vector<DirectX::XMFLOAT3> sectionPoints = {
+        {0.0f, 0.0f, 0.0f},
+        {4.0f, 4.0f, -10.0f},
+        {2.0f, 2.0f, -22.0f},
+        {0.0f, 0.0f, -32.0f},
+        {-3.0f, -6.0f, -42.0f},
+    };
+
+    for (const DirectX::XMFLOAT3& sectionPoint : sectionPoints) {
+        createCube(sectionPoint, pSoundHandler, pTransformHandler, pRenderableHandler);
+    }
+
+    createPointLights(pSoundHandler, pTransformHandler, pComponentSubscriber);
+    createTube(sectionPoints, pTransformHandler, pRenderableHandler);
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
 
@@ -52,20 +64,24 @@ void GameSession::pause()
 void GameSession::update(float dt)
 {}
 
-void GameSession::createCube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
+void GameSession::createCube(const DirectX::XMFLOAT3& position, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
 {
-    m_RenderableCube = m_pECS->createEntity();
-    pTransformHandler->createTransform(m_RenderableCube);
-    pTransformHandler->createWorldMatrix(m_RenderableCube);
-    pRenderableHandler->createRenderable(m_RenderableCube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
+    Entity cube = m_pECS->createEntity();
+    pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
+    pTransformHandler->createWorldMatrix(cube);
+    pRenderableHandler->createRenderable(cube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
+
+    // Attach sound to the cube
+    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
+    if (pSoundHandler->createSound(cube, soundFile)) {
+        pSoundHandler->playSound(cube);
+    }
 }
 
-void GameSession::createPointLights(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
+void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
     LightHandler* pLightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
-
-    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
 
     for (unsigned i = 0; i < 1u; i++) {
         Entity lightID = m_pECS->createEntity();
@@ -81,16 +97,8 @@ void GameSession::createPointLights(TransformHandler* pTransformHandler, Compone
     }
 }
 
-void GameSession::createTube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
+void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
 {
-    const std::vector<DirectX::XMFLOAT3> sectionPoints = {
-        {0.0f, 0.0f, 0.0f},
-        {4.0f, 4.0f, -10.0f},
-        {2.0f, 2.0f, -22.0f},
-        {0.0f, 0.0f, -32.0f},
-        {-3.0f, -6.0f, -42.0f},
-    };
-
     const float tubeRadius = 1.5f;
     const unsigned int tubeFaces = 10;
     Model* tubeModel = m_TubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
@@ -103,15 +111,15 @@ void GameSession::createTube(TransformHandler* pTransformHandler, RenderableHand
 
 void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
-    m_Camera = m_pECS->createEntity();
+    Entity player = m_pECS->createEntity();
 
     const DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
-    pTransformHandler->createPosition(m_Camera, camPosition);
-    pTransformHandler->createRotation(m_Camera);
-    const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(m_Camera);
+    pTransformHandler->createPosition(player, camPosition);
+    pTransformHandler->createRotation(player);
+    const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(player);
 
     VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentSubscriber->getComponentHandler(TID(VelocityHandler)));
-    pVelocityHandler->createVelocityComponent(m_Camera);
+    pVelocityHandler->createVelocityComponent(player);
 
     VPHandler* pVPHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
 
@@ -126,7 +134,7 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     projMatrixInfo.NearZ            = 0.1f;
     projMatrixInfo.FarZ             = 20.0f;
 
-    pVPHandler->createViewProjectionMatrices(m_Camera, viewMatrixInfo, projMatrixInfo);
+    pVPHandler->createViewProjectionMatrices(player, viewMatrixInfo, projMatrixInfo);
 
-    m_TrackPositionHandler.createTrackPosition(m_Camera);
+    m_TrackPositionHandler.createTrackPosition(player);
 }
