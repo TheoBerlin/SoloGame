@@ -9,6 +9,7 @@
 class InputHandler;
 class MainMenu;
 class RenderableHandler;
+class SoundHandler;
 
 class GameSession : public State
 {
@@ -22,14 +23,12 @@ public:
     void update(float dt);
 
 private:
-    void createCube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
-    void createPointLights(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
-    void createTube(TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createCube(const DirectX::XMFLOAT3& position, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
+    void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
     void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
 
 private:
-    Entity m_Camera, m_RenderableCube;
-
     // Component handlers
     TrackPositionHandler m_TrackPositionHandler;
     TubeHandler m_TubeHandler;
