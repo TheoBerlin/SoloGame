@@ -14,9 +14,15 @@ enum ComponentPermissions {
     RW  = 2
 };
 
+enum SubscriptionModifier {
+    REQUIRED,   // Standard option - The component is needed for the subscription
+    NOT_REQUIRED    // The component is not needed for the subscription - but data accesses might be made to the component type
+};
+
 struct ComponentAccess {
     ComponentPermissions Permissions;
     std::type_index TID;
+    SubscriptionModifier SubscriptionModifier = SubscriptionModifier::REQUIRED;
 };
 
 class IComponentGroup

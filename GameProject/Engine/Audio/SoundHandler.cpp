@@ -13,7 +13,7 @@ SoundHandler::SoundHandler(ECSCore* pECS)
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
-        {tid_sound, &m_Sounds, [this](Entity entity){ m_Sounds.indexID(entity).pSound->release(); }}
+        {g_TIDSound, &m_Sounds, [this](Entity entity){ m_Sounds.indexID(entity).pSound->release(); }}
     };
     registerHandler(handlerReg);
 }
@@ -52,7 +52,7 @@ bool SoundHandler::createSound(Entity entity, const std::string& fileName)
     }
 
     m_Sounds.push_back(newSound, entity);
-    registerComponent(entity, tid_sound);
+    registerComponent(entity, g_TIDSound);
     return true;
 }
 
