@@ -3,6 +3,7 @@
 #include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
+#include <Engine/Physics/Velocity.hpp>
 #include <Engine/Transform.hpp>
 
 SoundPlayer::SoundPlayer(ECSCore* pECS)
@@ -12,12 +13,14 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     m_pTransformHandler(nullptr)
 {
     CameraComponents cameraComponents;
-
     SystemRegistration sysReg = {};
     sysReg.pSystem = this;
-    sysReg.SubscriptionRequests = {
-        {{{RW, tid_sound}, {R, g_TIDPosition}}, &m_Sounds},
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{{RW, g_TIDSound}, {R, g_TIDPosition}}, &m_Sounds},
         {{&cameraComponents}, &m_Cameras}
+    };
+    sysReg.SubscriberRegistration.AdditionalDependencies = {
+        {R, g_TIDVelocity}
     };
 
     subscribeToComponents(sysReg);

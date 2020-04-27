@@ -11,7 +11,7 @@
 class System;
 
 struct SystemRegistration {
-    std::vector<ComponentSubscriptionRequest> SubscriptionRequests;
+    ComponentSubscriberRegistration SubscriberRegistration;
     System* pSystem;
     size_t UpdateQueueIndex = 0;
 };

@@ -11,7 +11,7 @@ struct Sound {
     FMOD::Channel* pChannel;
 };
 
-const std::type_index tid_sound = TID(Sound);
+const std::type_index g_TIDSound = TID(Sound);
 
 class SoundHandler : public ComponentHandler
 {

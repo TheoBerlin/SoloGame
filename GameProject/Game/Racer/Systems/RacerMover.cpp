@@ -16,12 +16,11 @@ RacerMover::RacerMover(ECSCore* pECS)
     m_pTubeHandler(nullptr),
     m_pVelocityHandler(nullptr)
 {
-    SystemRegistration sysReg = {
-        {
-            {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, tid_trackPosition}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
-        },
-        this
+    SystemRegistration sysReg = {};
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, tid_trackPosition}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
     };
+    sysReg.pSystem = this;
 
     subscribeToComponents(sysReg);
     registerUpdate(sysReg);

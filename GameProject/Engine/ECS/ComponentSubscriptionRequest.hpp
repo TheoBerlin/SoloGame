@@ -38,3 +38,8 @@ public:
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> m_OnEntityAdded;
 };
+
+struct ComponentSubscriberRegistration {
+    std::vector<ComponentSubscriptionRequest> ComponentSubscriptionRequests;
+    std::vector<ComponentAccess> AdditionalDependencies;
+};

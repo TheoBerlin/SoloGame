@@ -48,7 +48,7 @@ public:
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
     // Returns a subscription ID
-    size_t subscribeToComponents(const std::vector<ComponentSubscriptionRequest>& subscriptionRequests);
+    size_t subscribeToComponents(const ComponentSubscriberRegistration& subscriberRegistration);
     void unsubscribeFromComponents(size_t subscriptionID);
 
     // Notifies subscribed systems that a new component has been made
@@ -62,13 +62,13 @@ private:
     // Map component types to resources used when systems subscribe
     std::unordered_map<std::type_index, ComponentStorage> m_ComponentStorage;
     // Map component types to subscriptions. Deleted only when a subscribing system unsubscribes.
-    std::unordered_multimap<std::type_index, SubscriptionStorageIndex> componentSubscriptions;
+    std::unordered_multimap<std::type_index, SubscriptionStorageIndex> m_ComponentSubscriptions;
 
     // Map systems' IDs to their subscriptions
-    IDDVector<std::vector<ComponentSubscriptions>> subscriptionStorage;
-    IDGenerator systemIdGen;
+    IDDVector<std::vector<ComponentSubscriptions>> m_SubscriptionStorage;
+    IDGenerator m_SystemIDGenerator;
 
-    std::unordered_map<std::type_index, ComponentHandler*> componentHandlers;
+    std::unordered_map<std::type_index, ComponentHandler*> m_ComponentHandlers;
 
     const EntityRegistry* m_pEntityRegistry;
 };

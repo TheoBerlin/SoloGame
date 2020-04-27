@@ -11,13 +11,13 @@ ButtonSystem::ButtonSystem(ECSCore* pECS, unsigned int clientWidth, unsigned int
     m_PressedButtonExists(false),
     m_PressedButton(0)
 {
-    SystemRegistration sysReg = {
-    {
+    SystemRegistration sysReg = {};
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
         {{{RW, tid_UIPanel}, {R, tid_UIButton}}, &m_Buttons}
-    },
-    this};
+    };
+    sysReg.pSystem = this;
 
-    this->subscribeToComponents(sysReg);
+    subscribeToComponents(sysReg);
 }
 
 ButtonSystem::~ButtonSystem()

@@ -24,14 +24,13 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
     CameraComponents camSub;
     PointLightComponents pointLightSub;
 
-    RendererRegistration rendererReg = {
-        {
-            {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
-            {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
-            {{&pointLightSub}, &m_PointLights}
-        },
-        this
+    RendererRegistration rendererReg = {};
+    rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables},
+        {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
+        {{&pointLightSub}, &m_PointLights}
     };
+    rendererReg.pRenderer = this;
 
     registerRenderer(rendererReg);
 }
