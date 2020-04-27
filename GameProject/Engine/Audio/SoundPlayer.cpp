@@ -17,10 +17,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     sysReg.pSystem = this;
     sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
         {{{RW, g_TIDSound}, {R, g_TIDPosition}}, &m_Sounds},
-        {{&cameraComponents}, &m_Cameras}
-    };
-    sysReg.SubscriberRegistration.AdditionalDependencies = {
-        {R, g_TIDVelocity}
+        {{{R, g_TIDVelocity}}, {&cameraComponents}, &m_Cameras}
     };
 
     subscribeToComponents(sysReg);
@@ -35,8 +32,9 @@ bool SoundPlayer::initSystem()
     m_pSoundHandler     = reinterpret_cast<SoundHandler*>(getComponentHandler(TID(SoundHandler)));
     m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
     m_pLightHandler     = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
 
-    return m_pSoundHandler && m_pTransformHandler && m_pLightHandler;
+    return m_pSoundHandler && m_pTransformHandler && m_pLightHandler && m_pVelocityHandler;
 }
 
 void SoundPlayer::update([[maybe_unused]] float dt)
@@ -56,7 +54,8 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     DirectX::XMVECTOR camDirFlat = camDir;
     camDirFlat = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camDirFlat, 0.0f));
 
-    float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
+    const DirectX::XMVECTOR camVelocity = DirectX::XMLoadFloat3(&m_pVelocityHandler->getVelocity(m_Cameras[0]));
+    float camSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(camVelocity));
 
     size_t soundCount = m_Sounds.size();
     IDDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
@@ -74,17 +73,55 @@ void SoundPlayer::update([[maybe_unused]] float dt)
 
         sound.pChannel->setVolume(volume);
 
-        // Set left-right panning, [-1,1], where -1 is all left, 1 is all right
-        // Ignore vertical difference between camera and sound
-        camToSound = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
+        stereoPan(sound, camToSound, camDirFlat);
 
-        float angle = -m_pTransformHandler->getOrientedAngle(camToSound, camDirFlat, g_DefaultUp);
-        float cosAngle = std::cosf(angle);
-        float sinAngle = std::sinf(angle);
+        DirectX::XMFLOAT3 objectVelocity = {0.0f, 0.0f, 0.0f};
+        if (m_pVelocityHandler->hasVelocity(soundEntity)) {
+            objectVelocity = m_pVelocityHandler->getVelocity(soundEntity);
+        }
 
-        float ampLeft   = 0.5f * (sqrtTwoRec * (cosAngle + sinAngle)) + 0.5f;
-        float ampRight  = 0.5f * (sqrtTwoRec * (cosAngle - sinAngle)) + 0.5f;
-
-        sound.pChannel->setMixLevelsOutput(ampLeft, ampRight, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        dopplerEffect(sound, camPos, camVelocity, camSpeed, soundPos, objectVelocity);
     }
+}
+
+void SoundPlayer::stereoPan(Sound& sound, const DirectX::XMVECTOR& camToSound, const DirectX::XMVECTOR& camDirFlat)
+{
+    // Ignore vertical difference between camera and sound, this allows for calculating the yaw
+    DirectX::XMVECTOR camToSoundNorm = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
+
+    float angle = -m_pTransformHandler->getOrientedAngle(camToSound, camDirFlat, g_DefaultUp);
+    float cosAngle = std::cosf(angle);
+    float sinAngle = std::sinf(angle);
+
+    float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
+    float ampLeft   = 0.5f * (sqrtTwoRec * (cosAngle + sinAngle)) + 0.5f;
+    float ampRight  = 0.5f * (sqrtTwoRec * (cosAngle - sinAngle)) + 0.5f;
+
+    sound.pChannel->setMixLevelsOutput(ampLeft, ampRight, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+void SoundPlayer::dopplerEffect(Sound& sound, const DirectX::XMVECTOR& camPos, const DirectX::XMVECTOR& camVelocity, float camSpeed, const DirectX::XMVECTOR& objectPos, const DirectX::XMFLOAT3& objectVelocity)
+{
+    DirectX::XMVECTOR objVelocity = DirectX::XMLoadFloat3(&objectVelocity);
+
+    // Calculate signs for velocities
+    DirectX::XMVECTOR camToObject = DirectX::XMVectorSubtract(objectPos, camPos);
+
+    // camVelocity is positive if it is moving towards the sound
+    float camVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(camVelocity, camToObject));
+
+    // objectVelocity is positive if it is moving away from the receiver
+    float objectVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(objVelocity, camToObject));
+
+    camSpeed = camVelocitySign < 0.0f ? -camSpeed : camSpeed;
+    float objSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(objVelocity));
+    objSpeed = objectVelocitySign < 0.0f ? -objSpeed : objSpeed;
+
+    const float soundPropagation = 343.0f;
+    float frequency = 0.0f;
+    sound.pChannel->getFrequency(&frequency);
+
+    float observedFrequency = frequency * (soundPropagation + camSpeed) / (soundPropagation + objSpeed);
+
+    sound.pChannel->setFrequency(observedFrequency);
 }

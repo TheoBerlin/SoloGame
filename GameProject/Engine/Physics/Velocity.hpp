@@ -28,6 +28,8 @@ public:
     virtual void update(float dt) override final;
 
     void createVelocityComponent(Entity entity, const DirectX::XMFLOAT3& velocity = {0.0f, 0.0f, 0.0f});
+
+    inline bool hasVelocity(Entity entity) { return m_Velocities.hasElement(entity); }
     inline DirectX::XMFLOAT3& getVelocity(Entity entity) { return m_Velocities.indexID(entity).Velocity; }
 
 private:
