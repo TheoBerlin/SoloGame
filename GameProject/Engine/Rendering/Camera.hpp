@@ -10,6 +10,7 @@ const float maxPitch = DirectX::XM_PIDIV2 - 0.01f;
 const float g_CameraSpeed = 1.5f;
 
 class TransformHandler;
+class VelocityHandler;
 class VPHandler;
 
 class CameraSystem : public System
@@ -27,6 +28,7 @@ private:
     IDVector m_Cameras;
 
     TransformHandler* m_pTransformHandler;
+    VelocityHandler* m_pVelocityHandler;
     VPHandler* m_pVPHandler;
     DirectX::Keyboard::State* m_pKeyboardState;
     DirectX::Mouse::State* m_pMouseState;
