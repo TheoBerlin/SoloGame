@@ -36,7 +36,7 @@ bool RacerController::initSystem()
     m_pTubeHandler          = reinterpret_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
     m_pVelocityHandler      = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
 
-    InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
+    InputHandler* pInputHandler = reinterpret_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
     m_pKeyboardState = pInputHandler->getKeyboardState();
 
     return m_pTransformHandler && m_pTrackPositionHandler && m_pTubeHandler && pInputHandler;
@@ -49,6 +49,20 @@ void RacerController::update(float dt)
     for (Entity entity : m_Racers.getIDs()) {
         DirectX::XMFLOAT4& rotationQuat = m_pTransformHandler->getRotation(entity);
         TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
+
+        // Roll using keyboard input
+        int keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
+        if (keyInput) {
+            float rotationAngle = keyInput * rotationSpeed * dt;
+            TransformHandler::roll(rotationQuat, rotationAngle);
+        }
+
+        // Move towards or away from the center
+        keyInput = m_pKeyboardState->S - m_pKeyboardState->W;
+        if (keyInput) {
+            trackPosition.distanceFromCenter += keyInput * centerMoveSpeed * dt;
+            trackPosition.distanceFromCenter = std::min(m_pTubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));
+        }
 
         // Calculate the distance between P1 and P2 to figure out by how much to increase T per second
         DirectX::XMVECTOR P[4];
@@ -97,20 +111,6 @@ void RacerController::update(float dt)
 
         DirectX::XMVECTOR velocity = DirectX::XMVectorSubtract(newPosition, oldPosition);
         DirectX::XMStoreFloat3(&m_pVelocityHandler->getVelocity(entity), velocity);
-
-        // Roll using keyboard input
-        int keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
-        if (keyInput) {
-            float rotationAngle = keyInput * rotationSpeed * dt;
-            TransformHandler::roll(rotationQuat, rotationAngle);
-        }
-
-        // Move towards or away from the center
-        keyInput = m_pKeyboardState->S - m_pKeyboardState->W;
-        if (keyInput) {
-            trackPosition.distanceFromCenter += keyInput * centerMoveSpeed * dt;
-            trackPosition.distanceFromCenter = std::min(m_pTubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));
-        }
     }
 }
 
