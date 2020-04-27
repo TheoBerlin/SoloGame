@@ -1,5 +1,6 @@
 #include "Camera.hpp"
 
+#include <Engine/Physics/Velocity.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/InputHandler.hpp>
@@ -7,12 +8,16 @@
 #include <Engine/Utils/ECSUtils.hpp>
 
 CameraSystem::CameraSystem(ECSCore* pECS)
-    :System(pECS)
+    :System(pECS),
+    m_pTransformHandler(nullptr),
+    m_pVelocityHandler(nullptr),
+    m_pVPHandler(nullptr)
 {
     CameraComponents cameraComponents;
-    cameraComponents.m_Position.Permissions                 = RW;
+    cameraComponents.m_Position.Permissions                 = R;
     cameraComponents.m_Rotation.Permissions                 = RW;
     cameraComponents.m_ViewProjectionMatrices.Permissions   = RW;
+    cameraComponents.m_Velocity.Permissions                 = RW;
 
     SystemRegistration sysReg = {};
     sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -29,20 +34,20 @@ CameraSystem::~CameraSystem()
 
 bool CameraSystem::initSystem()
 {
-    m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVPHandler = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pVelocityHandler = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
+    m_pVPHandler = reinterpret_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
 
-    InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
+    InputHandler* pInputHandler = reinterpret_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
     m_pKeyboardState = pInputHandler->getKeyboardState();
     m_pMouseState = pInputHandler->getMouseState();
 
-    return m_pTransformHandler && m_pVPHandler && pInputHandler;
+    return m_pTransformHandler && m_pVelocityHandler && m_pVPHandler && pInputHandler;
 }
 
 void CameraSystem::update(float dt)
 {
     for (Entity entity : m_Cameras.getIDs()) {
-        DirectX::XMFLOAT3& position             = m_pTransformHandler->getPosition(entity);
         DirectX::XMFLOAT4& rotationQuaternion   = m_pTransformHandler->getRotation(entity);
         ViewProjectionMatrices& vpMatrices = m_pVPHandler->getViewProjectionMatrices(entity);
 
@@ -68,22 +73,23 @@ void CameraSystem::update(float dt)
             lookDir = m_pTransformHandler->getForward(rotationQuaternion);
         }
 
-        DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&position);
-
         // React to keyboard input
+        DirectX::XMVECTOR camMove = {0.0f, 0.0f, 0.0f, 0.0f};
         if ((m_pKeyboardState->W-m_pKeyboardState->S) || (m_pKeyboardState->D-m_pKeyboardState->A) || (m_pKeyboardState->LeftShift-m_pKeyboardState->LeftControl)) {
-            DirectX::XMVECTOR camMove = {0.0f, 0.0f, 0.0f, 0.0f};
-
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(lookDir, (float)(m_pKeyboardState->W-m_pKeyboardState->S)));
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(pitchAxis, (float)(m_pKeyboardState->D-m_pKeyboardState->A)));
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(g_DefaultUp, (float)(m_pKeyboardState->LeftShift-m_pKeyboardState->LeftControl)));
 
             camMove = DirectX::XMVectorScale(DirectX::XMVector3Normalize(camMove), dt * g_CameraSpeed);
-            camPos = DirectX::XMVectorAdd(camPos, camMove);
-            DirectX::XMStoreFloat3(&position, camPos);
         }
 
+        DirectX::XMFLOAT3& cameraVelocity = m_pVelocityHandler->getVelocity(entity);
+        DirectX::XMStoreFloat3(&cameraVelocity, camMove);
+
+        DirectX::XMFLOAT3& position = m_pTransformHandler->getPosition(entity);
+        DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&position);
         DirectX::XMVECTOR upDir = TransformHandler::getUp(rotationQuaternion);
+
         DirectX::XMStoreFloat4x4(&vpMatrices.View, DirectX::XMMatrixLookAtLH(camPos, DirectX::XMVectorAdd(camPos, lookDir), upDir));
     }
 }

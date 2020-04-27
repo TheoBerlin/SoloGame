@@ -10,7 +10,8 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     :System(pECS),
     m_pLightHandler(nullptr),
     m_pSoundHandler(nullptr),
-    m_pTransformHandler(nullptr)
+    m_pTransformHandler(nullptr),
+    m_pVelocityHandler(nullptr)
 {
     CameraComponents cameraComponents;
     SystemRegistration sysReg = {};
