@@ -24,11 +24,11 @@ const float centerMoveSpeed = 1.0f;
 // Racers' starting distance from the tube's center, [0, 1]
 const float startingCenterDistance = 0.5f;
 
-class RacerMover : public System
+class RacerController : public System
 {
 public:
-    RacerMover(ECSCore* pECS);
-    ~RacerMover();
+    RacerController(ECSCore* pECS);
+    ~RacerController();
 
     virtual bool initSystem() override;
 
