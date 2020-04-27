@@ -2,14 +2,18 @@
 
 #include <Engine/ECS/System.hpp>
 #include <Engine/InputHandler.hpp>
+
 #include <DirectXMath.h>
 
-class TrackPositionHandler;
+class TrackHandler;
 class TransformHandler;
 class TubeHandler;
 class VelocityHandler;
 
-const float racerSpeed = 3.0f;
+const float g_RacerMinSpeed = 1.0f;
+const float g_RacerMaxSpeed = 4.5f;
+
+const float g_RacerAcceleration = 1.5f;
 
 // Radians per second
 const float rotationSpeed = DirectX::XM_PIDIV2 * 0.8f;
@@ -41,7 +45,7 @@ private:
     IDVector m_Racers;
 
     TransformHandler* m_pTransformHandler;
-    TrackPositionHandler* m_pTrackPositionHandler;
+    TrackHandler* m_pTrackHandler;
     TubeHandler* m_pTubeHandler;
     VelocityHandler* m_pVelocityHandler;
 

@@ -5,20 +5,20 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Game/Level/Tube.hpp>
-#include <Game/Racer/Components/TrackPosition.hpp>
+#include <Game/Racer/Components/Track.hpp>
 
 #include <cmath>
 
 RacerController::RacerController(ECSCore* pECS)
     :System(pECS),
     m_pTransformHandler(nullptr),
-    m_pTrackPositionHandler(nullptr),
+    m_pTrackHandler(nullptr),
     m_pTubeHandler(nullptr),
     m_pVelocityHandler(nullptr)
 {
     SystemRegistration sysReg = {};
     sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
-        {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, tid_trackPosition}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
+        {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, g_TIDTrackPosition}, {RW, g_TIDTrackSpeed}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
     };
     sysReg.pSystem = this;
 
@@ -31,15 +31,15 @@ RacerController::~RacerController()
 
 bool RacerController::initSystem()
 {
-    m_pTransformHandler     = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pTrackPositionHandler = reinterpret_cast<TrackPositionHandler*>(getComponentHandler(TID(TrackPositionHandler)));
-    m_pTubeHandler          = reinterpret_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
-    m_pVelocityHandler      = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
+    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pTrackHandler     = reinterpret_cast<TrackHandler*>(getComponentHandler(TID(TrackHandler)));
+    m_pTubeHandler      = reinterpret_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
+    m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
 
     InputHandler* pInputHandler = reinterpret_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
     m_pKeyboardState = pInputHandler->getKeyboardState();
 
-    return m_pTransformHandler && m_pTrackPositionHandler && m_pTubeHandler && pInputHandler;
+    return m_pTransformHandler && m_pTrackHandler && m_pTubeHandler && m_pVelocityHandler && pInputHandler;
 }
 
 void RacerController::update(float dt)
@@ -48,10 +48,17 @@ void RacerController::update(float dt)
 
     for (Entity entity : m_Racers.getIDs()) {
         DirectX::XMFLOAT4& rotationQuat = m_pTransformHandler->getRotation(entity);
-        TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
+        TrackPosition& trackPosition = m_pTrackHandler->getTrackPosition(entity);
+        float& racerSpeed = m_pTrackHandler->getTrackSpeed(entity);
+
+        // Accelerate or deccelerate using keyboard input
+        int keyInput = m_pKeyboardState->LeftShift - m_pKeyboardState->LeftControl;
+        if (keyInput) {
+            racerSpeed = std::clamp(racerSpeed + keyInput * g_RacerAcceleration * dt, g_RacerMinSpeed, g_RacerMaxSpeed);
+        }
 
         // Roll using keyboard input
-        int keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
+        keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
         if (keyInput) {
             float rotationAngle = keyInput * rotationSpeed * dt;
             TransformHandler::roll(rotationQuat, rotationAngle);
@@ -144,9 +151,13 @@ void RacerController::racerAdded(Entity entity)
     DirectX::XMStoreFloat4(&rotationQuat, DirectX::XMQuaternionMultiply(roll, currentRotQuat));
 
     // Set the distance to the tube's center
-    TrackPosition& trackPosition = m_pTrackPositionHandler->trackPositions.indexID(entity);
+    TrackPosition& trackPosition = m_pTrackHandler->getTrackPosition(entity);
     trackPosition.distanceFromCenter = minCenterDistance + startingCenterDistance * ((m_pTubeHandler->getTubeRadius() - minEdgeDistance) - minCenterDistance);
 
     // Set starting position
     DirectX::XMStoreFloat3(&transformPosition, DirectX::XMVectorSubtract(tubeStartCenter, DirectX::XMVectorScale(desiredUp, trackPosition.distanceFromCenter)));
+
+    // Set starting speed
+    float& racerSpeed = m_pTrackHandler->getTrackSpeed(entity);
+    racerSpeed = g_RacerMinSpeed;
 }

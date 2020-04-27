@@ -137,4 +137,5 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     pVPHandler->createViewProjectionMatrices(player, viewMatrixInfo, projMatrixInfo);
 
     m_TrackPositionHandler.createTrackPosition(player);
+    m_TrackPositionHandler.createTrackSpeed(player);
 }
