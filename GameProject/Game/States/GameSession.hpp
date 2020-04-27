@@ -4,7 +4,7 @@
 #include <Game/Level/Tube.hpp>
 #include <Game/LightSpinner.hpp>
 #include <Game/Racer/Components/TrackPosition.hpp>
-#include <Game/Racer/Systems/RacerMover.hpp>
+#include <Game/Racer/Systems/RacerController.hpp>
 
 class InputHandler;
 class MainMenu;
@@ -35,7 +35,7 @@ private:
 
     // Systems
     LightSpinner m_LightSpinner;
-    RacerMover m_RacerMover;
+    RacerController m_RacerMover;
 
     InputHandler* m_pInputHandler;
 };

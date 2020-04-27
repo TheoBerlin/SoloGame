@@ -1,4 +1,4 @@
-#include "RacerMover.hpp"
+#include "RacerController.hpp"
 
 #include <Engine/Physics/Velocity.hpp>
 #include <Engine/Transform.hpp>
@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-RacerMover::RacerMover(ECSCore* pECS)
+RacerController::RacerController(ECSCore* pECS)
     :System(pECS),
     m_pTransformHandler(nullptr),
     m_pTrackPositionHandler(nullptr),
@@ -26,10 +26,10 @@ RacerMover::RacerMover(ECSCore* pECS)
     registerUpdate(sysReg);
 }
 
-RacerMover::~RacerMover()
+RacerController::~RacerController()
 {}
 
-bool RacerMover::initSystem()
+bool RacerController::initSystem()
 {
     m_pTransformHandler     = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
     m_pTrackPositionHandler = reinterpret_cast<TrackPositionHandler*>(getComponentHandler(TID(TrackPositionHandler)));
@@ -42,7 +42,7 @@ bool RacerMover::initSystem()
     return m_pTransformHandler && m_pTrackPositionHandler && m_pTubeHandler && pInputHandler;
 }
 
-void RacerMover::update(float dt)
+void RacerController::update(float dt)
 {
     const std::vector<DirectX::XMFLOAT3>& tubeSections = m_pTubeHandler->getTubeSections();
 
@@ -114,7 +114,7 @@ void RacerMover::update(float dt)
     }
 }
 
-void RacerMover::racerAdded(Entity entity)
+void RacerController::racerAdded(Entity entity)
 {
     DirectX::XMFLOAT3& transformPosition    = m_pTransformHandler->getPosition(entity);
     DirectX::XMFLOAT4& rotationQuat         = m_pTransformHandler->getRotation(entity);

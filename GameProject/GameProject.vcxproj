@@ -169,7 +169,7 @@
     <ClCompile Include="Game\Level\Tube.cpp" />
     <ClCompile Include="Game\LightSpinner.cpp" />
     <ClCompile Include="Game\Racer\Components\TrackPosition.cpp" />
-    <ClCompile Include="Game\Racer\Systems\RacerMover.cpp" />
+    <ClCompile Include="Game\Racer\Systems\RacerController.cpp" />
     <ClCompile Include="Game\States\GameSession.cpp" />
     <ClCompile Include="Game\States\MainMenu.cpp" />
     <ClCompile Include="main.cpp" />
@@ -230,7 +230,7 @@
     <ClInclude Include="Game\Level\Tube.hpp" />
     <ClInclude Include="Game\LightSpinner.hpp" />
     <ClInclude Include="Game\Racer\Components\TrackPosition.hpp" />
-    <ClInclude Include="Game\Racer\Systems\RacerMover.hpp" />
+    <ClInclude Include="Game\Racer\Systems\RacerController.hpp" />
     <ClInclude Include="Game\States\GameSession.hpp" />
     <ClInclude Include="Game\States\MainMenu.hpp" />
   </ItemGroup>
