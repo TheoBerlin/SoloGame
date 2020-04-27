@@ -3,7 +3,7 @@
 #include <Engine/GameState/State.hpp>
 #include <Game/Level/Tube.hpp>
 #include <Game/LightSpinner.hpp>
-#include <Game/Racer/Components/TrackPosition.hpp>
+#include <Game/Racer/Components/Track.hpp>
 #include <Game/Racer/Systems/RacerController.hpp>
 
 class InputHandler;
@@ -30,7 +30,7 @@ private:
 
 private:
     // Component handlers
-    TrackPositionHandler m_TrackPositionHandler;
+    TrackHandler m_TrackPositionHandler;
     TubeHandler m_TubeHandler;
 
     // Systems
