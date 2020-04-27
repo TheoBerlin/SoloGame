@@ -3,7 +3,6 @@
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-#include <map>
 #include <thread>
 
 SystemUpdater::SystemUpdater()
@@ -18,18 +17,11 @@ void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
     // Eliminate duplicate component types across the system's subscriptions
     std::map<std::type_index, ComponentPermissions> uniqueRegs;
 
-    for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriptionRequests) {
-        for (const ComponentAccess& componentUpdateReg : subReq.m_ComponentAccesses) {
-            if (componentUpdateReg.Permissions == NDA) {
-                continue;
-            }
-
-            auto uniqueRegsItr = uniqueRegs.find(componentUpdateReg.TID);
-            if (uniqueRegsItr == uniqueRegs.end() || componentUpdateReg.Permissions > uniqueRegsItr->second) {
-                uniqueRegs.insert(uniqueRegsItr, {componentUpdateReg.TID, componentUpdateReg.Permissions});
-            }
-        }
+    for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriberRegistration.ComponentSubscriptionRequests) {
+        registerComponentAccesses(subReq.m_ComponentAccesses, uniqueRegs);
     }
+
+    registerComponentAccesses(sysReg.SubscriberRegistration.AdditionalDependencies, uniqueRegs);
 
     // Merge all of the system's subscribed component types into one vector
     std::vector<ComponentAccess> updateRegs;
@@ -99,6 +91,20 @@ void SystemUpdater::updateMT(float dt)
 
         m_ProcessedSystems.clear();
         m_ProcessingComponents.clear();
+    }
+}
+
+void SystemUpdater::registerComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::map<std::type_index, ComponentPermissions>& uniqueRegs)
+{
+    for (const ComponentAccess& componentUpdateReg : componentAccesses) {
+        if (componentUpdateReg.Permissions == NDA) {
+            continue;
+        }
+
+        auto uniqueRegsItr = uniqueRegs.find(componentUpdateReg.TID);
+        if (uniqueRegsItr == uniqueRegs.end() || componentUpdateReg.Permissions > uniqueRegsItr->second) {
+            uniqueRegs.insert(uniqueRegsItr, {componentUpdateReg.TID, componentUpdateReg.Permissions});
+        }
     }
 }
 

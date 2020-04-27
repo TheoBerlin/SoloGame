@@ -48,7 +48,7 @@ public:
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
     // Returns a subscription ID
-    size_t subscribeToComponents(const std::vector<ComponentSubscriptionRequest>& subscriptionRequests);
+    size_t subscribeToComponents(const ComponentSubscriberRegistration& subscriberRegistration);
     void unsubscribeFromComponents(size_t subscriptionID);
 
     // Notifies subscribed systems that a new component has been made

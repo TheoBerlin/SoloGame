@@ -16,13 +16,12 @@ VelocityHandler::VelocityHandler(ECSCore* pECS)
 
     this->registerHandler(handlerReg);
 
-    SystemRegistration sysReg = {
-        {
-            {{{RW, g_TIDVelocity}, {RW, g_TIDPosition}}, &m_MovingObjects}
-        },
-        this,
-        g_LastUpdateQueue
+    SystemRegistration sysReg = {};
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{{RW, g_TIDVelocity}, {RW, g_TIDPosition}}, &m_MovingObjects}
     };
+    sysReg.pSystem = this;
+    sysReg.UpdateQueueIndex = g_LastUpdateQueue;
 
     subscribeToComponents(sysReg);
     registerUpdate(sysReg);

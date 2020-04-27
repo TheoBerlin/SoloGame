@@ -11,7 +11,7 @@ class ECSCore;
 class Renderer;
 
 struct RendererRegistration {
-    std::vector<ComponentSubscriptionRequest> ComponentSubscriptionRequests;
+    ComponentSubscriberRegistration SubscriberRegistration;
     Renderer* pRenderer;
 };
 

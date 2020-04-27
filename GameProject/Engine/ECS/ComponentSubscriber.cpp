@@ -76,10 +76,11 @@ ComponentHandler* ComponentSubscriber::getComponentHandler(const std::type_index
     return itr->second;
 }
 
-size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSubscriptionRequest>& subscriptionRequests)
+size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegistration& subscriberRegistration)
 {
     // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<ComponentSubscriptions> subscriptions;
+    const std::vector<ComponentSubscriptionRequest>& subscriptionRequests = subscriberRegistration.ComponentSubscriptionRequests;
     subscriptions.reserve(subscriptionRequests.size());
 
     for (const ComponentSubscriptionRequest& subReq : subscriptionRequests) {
@@ -92,10 +93,6 @@ size_t ComponentSubscriber::subscribeToComponents(const std::vector<ComponentSub
         newSub.onEntityAdded = subReq.m_OnEntityAdded;
 
         for (const ComponentAccess& componentReg : componentRegs) {
-            if (componentReg.SubscriptionModifier == SubscriptionModifier::NOT_REQUIRED) {
-                continue;
-            }
-
             auto queryItr = m_ComponentStorage.find(componentReg.TID);
 
             if (queryItr == m_ComponentStorage.end()) {

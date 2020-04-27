@@ -16,11 +16,11 @@ UIRenderer::UIRenderer(ECSCore* pECS, Display* pDisplay)
     m_BackbufferWidth(pDisplay->getClientWidth()),
     m_BackbufferHeight(pDisplay->getClientHeight())
 {
-    RendererRegistration rendererReg = {
-    {
-        {{{R, tid_UIPanel}}, &m_Panels},
-    },
-    this};
+    RendererRegistration rendererReg = {};
+    rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{{R, tid_UIPanel}}, &m_Panels}
+    };
+    rendererReg.pRenderer = this;
 
     registerRenderer(rendererReg);
 }

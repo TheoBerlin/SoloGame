@@ -14,12 +14,11 @@ CameraSystem::CameraSystem(ECSCore* pECS)
     cameraComponents.m_Rotation.Permissions                 = RW;
     cameraComponents.m_ViewProjectionMatrices.Permissions   = RW;
 
-    SystemRegistration sysReg = {
-        {
-            {{}, {&cameraComponents}, &m_Cameras},
-        },
-        this
+    SystemRegistration sysReg = {};
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{&cameraComponents}, &m_Cameras},
     };
+    sysReg.pSystem = this;
 
     this->subscribeToComponents(sysReg);
     this->registerUpdate(sysReg);

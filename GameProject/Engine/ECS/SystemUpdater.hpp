@@ -4,6 +4,7 @@
 #include <Engine/Utils/IDGenerator.hpp>
 
 #include <array>
+#include <map>
 #include <mutex>
 #include <unordered_map>
 
@@ -37,6 +38,8 @@ public:
     void updateMT(float dt);
 
 private:
+    void registerComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::map<std::type_index, ComponentPermissions>& uniqueRegs);
+
     // Executed multiple threads simultaneously to continuously pick systems to update and update them until every one has been updated
     void updateSystems(const UpdateQueue& updateQueue, float dt);
 

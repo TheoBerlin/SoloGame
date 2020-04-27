@@ -11,12 +11,11 @@ LightSpinner::LightSpinner(ECSCore* pECS)
     pointLightSub.m_Position.Permissions    = RW;
     pointLightSub.m_PointLight.Permissions  = NDA;
 
-    SystemRegistration sysReg = {
-        {
-            {{&pointLightSub}, &m_Lights}
-        },
-        this
+    SystemRegistration sysReg = {};
+    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+        {{&pointLightSub}, &m_Lights}
     };
+    sysReg.pSystem = this;
 
     subscribeToComponents(sysReg);
     registerUpdate(sysReg);

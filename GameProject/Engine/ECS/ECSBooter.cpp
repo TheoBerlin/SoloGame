@@ -109,7 +109,7 @@ void ECSBooter::bootSystems()
         if (!pSystem->initSystem()) {
             LOG_ERROR("Failed to initialize system");
         } else {
-            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriptionRequests);
+            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriberRegistration);
             pSystem->setComponentSubscriptionID(subscriptionID);
         }
     }
@@ -127,7 +127,7 @@ void ECSBooter::bootRenderers()
         if (!pRenderer->init()) {
             LOG_ERROR("Failed to initialize renderer");
         } else {
-            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(rendererReg.ComponentSubscriptionRequests);
+            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(rendererReg.SubscriberRegistration);
             pRenderer->setComponentSubscriptionID(subscriptionID);
         }
     }
