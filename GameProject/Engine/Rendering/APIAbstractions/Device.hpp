@@ -4,16 +4,15 @@
 #include <DirectXMath.h>
 
 struct SwapChainInfo {
-    DirectX::XMFLOAT2 BackBufferResolution;
     uint32_t FrameRateLimit;
     uint32_t Multisamples;
+    bool Windowed;
 };
+
+class Window;
 
 class Device
 {
 public:
-    Device();
-    ~Device();
-
-    virtual bool init(const SwapChainInfo& swapChainInfo) = 0;
+    virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow) = 0;
 };
