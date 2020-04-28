@@ -2,3 +2,8 @@ Files: muscle-car-daniel_simon.mp3
 Author: Daniel Simion
 Licences: Attribution 3.0
 URLs: http://soundbible.com/2209-Muscle-Car.html
+
+Files: 30306__erh__tension.wav
+Author: ERH
+Licences: Attribution 3.0
+URLs: https://freesound.org/people/ERH/sounds/30306/

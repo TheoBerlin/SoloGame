@@ -23,6 +23,8 @@ public:
 
     bool createSound(Entity entity, const std::string& fileName);
     bool playSound(Entity entity);
+    bool setVolume(Entity entity, float volume);
+    bool loopSound(Entity entity);
 
     FMOD::System* getSystem() { return m_pSystem; }
 
