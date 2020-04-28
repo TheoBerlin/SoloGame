@@ -61,7 +61,37 @@ bool SoundHandler::playSound(Entity entity)
     Sound& sound = m_Sounds.indexID(entity);
     FMOD_RESULT result = m_pSystem->playSound(sound.pSound, nullptr, false, &sound.pChannel);
     if (result != FMOD_OK) {
-        LOG_WARNING("Failed to play sound, entity: %d", entity);
+        LOG_WARNING("Failed to play sound, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        return false;
+    }
+
+    return true;
+}
+
+bool SoundHandler::setVolume(Entity entity, float volume)
+{
+    Sound& sound = m_Sounds.indexID(entity);
+    FMOD_RESULT result = sound.pChannel->setVolume(volume);
+    if (result != FMOD_OK) {
+        LOG_WARNING("Failed to set sound volume, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        return false;
+    }
+
+    return true;
+}
+
+bool SoundHandler::loopSound(Entity entity)
+{
+    Sound& sound = m_Sounds.indexID(entity);
+    FMOD_RESULT result = sound.pSound->setMode(FMOD_LOOP_NORMAL);
+    if (result != FMOD_OK) {
+        LOG_WARNING("Failed to set mode FMOD_LOOP_NORMAL, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        return false;
+    }
+
+    result = sound.pSound->setLoopCount(-1);
+    if (result != FMOD_OK) {
+        LOG_WARNING("Failed to set loop count, entity: %d, error: %s", entity, FMOD_ErrorString(result));
         return false;
     }
 

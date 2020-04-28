@@ -32,6 +32,8 @@ GameSession::GameSession(MainMenu* mainMenu)
     RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
     SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
 
+    startMusic(pSoundHandler);
+
     const std::vector<DirectX::XMFLOAT3> sectionPoints = {
         {0.0f, 0.0f, 0.0f},
         {4.0f, 4.0f, -10.0f},
@@ -63,6 +65,18 @@ void GameSession::pause()
 
 void GameSession::update(float dt)
 {}
+
+void GameSession::startMusic(SoundHandler* pSoundHandler)
+{
+    const float musicVolume = 0.3f;
+
+    Entity music = m_pECS->createEntity();
+    if (pSoundHandler->createSound(music, "./Game/Assets/Sounds/30306__erh__tension.wav")) {
+        pSoundHandler->setVolume(music, musicVolume);
+        pSoundHandler->loopSound(music);
+        pSoundHandler->playSound(music);
+    }
+}
 
 void GameSession::createCube(const DirectX::XMFLOAT3& position, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
 {
