@@ -1,7 +1,8 @@
 #pragma once
 
-#define GLFW_EXPOSE_NATIVE_WIN32
+#include <Engine/InputHandler.hpp>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
@@ -23,6 +24,8 @@ public:
     bool shouldClose();
     HWND getHWND();
 
+    InputHandlerV2* getInputHandler() { return &m_InputHandler; }
+
 private:
     static void glfwErrorCallback(int error, const char* pDescription);
 
@@ -30,4 +33,5 @@ private:
     uint32_t m_Width, m_Height;
 
     GLFWwindow* m_pWindow;
+    InputHandlerV2 m_InputHandler;
 };

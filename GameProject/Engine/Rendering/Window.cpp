@@ -25,6 +25,10 @@ bool Window::init()
         return false;
     }
 
+    // Callback functions eg. for key input are stateless. Setting this pointer allows them to become stateful by retrieving the Window
+    // pointer inside one of the callback functions
+    glfwSetWindowUserPointer(m_pWindow, this);
+
     glfwSetErrorCallback(Window::glfwErrorCallback);
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -34,6 +38,8 @@ bool Window::init()
         LOG_ERROR("Failed to create GLFW window");
         return false;
     }
+
+    m_InputHandler.init(m_pWindow);
 
     return true;
 }
