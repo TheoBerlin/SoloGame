@@ -130,6 +130,7 @@
     <ClCompile Include="..\include\DirectXTK\Mouse.cpp" />
     <ClCompile Include="..\include\DirectXTK\pch.cpp" />
     <ClCompile Include="..\include\DirectXTK\WICTextureLoader.cpp" />
+    <ClCompile Include="Engine\Audio\AudioCore.cpp" />
     <ClCompile Include="Engine\Audio\SoundHandler.cpp" />
     <ClCompile Include="Engine\Audio\SoundPlayer.cpp" />
     <ClCompile Include="Engine\ECS\ComponentHandler.cpp" />
@@ -145,8 +146,10 @@
     <ClCompile Include="Engine\GameState\StateManager.cpp" />
     <ClCompile Include="Engine\IGame.cpp" />
     <ClCompile Include="Engine\InputHandler.cpp" />
+    <ClCompile Include="Engine\Physics\PhysicsCore.cpp" />
     <ClCompile Include="Engine\Physics\Velocity.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
     <ClCompile Include="Engine\Rendering\Camera.cpp" />
@@ -155,6 +158,7 @@
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\Display.cpp" />
     <ClCompile Include="Engine\Rendering\MeshRenderer.cpp" />
+    <ClCompile Include="Engine\Rendering\RenderingCore.cpp" />
     <ClCompile Include="Engine\Rendering\RenderingHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderHandler.cpp" />
     <ClCompile Include="Engine\Rendering\ShaderResourceHandler.cpp" />
@@ -163,6 +167,7 @@
     <ClCompile Include="Engine\Transform.cpp" />
     <ClCompile Include="Engine\UI\ButtonSystem.cpp" />
     <ClCompile Include="Engine\UI\Panel.cpp" />
+    <ClCompile Include="Engine\UI\UICore.cpp" />
     <ClCompile Include="Engine\UI\UIRenderer.cpp" />
     <ClCompile Include="Engine\Utils\DirectXUtils.cpp" />
     <ClCompile Include="Engine\Utils\IDGenerator.cpp" />
@@ -183,6 +188,7 @@
     <ClInclude Include="..\include\DirectXTK\pch.h" />
     <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
     <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
+    <ClInclude Include="Engine\Audio\AudioCore.hpp" />
     <ClInclude Include="Engine\Audio\SoundHandler.hpp" />
     <ClInclude Include="Engine\Audio\SoundPlayer.hpp" />
     <ClInclude Include="Engine\ECS\ComponentHandler.hpp" />
@@ -199,6 +205,7 @@
     <ClInclude Include="Engine\GameState\StateManager.hpp" />
     <ClInclude Include="Engine\IGame.hpp" />
     <ClInclude Include="Engine\InputHandler.hpp" />
+    <ClInclude Include="Engine\Physics\PhysicsCore.hpp" />
     <ClInclude Include="Engine\Physics\Velocity.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
@@ -206,6 +213,7 @@
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
     <ClInclude Include="Engine\Rendering\Camera.hpp" />
@@ -215,6 +223,7 @@
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\MeshRenderer.hpp" />
+    <ClInclude Include="Engine\Rendering\RenderingCore.hpp" />
     <ClInclude Include="Engine\Rendering\RenderingHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderHandler.hpp" />
     <ClInclude Include="Engine\Rendering\ShaderResourceHandler.hpp" />
@@ -223,6 +232,7 @@
     <ClInclude Include="Engine\Transform.hpp" />
     <ClInclude Include="Engine\UI\ButtonSystem.hpp" />
     <ClInclude Include="Engine\UI\Panel.hpp" />
+    <ClInclude Include="Engine\UI\UICore.hpp" />
     <ClInclude Include="Engine\UI\UIRenderer.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
     <ClInclude Include="Engine\Utils\ECSUtils.hpp" />

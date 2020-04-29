@@ -6,29 +6,31 @@ IGame::IGame(HINSTANCE hInstance)
     :m_StateManager(&m_ECS),
     m_Display(hInstance, 720, 16.0f/9.0f, true),
     m_InputHandler(&m_ECS, m_Display.getWindow()),
-    m_TransformHandler(&m_ECS),
-    m_VelocityHandler(&m_ECS),
-    m_ShaderHandler(m_Display.getDevice(), &m_ECS),
-    m_ShaderResourceHandler(&m_ECS, m_Display.getDevice()),
-    m_TXLoader(&m_ECS, m_Display.getDevice()),
-    m_ModelLoader(&m_ECS, &m_TXLoader),
-    m_RenderableHandler(&m_ECS),
-    m_VPHandler(&m_ECS),
-    m_LightHandler(&m_ECS),
-    m_TextRenderer(&m_ECS, m_Display.getDevice(), m_Display.getDeviceContext()),
-    m_UIHandler(&m_ECS, &m_Display),
-    m_SoundHandler(&m_ECS),
-    m_CameraSystem(&m_ECS),
-    m_ButtonSystem(&m_ECS, m_Display.getClientWidth(), m_Display.getClientHeight()),
-    m_SoundPlayer(&m_ECS),
+    m_pPhysicsCore(nullptr),
+    m_pAssetLoaders(nullptr),
+    m_pUICore(nullptr),
+    m_pRenderingCore(nullptr),
+    m_pAudioCore(nullptr),
     m_RenderingHandler(&m_ECS, &m_Display)
 {
+    m_pPhysicsCore      = new PhysicsCore(&m_ECS);
+    m_pAssetLoaders     = new AssetLoadersCore(&m_ECS, m_Display.getDevice());
+    m_pUICore           = new UICore(&m_ECS, &m_Display);
+    m_pRenderingCore    = new RenderingCore(&m_ECS, m_Display.getDevice());
+    m_pAudioCore        = new AudioCore(&m_ECS);
+
     m_ECS.performRegistrations();
     m_Display.showWindow();
 }
 
 IGame::~IGame()
-{}
+{
+    delete m_pPhysicsCore;
+    delete m_pAssetLoaders;
+    delete m_pUICore;
+    delete m_pRenderingCore;
+    delete m_pAudioCore;
+}
 
 bool IGame::init()
 {
@@ -66,7 +68,7 @@ void IGame::run()
             // Update logic
             m_ECS.update(dt);
             m_StateManager.update(dt);
-            m_ButtonSystem.update(dt);
+            m_pUICore->getButtonSystem().update(dt);
 
             m_RenderingHandler.render();
         }
