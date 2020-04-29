@@ -146,6 +146,7 @@
     <ClCompile Include="Engine\IGame.cpp" />
     <ClCompile Include="Engine\InputHandler.cpp" />
     <ClCompile Include="Engine\Physics\Velocity.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
     <ClCompile Include="Engine\Rendering\Camera.cpp" />
@@ -199,6 +200,8 @@
     <ClInclude Include="Engine\IGame.hpp" />
     <ClInclude Include="Engine\InputHandler.hpp" />
     <ClInclude Include="Engine\Physics\Velocity.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />

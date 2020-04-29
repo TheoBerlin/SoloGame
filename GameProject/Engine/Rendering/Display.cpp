@@ -1,9 +1,11 @@
 #include "Display.hpp"
 
-#include <DirectXTK/Keyboard.h>
-#include <DirectXTK/Mouse.h>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
+
+#include <DirectXTK/Keyboard.h>
+#include <DirectXTK/Mouse.h>
+
 #include <combaseapi.h>
 #include <comdef.h>
 #include <roapi.h>
@@ -131,7 +133,6 @@ void Display::initWindow()
 
 void Display::initDX()
 {
-    // Single-threaded flag improves performance when D3D11 calls are only made on one thread
     UINT deviceFlags = 0;
 
     // If in debug mode, turn on D3D11 debugging

@@ -16,6 +16,9 @@ public:
 
     bool init();
 
+    uint32_t getWidth() const { return m_Width; }
+    uint32_t getHeight() const { return m_Height; }
+
     void pollEvents();
 
     bool shouldClose();
@@ -27,7 +30,7 @@ private:
     static void glfwErrorCallback(int error, const char* pDescription);
 
 private:
-    uint32_t m_ClientWidth, m_ClientHeight;
+    uint32_t m_Width, m_Height;
 
     GLFWwindow* m_pWindow;
     InputHandlerV2 m_InputHandler;

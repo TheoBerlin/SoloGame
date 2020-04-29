@@ -1,12 +1,12 @@
 #pragma once
 
 #define NOMINMAX
+#include <Windows.h>
 #include <Engine/ECS/ComponentHandler.hpp>
 
 #include <DirectXTK/Keyboard.h>
 #include <DirectXTK/Mouse.h>
 
-#include <Windows.h>
 
 class InputHandler : public ComponentHandler
 {

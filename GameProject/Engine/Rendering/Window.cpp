@@ -3,8 +3,8 @@
 #include <Engine/Utils/Logger.hpp>
 
 Window::Window(uint32_t clientHeight, float aspectRatio, bool windowed)
-    :m_ClientWidth(uint32_t(float(clientHeight) * aspectRatio)),
-    m_ClientHeight(clientHeight),
+    :m_Width(uint32_t(float(clientHeight) * aspectRatio)),
+    m_Height(clientHeight),
     m_pWindow(nullptr)
 {}
 
@@ -33,7 +33,7 @@ bool Window::init()
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    m_pWindow = glfwCreateWindow((int)m_ClientWidth, (int)m_ClientHeight, "Game Name", nullptr, nullptr);
+    m_pWindow = glfwCreateWindow((int)m_Width, (int)m_Height, "Game Name", nullptr, nullptr);
     if (!m_pWindow) {
         LOG_ERROR("Failed to create GLFW window");
         return false;
