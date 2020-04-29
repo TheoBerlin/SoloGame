@@ -33,3 +33,23 @@ private:
 
     HWND m_Window;
 };
+
+#include <GLFW/glfw3.h>
+
+// TODO: Replace InputHandler
+class InputHandlerV2
+{
+public:
+    InputHandlerV2();
+    ~InputHandlerV2();
+
+public:
+    // Calls the stateful keyActionCallback
+    static void keyActionCallbackStatic(GLFWwindow* pWindow, int key, int scancode, int action, int mods);
+
+private:
+    void keyActionCallback(int key, int scancode, int action, int mods);
+
+private:
+    bool m_pKeyStates[GLFW_KEY_LAST];
+};

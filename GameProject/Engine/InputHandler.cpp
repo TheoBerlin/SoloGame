@@ -49,3 +49,28 @@ void InputHandler::setMouseVisibility(bool visible)
     m_Mouse.SetVisible(visible);
     ShowCursor(visible);
 }
+
+// InputHandlerV2
+#include <Engine/Rendering/Window.hpp>
+
+InputHandlerV2::InputHandlerV2()
+{
+    for (bool& keyState : m_pKeyStates) {
+        keyState = false;
+    }
+}
+
+InputHandlerV2::~InputHandlerV2()
+{}
+
+void InputHandlerV2::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int scancode, int action, int mods)
+{
+    // Retrieve pointer to InputHandler instance
+    Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
+    pWindow->getInputHandler()->keyActionCallback(key, scancode, action, mods);
+}
+
+void InputHandlerV2::keyActionCallback(int key, int scancode, int action, int mods)
+{
+    m_pKeyStates[key] = action == GLFW_PRESS;
+}
