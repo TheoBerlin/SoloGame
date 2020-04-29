@@ -30,7 +30,6 @@ bool Window::init()
     glfwSetWindowUserPointer(m_pWindow, this);
 
     glfwSetErrorCallback(Window::glfwErrorCallback);
-    glfwSetKeyCallback(m_pWindow, InputHandlerV2::keyActionCallbackStatic);
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -39,6 +38,8 @@ bool Window::init()
         LOG_ERROR("Failed to create GLFW window");
         return false;
     }
+
+    m_InputHandler.init(m_pWindow);
 
     return true;
 }
