@@ -100,6 +100,10 @@ void InputHandlerV2::showCursor()
 
 bool InputHandlerV2::hideCursor()
 {
+    if (m_RawMotionEnabled) {
+        return true;
+    }
+
     if (!glfwRawMouseMotionSupported()) {
         LOG_ERROR("Raw mouse motion is not supported");
         return false;
@@ -109,6 +113,7 @@ bool InputHandlerV2::hideCursor()
     glfwSetInputMode(m_pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
     m_RawMotionEnabled = true;
+    return true;
 }
 
 void InputHandlerV2::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int scancode, int action, int mods)
