@@ -1,5 +1,6 @@
 #include "RacerController.hpp"
 
+#include <Engine/InputHandler.hpp>
 #include <Engine/Physics/Velocity.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -9,8 +10,9 @@
 
 #include <cmath>
 
-RacerController::RacerController(ECSCore* pECS)
+RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler)
     :System(pECS),
+    m_pInputHandler(pInputHandler),
     m_pTransformHandler(nullptr),
     m_pTrackHandler(nullptr),
     m_pTubeHandler(nullptr),
@@ -36,10 +38,7 @@ bool RacerController::initSystem()
     m_pTubeHandler      = reinterpret_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
     m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
 
-    InputHandler* pInputHandler = reinterpret_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
-    m_pKeyboardState = pInputHandler->getKeyboardState();
-
-    return m_pTransformHandler && m_pTrackHandler && m_pTubeHandler && m_pVelocityHandler && pInputHandler;
+    return m_pTransformHandler && m_pTrackHandler && m_pTubeHandler && m_pVelocityHandler;
 }
 
 void RacerController::update(float dt)
@@ -52,20 +51,20 @@ void RacerController::update(float dt)
         float& racerSpeed = m_pTrackHandler->getTrackSpeed(entity);
 
         // Accelerate or deccelerate using keyboard input
-        int keyInput = m_pKeyboardState->LeftShift - m_pKeyboardState->LeftControl;
+        int keyInput = m_pInputHandler->keyState(GLFW_KEY_LEFT_SHIFT) - m_pInputHandler->keyState(GLFW_KEY_LEFT_CONTROL);
         if (keyInput) {
             racerSpeed = std::clamp(racerSpeed + keyInput * g_RacerAcceleration * dt, g_RacerMinSpeed, g_RacerMaxSpeed);
         }
 
         // Roll using keyboard input
-        keyInput = m_pKeyboardState->D - m_pKeyboardState->A;
+        keyInput = m_pInputHandler->keyState(GLFW_KEY_D) - m_pInputHandler->keyState(GLFW_KEY_A);
         if (keyInput) {
             float rotationAngle = keyInput * rotationSpeed * dt;
             TransformHandler::roll(rotationQuat, rotationAngle);
         }
 
         // Move towards or away from the center
-        keyInput = m_pKeyboardState->S - m_pKeyboardState->W;
+        keyInput = m_pInputHandler->keyState(GLFW_KEY_S) - m_pInputHandler->keyState(GLFW_KEY_W);
         if (keyInput) {
             trackPosition.distanceFromCenter += keyInput * centerMoveSpeed * dt;
             trackPosition.distanceFromCenter = std::min(m_pTubeHandler->getTubeRadius() - minEdgeDistance, std::max(trackPosition.distanceFromCenter, minCenterDistance));

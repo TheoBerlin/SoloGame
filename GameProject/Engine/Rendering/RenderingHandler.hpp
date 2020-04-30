@@ -6,7 +6,7 @@
 class RenderingHandler
 {
 public:
-    RenderingHandler(ECSCore* pECS, Display* pDisplay);
+    RenderingHandler(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
     ~RenderingHandler();
 
     bool init();
@@ -19,7 +19,7 @@ private:
 
 private:
     ECSCore* m_pECS;
-    Display* m_pDisplay;
+    IDevice* m_pDevice;
 
     std::vector<Renderer*> m_Renderers;
 

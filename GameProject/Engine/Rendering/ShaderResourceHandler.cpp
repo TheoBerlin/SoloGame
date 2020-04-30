@@ -1,12 +1,14 @@
 #include "ShaderResourceHandler.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device)
-    :ComponentHandler(pECS, std::type_index(typeid(ShaderResourceHandler))),
-    device(device)
+ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice)
+    :ComponentHandler(pECS, TID(ShaderResourceHandler)),
+    m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -19,6 +21,9 @@ ShaderResourceHandler::~ShaderResourceHandler()
 
 bool ShaderResourceHandler::initHandler()
 {
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     /* Samplers */
     D3D11_SAMPLER_DESC samplerDesc;
     ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -32,7 +37,7 @@ bool ShaderResourceHandler::initHandler()
     samplerDesc.MinLOD = 0.0f;
     samplerDesc.MaxLOD = 0.0f;
 
-    HRESULT hr = device->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
+    HRESULT hr = pDevice->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
         return false;
@@ -53,6 +58,9 @@ bool ShaderResourceHandler::initHandler()
 
 bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer)
 {
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
     bufferDesc.ByteWidth = (UINT)(vertexSize * vertexCount);
@@ -67,7 +75,7 @@ bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vert
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
         return false;
@@ -78,6 +86,9 @@ bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vert
 
 bool ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer)
 {
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     D3D11_BUFFER_DESC bufferDesc;
     ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
     bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indexCount);
@@ -92,7 +103,7 @@ bool ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCou
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    HRESULT hr = device->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
         return false;

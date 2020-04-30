@@ -1,5 +1,7 @@
 #include "ModelLoader.hpp"
 
+#define NOMINMAX
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <Engine/ECS/ECSCore.hpp>
@@ -9,6 +11,7 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
+
 #include <algorithm>
 
 ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <Engine/ECS/System.hpp>
-#include <Engine/InputHandler.hpp>
 
 #include <DirectXMath.h>
 
+class InputHandler;
 class TrackHandler;
 class TransformHandler;
 class TubeHandler;
@@ -31,7 +31,7 @@ const float startingCenterDistance = 0.5f;
 class RacerController : public System
 {
 public:
-    RacerController(ECSCore* pECS);
+    RacerController(ECSCore* pECS, InputHandler* pInputHandler);
     ~RacerController();
 
     virtual bool initSystem() override;
@@ -44,10 +44,9 @@ private:
 private:
     IDVector m_Racers;
 
+    InputHandler* m_pInputHandler;
     TransformHandler* m_pTransformHandler;
     TrackHandler* m_pTrackHandler;
     TubeHandler* m_pTubeHandler;
     VelocityHandler* m_pVelocityHandler;
-
-    DirectX::Keyboard::State* m_pKeyboardState;
 };

@@ -1,11 +1,11 @@
 #include "UICore.hpp"
 
-#include <Engine/Rendering/Display.hpp>
+#include <Engine/Rendering/Window.hpp>
 
-UICore::UICore(ECSCore* pECS, Display* pDisplay)
-    :m_PanelHandler(pECS, pDisplay),
-    m_TextRenderer(pECS, pDisplay->getDevice(), pDisplay->getDeviceContext()),
-    m_ButtonSystem(pECS, pDisplay->getClientWidth(), pDisplay->getClientHeight())
+UICore::UICore(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
+    :m_PanelHandler(pECS, pDevice, pWindow),
+    m_TextRenderer(pECS, pDevice),
+    m_ButtonSystem(pECS, pWindow)
 {}
 
 UICore::~UICore()

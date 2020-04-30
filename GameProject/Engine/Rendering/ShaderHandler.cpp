@@ -1,12 +1,15 @@
 #include "ShaderHandler.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
+
 #include <d3dcompiler.h>
 
-ShaderHandler::ShaderHandler(ID3D11Device* device, ECSCore* pECS)
-    :ComponentHandler(pECS, std::type_index(typeid(ShaderHandler))),
-    m_pDevice(device)
+ShaderHandler::ShaderHandler(IDevice* pDevice, ECSCore* pECS)
+    :ComponentHandler(pECS, TID(ShaderHandler)),
+    m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -97,6 +100,9 @@ Program* ShaderHandler::getProgram(PROGRAM program)
 
 Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes, std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize)
 {
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     Program program = {vertexSize, nullptr, nullptr, nullptr, nullptr, nullptr};
 
     HRESULT hr;
@@ -110,7 +116,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                 compiledCode = compileShader(filePath.c_str(), VS_ENTRYPOINT, VS_TARGET);
 
                 do {
-                    hr = m_pDevice->CreateVertexShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.vertexShader);
+                    hr = pDevice->CreateVertexShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.vertexShader);
 
                     if (FAILED(hr)) {
                         if (program.vertexShader) {
@@ -122,7 +128,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                         system("pause");
                     }
                 } while (program.vertexShader == nullptr);
-                hr = m_pDevice->CreateInputLayout(&inputLayoutDesc[0], (UINT)inputLayoutDesc.size(), compiledCode->GetBufferPointer(),
+                hr = pDevice->CreateInputLayout(&inputLayoutDesc[0], (UINT)inputLayoutDesc.size(), compiledCode->GetBufferPointer(),
                     compiledCode->GetBufferSize(), &program.inputLayout);
                 if (FAILED(hr))
                     LOG_ERROR("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
@@ -133,7 +139,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                 compiledCode = compileShader(filePath.c_str(), PS_ENTRYPOINT, PS_TARGET);
 
                 do {
-                    hr = m_pDevice->CreatePixelShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.pixelShader);
+                    hr = pDevice->CreatePixelShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.pixelShader);
 
                     if (FAILED(hr)) {
                         if (program.pixelShader) {

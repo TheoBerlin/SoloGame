@@ -70,12 +70,14 @@ struct UIButton {
 const std::type_index tid_UIButton = TID(UIButton);
 
 class Display;
+class IDevice;
+class Window;
 struct Program;
 
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(ECSCore* pECS, Display* pDisplay);
+    UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow);
     ~UIHandler();
 
     virtual bool initHandler() override;
@@ -95,8 +97,9 @@ private:
     void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const TextureReference& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel);
+
 private:
-    ID3D11Device* m_pDevice;
+    IDevice* m_pDevice;
     ID3D11DeviceContext* m_pContext;
 
     Program* m_pUIProgram;

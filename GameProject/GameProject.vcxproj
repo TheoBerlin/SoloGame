@@ -156,7 +156,6 @@
     <ClCompile Include="Engine\Rendering\Components\PointLight.cpp" />
     <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
     <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
-    <ClCompile Include="Engine\Rendering\Display.cpp" />
     <ClCompile Include="Engine\Rendering\MeshRenderer.cpp" />
     <ClCompile Include="Engine\Rendering\RenderingCore.cpp" />
     <ClCompile Include="Engine\Rendering\RenderingHandler.cpp" />
@@ -207,7 +206,7 @@
     <ClInclude Include="Engine\InputHandler.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsCore.hpp" />
     <ClInclude Include="Engine\Physics\Velocity.hpp" />
-    <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\IDevice.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
@@ -221,7 +220,6 @@
     <ClInclude Include="Engine\Rendering\Components\VPMatrices.hpp" />
     <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
-    <ClInclude Include="Engine\Rendering\Display.hpp" />
     <ClInclude Include="Engine\Rendering\MeshRenderer.hpp" />
     <ClInclude Include="Engine\Rendering\RenderingCore.hpp" />
     <ClInclude Include="Engine\Rendering\RenderingHandler.hpp" />

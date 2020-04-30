@@ -1,11 +1,11 @@
 #pragma once
 
 #define NOMINMAX
-#include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Rendering/APIAbstractions/IDevice.hpp>
 
 #include <d3d11.h>
 
-class DeviceDX11 : public Device
+class DeviceDX11 : public IDevice
 {
 public:
     DeviceDX11();
@@ -13,16 +13,25 @@ public:
 
     bool init(const SwapChainInfo& swapChainInfo, Window* pWindow) override final;
 
+    void clearBackBuffer() override final;
+    void presentBackBuffer() override final;
+
+    ID3D11Device* getDevice()               { return m_pDevice; }
+    ID3D11DeviceContext* getContext() { return m_pContext; }
+
+    ID3D11RenderTargetView* getBackBuffer()         { return m_pBackBufferRTV; }
+    ID3D11DepthStencilView* getDepthStencilView()   { return m_pDepthStencilView; }
+
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
     bool initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow);
 
 private:
     ID3D11Device* m_pDevice;
-    IDXGISwapChain* m_pSwapChain;
-
     // Immediate context
-    ID3D11DeviceContext* m_pDeviceContext;
+    ID3D11DeviceContext* m_pContext;
+
+    IDXGISwapChain* m_pSwapChain;
 
     // Backbuffer textures
     ID3D11RenderTargetView* m_pBackBufferRTV;
@@ -32,4 +41,6 @@ private:
     ID3D11Texture2D* m_pDepthStencilTX;
     ID3D11DepthStencilView* m_pDepthStencilView;
     ID3D11DepthStencilState* m_pDepthStencilState;
+
+    const FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 };

@@ -1,16 +1,16 @@
 #include "RenderingHandler.hpp"
 
 #include <Engine/ECS/Renderer.hpp>
-#include <Engine/Rendering/Display.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 #include <thread>
 
-RenderingHandler::RenderingHandler(ECSCore* pECS, Display* pDisplay)
+RenderingHandler::RenderingHandler(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :m_pECS(pECS),
-    m_pDisplay(pDisplay),
-    m_MeshRenderer(pECS, pDisplay),
-    m_UIRenderer(pECS, pDisplay)
+    m_pDevice(pDevice),
+    m_MeshRenderer(pECS, pDevice, pWindow),
+    m_UIRenderer(pECS, pDevice, pWindow)
 {}
 
 RenderingHandler::~RenderingHandler()
@@ -28,12 +28,12 @@ bool RenderingHandler::init()
 
 void RenderingHandler::render()
 {
-    m_pDisplay->clearBackBuffer();
+    m_pDevice->clearBackBuffer();
 
     recordCommandBuffers();
     executeCommandBuffers();
 
-    m_pDisplay->presentBackBuffer();
+    m_pDevice->presentBackBuffer();
 }
 
 void RenderingHandler::recordCommandBuffers()

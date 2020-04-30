@@ -1,19 +1,23 @@
 #include "Panel.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/Rendering/Display.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIHandler::UIHandler(ECSCore* pECS, Display* pDisplay)
-    :ComponentHandler(pECS, std::type_index(typeid(UIHandler))),
-    m_ClientWidth(pDisplay->getClientWidth()),
-    m_ClientHeight(pDisplay->getClientHeight()),
-    m_pDevice(pDisplay->getDevice()),
-    m_pContext(pDisplay->getDeviceContext())
+UIHandler::UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
+    :ComponentHandler(pECS, TID(UIHandler)),
+    m_ClientWidth(pWindow->getWidth()),
+    m_ClientHeight(pWindow->getHeight()),
+    m_pDevice(pDevice)
 {
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    m_pContext = pDeviceDX->getContext();
+
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
@@ -69,7 +73,8 @@ bool UIHandler::initHandler()
     bufferDesc.MiscFlags            = 0;
     bufferDesc.StructureByteStride  = 0;
 
-    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectBuffer);
+    DeviceDX11* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    HRESULT hr = pDevice->getDevice()->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectBuffer);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create per-char cbuffer: %s", hresultToString(hr).c_str());
         return false;
@@ -149,8 +154,11 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     txDesc.CPUAccessFlags = 0;
     txDesc.MiscFlags = 0;
 
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     ID3D11Texture2D* texture2D = nullptr;
-    HRESULT hr = m_pDevice->CreateTexture2D(&txDesc, nullptr, &texture2D);
+    HRESULT hr = pDevice->CreateTexture2D(&txDesc, nullptr, &texture2D);
     if (hr != S_OK) {
         LOG_WARNING("Failed to create texture for UI panel: %s", hresultToString(hr).c_str());
         return;
@@ -158,7 +166,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
 
     // Create shader resource view
     ID3D11ShaderResourceView* pSRV = nullptr;
-    hr = m_pDevice->CreateShaderResourceView(texture2D, nullptr, &pSRV);
+    hr = pDevice->CreateShaderResourceView(texture2D, nullptr, &pSRV);
     if (hr != S_OK) {
         LOG_WARNING("Failed to create shader resource view for UI panel: %s", hresultToString(hr).c_str());
     }
@@ -275,8 +283,10 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     rtvDesc.Texture2D.MipSlice = 0;
 
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+
     ID3D11RenderTargetView* panelRtv = nullptr;
-    HRESULT hr = m_pDevice->CreateRenderTargetView(panelResource, &rtvDesc, &panelRtv);
+    HRESULT hr = pDeviceDX->getDevice()->CreateRenderTargetView(panelResource, &rtvDesc, &panelRtv);
     if (hr != S_OK) {
         LOG_WARNING("Failed to create render target view of panel texture: %s", hresultToString(hr).c_str());
         return;

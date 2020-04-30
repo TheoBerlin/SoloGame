@@ -4,10 +4,13 @@
 #include <Engine/UI/ButtonSystem.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
 
+class IDevice;
+class Window;
+
 class UICore
 {
 public:
-    UICore(ECSCore* pECS, Display* pDisplay);
+    UICore(ECSCore* pECS, IDevice* pDevice, Window* pWindow);
     ~UICore();
 
     ButtonSystem& getButtonSystem() { return m_ButtonSystem; }

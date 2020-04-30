@@ -8,6 +8,7 @@
 
 class ComponentHandler;
 class ECSCore;
+class IDevice;
 class Renderer;
 
 struct RendererRegistration {
@@ -18,7 +19,7 @@ struct RendererRegistration {
 class Renderer
 {
 public:
-    Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pImmediateDevice);
+    Renderer(ECSCore* pECS, IDevice* pDevice);
     ~Renderer();
 
     virtual bool init() = 0;
@@ -35,7 +36,7 @@ protected:
     bool executeCommandBuffer(ID3D11DeviceContext* pCommandBuffer);
 
 protected:
-    ID3D11Device* m_pDevice;
+    IDevice* m_pDevice;
 
 private:
     ECSCore* m_pECS;

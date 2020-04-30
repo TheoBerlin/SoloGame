@@ -7,15 +7,16 @@
 
 #define MAX_POINTLIGHTS 7u
 
-class Display;
+class DeviceDX11;
 class RenderableHandler;
 class TransformHandler;
 class VPHandler;
+class Window;
 
 class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, Display* pDisplay);
+    MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
     ~MeshRenderer();
 
     virtual bool init() override;

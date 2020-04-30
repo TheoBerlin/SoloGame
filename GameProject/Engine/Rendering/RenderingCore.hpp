@@ -7,10 +7,12 @@
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 
+class Window;
+
 class RenderingCore
 {
 public:
-    RenderingCore(ECSCore* pECS, ID3D11Device* pDevice);
+    RenderingCore(ECSCore* pECS, IDevice* pDevice, Window* pWindow);
     ~RenderingCore();
 
 private:

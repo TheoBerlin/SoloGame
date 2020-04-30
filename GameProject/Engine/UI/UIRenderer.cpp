@@ -1,20 +1,21 @@
 #include "UIRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
-#include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIRenderer::UIRenderer(ECSCore* pECS, Display* pDisplay)
-    :Renderer(pECS, pDisplay->getDevice(), pDisplay->getDeviceContext()),
-    m_pRenderTarget(pDisplay->getRenderTarget()),
-    m_pDepthStencilView(pDisplay->getDepthStencilView()),
-    m_BackbufferWidth(pDisplay->getClientWidth()),
-    m_BackbufferHeight(pDisplay->getClientHeight())
+UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
+    :Renderer(pECS, pDevice),
+    m_pRenderTarget(pDevice->getBackBuffer()),
+    m_pDepthStencilView(pDevice->getDepthStencilView()),
+    m_BackbufferWidth(pWindow->getWidth()),
+    m_BackbufferHeight(pWindow->getHeight())
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -62,7 +63,10 @@ bool UIRenderer::init()
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
-    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, m_PerPanelBuffer.GetAddressOf());
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, nullptr, m_PerPanelBuffer.GetAddressOf());
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create per-object cbuffer: %s", hresultToString(hr).c_str());
         return false;

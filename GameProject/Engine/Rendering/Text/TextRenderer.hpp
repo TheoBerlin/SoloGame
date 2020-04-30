@@ -26,10 +26,12 @@ struct ProcessedGlyph {
     Bytemap bytemap;
 };
 
+class IDevice;
+
 class TextRenderer : public ComponentHandler
 {
 public:
-    TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context);
+    TextRenderer(ECSCore* pECS, IDevice* pDevice);
     ~TextRenderer();
 
     virtual bool initHandler() override;
@@ -54,8 +56,7 @@ private:
     void bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap);
 
 private:
-    ID3D11Device* device;
-    ID3D11DeviceContext* context;
+    IDevice* m_pDevice;
 
     // Rendering text results in a texture and a texture reference being created. This is the storage for the textures.
     std::vector<Texture*> m_Textures;

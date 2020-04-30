@@ -11,16 +11,14 @@
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
 
-MainMenu::MainMenu(StateManager* stateManager, ECSCore* pECS, ID3D11Device* device)
-    :State(stateManager, pECS, STATE_TRANSITION::PUSH),
-    device(device)
+MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, ID3D11Device* pDevice, InputHandler* pInputHandler)
+    :State(pStateManager, pECS, STATE_TRANSITION::PUSH),
+    device(pDevice),
+    m_pInputHandler(pInputHandler)
 {
     ComponentSubscriber* pComponentSubscriber = pECS->getComponentSubscriber();
 
-    this->inputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
-    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
-    inputHandler->setMouseVisibility(true);
-    this->keyboardState = inputHandler->getKeyboardState();
+    pInputHandler->showCursor();
 
     UIHandler* uiHandler            = static_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
     TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
@@ -64,8 +62,7 @@ MainMenu::~MainMenu()
 
 void MainMenu::resume()
 {
-    inputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
-    inputHandler->setMouseVisibility(true);
+    m_pInputHandler->showCursor();
 }
 
 void MainMenu::pause()
@@ -73,7 +70,7 @@ void MainMenu::pause()
 
 void MainMenu::update(float dt)
 {
-    if (keyboardState->E) {
+    if (m_pInputHandler->keyState(GLFW_KEY_E)) {
         new GameSession(this);
     }
 }

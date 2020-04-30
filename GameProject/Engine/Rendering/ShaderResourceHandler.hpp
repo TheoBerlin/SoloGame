@@ -6,12 +6,13 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
+class IDevice;
 struct Vertex;
 
 class ShaderResourceHandler : public ComponentHandler
 {
 public:
-    ShaderResourceHandler(ECSCore* pECS, ID3D11Device* device);
+    ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice);
     ~ShaderResourceHandler();
 
     virtual bool initHandler() override;
@@ -24,7 +25,7 @@ public:
     Microsoft::WRL::ComPtr<ID3D11Buffer> getQuarterScreenQuad();
 
 private:
-    ID3D11Device* device;
+    IDevice* m_pDevice;
 
     /* Samplers */
     Microsoft::WRL::ComPtr<ID3D11SamplerState> aniSampler;

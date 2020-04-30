@@ -3,12 +3,11 @@
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/IDVector.hpp>
 #include <DirectXMath.h>
-#include <DirectXTK/Keyboard.h>
-#include <DirectXTK/Mouse.h>
 
 const float maxPitch = DirectX::XM_PIDIV2 - 0.01f;
 const float g_CameraSpeed = 1.5f;
 
+class InputHandler;
 class TransformHandler;
 class VelocityHandler;
 class VPHandler;
@@ -16,7 +15,7 @@ class VPHandler;
 class CameraSystem : public System
 {
 public:
-    CameraSystem(ECSCore* pECS);
+    CameraSystem(ECSCore* pECS, InputHandler* pInputHandler);
     ~CameraSystem();
 
     virtual bool initSystem() override;
@@ -30,6 +29,5 @@ private:
     TransformHandler* m_pTransformHandler;
     VelocityHandler* m_pVelocityHandler;
     VPHandler* m_pVPHandler;
-    DirectX::Keyboard::State* m_pKeyboardState;
-    DirectX::Mouse::State* m_pMouseState;
+    InputHandler* m_pInputHandler;
 };

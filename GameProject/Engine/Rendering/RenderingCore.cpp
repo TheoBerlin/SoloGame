@@ -1,12 +1,14 @@
 #include "RenderingCore.hpp"
 
-RenderingCore::RenderingCore(ECSCore* pECS, ID3D11Device* pDevice)
+#include <Engine/Rendering/Window.hpp>
+
+RenderingCore::RenderingCore(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
     :m_VPHandler(pECS),
     m_ShaderHandler(pDevice, pECS),
     m_ShaderResourceHandler(pECS, pDevice),
     m_RenderableHandler(pECS),
     m_LightHandler(pECS),
-    m_CameraSystem(pECS)
+    m_CameraSystem(pECS, pWindow->getInputHandler())
 {}
 
 RenderingCore::~RenderingCore()

@@ -1,25 +1,26 @@
 #include "MeshRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
-#include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 #include <DirectXMath.h>
 
-MeshRenderer::MeshRenderer(ECSCore* pECS, Display* pDisplay)
-    :Renderer(pECS, pDisplay->getDevice(), pDisplay->getDeviceContext()),
+MeshRenderer::MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
+    :Renderer(pECS, pDevice),
     m_pCommandBuffer(nullptr),
-    m_pRenderTarget(pDisplay->getRenderTarget()),
-    m_pDepthStencilView(pDisplay->getDepthStencilView()),
-    m_BackbufferWidth(pDisplay->getClientWidth()),
-    m_BackbufferHeight(pDisplay->getClientHeight())
+    m_pRenderTarget(pDevice->getBackBuffer()),
+    m_pDepthStencilView(pDevice->getDepthStencilView()),
+    m_BackbufferWidth(pWindow->getWidth()),
+    m_BackbufferHeight(pWindow->getHeight())
 {
     CameraComponents camSub;
     PointLightComponents pointLightSub;
@@ -77,7 +78,10 @@ bool MeshRenderer::init()
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
-    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectMatrices);
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPerObjectMatrices);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create per-object matrices cbuffer: %s", hresultToString(hr).c_str());
         return false;
@@ -85,7 +89,7 @@ bool MeshRenderer::init()
 
     bufferDesc.ByteWidth = sizeof(MaterialAttributes);
 
-    hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pMaterialBuffer);
+    hr = pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pMaterialBuffer);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create material cbuffer: %s", hresultToString(hr).c_str());
         return false;
@@ -93,7 +97,7 @@ bool MeshRenderer::init()
 
     bufferDesc.ByteWidth = sizeof(PerFrameBuffer);
 
-    hr = m_pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPointLightBuffer);
+    hr = pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pPointLightBuffer);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create point light cbuffer: %s", hresultToString(hr).c_str());
         return false;
@@ -113,7 +117,7 @@ bool MeshRenderer::init()
     rsDesc.MultisampleEnable = false;
     rsDesc.AntialiasedLineEnable = false;
 
-    hr = m_pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
+    hr = pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create rasterizer state: %s", hresultToString(hr).c_str());
         return false;

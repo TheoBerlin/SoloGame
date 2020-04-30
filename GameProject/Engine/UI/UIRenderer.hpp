@@ -8,15 +8,16 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
-class Display;
+class DeviceDX11;
 class ShaderHandler;
 class UIHandler;
+class Window;
 struct Program;
 
 class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, Display* pDisplay);
+    UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
     ~UIRenderer();
 
     virtual bool init() override;
