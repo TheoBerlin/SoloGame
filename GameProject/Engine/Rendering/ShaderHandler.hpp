@@ -38,10 +38,12 @@ struct Program {
     ID3D11PixelShader* pixelShader;
 };
 
+class IDevice;
+
 class ShaderHandler : public ComponentHandler
 {
 public:
-    ShaderHandler(ID3D11Device* device, ECSCore* pECS);
+    ShaderHandler(IDevice* pDevice, ECSCore* pECS);
     ~ShaderHandler();
 
     virtual bool initHandler() override;
@@ -55,5 +57,5 @@ private:
 
     std::vector<Program> m_Programs;
 
-    ID3D11Device* m_pDevice;
+    IDevice* m_pDevice;
 };

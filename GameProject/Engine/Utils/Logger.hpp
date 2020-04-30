@@ -16,8 +16,6 @@ public:
     static void init();
     ~Logger();
 
-    static BOOL WINAPI consoleEventHandler(DWORD eventType);
-
     template<typename ... Args>
     static void logInfo(const char* pFile, int line, const std::string& format, Args&& ... args);
 
@@ -36,10 +34,7 @@ private:
     static std::string timeToString();
 
     static HANDLE consoleHandle;
-
     static std::ofstream logFile;
-
-    static WORD defaultAttributes;
 };
 
 template<typename ... Args>

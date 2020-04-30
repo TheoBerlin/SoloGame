@@ -4,28 +4,31 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/Physics/PhysicsCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetLoaders/AssetLoadersCore.hpp>
 #include <Engine/Rendering/RenderingCore.hpp>
-#include <Engine/Rendering/Display.hpp>
 #include <Engine/Rendering/RenderingHandler.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/UI/UICore.hpp>
 #include <Engine/InputHandler.hpp>
 
 class IGame
 {
 public:
-    IGame(HINSTANCE hInstance);
+    IGame();
     ~IGame();
 
     bool init();
+    virtual bool finalize() = 0;
 
     // Starts the main loop
     void run();
 
 protected:
+    Window m_Window;
+    DeviceDX11 m_Device;
+
     ECSCore m_ECS;
-    Display m_Display;
-    InputHandler m_InputHandler;
 
     StateManager m_StateManager;
 
@@ -37,5 +40,5 @@ protected:
     AudioCore* m_pAudioCore;
 
     // Rendering
-    RenderingHandler m_RenderingHandler;
+    RenderingHandler* m_pRenderingHandler;
 };

@@ -1,62 +1,12 @@
 #include "InputHandler.hpp"
 
-#include <Engine/Utils/ECSUtils.hpp>
-
-InputHandler::InputHandler(ECSCore* pECS, HWND window)
-    :ComponentHandler(pECS, TID(InputHandler)),
-    m_Window(window)
-{
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-    registerHandler(handlerReg);
-}
-
-InputHandler::~InputHandler()
-{}
-
-bool InputHandler::initHandler()
-{
-    m_Mouse.SetWindow(m_Window);
-    m_Mouse.SetMode(m_Mouse.MODE_RELATIVE);
-    return true;
-}
-
-void InputHandler::update()
-{
-    m_KeyboardState = m_Keyboard.GetState();
-    m_MouseState = m_Mouse.GetState();
-    m_MouseBtnTracker.Update(m_MouseState);
-}
-
-DirectX::Keyboard::State* InputHandler::getKeyboardState()
-{
-    return &m_KeyboardState;
-}
-
-DirectX::Mouse::State* InputHandler::getMouseState()
-{
-    return &m_MouseState;
-}
-
-void InputHandler::setMouseMode(DirectX::Mouse::Mode mode)
-{
-    m_Mouse.SetMode(mode);
-}
-
-void InputHandler::setMouseVisibility(bool visible)
-{
-    ShowCursor(visible);
-    m_Mouse.SetVisible(visible);
-    ShowCursor(visible);
-}
-
-// InputHandlerV2
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-InputHandlerV2::InputHandlerV2()
+InputHandler::InputHandler()
     :m_MousePosition(0.0, 0.0),
     m_MouseMove(0.0, 0.0),
+    m_MouseCenter(0.0, 0.0),
     m_RawMotionEnabled(false)
 {
     for (bool& keyState : m_pKeyStates) {
@@ -68,29 +18,33 @@ InputHandlerV2::InputHandlerV2()
     }
 }
 
-InputHandlerV2::~InputHandlerV2()
+InputHandler::~InputHandler()
 {}
 
-void InputHandlerV2::init(GLFWwindow* pWindow)
+void InputHandler::init(GLFWwindow* pWindow, uint32_t windowWidth, uint32_t windowHeight)
 {
     m_pWindow = pWindow;
 
-    glfwSetKeyCallback(pWindow, InputHandlerV2::keyActionCallbackStatic);
-    glfwSetMouseButtonCallback(pWindow, InputHandlerV2::mouseButtonCallbackStatic);
+    m_MouseCenter = glm::dvec2((double)windowWidth, (double)windowHeight) / 2.0;
+
+    glfwSetKeyCallback(pWindow, InputHandler::keyActionCallbackStatic);
+    glfwSetMouseButtonCallback(pWindow, InputHandler::mouseButtonCallbackStatic);
 
     glfwGetCursorPos(pWindow, &m_MousePosition.x, &m_MousePosition.y);
 }
 
-void InputHandlerV2::update()
+void InputHandler::update()
 {
     if (m_RawMotionEnabled) {
         glfwGetCursorPos(m_pWindow, &m_MouseMove.x, &m_MouseMove.y);
+        m_MouseMove -= m_MouseCenter;
+        glfwSetCursorPos(m_pWindow, m_MouseCenter.x, m_MouseCenter.y);
     } else {
         glfwGetCursorPos(m_pWindow, &m_MousePosition.x, &m_MousePosition.y);
     }
 }
 
-void InputHandlerV2::showCursor()
+void InputHandler::showCursor()
 {
     glfwSetInputMode(m_pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
     glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -98,7 +52,7 @@ void InputHandlerV2::showCursor()
     m_RawMotionEnabled = false;
 }
 
-bool InputHandlerV2::hideCursor()
+bool InputHandler::hideCursor()
 {
     if (m_RawMotionEnabled) {
         return true;
@@ -112,30 +66,32 @@ bool InputHandlerV2::hideCursor()
     glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetInputMode(m_pWindow, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
+    glfwSetCursorPos(m_pWindow, m_MouseCenter.x, m_MouseCenter.y);
+
     m_RawMotionEnabled = true;
     return true;
 }
 
-void InputHandlerV2::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int scancode, int action, int mods)
+void InputHandler::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int scancode, int action, int mods)
 {
     // Retrieve pointer to InputHandler instance
     Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
     pWindow->getInputHandler()->keyActionCallback(key, scancode, action, mods);
 }
 
-void InputHandlerV2::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button, int action, int mods)
+void InputHandler::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button, int action, int mods)
 {
     // Retrieve pointer to InputHandler instance
     Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
     pWindow->getInputHandler()->mouseButtonCallback(button, action, mods);
 }
 
-void InputHandlerV2::keyActionCallback(int key, int scancode, int action, int mods)
+void InputHandler::keyActionCallback(int key, int scancode, int action, int mods)
 {
-    m_pKeyStates[key] = action == GLFW_PRESS;
+    m_pKeyStates[key] = action != GLFW_RELEASE;
 }
 
-void InputHandlerV2::mouseButtonCallback(int button, int action, int mods)
+void InputHandler::mouseButtonCallback(int button, int action, int mods)
 {
-    m_pMouseButtonStates[button] = action == GLFW_PRESS;
+    m_pMouseButtonStates[button] = action != GLFW_RELEASE;
 }

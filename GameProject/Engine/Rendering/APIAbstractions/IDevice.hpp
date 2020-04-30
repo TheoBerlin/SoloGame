@@ -11,8 +11,11 @@ struct SwapChainInfo {
 
 class Window;
 
-class Device
+class IDevice
 {
 public:
     virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow) = 0;
+
+    virtual void clearBackBuffer() = 0;
+    virtual void presentBackBuffer() = 0;
 };

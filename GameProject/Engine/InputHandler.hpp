@@ -1,52 +1,15 @@
 #pragma once
 
-#define NOMINMAX
-#include <Windows.h>
-#include <Engine/ECS/ComponentHandler.hpp>
-
-#include <DirectXTK/Keyboard.h>
-#include <DirectXTK/Mouse.h>
-
-
-class InputHandler : public ComponentHandler
-{
-public:
-    InputHandler(ECSCore* pECS, HWND window);
-    ~InputHandler();
-
-    virtual bool initHandler() override;
-
-    // Updates the states of the keyboard and mouse
-    void update();
-
-    DirectX::Keyboard::State* getKeyboardState();
-    DirectX::Mouse::State* getMouseState();
-
-    void setMouseMode(DirectX::Mouse::Mode mode);
-    void setMouseVisibility(bool visible);
-
-private:
-    DirectX::Keyboard m_Keyboard;
-    DirectX::Keyboard::State m_KeyboardState;
-
-    DirectX::Mouse m_Mouse;
-    DirectX::Mouse::State m_MouseState;
-    DirectX::Mouse::ButtonStateTracker m_MouseBtnTracker;
-
-    HWND m_Window;
-};
-
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-// TODO: Replace InputHandler
-class InputHandlerV2
+class InputHandler
 {
 public:
-    InputHandlerV2();
-    ~InputHandlerV2();
+    InputHandler();
+    ~InputHandler();
 
-    void init(GLFWwindow* pWindow);
+    void init(GLFWwindow* pWindow, uint32_t windowWidth, uint32_t windowHeight);
 
     void update();
 
@@ -54,8 +17,14 @@ public:
     // Hides the cursor and stop reading the absolute position of the cursor
     bool hideCursor();
 
-    inline const glm::dvec2& getMousePosition() const   { return m_MousePosition; };
-    inline const glm::dvec2& getMouseMove() const       { return m_MouseMove; };
+    bool cursorIsHidden() const { return m_RawMotionEnabled; }
+
+    bool keyState(int key) { return m_pKeyStates[key]; }
+
+    const glm::dvec2& getMousePosition() const   { return m_MousePosition; };
+    const glm::dvec2& getMouseMove() const       { return m_MouseMove; };
+
+    bool mouseButtonState(int button) { return m_pMouseButtonStates[button]; }
 
 public:
     // Calls the stateful keyActionCallback
@@ -74,6 +43,9 @@ private:
 
     // Mouse
     bool m_pMouseButtonStates[GLFW_MOUSE_BUTTON_LAST + 1];
+
+    // Center position of the screen. When raw mouse input is enabled, glfw returns the mouse position as mouseCenter + mouseMove.
+    glm::dvec2 m_MouseCenter;
 
     glm::dvec2 m_MousePosition;
     glm::dvec2 m_MouseMove;

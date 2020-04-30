@@ -7,7 +7,7 @@
 DeviceDX11::DeviceDX11()
     :m_pDevice(nullptr),
     m_pSwapChain(nullptr),
-    m_pDeviceContext(nullptr),
+    m_pContext(nullptr),
     m_pBackBufferRTV(nullptr),
     m_pDepthStencilTX(nullptr),
     m_pDepthStencilView(nullptr),
@@ -25,8 +25,8 @@ DeviceDX11::~DeviceDX11()
         m_pSwapChain->Release();
     }
 
-    if (m_pDeviceContext) {
-        m_pDeviceContext->Release();
+    if (m_pContext) {
+        m_pContext->Release();
     }
 
     if (m_pBackBufferRTV) {
@@ -105,10 +105,10 @@ bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Wind
         &m_pSwapChain,
         &m_pDevice,
         &createdFeatureLevel,
-        &m_pDeviceContext
+        &m_pContext
     );
 
-    if (FAILED(hr) || !m_pDevice || !m_pSwapChain || !m_pDeviceContext) {
+    if (FAILED(hr) || !m_pDevice || !m_pSwapChain || !m_pContext) {
         LOG_ERROR("Failed to create Device and Swap Chain: %s", hresultToString(hr).c_str());
         return false;
     }
@@ -184,7 +184,7 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 
     /* Set viewport */
     D3D11_VIEWPORT viewPort;
@@ -194,7 +194,7 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     viewPort.Height = (float)pWindow->getHeight();
     viewPort.MinDepth = 0.0f;
     viewPort.MaxDepth = 1.0f;
-    m_pDeviceContext->RSSetViewports(1, &viewPort);
+    m_pContext->RSSetViewports(1, &viewPort);
 
     // Create blend state
     D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
@@ -217,7 +217,21 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    m_pDeviceContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
+    m_pContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
 
     return true;
+}
+
+void DeviceDX11::clearBackBuffer()
+{
+    m_pContext->ClearRenderTargetView(m_pBackBufferRTV, m_pClearColor);
+    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+}
+
+void DeviceDX11::presentBackBuffer()
+{
+    HRESULT hr = m_pSwapChain->Present(0, 0);
+    if (FAILED(hr)) {
+        LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+    }
 }

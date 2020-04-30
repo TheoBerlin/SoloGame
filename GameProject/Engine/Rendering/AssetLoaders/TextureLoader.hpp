@@ -2,13 +2,15 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
-#include <d3d11.h>
+
 #include <unordered_map>
+
+class IDevice;
 
 class TextureLoader : public ComponentHandler
 {
 public:
-    TextureLoader(ECSCore* pECS, ID3D11Device* pDevice);
+    TextureLoader(ECSCore* pECS, IDevice* pDevice);
     ~TextureLoader();
 
     virtual bool initHandler() override;
@@ -20,5 +22,5 @@ public:
 private:
     std::unordered_map<std::string, Texture*> m_Textures;
 
-    ID3D11Device* m_pDevice;
+    IDevice* m_pDevice;
 };

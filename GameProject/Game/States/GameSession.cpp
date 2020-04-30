@@ -2,6 +2,7 @@
 
 #include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/InputHandler.hpp>
 #include <Engine/Physics/Velocity.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -11,12 +12,13 @@
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/MainMenu.hpp>
 
-GameSession::GameSession(MainMenu* mainMenu)
-    :State(mainMenu, STATE_TRANSITION::POP_AND_PUSH),
-    m_TubeHandler(m_pECS, mainMenu->getDevice()),
+GameSession::GameSession(MainMenu* pMainMenu)
+    :State(pMainMenu, STATE_TRANSITION::POP_AND_PUSH),
+    m_pInputHandler(pMainMenu->getInputHandler()),
+    m_TubeHandler(m_pECS, pMainMenu->getDevice()),
     m_TrackPositionHandler(m_pECS),
     m_LightSpinner(m_pECS),
-    m_RacerMover(m_pECS)
+    m_RacerMover(m_pECS, pMainMenu->getInputHandler())
 {
     m_pECS->performRegistrations();
     LOG_INFO("Started game session");
@@ -24,9 +26,7 @@ GameSession::GameSession(MainMenu* mainMenu)
     ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
 
     // Set mouse mode to relative and hide the cursor
-    m_pInputHandler = static_cast<InputHandler*>(pComponentSubscriber->getComponentHandler(TID(InputHandler)));
-    m_pInputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
-    m_pInputHandler->setMouseVisibility(false);
+    m_pInputHandler->hideCursor();
 
     TransformHandler* pTransformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
     RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
@@ -56,8 +56,7 @@ GameSession::~GameSession()
 
 void GameSession::resume()
 {
-    m_pInputHandler->setMouseMode(DirectX::Mouse::Mode::MODE_RELATIVE);
-    m_pInputHandler->setMouseVisibility(false);
+    m_pInputHandler->hideCursor();
 }
 
 void GameSession::pause()

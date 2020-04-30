@@ -25,10 +25,6 @@ bool Window::init()
         return false;
     }
 
-    // Callback functions eg. for key input are stateless. Setting this pointer allows them to become stateful by retrieving the Window
-    // pointer inside one of the callback functions
-    glfwSetWindowUserPointer(m_pWindow, this);
-
     glfwSetErrorCallback(Window::glfwErrorCallback);
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -39,9 +35,18 @@ bool Window::init()
         return false;
     }
 
-    m_InputHandler.init(m_pWindow);
+    // Callback functions eg. for key input are stateless. Setting this pointer allows them to become stateful by retrieving the Window
+    // pointer inside one of the callback functions
+    glfwSetWindowUserPointer(m_pWindow, this);
+
+    m_InputHandler.init(m_pWindow, m_Width, m_Height);
 
     return true;
+}
+
+void Window::show()
+{
+    glfwShowWindow(m_pWindow);
 }
 
 void Window::pollEvents()

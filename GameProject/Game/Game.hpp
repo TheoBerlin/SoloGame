@@ -11,9 +11,11 @@ class MainMenu;
 class Game : public IGame
 {
 public:
-    Game(HINSTANCE hInstance);
+    Game();
     ~Game();
 
+    bool finalize() override final;
+
 private:
-    MainMenu* mainMenu;
+    MainMenu* m_pMainMenu;
 };

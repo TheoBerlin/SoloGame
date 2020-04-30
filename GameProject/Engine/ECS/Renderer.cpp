@@ -1,14 +1,17 @@
 #include "Renderer.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-Renderer::Renderer(ECSCore* pECS, ID3D11Device* pDevice, ID3D11DeviceContext* pImmediateDevice)
+Renderer::Renderer(ECSCore* pECS, IDevice* pDevice)
     :m_pECS(pECS),
-    m_pDevice(pDevice),
-    m_pImmediateContext(pImmediateDevice)
-{}
+    m_pDevice(pDevice)
+{
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(pDevice);
+    m_pImmediateContext = pDeviceDX->getContext();
+}
 
 Renderer::~Renderer()
 {
@@ -27,7 +30,10 @@ ComponentHandler* Renderer::getComponentHandler(const std::type_index& handlerTy
 
 bool Renderer::createCommandBuffer(ID3D11DeviceContext** ppCommandBuffer)
 {
-    HRESULT hr = m_pDevice->CreateDeferredContext(0, ppCommandBuffer);
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
+    HRESULT hr = pDevice->CreateDeferredContext(0, ppCommandBuffer);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create deferred context: %s", hresultToString(hr).c_str());
         return false;

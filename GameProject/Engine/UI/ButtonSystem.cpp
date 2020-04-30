@@ -1,13 +1,14 @@
 #include "ButtonSystem.hpp"
 
-#include <Engine/Rendering/Display.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
-ButtonSystem::ButtonSystem(ECSCore* pECS, unsigned int clientWidth, unsigned int clientHeight)
+ButtonSystem::ButtonSystem(ECSCore* pECS, Window* pWindow)
     :System(pECS),
-    m_ClientWidth(clientWidth),
-    m_ClientHeight(clientHeight),
+    m_ClientWidth(pWindow->getWidth()),
+    m_ClientHeight(pWindow->getHeight()),
+    m_pInputHandler(pWindow->getInputHandler()),
     m_PressedButtonExists(false),
     m_PressedButton(0)
 {
@@ -26,26 +27,24 @@ ButtonSystem::~ButtonSystem()
 bool ButtonSystem::initSystem()
 {
     m_pUIhandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
-    InputHandler* pInputHandler = static_cast<InputHandler*>(getComponentHandler(TID(InputHandler)));
-
-    m_pMouseState = pInputHandler->getMouseState();
-
-    return m_pUIhandler && pInputHandler;
+    return m_pUIhandler;
 }
 
 void ButtonSystem::update(float dt)
 {
-    if (m_pMouseState->positionMode == DirectX::Mouse::Mode::MODE_RELATIVE) {
+    if (m_pInputHandler->cursorIsHidden()) {
         return;
     }
+
+    const glm::dvec2& mousePosition = m_pInputHandler->getMousePosition();
 
     for (Entity entity : m_Buttons.getIDs()) {
         UIPanel& panel = m_pUIhandler->panels.indexID(entity);
         UIButton& button = m_pUIhandler->buttons.indexID(entity);
         panel.highlight = button.defaultHighlight;
 
-		unsigned int mouseX = (unsigned int)m_pMouseState->x;
-		unsigned int mouseY = (unsigned int)(m_ClientHeight - m_pMouseState->y);
+		unsigned int mouseX = (unsigned int)mousePosition.x;
+		unsigned int mouseY = (unsigned int)(m_ClientHeight - mousePosition.y);
 
         // Check that the mouse and the button align horizontally
         unsigned int buttonXLeft = (unsigned int)(panel.position.x * m_ClientWidth);
@@ -76,7 +75,7 @@ void ButtonSystem::update(float dt)
 		m_HoveredButtonExists = true;
 		m_HoveredButton = entity;
 
-        if (m_pMouseState->leftButton) {
+        if (m_pInputHandler->mouseButtonState(GLFW_MOUSE_BUTTON_LEFT)) {
             // State 1
             panel.highlight = button.pressHighlight;
             m_PressedButtonExists = true;

@@ -16,15 +16,18 @@ public:
 
     bool init();
 
-    uint32_t getWidth() const { return m_Width; }
-    uint32_t getHeight() const { return m_Height; }
+    void show();
 
     void pollEvents();
 
     bool shouldClose();
     HWND getHWND();
 
-    InputHandlerV2* getInputHandler() { return &m_InputHandler; }
+public:
+    uint32_t getWidth() const   { return m_Width; }
+    uint32_t getHeight() const  { return m_Height; }
+
+    InputHandler* getInputHandler() { return &m_InputHandler; }
 
 private:
     static void glfwErrorCallback(int error, const char* pDescription);
@@ -33,5 +36,5 @@ private:
     uint32_t m_Width, m_Height;
 
     GLFWwindow* m_pWindow;
-    InputHandlerV2 m_InputHandler;
+    InputHandler m_InputHandler;
 };

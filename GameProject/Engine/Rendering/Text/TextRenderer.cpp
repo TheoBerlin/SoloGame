@@ -1,18 +1,20 @@
 #include "TextRenderer.hpp"
 
-#include <DirectXTK/WICTextureLoader.h>
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
+
+#include <DirectXTK/WICTextureLoader.h>
+
 #include <algorithm>
 
-TextRenderer::TextRenderer(ECSCore* pECS, ID3D11Device* device, ID3D11DeviceContext* context)
+TextRenderer::TextRenderer(ECSCore* pECS, IDevice* pDevice)
     :ComponentHandler(pECS, TID(TextRenderer)),
-    device(device),
-    context(context)
+    m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -266,15 +268,18 @@ ID3D11ShaderResourceView* TextRenderer::bytemapToTexture(const Bytemap& bytemap)
     glyphTxSubdata.SysMemPitch = convertedBytemap.width * 4 * sizeof(uint8_t);
     glyphTxSubdata.SysMemSlicePitch = 0;
 
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
     Microsoft::WRL::ComPtr<ID3D11Texture2D> glyphTexture;
-    HRESULT hr = device->CreateTexture2D(&txDesc, &glyphTxSubdata, glyphTexture.GetAddressOf());
+    HRESULT hr = pDevice->CreateTexture2D(&txDesc, &glyphTxSubdata, glyphTexture.GetAddressOf());
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create texture from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
     ID3D11ShaderResourceView* glyphSRV;
-    hr = device->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
+    hr = pDevice->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create shader resource view from bytemap: %s", hresultToString(hr).c_str());
         return nullptr;
