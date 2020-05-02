@@ -25,8 +25,7 @@ ShaderResourceHandler::~ShaderResourceHandler()
 
 bool ShaderResourceHandler::initHandler()
 {
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
+    ID3D11Device* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice)->getDevice();
 
     /* Samplers */
     D3D11_SAMPLER_DESC samplerDesc;
@@ -49,7 +48,7 @@ bool ShaderResourceHandler::initHandler()
 
     // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
     // is used as it eases resizing and positioning in the UI vertex shader.
-    Vertex2D quadVertices[4] = {
+    Vertex2D pQuadVertices[4] = {
         // Position, TXCoord
         {{0.0f, 0.0f}, {0.0f, 1.0f}},
         {{0.0f, 1.0f}, {0.0f, 0.0f}},
@@ -57,38 +56,9 @@ bool ShaderResourceHandler::initHandler()
         {{1.0f, 1.0f}, {1.0f, 0.0f}}
     };
 
-    m_pQuadVertices = createVertexBuffer(quadVertices, sizeof(Vertex2D), 4);
+    IBuffer* pQuadBuffer = m_pDevice->createVertexBuffer(pQuadVertices, sizeof(Vertex2D), 4);
+    m_pQuadVertices = reinterpret_cast<BufferDX11*>(pQuadBuffer);
     return m_pQuadVertices;
-}
-
-BufferDX11* ShaderResourceHandler::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
-{
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
-
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = vertexSize * vertexCount;
-    bufferInfo.pData        = pVertices;
-    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
-
-    return new BufferDX11(pDeviceDX, bufferInfo);
-}
-
-BufferDX11* ShaderResourceHandler::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
-{
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
-
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
-    bufferInfo.pData        = pIndices;
-    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
-
-    return new BufferDX11(pDeviceDX, bufferInfo);
 }
 
 ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const

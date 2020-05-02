@@ -3,10 +3,10 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
-#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -16,29 +16,19 @@
 
 #include <algorithm>
 
-ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)
+ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader, DeviceDX11* pDevice)
     :ComponentHandler(pECS, TID(ModelLoader)),
-    m_pTXLoader(txLoader)
+    m_pTXLoader(txLoader),
+    m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
-    handlerReg.HandlerDependencies = {
-        TID(ShaderResourceHandler)
-    };
     registerHandler(handlerReg);
 }
 
 ModelLoader::~ModelLoader()
 {
     ModelLoader::deleteAllModels();
-}
-
-bool ModelLoader::initHandler()
-{
-    std::type_index tid_shaderResourceHandler = TID(ShaderResourceHandler);
-    m_pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(tid_shaderResourceHandler));
-
-    return m_pShaderResourceHandler;
 }
 
 Model* ModelLoader::loadModel(const std::string& filePath)
@@ -166,19 +156,19 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
             return;
         }
 
-        indices[i*3] = face->mIndices[0];
-        indices[i*3+1] = face->mIndices[1];
-        indices[i*3+2] = face->mIndices[2];
+        indices[i * 3] = face->mIndices[0];
+        indices[i * 3 + 1] = face->mIndices[1];
+        indices[i * 3 + 2] = face->mIndices[2];
     }
 
     mesh.indexCount = indices.size();
 
-    mesh.pVertexBuffer = m_pShaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size());
+    mesh.pVertexBuffer = m_pDevice->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size());
     if (!mesh.pVertexBuffer->getBuffer()) {
         return;
     }
 
-    mesh.pIndexBuffer = m_pShaderResourceHandler->createIndexBuffer(&indices.front(), indices.size());
+    mesh.pIndexBuffer = m_pDevice->createIndexBuffer(&indices.front(), indices.size());
     if (!mesh.pIndexBuffer) {
         return;
     }

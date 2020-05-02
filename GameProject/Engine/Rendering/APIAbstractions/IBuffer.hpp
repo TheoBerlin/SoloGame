@@ -28,7 +28,4 @@ struct BufferInfo {
 };
 
 class IBuffer
-{
-public:
-    virtual ~IBuffer() = 0;
-};
+{};

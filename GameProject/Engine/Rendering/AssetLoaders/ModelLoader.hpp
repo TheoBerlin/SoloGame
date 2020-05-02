@@ -3,24 +3,24 @@
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+
 #include <assimp/material.h>
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
-#include <d3d11.h>
+
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-class ShaderResourceHandler;
 class TextureLoader;
 
 class ModelLoader : public ComponentHandler
 {
 public:
-    ModelLoader(ECSCore* pECS, TextureLoader* txLoader);
+    ModelLoader(ECSCore* pECS, TextureLoader* txLoader, DeviceDX11* pDevice);
     ~ModelLoader();
 
-    virtual bool initHandler() override;
+    virtual bool initHandler() override { return true; };
 
     Model* loadModel(const std::string& filePath);
 
@@ -38,7 +38,8 @@ private:
 
 private:
     TextureLoader* m_pTXLoader;
-    ShaderResourceHandler* m_pShaderResourceHandler;
+
+    DeviceDX11* m_pDevice;
 
     std::unordered_map<std::string, Model*> m_Models;
 };
