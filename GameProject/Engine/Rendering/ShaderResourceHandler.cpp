@@ -1,6 +1,7 @@
 #include "ShaderResourceHandler.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -8,7 +9,8 @@
 
 ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice)
     :ComponentHandler(pECS, TID(ShaderResourceHandler)),
-    m_pDevice(pDevice)
+    m_pDevice(pDevice),
+    m_pQuadVertices(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -17,7 +19,9 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice)
 }
 
 ShaderResourceHandler::~ShaderResourceHandler()
-{}
+{
+    delete m_pQuadVertices;
+}
 
 bool ShaderResourceHandler::initHandler()
 {
@@ -46,70 +50,45 @@ bool ShaderResourceHandler::initHandler()
     // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
     // is used as it eases resizing and positioning in the UI vertex shader.
     Vertex2D quadVertices[4] = {
-        // Position, txCoord
+        // Position, TXCoord
         {{0.0f, 0.0f}, {0.0f, 1.0f}},
         {{0.0f, 1.0f}, {0.0f, 0.0f}},
         {{1.0f, 0.0f}, {1.0f, 1.0f}},
         {{1.0f, 1.0f}, {1.0f, 0.0f}}
     };
 
-    return createVertexBuffer(quadVertices, sizeof(Vertex2D), 4, quad.GetAddressOf());
+    m_pQuadVertices = createVertexBuffer(quadVertices, sizeof(Vertex2D), 4);
+    return m_pQuadVertices;
 }
 
-bool ShaderResourceHandler::createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer)
+BufferDX11* ShaderResourceHandler::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
 {
     DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
     ID3D11Device* pDevice = pDeviceDX->getDevice();
 
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = (UINT)(vertexSize * vertexCount);
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = 0;
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = vertexSize * vertexCount;
+    bufferInfo.pData        = pVertices;
+    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
 
-    D3D11_SUBRESOURCE_DATA bufferData;
-    bufferData.pSysMem = vertices;
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
-        return false;
-    }
-
-    return true;
+    return new BufferDX11(pDeviceDX, bufferInfo);
 }
 
-bool ShaderResourceHandler::createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer)
+BufferDX11* ShaderResourceHandler::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
 {
     DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
     ID3D11Device* pDevice = pDeviceDX->getDevice();
 
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indexCount);
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = 0;
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
+    bufferInfo.pData        = pIndices;
+    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
 
-    D3D11_SUBRESOURCE_DATA bufferData;
-    bufferData.pSysMem = indices;
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, &bufferData, targetBuffer);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
-        return false;
-    }
-
-    return true;
+    return new BufferDX11(pDeviceDX, bufferInfo);
 }
 
 ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const
@@ -117,7 +96,7 @@ ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const
     return aniSampler.GetAddressOf();
 }
 
-Microsoft::WRL::ComPtr<ID3D11Buffer> ShaderResourceHandler::getQuarterScreenQuad()
+BufferDX11* ShaderResourceHandler::getQuarterScreenQuad()
 {
-    return quad;
+    return m_pQuadVertices;
 }

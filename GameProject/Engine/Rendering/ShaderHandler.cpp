@@ -64,7 +64,7 @@ bool ShaderHandler::initHandler()
         },
     };
     UINT vertexSize = 32;
-    m_Programs.push_back(compileProgram(L"Basic", {VERTEX_SHADER, PIXEL_SHADER}, inputLayoutDesc, vertexSize));
+    m_Programs.push_back(compileProgram(L"Basic", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
 
     // Compile UI program
     inputLayoutDesc = {
@@ -88,7 +88,7 @@ bool ShaderHandler::initHandler()
         },
     };
     vertexSize = 16;
-    m_Programs.push_back(compileProgram(L"UI", {VERTEX_SHADER, PIXEL_SHADER}, inputLayoutDesc, vertexSize));
+    m_Programs.push_back(compileProgram(L"UI", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
 
     return true;
 }
@@ -111,7 +111,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
 
     for (SHADER_TYPE shaderType : shaderTypes) {
         switch (shaderType) {
-            case VERTEX_SHADER:
+            case SHADER_TYPE::VERTEX_SHADER:
                 filePath = std::wstring(SHADERS_PATH) + programName + VS_POSTFIX;
                 compiledCode = compileShader(filePath.c_str(), VS_ENTRYPOINT, VS_TARGET);
 
@@ -134,7 +134,7 @@ Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TY
                     LOG_ERROR("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
                 break;
 
-            case PIXEL_SHADER:
+            case SHADER_TYPE::FRAGMENT_SHADER:
                 filePath = std::wstring(SHADERS_PATH) + programName + PS_POSTFIX;
                 compiledCode = compileShader(filePath.c_str(), PS_ENTRYPOINT, PS_TARGET);
 

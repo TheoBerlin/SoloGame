@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
+class BufferDX11;
 class DeviceDX11;
 class ShaderHandler;
 class UIHandler;
@@ -35,7 +36,7 @@ private:
 
     Program* m_pUIProgram;
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
+    BufferDX11* m_pQuad;
 
     /* Render targets */
     ID3D11RenderTargetView* m_pRenderTarget;

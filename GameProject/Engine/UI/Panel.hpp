@@ -10,7 +10,6 @@
 #include <DirectXMath.h>
 #include <d3d11.h>
 #include <string>
-#include <wrl/client.h>
 
 enum TX_HORIZONTAL_ALIGNMENT {
     TX_HORIZONTAL_ALIGNMENT_LEFT,
@@ -69,6 +68,7 @@ struct UIButton {
 
 const std::type_index tid_UIButton = TID(UIButton);
 
+class BufferDX11;
 class Display;
 class IDevice;
 class Window;
@@ -104,7 +104,7 @@ private:
 
     Program* m_pUIProgram;
     ID3D11Buffer* m_pPerObjectBuffer;
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_Quad;
+    BufferDX11* m_pQuadVertices;
     ID3D11SamplerState *const* m_pAniSampler;
 
     unsigned int m_ClientWidth, m_ClientHeight;

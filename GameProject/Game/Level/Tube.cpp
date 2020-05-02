@@ -3,6 +3,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -15,15 +16,17 @@ const float maxPointDistance = 3.0f;
 const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
-TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* device)
-    :ComponentHandler(pECS, std::type_index(typeid(TubeHandler))),
-    m_pDevice(device)
+TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* pDevice)
+    :ComponentHandler(pECS, TID(TubeHandler)),
+    m_pShaderResourceHandler(nullptr),
+    m_pTextureLoader(nullptr),
+    m_pDevice(pDevice)
 {
-
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.HandlerDependencies = {
-        TID(TextureLoader)
+        TID(TextureLoader),
+        TID(ShaderResourceHandler)
     };
 
     registerHandler(handlerReg);
@@ -31,15 +34,16 @@ TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* device)
 
 TubeHandler::~TubeHandler()
 {
-    for (size_t i = 0; i < m_Tubes.size(); i += 1) {
-        releaseModel(&m_Tubes[i]);
+    for (Model& tube : m_Tubes) {
+        releaseModel(&tube);
     }
 }
 
 bool TubeHandler::initHandler()
 {
-    m_pTextureLoader = static_cast<TextureLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureLoader)));
-    return m_pTextureLoader;
+    m_pTextureLoader = reinterpret_cast<TextureLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureLoader)));
+    m_pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
+    return m_pTextureLoader && m_pShaderResourceHandler;
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
@@ -129,51 +133,25 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
     m_Tubes.push_back(Model());
     Model& model = m_Tubes.front();
-    model.meshes.resize(1);
-    Mesh& mesh = model.meshes.front();
+    model.Meshes.resize(1);
+    Mesh& mesh = model.Meshes.front();
     mesh.materialIndex = 0;
     mesh.vertexCount = vertices.size();
     mesh.indexCount = indices.size();
 
-    // Create vertex buffer
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = (UINT)(sizeof(Vertex) * vertices.size());
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = 0;
-
-    D3D11_SUBRESOURCE_DATA bufferData;
-    bufferData.pSysMem = &vertices.front();
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    HRESULT hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.vertexBuffer);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create vertex buffer: %s", hresultToString(hr).c_str());
+    mesh.pVertexBuffer = m_pShaderResourceHandler->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
+    if (!mesh.pVertexBuffer) {
         return nullptr;
     }
 
-    // Create index buffer
-    bufferDesc.ByteWidth = (UINT)(sizeof(unsigned int) * indices.size());
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-    bufferData.pSysMem = &indices.front();
-    bufferData.SysMemPitch = 0;
-    bufferData.SysMemSlicePitch = 0;
-
-    hr = m_pDevice->CreateBuffer(&bufferDesc, &bufferData, &mesh.indexBuffer);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create index buffer: %s", hresultToString(hr).c_str());
+    mesh.pIndexBuffer = m_pShaderResourceHandler->createIndexBuffer(indices.data(), indices.size());
+    if (!mesh.pIndexBuffer) {
         return nullptr;
     }
 
     // Create material
-    model.materials.resize(1);
-    Material& material = model.materials.front();
+    model.Materials.resize(1);
+    Material& material = model.Materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
     material.textures.push_back(m_pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"));

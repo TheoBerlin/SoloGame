@@ -188,8 +188,8 @@ void MeshRenderer::recordCommands()
 
         DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&vpMatrices.View) * DirectX::XMLoadFloat4x4(&vpMatrices.Projection);
 
-        for (const Mesh& mesh : model->meshes) {
-            if (model->materials[mesh.materialIndex].textures.empty()) {
+        for (const Mesh& mesh : model->Meshes) {
+            if (model->Materials[mesh.materialIndex].textures.empty()) {
                 // Will not render the mesh if it does not have a texture
                 continue;
             }
@@ -197,8 +197,10 @@ void MeshRenderer::recordCommands()
             // Vertex buffer
             m_pCommandBuffer->IASetInputLayout(program->inputLayout);
             UINT offsets = 0;
-            m_pCommandBuffer->IASetVertexBuffers(0, 1, &mesh.vertexBuffer, &program->vertexSize, &offsets);
-            m_pCommandBuffer->IASetIndexBuffer(mesh.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+            ID3D11Buffer* pVertexBuffer = mesh.pVertexBuffer->getBuffer();
+
+            m_pCommandBuffer->IASetVertexBuffers(0, 1, &pVertexBuffer, &program->vertexSize, &offsets);
+            m_pCommandBuffer->IASetIndexBuffer(mesh.pIndexBuffer->getBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
             /* Vertex shader */
             PerObjectMatrices matrices;
@@ -216,13 +218,13 @@ void MeshRenderer::recordCommands()
 
             /* Pixel shader */
             // Diffuse texture
-            ID3D11ShaderResourceView* pDiffuseSRV = model->materials[mesh.materialIndex].textures[0].getSRV();
+            ID3D11ShaderResourceView* pDiffuseSRV = model->Materials[mesh.materialIndex].textures[0].getSRV();
             m_pCommandBuffer->PSSetShaderResources(0, 1, &pDiffuseSRV);
             m_pCommandBuffer->PSSetSamplers(0, 1, m_ppAniSampler);
 
             // Material cbuffer
             m_pCommandBuffer->Map(m_pMaterialBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-            memcpy(mappedResources.pData, &model->materials[mesh.materialIndex].attributes, sizeof(MaterialAttributes));
+            memcpy(mappedResources.pData, &model->Materials[mesh.materialIndex].attributes, sizeof(MaterialAttributes));
             m_pCommandBuffer->Unmap(m_pMaterialBuffer, 0);
             m_pCommandBuffer->PSSetConstantBuffers(0, 1, &m_pMaterialBuffer);
 

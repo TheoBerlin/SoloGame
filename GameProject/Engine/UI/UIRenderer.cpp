@@ -15,7 +15,8 @@ UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencilView(pDevice->getDepthStencilView()),
     m_BackbufferWidth(pWindow->getWidth()),
-    m_BackbufferHeight(pWindow->getHeight())
+    m_BackbufferHeight(pWindow->getHeight()),
+    m_pQuad(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -46,7 +47,7 @@ bool UIRenderer::init()
 
     m_pUIProgram = m_pShaderHandler->getProgram(UI);
 
-    m_Quad = pShaderResourceHandler->getQuarterScreenQuad();
+    m_pQuad = pShaderResourceHandler->getQuarterScreenQuad();
     m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
     // Create per-panel constant buffer
@@ -92,8 +93,11 @@ void UIRenderer::recordCommands()
 
     m_pCommandBuffer->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     m_pCommandBuffer->IASetInputLayout(m_pUIProgram->inputLayout);
+
     UINT offsets = 0;
-    m_pCommandBuffer->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
+    ID3D11Buffer* pQuadBuffer = m_pQuad->getBuffer();
+
+    m_pCommandBuffer->IASetVertexBuffers(0, 1, &pQuadBuffer, &m_pUIProgram->vertexSize, &offsets);
 
     m_pCommandBuffer->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
     m_pCommandBuffer->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
