@@ -1,9 +1,9 @@
 #include "Tube.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
-#include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -16,17 +16,15 @@ const float maxPointDistance = 3.0f;
 const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
-TubeHandler::TubeHandler(ECSCore* pECS, ID3D11Device* pDevice)
+TubeHandler::TubeHandler(ECSCore* pECS, DeviceDX11* pDevice)
     :ComponentHandler(pECS, TID(TubeHandler)),
-    m_pShaderResourceHandler(nullptr),
     m_pTextureLoader(nullptr),
     m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.HandlerDependencies = {
-        TID(TextureLoader),
-        TID(ShaderResourceHandler)
+        TID(TextureLoader)
     };
 
     registerHandler(handlerReg);
@@ -42,8 +40,7 @@ TubeHandler::~TubeHandler()
 bool TubeHandler::initHandler()
 {
     m_pTextureLoader = reinterpret_cast<TextureLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureLoader)));
-    m_pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
-    return m_pTextureLoader && m_pShaderResourceHandler;
+    return m_pTextureLoader;
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
@@ -132,19 +129,21 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     }
 
     m_Tubes.push_back(Model());
+
     Model& model = m_Tubes.front();
     model.Meshes.resize(1);
+
     Mesh& mesh = model.Meshes.front();
     mesh.materialIndex = 0;
     mesh.vertexCount = vertices.size();
     mesh.indexCount = indices.size();
 
-    mesh.pVertexBuffer = m_pShaderResourceHandler->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
+    mesh.pVertexBuffer = m_pDevice->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
     if (!mesh.pVertexBuffer) {
         return nullptr;
     }
 
-    mesh.pIndexBuffer = m_pShaderResourceHandler->createIndexBuffer(indices.data(), indices.size());
+    mesh.pIndexBuffer = m_pDevice->createIndexBuffer(indices.data(), indices.size());
     if (!mesh.pIndexBuffer) {
         return nullptr;
     }

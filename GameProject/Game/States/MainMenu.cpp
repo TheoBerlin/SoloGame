@@ -11,9 +11,9 @@
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
 
-MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, ID3D11Device* pDevice, InputHandler* pInputHandler)
+MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevice, InputHandler* pInputHandler)
     :State(pStateManager, pECS, STATE_TRANSITION::PUSH),
-    device(pDevice),
+    m_pDevice(pDevice),
     m_pInputHandler(pInputHandler)
 {
     ComponentSubscriber* pComponentSubscriber = pECS->getComponentSubscriber();
@@ -73,9 +73,4 @@ void MainMenu::update(float dt)
     if (m_pInputHandler->keyState(GLFW_KEY_E)) {
         new GameSession(this);
     }
-}
-
-ID3D11Device* MainMenu::getDevice()
-{
-    return device;
 }

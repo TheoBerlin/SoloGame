@@ -10,7 +10,7 @@ enum class BUFFER_DATA_ACCESS : uint32_t {
     WRITE   = READ << 1
 };
 
-DECLARE_BITMASK(BUFFER_DATA_ACCESS)
+DEFINE_BITMASK_OPERATIONS(BUFFER_DATA_ACCESS)
 
 enum class BUFFER_USAGE : uint32_t {
     VERTEX_BUFFER   = 1,
@@ -28,7 +28,4 @@ struct BufferInfo {
 };
 
 class IBuffer
-{
-public:
-    virtual ~IBuffer() = 0;
-};
+{};

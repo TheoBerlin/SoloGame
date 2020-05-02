@@ -4,7 +4,7 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-BufferDX11::BufferDX11(DeviceDX11* pDevice, const BufferInfo& bufferInfo)
+BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
     :m_pBuffer(nullptr)
 {
     D3D11_BUFFER_DESC bufferDesc;
@@ -49,7 +49,7 @@ BufferDX11::BufferDX11(DeviceDX11* pDevice, const BufferInfo& bufferInfo)
     bufferData.SysMemPitch = 0;
     bufferData.SysMemSlicePitch = 0;
 
-    HRESULT hr = pDevice->getDevice()->CreateBuffer(&bufferDesc, bufferInfo.pData ? &bufferData : nullptr, &m_pBuffer);
+    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, bufferInfo.pData ? &bufferData : nullptr, &m_pBuffer);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create buffer: %s", hresultToString(hr).c_str());
     }

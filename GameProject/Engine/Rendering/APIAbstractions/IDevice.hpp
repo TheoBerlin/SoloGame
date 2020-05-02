@@ -9,6 +9,7 @@ struct SwapChainInfo {
     bool Windowed;
 };
 
+class IBuffer;
 class Window;
 
 class IDevice
@@ -18,4 +19,7 @@ public:
 
     virtual void clearBackBuffer() = 0;
     virtual void presentBackBuffer() = 0;
+
+    virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
+    virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
 };

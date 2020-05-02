@@ -18,9 +18,6 @@ public:
 
     virtual bool initHandler() override;
 
-    BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount);
-    BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount);
-
     ID3D11SamplerState *const* getAniSampler() const;
 
     BufferDX11* getQuarterScreenQuad();

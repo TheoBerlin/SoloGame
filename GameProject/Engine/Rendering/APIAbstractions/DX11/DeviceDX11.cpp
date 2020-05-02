@@ -235,3 +235,30 @@ void DeviceDX11::presentBackBuffer()
         LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
     }
 }
+
+BufferDX11* DeviceDX11::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
+{
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = vertexSize * vertexCount;
+    bufferInfo.pData        = pVertices;
+    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return new BufferDX11(m_pDevice, bufferInfo);
+}
+
+BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
+{
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
+    bufferInfo.pData        = pIndices;
+    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return new BufferDX11(m_pDevice, bufferInfo);
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #define NOMINMAX
+#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IDevice.hpp>
 
 #include <d3d11.h>
@@ -15,6 +16,9 @@ public:
 
     void clearBackBuffer() override final;
     void presentBackBuffer() override final;
+
+    BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
+    BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
 
     ID3D11Device* getDevice()               { return m_pDevice; }
     ID3D11DeviceContext* getContext() { return m_pContext; }
