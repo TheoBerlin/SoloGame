@@ -64,7 +64,7 @@ bool ShaderHandler::initHandler()
         },
     };
     UINT vertexSize = 32;
-    m_Programs.push_back(compileProgram(L"Basic", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
+    m_Programs.push_back(compileProgram(L"Mesh", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
 
     // Compile UI program
     inputLayoutDesc = {
