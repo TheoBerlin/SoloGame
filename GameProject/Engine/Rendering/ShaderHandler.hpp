@@ -18,7 +18,7 @@ const LPCWSTR PS_POSTFIX = L"_PS.hlsl";
 
 enum PROGRAM
 {
-    BASIC = 0,
+    MESH = 0,
     UI = 1
 };
 

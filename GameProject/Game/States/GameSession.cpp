@@ -82,7 +82,7 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, SoundHandler* pS
     Entity cube = m_pECS->createEntity();
     pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
     pTransformHandler->createWorldMatrix(cube);
-    pRenderableHandler->createRenderable(cube, "./Game/Assets/Models/Cube.dae", PROGRAM::BASIC);
+    pRenderableHandler->createRenderable(cube, "./Game/Assets/Models/Cube.dae", PROGRAM::MESH);
 
     // Attach sound to the cube
     const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
@@ -117,7 +117,7 @@ void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints
     Model* tubeModel = m_TubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
     Entity tube = m_pECS->createEntity();
-    pRenderableHandler->createRenderable(tube, tubeModel, PROGRAM::BASIC);
+    pRenderableHandler->createRenderable(tube, tubeModel, PROGRAM::MESH);
     pTransformHandler->createTransform(tube);
     pTransformHandler->createWorldMatrix(tube);
 }
