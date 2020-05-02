@@ -74,9 +74,11 @@ bool InputHandler::hideCursor()
 
 void InputHandler::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int scancode, int action, int mods)
 {
-    // Retrieve pointer to InputHandler instance
-    Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
-    pWindow->getInputHandler()->keyActionCallback(key, scancode, action, mods);
+    if (key != GLFW_KEY_UNKNOWN) {
+        // Retrieve pointer to InputHandler instance
+        Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
+        pWindow->getInputHandler()->keyActionCallback(key, scancode, action, mods);
+    }
 }
 
 void InputHandler::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button, int action, int mods)
