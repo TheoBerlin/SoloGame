@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/Rendering/APIAbstractions/Shader.hpp>
+
 #include <d3d11.h>
 #include <vector>
 
@@ -13,14 +15,6 @@ const LPCWSTR VS_POSTFIX = L"_VS.hlsl";
 const LPCSTR PS_ENTRYPOINT = "PS_main";
 const LPCSTR PS_TARGET = "ps_5_0";
 const LPCWSTR PS_POSTFIX = L"_PS.hlsl";
-
-enum SHADER_TYPE {
-    VERTEX_SHADER,
-    HULL_SHADER,
-    DOMAIN_SHADER,
-    GEOMETRY_SHADER,
-    PIXEL_SHADER
-};
 
 enum PROGRAM
 {

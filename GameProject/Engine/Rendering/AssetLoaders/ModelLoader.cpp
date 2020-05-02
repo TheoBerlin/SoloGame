@@ -2,9 +2,8 @@
 
 #define NOMINMAX
 
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -12,10 +11,13 @@
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+
 #include <algorithm>
 
 ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader)
-    :ComponentHandler(pECS, std::type_index(typeid(ModelLoader))),
+    :ComponentHandler(pECS, TID(ModelLoader)),
     m_pTXLoader(txLoader)
 {
     ComponentHandlerRegistration handlerReg = {};
@@ -81,24 +83,24 @@ Model* ModelLoader::loadModel(const std::string& filePath)
     loadNode(meshIndices, scene->mRootNode, scene);
 
     // Load meshes
-    loadedModel->meshes.reserve(meshIndices.size());
+    loadedModel->Meshes.reserve(meshIndices.size());
 
-    for (unsigned int i = 0; i < meshIndices.size(); i += 1) {
-        loadMesh(scene->mMeshes[meshIndices[i]], loadedModel->meshes);
+    for (unsigned int meshIndex : meshIndices) {
+        loadMesh(scene->mMeshes[meshIndex], loadedModel->Meshes);
     }
 
     // Load materials
-    loadedModel->materials.reserve(scene->mNumMaterials);
+    loadedModel->Materials.reserve(scene->mNumMaterials);
 
     for (unsigned int i = 0; i < scene->mNumMaterials; i += 1) {
-        loadMaterial(scene->mMaterials[i], loadedModel->materials, directory);
+        loadMaterial(scene->mMaterials[i], loadedModel->Materials, directory);
     }
 
     // Not all materials might have been loaded, subtract the material indices to compensate
-    size_t materialIndexOffset = scene->mNumMaterials - loadedModel->materials.size();
+    size_t materialIndexOffset = scene->mNumMaterials - loadedModel->Materials.size();
     if (materialIndexOffset > 0) {
-        for (size_t i = 0; i < loadedModel->meshes.size(); i += 1) {
-            loadedModel->meshes[i].materialIndex -= materialIndexOffset;
+        for (Mesh& mesh : loadedModel->Meshes) {
+            mesh.materialIndex -= materialIndexOffset;
         }
     }
 
@@ -148,7 +150,6 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
         vertices[i].txCoords.x = assimpMesh->mTextureCoords[0][i].x;
         vertices[i].txCoords.y = assimpMesh->mTextureCoords[0][i].y;
-
     }
 
     mesh.vertexCount = vertices.size();
@@ -172,13 +173,13 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
     mesh.indexCount = indices.size();
 
-    m_pShaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size(), &mesh.vertexBuffer);
-    if (mesh.vertexBuffer == nullptr) {
+    mesh.pVertexBuffer = m_pShaderResourceHandler->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size());
+    if (!mesh.pVertexBuffer->getBuffer()) {
         return;
     }
 
-    m_pShaderResourceHandler->createIndexBuffer(&indices.front(), indices.size(), &mesh.indexBuffer);
-    if (mesh.indexBuffer == nullptr) {
+    mesh.pIndexBuffer = m_pShaderResourceHandler->createIndexBuffer(&indices.front(), indices.size());
+    if (!mesh.pIndexBuffer) {
         return;
     }
 

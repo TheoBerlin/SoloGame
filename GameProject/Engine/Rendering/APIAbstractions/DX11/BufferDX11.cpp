@@ -36,7 +36,7 @@ BufferDX11::BufferDX11(DeviceDX11* pDevice, const BufferInfo& bufferInfo)
             break;
         default:
             LOG_ERROR("Invalid buffer usage flag: %d", bufferInfo.Usage);
-            break;
+            return;
     }
 
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ * HAS_FLAG(bufferInfo.CPUAccess, BUFFER_DATA_ACCESS::READ)
@@ -52,10 +52,14 @@ BufferDX11::BufferDX11(DeviceDX11* pDevice, const BufferInfo& bufferInfo)
     HRESULT hr = pDevice->getDevice()->CreateBuffer(&bufferDesc, bufferInfo.pData ? &bufferData : nullptr, &m_pBuffer);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create buffer: %s", hresultToString(hr).c_str());
-        return;
     }
+}
 
-    return;
+BufferDX11::~BufferDX11()
+{
+    if (m_pBuffer) {
+        m_pBuffer->Release();
+    }
 }
 
 void BufferDX11::bind(SHADER_TYPE shaderStageFlags, int slot, ID3D11DeviceContext* pContext)

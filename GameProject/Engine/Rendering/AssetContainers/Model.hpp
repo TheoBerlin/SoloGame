@@ -1,12 +1,14 @@
 #pragma once
 
 #include <Engine/Rendering/AssetContainers/Material.hpp>
-#include <d3d11.h>
+#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+
+#include <DirectXMath.h>
 #include <vector>
 
 struct Vertex2D {
-    DirectX::XMFLOAT2 position;
-    DirectX::XMFLOAT2 txCoords;
+    DirectX::XMFLOAT2 Position;
+    DirectX::XMFLOAT2 TXCoords;
 };
 
 struct Vertex {
@@ -16,19 +18,19 @@ struct Vertex {
 };
 
 struct Mesh {
-    ID3D11Buffer* vertexBuffer, *indexBuffer;
+    BufferDX11* pVertexBuffer, *pIndexBuffer;
     size_t vertexCount, indexCount, materialIndex;
 };
 
 struct Model {
-    std::vector<Mesh> meshes;
-    std::vector<Material> materials;
+    std::vector<Mesh> Meshes;
+    std::vector<Material> Materials;
 };
 
 inline void releaseModel(Model* pModel)
 {
-    for (size_t i = 0; i < pModel->meshes.size(); i += 1) {
-        pModel->meshes[i].vertexBuffer->Release();
-        pModel->meshes[i].indexBuffer->Release();
+    for (Mesh& mesh : pModel->Meshes) {
+        delete mesh.pVertexBuffer;
+        delete mesh.pIndexBuffer;
     }
 }

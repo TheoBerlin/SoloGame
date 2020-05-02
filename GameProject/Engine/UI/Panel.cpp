@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -13,7 +14,8 @@ UIHandler::UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
     :ComponentHandler(pECS, TID(UIHandler)),
     m_ClientWidth(pWindow->getWidth()),
     m_ClientHeight(pWindow->getHeight()),
-    m_pDevice(pDevice)
+    m_pDevice(pDevice),
+    m_pQuadVertices(nullptr)
 {
     DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
     m_pContext = pDeviceDX->getContext();
@@ -48,7 +50,7 @@ bool UIHandler::initHandler()
 {
     // Retrieve quad from shader resource handler
     ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
-    m_Quad = pShaderResourceHandler->getQuarterScreenQuad();
+    m_pQuadVertices = pShaderResourceHandler->getQuarterScreenQuad();
 
     // Retrieve UI rendering shader program from shader handler
     ShaderHandler* pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderHandler)));
@@ -260,7 +262,9 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
     m_pContext->IASetInputLayout(m_pUIProgram->inputLayout);
 
     UINT offsets = 0;
-    m_pContext->IASetVertexBuffers(0, 1, m_Quad.GetAddressOf(), &m_pUIProgram->vertexSize, &offsets);
+    ID3D11Buffer* pQuadBuffer = m_pQuadVertices->getBuffer();
+
+    m_pContext->IASetVertexBuffers(0, 1, &pQuadBuffer, &m_pUIProgram->vertexSize, &offsets);
     m_pContext->VSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
     m_pContext->PSSetConstantBuffers(0, 1, &m_pPerObjectBuffer);
     m_pContext->PSSetSamplers(0, 1, m_pAniSampler);

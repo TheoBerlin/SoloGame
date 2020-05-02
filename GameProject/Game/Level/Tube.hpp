@@ -9,6 +9,7 @@
 struct Model;
 class ModelLoader;
 class ComponentSubscriber;
+class ShaderResourceHandler;
 class TextureLoader;
 
 struct TubePoint {
@@ -19,7 +20,7 @@ struct TubePoint {
 class TubeHandler : public ComponentHandler
 {
 public:
-    TubeHandler(ECSCore* pECS, ID3D11Device* device);
+    TubeHandler(ECSCore* pECS, ID3D11Device* pDevice);
     ~TubeHandler();
 
     virtual bool initHandler() override;
@@ -37,6 +38,7 @@ private:
     void createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t pointIdx, float T);
 
 private:
+    ShaderResourceHandler* m_pShaderResourceHandler;
     TextureLoader* m_pTextureLoader;
     ID3D11Device* m_pDevice;
 

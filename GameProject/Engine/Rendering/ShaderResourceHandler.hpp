@@ -6,6 +6,7 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 
+class BufferDX11;
 class IDevice;
 struct Vertex;
 
@@ -17,12 +18,12 @@ public:
 
     virtual bool initHandler() override;
 
-    bool createVertexBuffer(const void* vertices, size_t vertexSize, size_t vertexCount, ID3D11Buffer** targetBuffer);
-    bool createIndexBuffer(unsigned* indices, size_t indexCount, ID3D11Buffer** targetBuffer);
+    BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount);
+    BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount);
 
     ID3D11SamplerState *const* getAniSampler() const;
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> getQuarterScreenQuad();
+    BufferDX11* getQuarterScreenQuad();
 
 private:
     IDevice* m_pDevice;
@@ -31,5 +32,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D11SamplerState> aniSampler;
 
     // Quarter-screen quad
-    Microsoft::WRL::ComPtr<ID3D11Buffer> quad;
+    BufferDX11* m_pQuadVertices;
 };

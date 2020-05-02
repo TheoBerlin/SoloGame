@@ -2,7 +2,16 @@
 
 #include <type_traits>
 
-#define DECLARE_BITMASK(EnumClass)                                      \
+#define DECLARE_BITMASK(EnumClass)                          \
+    EnumClass operator |(EnumClass lhs, EnumClass rhs);     \
+    EnumClass operator &(EnumClass lhs, EnumClass rhs);     \
+    EnumClass operator ^(EnumClass lhs, EnumClass rhs);     \
+    EnumClass operator ~(EnumClass rhs);                    \
+    EnumClass& operator |=(EnumClass &lhs, EnumClass rhs);  \
+    EnumClass& operator &=(EnumClass &lhs, EnumClass rhs);  \
+    EnumClass& operator ^=(EnumClass &lhs, EnumClass rhs);
+
+#define DEFINE_BITMASK(EnumClass)                                       \
     EnumClass operator |(EnumClass lhs, EnumClass rhs)                  \
     {                                                                   \
         return static_cast<EnumClass> (                                 \
@@ -59,4 +68,4 @@
     }
 
 // Check if the bitmask contains the flag
-#define HAS_FLAG(bitmask, flag) (flag == (bitmask & flag))
+#define HAS_FLAG(bitmask, flag) (flag == ((bitmask) & (flag)))

@@ -2,7 +2,9 @@
 
 #include <Engine/Utils/EnumClass.hpp>
 
-enum class SHADER_TYPE {
+#include <stdint.h>
+
+enum class SHADER_TYPE : uint32_t {
     VERTEX_SHADER   = 1,
     HULL_SHADER     = VERTEX_SHADER << 1,
     DOMAIN_SHADER   = HULL_SHADER   << 1,

@@ -15,6 +15,8 @@ public:
 
     void bind(SHADER_TYPE shaderStageFlags, int slot, ID3D11DeviceContext* pContext);
 
+    ID3D11Buffer* getBuffer() { return m_pBuffer; }
+
 private:
     ID3D11Buffer* m_pBuffer;
 };

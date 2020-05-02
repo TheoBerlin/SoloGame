@@ -1,0 +1,3 @@
+#include "IBuffer.hpp"
+
+DEFINE_BITMASK(BUFFER_DATA_ACCESS)
