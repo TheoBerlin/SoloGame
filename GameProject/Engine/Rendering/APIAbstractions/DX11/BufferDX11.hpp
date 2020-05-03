@@ -14,8 +14,6 @@ public:
     BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo);
     ~BufferDX11();
 
-    void bind(SHADER_TYPE shaderStageFlags, int slot, ID3D11DeviceContext* pContext);
-
     ID3D11Buffer* getBuffer() { return m_pBuffer; }
 
 private:

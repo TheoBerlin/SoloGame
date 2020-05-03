@@ -10,7 +10,9 @@ struct SwapChainInfo {
 };
 
 class IBuffer;
+class ICommandList;
 class Window;
+struct BufferInfo;
 
 class IDevice
 {
@@ -20,6 +22,9 @@ public:
     virtual void clearBackBuffer() = 0;
     virtual void presentBackBuffer() = 0;
 
+    virtual ICommandList* createCommandList() = 0;
+
+    virtual BufferDX11* createBuffer(const BufferInfo& bufferInfo) = 0;
     virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
     virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
 };

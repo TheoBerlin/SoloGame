@@ -1,5 +1,6 @@
 #include "UIRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -12,11 +13,13 @@
 
 UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
+    m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencilView(pDevice->getDepthStencilView()),
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight()),
-    m_pQuad(nullptr)
+    m_pQuad(nullptr),
+    m_pPerPanelBuffer(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -29,12 +32,14 @@ UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
 
 UIRenderer::~UIRenderer()
 {
-    SAFERELEASE(m_pCommandBuffer);
+    delete m_pCommandList;
+    delete m_pPerPanelBuffer;
 }
 
 bool UIRenderer::init()
 {
-    if (!createCommandBuffer(&m_pCommandBuffer)) {
+    m_pCommandList = m_pDevice->createCommandList();
+    if (!m_pCommandList) {
         return false;
     }
 
@@ -51,25 +56,20 @@ bool UIRenderer::init()
     m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
     // Create per-panel constant buffer
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
-    bufferDesc.ByteWidth = sizeof(
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize = sizeof(
         DirectX::XMFLOAT2) * 2 +    // Position and size
         sizeof(DirectX::XMFLOAT4) + // Highlight color
         sizeof(float) +             // Highlight factor
-        sizeof(DirectX::XMFLOAT3);  // Padding
-    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    bufferDesc.MiscFlags = 0;
-    bufferDesc.StructureByteStride = 0;
+        sizeof(DirectX::XMFLOAT3    // Padding
+    );
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
+    bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;
 
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
-
-    HRESULT hr = pDevice->CreateBuffer(&bufferDesc, nullptr, m_PerPanelBuffer.GetAddressOf());
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create per-object cbuffer: %s", hresultToString(hr).c_str());
+    m_pPerPanelBuffer = m_pDevice->createBuffer(bufferInfo);
+    if (!m_pPerPanelBuffer) {
+        LOG_ERROR("Failed to create per-object unfiform buffer");
         return false;
     }
 
@@ -91,24 +91,19 @@ void UIRenderer::recordCommands()
         return;
     }
 
-    m_pCommandBuffer->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    m_pCommandBuffer->IASetInputLayout(m_pUIProgram->inputLayout);
+    ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
 
-    UINT offsets = 0;
-    ID3D11Buffer* pQuadBuffer = m_pQuad->getBuffer();
+    pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    pContext->IASetInputLayout(m_pUIProgram->inputLayout);
 
-    m_pCommandBuffer->IASetVertexBuffers(0, 1, &pQuadBuffer, &m_pUIProgram->vertexSize, &offsets);
+    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->vertexSize, m_pQuad);
 
-    m_pCommandBuffer->VSSetShader(m_pUIProgram->vertexShader, nullptr, 0);
-    m_pCommandBuffer->HSSetShader(m_pUIProgram->hullShader, nullptr, 0);
-    m_pCommandBuffer->DSSetShader(m_pUIProgram->domainShader, nullptr, 0);
-    m_pCommandBuffer->GSSetShader(m_pUIProgram->geometryShader, nullptr, 0);
-    m_pCommandBuffer->PSSetShader(m_pUIProgram->pixelShader, nullptr, 0);
+    m_pCommandList->bindShaders(m_pUIProgram);
 
-    m_pCommandBuffer->RSSetViewports(1, &m_Viewport);
+    pContext->RSSetViewports(1, &m_Viewport);
 
-    m_pCommandBuffer->PSSetSamplers(0, 1, m_ppAniSampler);
-    m_pCommandBuffer->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
+    pContext->PSSetSamplers(0, 1, m_ppAniSampler);
+    pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
 
     D3D11_MAPPED_SUBRESOURCE mappedResources;
     ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
@@ -125,21 +120,21 @@ void UIRenderer::recordCommands()
         }
 
         // Set per-object buffer
-        m_pCommandBuffer->Map(m_PerPanelBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResources);
-        memcpy(mappedResources.pData, &panel, bufferSize);
-        m_pCommandBuffer->Unmap(m_PerPanelBuffer.Get(), 0);
+        void* pMappedBuffer = nullptr;
+        m_pCommandList->map(m_pPerPanelBuffer, &pMappedBuffer);
+        memcpy(pMappedBuffer, &panel, bufferSize);
+        m_pCommandList->unmap(m_pPerPanelBuffer);
 
-        m_pCommandBuffer->VSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
-        m_pCommandBuffer->PSSetConstantBuffers(0, 1, m_PerPanelBuffer.GetAddressOf());
+        m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerPanelBuffer);
 
         ID3D11ShaderResourceView* pPanelSRV = panel.texture->getSRV();
-        m_pCommandBuffer->PSSetShaderResources(0, 1, &pPanelSRV);
+        pContext->PSSetShaderResources(0, 1, &pPanelSRV);
 
-        m_pCommandBuffer->Draw(4, 0);
+        m_pCommandList->draw(4);
     }
 }
 
-bool UIRenderer::executeCommands()
+void UIRenderer::executeCommands()
 {
-    return executeCommandBuffer(m_pCommandBuffer);
+    m_pCommandList->execute();
 }

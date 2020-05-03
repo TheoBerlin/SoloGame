@@ -6,9 +6,9 @@
 #include <Engine/Utils/IDVector.hpp>
 
 #include <d3d11.h>
-#include <wrl/client.h>
 
-class BufferDX11;
+class IBuffer;
+class ICommandList;
 class DeviceDX11;
 class ShaderHandler;
 class UIHandler;
@@ -21,14 +21,14 @@ public:
     UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
     ~UIRenderer();
 
-    virtual bool init() override;
-    virtual void recordCommands() override;
-    virtual bool executeCommands() override;
+    bool init() override final;
+    void recordCommands() override final;
+    void executeCommands() override final;
 
 private:
     IDVector m_Panels;
 
-    ID3D11DeviceContext* m_pCommandBuffer;
+    ICommandList* m_pCommandList;
 
     UIHandler* m_pUIHandler;
 
@@ -36,14 +36,14 @@ private:
 
     Program* m_pUIProgram;
 
-    BufferDX11* m_pQuad;
+    IBuffer* m_pQuad;
 
     /* Render targets */
     ID3D11RenderTargetView* m_pRenderTarget;
     ID3D11DepthStencilView* m_pDepthStencilView;
 
     // Constant buffer
-    Microsoft::WRL::ComPtr<ID3D11Buffer> m_PerPanelBuffer;
+    IBuffer* m_pPerPanelBuffer;
 
     /* Samplers */
     ID3D11SamplerState *const* m_ppAniSampler;

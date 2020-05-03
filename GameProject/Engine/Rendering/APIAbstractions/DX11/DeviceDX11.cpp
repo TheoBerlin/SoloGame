@@ -1,5 +1,6 @@
 #include "DeviceDX11.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -17,37 +18,14 @@ DeviceDX11::DeviceDX11()
 
 DeviceDX11::~DeviceDX11()
 {
-    if (m_pDevice) {
-        m_pDevice->Release();
-    }
-
-    if (m_pSwapChain) {
-        m_pSwapChain->Release();
-    }
-
-    if (m_pContext) {
-        m_pContext->Release();
-    }
-
-    if (m_pBackBufferRTV) {
-        m_pBackBufferRTV->Release();
-    }
-
-    if (m_pBlendState) {
-        m_pBlendState->Release();
-    }
-
-    if (m_pDepthStencilTX) {
-        m_pDepthStencilTX->Release();
-    }
-
-    if (m_pDepthStencilView) {
-        m_pDepthStencilView->Release();
-    }
-
-    if (m_pDepthStencilState) {
-        m_pDepthStencilState->Release();
-    }
+    SAFERELEASE(m_pDevice)
+    SAFERELEASE(m_pSwapChain)
+    SAFERELEASE(m_pContext)
+    SAFERELEASE(m_pBackBufferRTV)
+    SAFERELEASE(m_pBlendState)
+    SAFERELEASE(m_pDepthStencilTX)
+    SAFERELEASE(m_pDepthStencilView)
+    SAFERELEASE(m_pDepthStencilState)
 }
 
 bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -57,6 +35,70 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
     }
 
     return initBackBuffers(swapChainInfo, pWindow);
+}
+
+
+void DeviceDX11::clearBackBuffer()
+{
+    m_pContext->ClearRenderTargetView(m_pBackBufferRTV, m_pClearColor);
+    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+}
+
+void DeviceDX11::presentBackBuffer()
+{
+    HRESULT hr = m_pSwapChain->Present(0, 0);
+    if (FAILED(hr)) {
+        LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
+    }
+}
+
+ICommandList* DeviceDX11::createCommandList()
+{
+    CommandListDX11* pCommandList = new CommandListDX11(m_pContext, m_pDevice);
+    if (!pCommandList->getContext()) {
+        delete pCommandList;
+        pCommandList = nullptr;
+    }
+
+    return pCommandList;
+}
+
+BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
+{
+    BufferDX11* pBuffer = new BufferDX11(m_pDevice, bufferInfo);
+    if (!pBuffer->getBuffer()) {
+        delete pBuffer;
+        pBuffer = nullptr;
+    }
+
+    return pBuffer;
+}
+
+BufferDX11* DeviceDX11::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
+{
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = vertexSize * vertexCount;
+    bufferInfo.pData        = pVertices;
+    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return createBuffer(bufferInfo);
+}
+
+BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
+{
+    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
+    ID3D11Device* pDevice = pDeviceDX->getDevice();
+
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
+    bufferInfo.pData        = pIndices;
+    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return createBuffer(bufferInfo);
 }
 
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -220,45 +262,4 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     m_pContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
 
     return true;
-}
-
-void DeviceDX11::clearBackBuffer()
-{
-    m_pContext->ClearRenderTargetView(m_pBackBufferRTV, m_pClearColor);
-    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
-}
-
-void DeviceDX11::presentBackBuffer()
-{
-    HRESULT hr = m_pSwapChain->Present(0, 0);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
-    }
-}
-
-BufferDX11* DeviceDX11::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
-{
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = vertexSize * vertexCount;
-    bufferInfo.pData        = pVertices;
-    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
-
-    return new BufferDX11(m_pDevice, bufferInfo);
-}
-
-BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
-{
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
-
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
-    bufferInfo.pData        = pIndices;
-    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
-
-    return new BufferDX11(m_pDevice, bufferInfo);
 }
