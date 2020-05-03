@@ -7,6 +7,8 @@
 
 #define MAX_POINTLIGHTS 7u
 
+class IBuffer;
+class ICommandList;
 class DeviceDX11;
 class RenderableHandler;
 class TransformHandler;
@@ -19,9 +21,9 @@ public:
     MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
     ~MeshRenderer();
 
-    virtual bool init() override;
-    virtual void recordCommands() override;
-    virtual bool executeCommands() override;
+    bool init() override final;
+    void recordCommands() override final;
+    void executeCommands() override final;
 
 private:
     struct PointLightBuffer {
@@ -47,7 +49,7 @@ private:
     IDVector m_Camera;
     IDVector m_PointLights;
 
-    ID3D11DeviceContext* m_pCommandBuffer;
+    ICommandList* m_pCommandList;
 
     RenderableHandler* m_pRenderableHandler;
     TransformHandler* m_pTransformHandler;
@@ -59,10 +61,10 @@ private:
 
     /* Cbuffers */
     // WVP and W matrices
-    ID3D11Buffer* m_pPerObjectMatrices;
-    ID3D11Buffer* m_pMaterialBuffer;
+    IBuffer* m_pPerObjectMatrices;
+    IBuffer* m_pMaterialBuffer;
     // Contains pointlights, camera position and number of lights
-    ID3D11Buffer* m_pPointLightBuffer;
+    IBuffer* m_pPointLightBuffer;
 
     /* Samplers */
     ID3D11SamplerState *const* m_ppAniSampler;

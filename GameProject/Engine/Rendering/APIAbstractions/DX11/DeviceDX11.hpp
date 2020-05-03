@@ -17,6 +17,9 @@ public:
     void clearBackBuffer() override final;
     void presentBackBuffer() override final;
 
+    ICommandList* createCommandList() override final;
+
+    BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
     BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
 

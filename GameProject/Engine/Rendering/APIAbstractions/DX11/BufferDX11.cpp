@@ -40,7 +40,7 @@ BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
     }
 
     bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ * HAS_FLAG(bufferInfo.CPUAccess, BUFFER_DATA_ACCESS::READ)
-                            | D3D11_CPU_ACCESS_WRITE * HAS_FLAG(bufferInfo.CPUAccess, BUFFER_DATA_ACCESS::READ);
+                            | D3D11_CPU_ACCESS_WRITE * HAS_FLAG(bufferInfo.CPUAccess, BUFFER_DATA_ACCESS::WRITE);
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
@@ -57,30 +57,5 @@ BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
 
 BufferDX11::~BufferDX11()
 {
-    if (m_pBuffer) {
-        m_pBuffer->Release();
-    }
-}
-
-void BufferDX11::bind(SHADER_TYPE shaderStageFlags, int slot, ID3D11DeviceContext* pContext)
-{
-    if (HAS_FLAG(shaderStageFlags, SHADER_TYPE::VERTEX_SHADER)) {
-        pContext->VSSetConstantBuffers((UINT)slot, 1, &m_pBuffer);
-    }
-
-    if (HAS_FLAG(shaderStageFlags, SHADER_TYPE::HULL_SHADER)) {
-        pContext->HSSetConstantBuffers((UINT)slot, 1, &m_pBuffer);
-    }
-
-    if (HAS_FLAG(shaderStageFlags, SHADER_TYPE::DOMAIN_SHADER)) {
-        pContext->DSSetConstantBuffers((UINT)slot, 1, &m_pBuffer);
-    }
-
-    if (HAS_FLAG(shaderStageFlags, SHADER_TYPE::GEOMETRY_SHADER)) {
-        pContext->GSSetConstantBuffers((UINT)slot, 1, &m_pBuffer);
-    }
-
-    if (HAS_FLAG(shaderStageFlags, SHADER_TYPE::FRAGMENT_SHADER)) {
-        pContext->PSSetConstantBuffers((UINT)slot, 1, &m_pBuffer);
-    }
+    SAFERELEASE(m_pBuffer)
 }
