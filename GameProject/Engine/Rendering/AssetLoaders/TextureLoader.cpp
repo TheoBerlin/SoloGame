@@ -1,6 +1,7 @@
 #include "TextureLoader.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/AssetContainers/TextureReference.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 

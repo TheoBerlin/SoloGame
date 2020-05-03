@@ -4,6 +4,7 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <Engine/Rendering/AssetContainers/TextureReference.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
