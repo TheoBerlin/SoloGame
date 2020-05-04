@@ -98,7 +98,7 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
     this->registerComponent(entity, tid_UIPanel);
 }
 
-void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount)
+void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, std::shared_ptr<Texture>* pTextureReferences, size_t textureCount)
 {
     if (!panels.hasElement(entity)) {
         LOG_WARNING("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
@@ -117,11 +117,13 @@ void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAtta
 
     size_t oldTextureCount = panel.textures.size();
     panel.textures.resize(oldTextureCount + textureCount);
-    std::memcpy(&panel.textures[oldTextureCount], attachments.data(), sizeof(TextureAttachment) * textureCount);
+
+    for (TextureAttachment& txAttachment : attachments) {
+        panel.textures[oldTextureCount++] = txAttachment;
+    }
 }
 
-void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
-    std::function<void()> onPress)
+void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight, std::function<void()> onPress)
 {
     if (!panels.hasElement(entity)) {
         LOG_WARNING("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
@@ -177,7 +179,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     panel.texture = new Texture(pSRV);
 }
 
-void UIHandler::createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const TextureReference& texture, const UIPanel& panel)
+void UIHandler::createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel)
 {
     attachment.texture = texture;
 
@@ -188,7 +190,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
         return;
     } else if (attachmentInfo.sizeSetting == TX_SIZE_CLIENT_RESOLUTION_DEPENDENT) {
         // Get the resolution of the texture
-        ID3D11ShaderResourceView* pSRV = texture.getSRV();
+        ID3D11ShaderResourceView* pSRV = texture.get()->getSRV();
         ID3D11Resource* resource;
         pSRV->GetResource(&resource);
 
@@ -235,7 +237,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
     }
 }
 
-void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel)
+void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel)
 {
     // Get old viewport, and set a new one
     UINT viewportCount = 1;
@@ -298,8 +300,8 @@ void UIHandler::renderTexturesOntoPanel(const std::vector<TextureAttachment>& at
 
     m_pContext->OMSetRenderTargets(1, &panelRtv, nullptr);
 
-    for (const TextureAttachment& attachment : attachments) {
-        ID3D11ShaderResourceView* pSRV = attachment.texture.getSRV();
+    for (TextureAttachment& attachment : attachments) {
+        ID3D11ShaderResourceView* pSRV = attachment.texture.get()->getSRV();
         m_pContext->PSSetShaderResources(0, 1, &pSRV);
 
         BufferData bufferData = {

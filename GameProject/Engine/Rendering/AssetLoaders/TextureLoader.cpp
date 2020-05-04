@@ -16,28 +16,23 @@ TextureLoader::TextureLoader(ECSCore* pECS, IDevice* pDevice)
     registerHandler(handlerReg);
 }
 
-TextureLoader::~TextureLoader()
-{
-    this->deleteAllTextures();
-}
-
 bool TextureLoader::initHandler()
 {
     return true;
 }
 
-TextureReference TextureLoader::loadTexture(const std::string& filePath)
+std::shared_ptr<Texture> TextureLoader::loadTexture(const std::string& filePath)
 {
     // See if the texture is already loaded
     auto itr = m_Textures.find(filePath);
-
     if (itr != m_Textures.end()) {
-        if (itr->second->getSRV() == nullptr) {
-            // The texture was loaded but its data is now deleted, delete the texture pointer
-            delete itr->second;
+        std::weak_ptr<Texture>& texturePtr = itr->second;
+
+        if (texturePtr.expired()) {
+            // The texture used to exist but has been deleted
+            m_Textures.erase(itr);
         } else {
-            // The texture exists, create a reference to it
-            return TextureReference(itr->second);
+            return texturePtr.lock();
         }
     }
 
@@ -59,22 +54,12 @@ TextureReference TextureLoader::loadTexture(const std::string& filePath)
 
     if (FAILED(hr)) {
         LOG_WARNING("Failed to load texture: [%s]", filePath.c_str());
-        return TextureReference(nullptr);
+        return nullptr;
     }
 
     LOG_INFO("Loaded texture: [%s]", filePath.c_str());
-    Texture* pTexture = new Texture(pSRV);
-    m_Textures[filePath] = pTexture;
+    std::shared_ptr<Texture> texture(new Texture(pSRV));
+    m_Textures.insert({filePath, texture});
 
-    TextureReference textureReference(pTexture);
-    return textureReference;
-}
-
-void TextureLoader::deleteAllTextures()
-{
-    for (auto texturePair : m_Textures) {
-        delete texturePair.second;
-    }
-
-    m_Textures.clear();
+    return texture;
 }

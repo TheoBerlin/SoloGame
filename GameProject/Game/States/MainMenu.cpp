@@ -11,6 +11,8 @@
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
 
+#include <array>
+
 MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevice, InputHandler* pInputHandler)
     :State(pStateManager, pECS, STATE_TRANSITION::PUSH),
     m_pDevice(pDevice),
@@ -29,7 +31,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevi
     uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 1.0f);
 
     // Attach background and text textures to the panel
-    TextureReference panelTextures[2] = {
+    std::array<std::shared_ptr<Texture>, 2> panelTextures = {
         pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"),
         pTextRenderer->renderText("Play", "Game/Assets/Fonts/arial/arial.ttf", 50)
     };
@@ -40,7 +42,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevi
     txAttachmentInfos[1].verticalAlignment      = TX_VERTICAL_ALIGNMENT_CENTER;
     txAttachmentInfos[1].sizeSetting            = TX_SIZE_CLIENT_RESOLUTION_DEPENDENT;
 
-    uiHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures, ARRAYSIZE(panelTextures));
+    uiHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures.data(), panelTextures.size());
 
     // Make the panel a button
     uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ new GameSession(this); });

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
+
 #include <DirectXMath.h>
 
 struct MaterialAttributes {
@@ -9,6 +10,6 @@ struct MaterialAttributes {
 };
 
 struct Material {
-    std::vector<TextureReference> textures;
+    std::vector<std::shared_ptr<Texture>> textures;
     MaterialAttributes attributes;
 };

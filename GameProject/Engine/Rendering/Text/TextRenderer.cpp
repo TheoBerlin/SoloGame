@@ -23,11 +23,6 @@ TextRenderer::TextRenderer(ECSCore* pECS, IDevice* pDevice)
 
 TextRenderer::~TextRenderer()
 {
-    // Release text textures
-    for (Texture* texture : m_Textures) {
-        delete texture;
-    }
-
     FT_Error err = FT_Done_FreeType(ftLib);
 	if (err) {
 		LOG_ERROR("Failed to release FreeType library: %s", FT_Error_String(err));
@@ -52,7 +47,7 @@ bool TextRenderer::initHandler()
     return true;
 }
 
-TextureReference TextRenderer::renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight)
+std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight)
 {
     FT_Face face;
     FT_Error err;
@@ -86,7 +81,7 @@ TextureReference TextRenderer::renderText(const std::string& text, const std::st
     textBytemap.width = textureSize.x;
 
     // Describes where to draw the next character onto the texture
-    DirectX::XMUINT2 pen = {0, textureSize.y * 64 - face->size->metrics.ascender};
+    DirectX::XMUINT2 pen = {0, textureSize.y * 64u - face->size->metrics.ascender};
 
     // Render each character onto the final texture
     int charIdx = 0;
@@ -131,9 +126,10 @@ TextureReference TextRenderer::renderText(const std::string& text, const std::st
         charIdx += 1;
     }
 
-    Texture* pTexture = new Texture(bytemapToTexture(textBytemap));
-    m_Textures.push_back(pTexture);
-    return TextureReference(pTexture);
+    std::shared_ptr<Texture> finalTexture(new Texture(bytemapToTexture(textBytemap)));
+    m_Textures.push_back(finalTexture);
+
+    return finalTexture;
 }
 
 bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight)

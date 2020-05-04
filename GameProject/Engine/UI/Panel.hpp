@@ -42,7 +42,7 @@ struct TextureAttachmentInfo {
 struct TextureAttachment {
     // Position and size are specified as [0, 1], and are relative to the panel's position and size.
     DirectX::XMFLOAT2 position, size;
-    TextureReference texture;
+    std::shared_ptr<Texture> texture;
 };
 
 struct UIPanel {
@@ -83,11 +83,10 @@ public:
     virtual bool initHandler() override;
 
     void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
-    void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, TextureReference* pTextureReferences, size_t textureCount);
+    void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, std::shared_ptr<Texture>* pTextureReferences, size_t textureCount);
 
     // Requires that the entity has a UI panel already
-    void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight,
-        std::function<void()> onPress);
+    void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight, std::function<void()> onPress);
 
     IDDVector<UIPanel> panels;
     IDDVector<UIButton> buttons;
@@ -95,8 +94,8 @@ public:
 private:
     // Creates a texture for a panel, which can be used as both a RTV and SRV
     void createPanelTexture(UIPanel& panel);
-    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const TextureReference& texture, const UIPanel& panel);
-    void renderTexturesOntoPanel(const std::vector<TextureAttachment>& attachments, UIPanel& panel);
+    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
+    void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
 
 private:
     IDevice* m_pDevice;
