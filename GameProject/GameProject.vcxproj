@@ -152,7 +152,6 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
     <ClCompile Include="Engine\Rendering\AssetContainers\Texture.cpp" />
-    <ClCompile Include="Engine\Rendering\AssetContainers\TextureReference.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
@@ -221,7 +220,6 @@
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
-    <ClInclude Include="Engine\Rendering\AssetContainers\TextureReference.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />

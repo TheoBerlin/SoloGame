@@ -5,7 +5,6 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
-#include <Engine/Rendering/AssetContainers/TextureReference.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/Components/Renderable.hpp>
@@ -215,7 +214,7 @@ void MeshRenderer::recordCommands()
 
             /* Pixel shader */
             // Diffuse texture
-            ID3D11ShaderResourceView* pDiffuseSRV = model->Materials[mesh.materialIndex].textures[0].getSRV();
+            ID3D11ShaderResourceView* pDiffuseSRV = model->Materials[mesh.materialIndex].textures[0].get()->getSRV();
             pContext->PSSetShaderResources(0, 1, &pDiffuseSRV);
             pContext->PSSetSamplers(0, 1, m_ppAniSampler);
 

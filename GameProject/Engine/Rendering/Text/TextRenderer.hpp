@@ -5,6 +5,7 @@
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Texture.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+
 #include <DirectXMath.h>
 #include <d3d11.h>
 #include <map>
@@ -37,7 +38,7 @@ public:
     virtual bool initHandler() override;
 
     // Creates a texture with text rendered onto it
-    TextureReference renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);
+    std::shared_ptr<Texture> renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);
 
 private:
     // Loads and maps each character in a string to FreeType glyph data
@@ -59,7 +60,7 @@ private:
     IDevice* m_pDevice;
 
     // Rendering text results in a texture and a texture reference being created. This is the storage for the textures.
-    std::vector<Texture*> m_Textures;
+    std::vector<std::weak_ptr<Texture>> m_Textures;
 
     FT_Library ftLib;
 
