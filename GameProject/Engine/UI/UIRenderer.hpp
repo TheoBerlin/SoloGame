@@ -7,9 +7,10 @@
 
 #include <d3d11.h>
 
+class DeviceDX11;
 class IBuffer;
 class ICommandList;
-class DeviceDX11;
+class IRasterizerState;
 class ShaderHandler;
 class Texture;
 class UIHandler;
@@ -37,17 +38,14 @@ private:
 
     Program* m_pUIProgram;
 
+    // Vertex buffer
     IBuffer* m_pQuad;
 
-    /* Render targets */
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
-
-    // Constant buffer
     IBuffer* m_pPerPanelBuffer;
-
-    /* Samplers */
     ID3D11SamplerState *const* m_ppAniSampler;
+    IRasterizerState* m_pRasterizerState;
 
     D3D11_VIEWPORT m_Viewport;
     unsigned int m_BackbufferWidth, m_BackbufferHeight;

@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
@@ -34,6 +35,7 @@ UIRenderer::~UIRenderer()
 {
     delete m_pCommandList;
     delete m_pPerPanelBuffer;
+    delete m_pRasterizerState;
 }
 
 bool UIRenderer::init()
@@ -73,6 +75,18 @@ bool UIRenderer::init()
         return false;
     }
 
+    RasterizerStateInfo rsInfo = {};
+    rsInfo.PolygonMode          = POLYGON_MODE::FILL;
+    rsInfo.CullMode             = CULL_MODE::NONE;
+    rsInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    rsInfo.DepthBiasEnable      = false;
+
+    m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
+    if (!m_pRasterizerState) {
+        LOG_ERROR("Failed to create rasterizer state");
+        return false;
+    }
+
     // Create viewport
     m_Viewport = {};
     m_Viewport.TopLeftX = 0;
@@ -100,6 +114,7 @@ void UIRenderer::recordCommands()
 
     m_pCommandList->bindShaders(m_pUIProgram);
 
+    m_pCommandList->bindRasterizerState(m_pRasterizerState);
     pContext->RSSetViewports(1, &m_Viewport);
 
     pContext->PSSetSamplers(0, 1, m_ppAniSampler);
