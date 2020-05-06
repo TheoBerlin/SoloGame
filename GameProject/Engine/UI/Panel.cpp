@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -18,7 +19,8 @@ UIHandler::UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
     m_pDevice(pDevice),
     m_pCommandList(nullptr),
     m_pQuadVertices(nullptr),
-    m_pBlendState(nullptr)
+    m_pBlendState(nullptr),
+    m_pRasterizerState(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -45,6 +47,7 @@ UIHandler::~UIHandler()
 
     delete m_pPerObjectBuffer;
     delete m_pCommandList;
+    delete m_pRasterizerState;
 
     SAFERELEASE(m_pBlendState)
 }
@@ -81,6 +84,10 @@ bool UIHandler::initHandler()
     bufferInfo.Usage = BUFFER_USAGE::UNIFORM_BUFFER;
 
     m_pPerObjectBuffer = m_pDevice->createBuffer(bufferInfo);
+    if (!m_pPerObjectBuffer) {
+        LOG_ERROR("Failed to create per-object uniform buffer");
+        return false;
+    }
 
     D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
     rtvBlendDesc.BlendEnable            = TRUE;
@@ -103,7 +110,19 @@ bool UIHandler::initHandler()
         return false;
     }
 
-    return m_pPerObjectBuffer && m_pBlendState;
+    RasterizerStateInfo rsInfo = {};
+    rsInfo.PolygonMode          = POLYGON_MODE::FILL;
+    rsInfo.CullMode             = CULL_MODE::NONE;
+    rsInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    rsInfo.DepthBiasEnable      = false;
+
+    m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
+    if (!m_pRasterizerState) {
+        LOG_ERROR("Failed to create rasterizer state");
+        return false;
+    }
+
+    return true;
 }
 
 void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor)
@@ -253,6 +272,8 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindVertexBuffer(0, m_pUIProgram->vertexSize, m_pQuadVertices);
     m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerObjectBuffer);
     pContext->PSSetSamplers(0, 1, m_pAniSampler);
+
+    m_pCommandList->bindRasterizerState(m_pRasterizerState);
     pContext->OMSetDepthStencilState(nullptr, 0);
 
     pContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);

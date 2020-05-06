@@ -73,6 +73,7 @@ class Display;
 class IBuffer;
 class ICommandList;
 class IDevice;
+class IRasterizerState;
 class Window;
 struct Program;
 
@@ -108,6 +109,7 @@ private:
     BufferDX11* m_pQuadVertices;
     ID3D11SamplerState *const* m_pAniSampler;
     ID3D11BlendState* m_pBlendState;
+    IRasterizerState* m_pRasterizerState;
 
     unsigned int m_ClientWidth, m_ClientHeight;
 };
