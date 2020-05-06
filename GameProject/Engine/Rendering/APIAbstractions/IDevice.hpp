@@ -13,9 +13,11 @@ struct SwapChainInfo {
 
 class IBuffer;
 class ICommandList;
+class IRasterizerState;
 class Texture;
 class Window;
 struct BufferInfo;
+struct RasterizerStateInfo;
 struct TextureInfo;
 
 class IDevice
@@ -34,4 +36,6 @@ public:
 
     virtual Texture* createTextureFromFile(const std::string& filePath) = 0;
     virtual Texture* createTexture(const TextureInfo& textureInfo) = 0;
+
+    virtual IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) = 0;
 };

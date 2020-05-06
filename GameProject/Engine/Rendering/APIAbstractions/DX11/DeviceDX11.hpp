@@ -27,6 +27,8 @@ public:
     TextureDX11* createTextureFromFile(const std::string& filePath) override final;
     TextureDX11* createTexture(const TextureInfo& textureInfo) override final;
 
+    IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
+
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
 

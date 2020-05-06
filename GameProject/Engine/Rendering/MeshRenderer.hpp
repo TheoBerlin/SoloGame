@@ -11,6 +11,7 @@
 class IBuffer;
 class ICommandList;
 class DeviceDX11;
+class IRasterizerState;
 class RenderableHandler;
 class Texture;
 class TransformHandler;
@@ -75,7 +76,7 @@ private:
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
 
-    ID3D11RasterizerState* m_RsState;
+    IRasterizerState* m_pRasterizerState;
 
     D3D11_VIEWPORT m_Viewport;
     unsigned int m_BackbufferWidth, m_BackbufferHeight;
