@@ -7,8 +7,7 @@
 BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
     :m_pBuffer(nullptr)
 {
-    D3D11_BUFFER_DESC bufferDesc;
-    ZeroMemory(&bufferDesc, sizeof(D3D11_BUFFER_DESC));
+    D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.ByteWidth = (UINT)bufferInfo.ByteSize;
 
     // Figure out which usage flag to use

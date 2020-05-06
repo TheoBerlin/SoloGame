@@ -20,7 +20,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
-    m_pDepthStencilView(pDevice->getDepthStencilView()),
+    m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight())
 {
@@ -56,18 +56,17 @@ bool MeshRenderer::init()
         return false;
     }
 
-    m_pRenderableHandler = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
-    m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVPHandler = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
-    m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    m_pRenderableHandler    = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
+    m_pTransformHandler     = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pVPHandler            = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    m_pLightHandler         = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
 
     if (!m_pRenderableHandler || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
         return false;
     }
 
     // Retrieve anisotropic sampler
-    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
 
     m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
@@ -103,18 +102,17 @@ bool MeshRenderer::init()
     ID3D11Device* pDevice = pDeviceDX->getDevice();
 
     /* Rasterizer state */
-    D3D11_RASTERIZER_DESC rsDesc;
-    ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rsDesc.FillMode = D3D11_FILL_SOLID;
-    rsDesc.CullMode = D3D11_CULL_BACK;
-    rsDesc.FrontCounterClockwise = false;
-    rsDesc.DepthBias = 0;
-    rsDesc.SlopeScaledDepthBias = 0.0f;
-    rsDesc.DepthBiasClamp = 0.0f;
-    rsDesc.DepthClipEnable = true;
-    rsDesc.ScissorEnable = false;
-    rsDesc.MultisampleEnable = false;
-    rsDesc.AntialiasedLineEnable = false;
+    D3D11_RASTERIZER_DESC rsDesc    = {};
+    rsDesc.FillMode                 = D3D11_FILL_SOLID;
+    rsDesc.CullMode                 = D3D11_CULL_BACK;
+    rsDesc.FrontCounterClockwise    = false;
+    rsDesc.DepthBias                = 0;
+    rsDesc.SlopeScaledDepthBias     = 0.0f;
+    rsDesc.DepthBiasClamp           = 0.0f;
+    rsDesc.DepthClipEnable          = true;
+    rsDesc.ScissorEnable            = false;
+    rsDesc.MultisampleEnable        = false;
+    rsDesc.AntialiasedLineEnable    = false;
 
     HRESULT hr = pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
     if (FAILED(hr)) {
@@ -126,8 +124,8 @@ bool MeshRenderer::init()
     m_Viewport = {};
     m_Viewport.TopLeftX = 0;
     m_Viewport.TopLeftY = 0;
-    m_Viewport.Width = (float)m_BackbufferWidth;
-    m_Viewport.Height = (float)m_BackbufferHeight;
+    m_Viewport.Width    = (float)m_BackbufferWidth;
+    m_Viewport.Height   = (float)m_BackbufferHeight;
     m_Viewport.MinDepth = 0.0f;
     m_Viewport.MaxDepth = 1.0f;
 
@@ -170,7 +168,7 @@ void MeshRenderer::recordCommands()
     m_pCommandList->bindBuffer(1, SHADER_TYPE::FRAGMENT_SHADER, m_pPointLightBuffer);
 
     pContext->RSSetState(m_RsState);
-    pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
+    m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
         Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);

@@ -2,6 +2,7 @@
 
 #define NOMINMAX
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IDevice.hpp>
 
 #include <d3d11.h>
@@ -23,14 +24,14 @@ public:
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
     BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
 
-    Texture* createTextureFromFile(const std::string& filePath) override final;
-    Texture* createTexture(const TextureInfo& textureInfo) override final;
+    TextureDX11* createTextureFromFile(const std::string& filePath) override final;
+    TextureDX11* createTexture(const TextureInfo& textureInfo) override final;
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
 
-    ID3D11RenderTargetView* getBackBuffer()         { return m_pBackBufferRTV; }
-    ID3D11DepthStencilView* getDepthStencilView()   { return m_pDepthStencilView; }
+    Texture* getBackBuffer()    { return m_pBackBuffer; }
+    Texture* getDepthStencil()  { return m_pDepthTexture; }
 
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
@@ -44,12 +45,11 @@ private:
     IDXGISwapChain* m_pSwapChain;
 
     // Backbuffer textures
-    ID3D11RenderTargetView* m_pBackBufferRTV;
+    TextureDX11* m_pBackBuffer;
     // TODO: Remove this, each renderer should have its own blend state
     ID3D11BlendState* m_pBlendState;
 
-    ID3D11Texture2D* m_pDepthStencilTX;
-    ID3D11DepthStencilView* m_pDepthStencilView;
+    TextureDX11* m_pDepthTexture;
     ID3D11DepthStencilState* m_pDepthStencilState;
 
     const FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};

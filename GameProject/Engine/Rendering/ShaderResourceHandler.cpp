@@ -28,8 +28,7 @@ bool ShaderResourceHandler::initHandler()
     ID3D11Device* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice)->getDevice();
 
     /* Samplers */
-    D3D11_SAMPLER_DESC samplerDesc;
-    ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+    D3D11_SAMPLER_DESC samplerDesc = {};
     samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
     samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
     samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;

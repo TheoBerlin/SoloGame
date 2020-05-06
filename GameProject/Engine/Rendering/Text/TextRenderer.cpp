@@ -76,7 +76,7 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
     // The bytemap to paste glyph bytemaps onto
     Bytemap textBytemap;
     textBytemap.buffer.resize(textureSize.x * textureSize.y);
-    ZeroMemory(textBytemap.buffer.data(), textBytemap.buffer.size());
+    std::memset(textBytemap.buffer.data(), 0, textBytemap.buffer.size());
     textBytemap.rows = textureSize.y;
     textBytemap.width = textureSize.x;
 
