@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 
 class IBuffer;
+class IRasterizerState;
 struct Program;
 
 class ICommandList
@@ -23,6 +24,8 @@ public:
     virtual void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) = 0;
 
     virtual void bindShaders(const Program* program) = 0;
+
+    virtual void bindRasterizerState(IRasterizerState* pRasterizerState) = 0;
 
     virtual void draw(size_t vertexCount) = 0;
     virtual void drawIndexed(size_t indexCount) = 0;

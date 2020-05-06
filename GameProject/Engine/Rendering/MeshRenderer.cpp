@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
+#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -19,6 +20,7 @@
 MeshRenderer::MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
+    m_pRasterizerState(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
@@ -44,9 +46,9 @@ MeshRenderer::~MeshRenderer()
     delete m_pMaterialBuffer;
     delete m_pPointLightBuffer;
     delete m_pCommandList;
+    delete m_pRasterizerState;
 
     SAFERELEASE(m_pMeshInputLayout)
-    SAFERELEASE(m_RsState)
 }
 
 bool MeshRenderer::init()
@@ -71,7 +73,7 @@ bool MeshRenderer::init()
     m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
     /* Shader resource creation */
-    /* Cbuffers */
+    // Uniform buffers
     BufferInfo bufferInfo = {};
     bufferInfo.ByteSize     = sizeof(PerObjectMatrices);
     bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
@@ -98,27 +100,14 @@ bool MeshRenderer::init()
         return false;
     }
 
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
+    // Rasterizer state
+    RasterizerStateInfo rasterizerInfo = {};
+    rasterizerInfo.PolygonMode          = POLYGON_MODE::FILL;
+    rasterizerInfo.CullMode             = CULL_MODE::BACK;
+    rasterizerInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    rasterizerInfo.DepthBiasEnable      = false;
 
-    /* Rasterizer state */
-    D3D11_RASTERIZER_DESC rsDesc    = {};
-    rsDesc.FillMode                 = D3D11_FILL_SOLID;
-    rsDesc.CullMode                 = D3D11_CULL_BACK;
-    rsDesc.FrontCounterClockwise    = false;
-    rsDesc.DepthBias                = 0;
-    rsDesc.SlopeScaledDepthBias     = 0.0f;
-    rsDesc.DepthBiasClamp           = 0.0f;
-    rsDesc.DepthClipEnable          = true;
-    rsDesc.ScissorEnable            = false;
-    rsDesc.MultisampleEnable        = false;
-    rsDesc.AntialiasedLineEnable    = false;
-
-    HRESULT hr = pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create rasterizer state: %s", hresultToString(hr).c_str());
-        return false;
-    }
+    m_pRasterizerState = m_pDevice->createRasterizerState(rasterizerInfo);
 
     // Create viewport
     m_Viewport = {};
@@ -167,7 +156,7 @@ void MeshRenderer::recordCommands()
 
     m_pCommandList->bindBuffer(1, SHADER_TYPE::FRAGMENT_SHADER, m_pPointLightBuffer);
 
-    pContext->RSSetState(m_RsState);
+    m_pCommandList->bindRasterizerState(m_pRasterizerState);
     m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     for (Entity renderableID : m_Renderables.getIDs()) {

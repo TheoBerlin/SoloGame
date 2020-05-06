@@ -1,6 +1,7 @@
 #include "CommandListDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -138,6 +139,12 @@ void CommandListDX11::bindShaders(const Program* program)
     m_pContext->DSSetShader(program->domainShader, nullptr, 0);
     m_pContext->GSSetShader(program->geometryShader, nullptr, 0);
     m_pContext->PSSetShader(program->pixelShader, nullptr, 0);
+}
+
+void CommandListDX11::bindRasterizerState(IRasterizerState* pRasterizerState)
+{
+    ID3D11RasterizerState* pRasterizerStateDX = reinterpret_cast<RasterizerStateDX11*>(pRasterizerState)->getRasterizerState();
+    m_pContext->RSSetState(pRasterizerStateDX);
 }
 
 void CommandListDX11::draw(size_t vertexCount)

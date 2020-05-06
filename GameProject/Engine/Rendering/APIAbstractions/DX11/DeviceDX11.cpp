@@ -1,6 +1,7 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -107,6 +108,11 @@ TextureDX11* DeviceDX11::createTextureFromFile(const std::string& filePath)
 TextureDX11* DeviceDX11::createTexture(const TextureInfo& textureInfo)
 {
     return TextureDX11::create(textureInfo, m_pDevice);
+}
+
+IRasterizerState* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
+{
+    return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }
 
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)

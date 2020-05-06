@@ -26,6 +26,8 @@ public:
 
     void bindShaders(const Program* program) override final;
 
+    void bindRasterizerState(IRasterizerState* pRasterizerState) override final;
+
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;
 
