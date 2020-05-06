@@ -3,7 +3,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
-#include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -18,13 +18,13 @@ const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(ECSCore* pECS, DeviceDX11* pDevice)
     :ComponentHandler(pECS, TID(TubeHandler)),
-    m_pTextureLoader(nullptr),
+    m_pTextureCache(nullptr),
     m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.HandlerDependencies = {
-        TID(TextureLoader)
+        TID(TextureCache)
     };
 
     registerHandler(handlerReg);
@@ -39,8 +39,8 @@ TubeHandler::~TubeHandler()
 
 bool TubeHandler::initHandler()
 {
-    m_pTextureLoader = reinterpret_cast<TextureLoader*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureLoader)));
-    return m_pTextureLoader;
+    m_pTextureCache = reinterpret_cast<TextureCache*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
+    return m_pTextureCache;
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
@@ -153,7 +153,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     Material& material = model.Materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
-    material.textures.push_back(m_pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"));
+    material.textures.push_back(m_pTextureCache->loadTexture("./Game/Assets/Models/Cube.png"));
 
     return &model;
 }

@@ -156,7 +156,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
-    <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
+    <ClCompile Include="Engine\Rendering\AssetLoaders\TextureCache.cpp" />
     <ClCompile Include="Engine\Rendering\Camera.cpp" />
     <ClCompile Include="Engine\Rendering\Components\PointLight.cpp" />
     <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
@@ -227,7 +227,7 @@
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
-    <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />
+    <ClInclude Include="Engine\Rendering\AssetLoaders\TextureCache.hpp" />
     <ClInclude Include="Engine\Rendering\Camera.hpp" />
     <ClInclude Include="Engine\Rendering\Components\ComponentGroups.hpp" />
     <ClInclude Include="Engine\Rendering\Components\VPMatrices.hpp" />

@@ -6,7 +6,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
-#include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-ModelLoader::ModelLoader(ECSCore* pECS, TextureLoader* txLoader, DeviceDX11* pDevice)
+ModelLoader::ModelLoader(ECSCore* pECS, TextureCache* txLoader, DeviceDX11* pDevice)
     :ComponentHandler(pECS, TID(ModelLoader)),
     m_pTXLoader(txLoader),
     m_pDevice(pDevice)

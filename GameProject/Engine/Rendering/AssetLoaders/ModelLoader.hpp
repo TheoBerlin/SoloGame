@@ -12,12 +12,12 @@
 #include <vector>
 #include <unordered_map>
 
-class TextureLoader;
+class TextureCache;
 
 class ModelLoader : public ComponentHandler
 {
 public:
-    ModelLoader(ECSCore* pECS, TextureLoader* txLoader, DeviceDX11* pDevice);
+    ModelLoader(ECSCore* pECS, TextureCache* txLoader, DeviceDX11* pDevice);
     ~ModelLoader();
 
     virtual bool initHandler() override { return true; };
@@ -37,7 +37,7 @@ private:
     void loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene);
 
 private:
-    TextureLoader* m_pTXLoader;
+    TextureCache* m_pTXLoader;
 
     DeviceDX11* m_pDevice;
 
