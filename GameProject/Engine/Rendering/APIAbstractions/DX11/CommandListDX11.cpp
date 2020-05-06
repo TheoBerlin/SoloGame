@@ -175,6 +175,11 @@ void CommandListDX11::bindRasterizerState(IRasterizerState* pRasterizerState)
     m_pContext->RSSetState(pRasterizerStateDX);
 }
 
+void CommandListDX11::bindViewport(const Viewport* pViewport)
+{
+    m_pContext->RSSetViewports(1u, (const D3D11_VIEWPORT*)pViewport);
+}
+
 void CommandListDX11::draw(size_t vertexCount)
 {
     m_pContext->Draw((UINT)vertexCount, 0);

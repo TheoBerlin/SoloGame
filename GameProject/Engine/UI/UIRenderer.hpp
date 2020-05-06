@@ -2,6 +2,7 @@
 
 
 #include <Engine/ECS/Renderer.hpp>
+#include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
 #define NOMINMAX
@@ -48,6 +49,6 @@ private:
     ISampler* m_pAniSampler;
     IRasterizerState* m_pRasterizerState;
 
-    D3D11_VIEWPORT m_Viewport;
+    Viewport m_Viewport;
     unsigned int m_BackbufferWidth, m_BackbufferHeight;
 };
