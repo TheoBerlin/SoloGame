@@ -7,7 +7,7 @@
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice)
+ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(ShaderResourceHandler)),
     m_pDevice(pDevice),
     m_pQuadVertices(nullptr)

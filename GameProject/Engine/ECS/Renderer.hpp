@@ -8,7 +8,7 @@
 
 class ComponentHandler;
 class ECSCore;
-class IDevice;
+class Device;
 class Renderer;
 
 struct RendererRegistration {
@@ -19,7 +19,7 @@ struct RendererRegistration {
 class Renderer
 {
 public:
-    Renderer(ECSCore* pECS, IDevice* pDevice);
+    Renderer(ECSCore* pECS, Device* pDevice);
     ~Renderer();
 
     virtual bool init() = 0;
@@ -33,7 +33,7 @@ protected:
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
 protected:
-    IDevice* m_pDevice;
+    Device* m_pDevice;
 
 private:
     ECSCore* m_pECS;

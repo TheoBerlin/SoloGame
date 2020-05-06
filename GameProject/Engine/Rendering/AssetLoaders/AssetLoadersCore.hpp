@@ -4,12 +4,12 @@
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 
 class ECSCore;
-class IDevice;
+class Device;
 
 class AssetLoadersCore
 {
 public:
-    AssetLoadersCore(ECSCore* pECS, IDevice* pDevice);
+    AssetLoadersCore(ECSCore* pECS, Device* pDevice);
     ~AssetLoadersCore();
 
 private:

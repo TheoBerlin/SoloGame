@@ -1,7 +1,7 @@
 #include "UIRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -12,7 +12,7 @@
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
+UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),

@@ -12,7 +12,7 @@
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-UIHandler::UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow)
+UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :ComponentHandler(pECS, TID(UIHandler)),
     m_ClientWidth(pWindow->getWidth()),
     m_ClientHeight(pWindow->getHeight()),

@@ -1,10 +1,10 @@
 #include "MeshRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
-#include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
@@ -17,7 +17,7 @@
 
 #include <DirectXMath.h>
 
-MeshRenderer::MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
+MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRasterizerState(nullptr),

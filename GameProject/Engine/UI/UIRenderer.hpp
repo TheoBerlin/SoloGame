@@ -7,7 +7,7 @@
 
 #include <d3d11.h>
 
-class DeviceDX11;
+class Device;
 class IBuffer;
 class ICommandList;
 class IRasterizerState;
@@ -20,7 +20,7 @@ struct Program;
 class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
+    UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow);
     ~UIRenderer();
 
     bool init() override final;

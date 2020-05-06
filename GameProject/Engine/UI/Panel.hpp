@@ -72,7 +72,7 @@ class BufferDX11;
 class Display;
 class IBuffer;
 class ICommandList;
-class IDevice;
+class Device;
 class IRasterizerState;
 class Window;
 struct Program;
@@ -80,7 +80,7 @@ struct Program;
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(ECSCore* pECS, IDevice* pDevice, Window* pWindow);
+    UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow);
     ~UIHandler();
 
     virtual bool initHandler() override;
@@ -101,7 +101,7 @@ private:
     void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
 
 private:
-    IDevice* m_pDevice;
+    Device* m_pDevice;
     ICommandList* m_pCommandList;
 
     Program* m_pUIProgram;
