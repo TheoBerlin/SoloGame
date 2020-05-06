@@ -1,13 +1,13 @@
 #pragma once
 
-#define NOMINMAX
-
 #include <Engine/ECS/ComponentHandler.hpp>
+
+#define NOMINMAX
 #include <d3d11.h>
-#include <wrl/client.h>
 
 class BufferDX11;
 class Device;
+class ISampler;
 struct Vertex;
 
 class ShaderResourceHandler : public ComponentHandler
@@ -18,15 +18,14 @@ public:
 
     virtual bool initHandler() override;
 
-    ID3D11SamplerState *const* getAniSampler() const;
+    ISampler* getAniSampler() { return m_pAniSampler; }
 
     BufferDX11* getQuarterScreenQuad();
 
 private:
     Device* m_pDevice;
 
-    /* Samplers */
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> aniSampler;
+    ISampler* m_pAniSampler;
 
     // Quarter-screen quad
     BufferDX11* m_pQuadVertices;

@@ -20,7 +20,8 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight()),
     m_pQuad(nullptr),
-    m_pPerPanelBuffer(nullptr)
+    m_pPerPanelBuffer(nullptr),
+    m_pAniSampler(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -55,7 +56,7 @@ bool UIRenderer::init()
     m_pUIProgram = m_pShaderHandler->getProgram(UI);
 
     m_pQuad = pShaderResourceHandler->getQuarterScreenQuad();
-    m_ppAniSampler = pShaderResourceHandler->getAniSampler();
+    m_pAniSampler = pShaderResourceHandler->getAniSampler();
 
     // Create per-panel constant buffer
     BufferInfo bufferInfo = {};
@@ -117,7 +118,7 @@ void UIRenderer::recordCommands()
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     pContext->RSSetViewports(1, &m_Viewport);
 
-    pContext->PSSetSamplers(0, 1, m_ppAniSampler);
+    m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
     m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     size_t bufferSize = sizeof(

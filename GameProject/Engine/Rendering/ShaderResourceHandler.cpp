@@ -10,7 +10,8 @@
 ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(ShaderResourceHandler)),
     m_pDevice(pDevice),
-    m_pQuadVertices(nullptr)
+    m_pQuadVertices(nullptr),
+    m_pAniSampler(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -21,27 +22,32 @@ ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, Device* pDevice)
 ShaderResourceHandler::~ShaderResourceHandler()
 {
     delete m_pQuadVertices;
+    delete m_pAniSampler;
 }
 
 bool ShaderResourceHandler::initHandler()
 {
     ID3D11Device* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice)->getDevice();
 
-    /* Samplers */
-    D3D11_SAMPLER_DESC samplerDesc = {};
-    samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
-    samplerDesc.MipLODBias = 0.0f;
-    samplerDesc.MaxAnisotropy = 1;
-    samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-    samplerDesc.MinLOD = 0.0f;
-    samplerDesc.MaxLOD = 0.0f;
+    SamplerInfo samplerInfo = {};
+    samplerInfo.FilterMin           = FILTER::NEAREST;
+    samplerInfo.FilterMag           = FILTER::NEAREST;
+    samplerInfo.FilterMip           = FILTER::NEAREST;
+    samplerInfo.AnisotropyEnabled   = true;
+    samplerInfo.MaxAnisotropy       = 1.0f;
+    samplerInfo.AddressModeU        = ADDRESS_MODE::MIRROR_REPEAT;
+    samplerInfo.AddressModeV        = samplerInfo.AddressModeU;
+    samplerInfo.AddressModeW        = samplerInfo.AddressModeU;
+    samplerInfo.MipLODBias          = 0.0f;
+    samplerInfo.CompareEnabled      = false;
+    samplerInfo.ComparisonFunc      = COMPARISON_FUNC::ALWAYS;
+    samplerInfo.MinLOD              = 0.0f;
+    samplerInfo.MaxLOD              = 0.0f;
 
-    HRESULT hr = pDevice->CreateSamplerState(&samplerDesc, aniSampler.GetAddressOf());
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create anisotropic sampler: %s", hresultToString(hr).c_str());
+    m_pAniSampler = m_pDevice->createSampler(samplerInfo);
+    if (!m_pAniSampler) {
+        LOG_ERROR("Failed to create anisotropic sampler");
+        delete m_pAniSampler;
         return false;
     }
 
@@ -58,11 +64,6 @@ bool ShaderResourceHandler::initHandler()
     IBuffer* pQuadBuffer = m_pDevice->createVertexBuffer(pQuadVertices, sizeof(Vertex2D), 4);
     m_pQuadVertices = reinterpret_cast<BufferDX11*>(pQuadBuffer);
     return m_pQuadVertices;
-}
-
-ID3D11SamplerState *const* ShaderResourceHandler::getAniSampler() const
-{
-    return aniSampler.GetAddressOf();
 }
 
 BufferDX11* ShaderResourceHandler::getQuarterScreenQuad()

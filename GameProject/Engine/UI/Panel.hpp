@@ -72,8 +72,9 @@ class BufferDX11;
 class Display;
 class IBuffer;
 class ICommandList;
-class Device;
 class IRasterizerState;
+class ISampler;
+class Device;
 class Window;
 struct Program;
 
@@ -107,7 +108,7 @@ private:
     Program* m_pUIProgram;
     IBuffer* m_pPerObjectBuffer;
     BufferDX11* m_pQuadVertices;
-    ID3D11SamplerState *const* m_pAniSampler;
+    ISampler* m_pAniSampler;
     ID3D11BlendState* m_pBlendState;
     IRasterizerState* m_pRasterizerState;
 

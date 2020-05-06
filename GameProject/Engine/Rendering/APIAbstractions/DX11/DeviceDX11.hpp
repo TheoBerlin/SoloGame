@@ -2,6 +2,7 @@
 
 #define NOMINMAX
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 
@@ -28,6 +29,8 @@ public:
     TextureDX11* createTexture(const TextureInfo& textureInfo) override final;
 
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
+
+    SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }

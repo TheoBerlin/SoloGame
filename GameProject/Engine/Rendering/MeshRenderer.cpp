@@ -21,6 +21,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRasterizerState(nullptr),
+    m_pAniSampler(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
@@ -70,7 +71,7 @@ bool MeshRenderer::init()
     // Retrieve anisotropic sampler
     ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
 
-    m_ppAniSampler = pShaderResourceHandler->getAniSampler();
+    m_pAniSampler = pShaderResourceHandler->getAniSampler();
 
     /* Shader resource creation */
     // Uniform buffers
@@ -202,7 +203,7 @@ void MeshRenderer::recordCommands()
             /* Pixel shader */
             // Diffuse texture
             m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, model->Materials[mesh.materialIndex].textures[0].get());
-            pContext->PSSetSamplers(0, 1, m_ppAniSampler);
+            m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 
             // Material cbuffer
             pMappedMemory = nullptr;

@@ -1,16 +1,17 @@
 #pragma once
 
-#define NOMINMAX
 
 #include <Engine/ECS/Renderer.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
+#define NOMINMAX
 #include <d3d11.h>
 
 class Device;
 class IBuffer;
 class ICommandList;
 class IRasterizerState;
+class ISampler;
 class ShaderHandler;
 class Texture;
 class UIHandler;
@@ -44,7 +45,7 @@ private:
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
     IBuffer* m_pPerPanelBuffer;
-    ID3D11SamplerState *const* m_ppAniSampler;
+    ISampler* m_pAniSampler;
     IRasterizerState* m_pRasterizerState;
 
     D3D11_VIEWPORT m_Viewport;
