@@ -3,7 +3,7 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
 #include <DirectXMath.h>
@@ -51,7 +51,7 @@ private:
     void drawGlyphToTexture(unsigned char* renderTarget, const DirectX::XMUINT2& textureSize, const DirectX::XMUINT2& pen, const Bytemap& glyphBytemap);
 
     // Convert a bytemap to an appropriate format, and create a texture from the results
-    ID3D11ShaderResourceView* bytemapToTexture(const Bytemap& bitmap);
+    std::shared_ptr<Texture> bytemapToTexture(const Bytemap& bitmap);
 
     // Convert a bitmap into a bytemap
     void bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap);

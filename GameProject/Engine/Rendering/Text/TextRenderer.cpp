@@ -126,8 +126,10 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
         charIdx += 1;
     }
 
-    std::shared_ptr<Texture> finalTexture(new Texture(bytemapToTexture(textBytemap)));
-    m_Textures.push_back(finalTexture);
+    std::shared_ptr<Texture> finalTexture = bytemapToTexture(textBytemap);
+    if (finalTexture) {
+        m_Textures.push_back(finalTexture);
+    }
 
     return finalTexture;
 }
@@ -224,7 +226,7 @@ void TextRenderer::drawGlyphToTexture(uint8_t* renderTarget, const DirectX::XMUI
     }
 }
 
-ID3D11ShaderResourceView* TextRenderer::bytemapToTexture(const Bytemap& bytemap)
+std::shared_ptr<Texture> TextRenderer::bytemapToTexture(const Bytemap& bytemap)
 {
     // Duplicate each byte in the bytemap four times to create an R8G8B8A8 texture
     Bytemap convertedBytemap;
@@ -244,44 +246,23 @@ ID3D11ShaderResourceView* TextRenderer::bytemapToTexture(const Bytemap& bytemap)
     }
 
     // Convert the glyph's bytemap into unsigned integers
-    D3D11_TEXTURE2D_DESC txDesc;
-    ZeroMemory(&txDesc, sizeof(D3D11_TEXTURE2D_DESC));
-    txDesc.Width = convertedBytemap.width;
-    txDesc.Height = convertedBytemap.rows;
-    txDesc.MipLevels = 1;
-    txDesc.ArraySize = 1;
-    txDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    txDesc.SampleDesc.Count = 1;
-    txDesc.SampleDesc.Quality = 0;
-    txDesc.Usage = D3D11_USAGE_DEFAULT;
-    txDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    txDesc.CPUAccessFlags = 0;
-    txDesc.MiscFlags = 0;
+    InitialData initialData = {};
+    initialData.pData   = convertedBytemap.buffer.data();
+    initialData.RowSize = convertedBytemap.width * 4u * sizeof(uint8_t);
 
-    D3D11_SUBRESOURCE_DATA glyphTxSubdata;
-    ZeroMemory(&glyphTxSubdata, sizeof(D3D11_SUBRESOURCE_DATA));
-    glyphTxSubdata.pSysMem = convertedBytemap.buffer.data();
-    glyphTxSubdata.SysMemPitch = convertedBytemap.width * 4 * sizeof(uint8_t);
-    glyphTxSubdata.SysMemSlicePitch = 0;
+    TextureInfo textureInfo = {};
+    textureInfo.Dimensions      = {convertedBytemap.width, convertedBytemap.rows};
+    textureInfo.Format          = TEXTURE_FORMAT::R8G8B8A8_UNORM;
+    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    textureInfo.LayoutFlags     = textureInfo.InitialLayout;
+    textureInfo.pInitialData    = &initialData;
 
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
-
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> glyphTexture;
-    HRESULT hr = pDevice->CreateTexture2D(&txDesc, &glyphTxSubdata, glyphTexture.GetAddressOf());
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create texture from bytemap: %s", hresultToString(hr).c_str());
-        return nullptr;
+    std::shared_ptr<Texture> glyphTexture(m_pDevice->createTexture(textureInfo));
+    if (!glyphTexture) {
+        LOG_WARNING("Failed to create glyph texture from bytemap");
     }
 
-    ID3D11ShaderResourceView* glyphSRV;
-    hr = pDevice->CreateShaderResourceView(glyphTexture.Get(), nullptr, &glyphSRV);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create shader resource view from bytemap: %s", hresultToString(hr).c_str());
-        return nullptr;
-    }
-
-    return glyphSRV;
+    return glyphTexture;
 }
 
 void TextRenderer::bitmapToBytemap(const FT_Bitmap& bitmap, Bytemap& bytemap)

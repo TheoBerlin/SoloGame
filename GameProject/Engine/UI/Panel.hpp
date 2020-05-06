@@ -3,7 +3,7 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
@@ -70,6 +70,8 @@ const std::type_index tid_UIButton = TID(UIButton);
 
 class BufferDX11;
 class Display;
+class IBuffer;
+class ICommandList;
 class IDevice;
 class Window;
 struct Program;
@@ -99,12 +101,13 @@ private:
 
 private:
     IDevice* m_pDevice;
-    ID3D11DeviceContext* m_pContext;
+    ICommandList* m_pCommandList;
 
     Program* m_pUIProgram;
-    ID3D11Buffer* m_pPerObjectBuffer;
+    IBuffer* m_pPerObjectBuffer;
     BufferDX11* m_pQuadVertices;
     ID3D11SamplerState *const* m_pAniSampler;
+    ID3D11BlendState* m_pBlendState;
 
     unsigned int m_ClientWidth, m_ClientHeight;
 };

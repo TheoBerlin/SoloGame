@@ -151,7 +151,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
-    <ClCompile Include="Engine\Rendering\AssetContainers\Texture.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureLoader.cpp" />
@@ -211,15 +211,16 @@
     <ClInclude Include="Engine\Physics\Velocity.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\IBuffer.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ICommandList.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\IDevice.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
-    <ClInclude Include="Engine\Rendering\AssetContainers\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\ModelLoader.hpp" />
     <ClInclude Include="Engine\Rendering\AssetLoaders\TextureLoader.hpp" />

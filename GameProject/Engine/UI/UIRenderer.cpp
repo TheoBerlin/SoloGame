@@ -115,7 +115,7 @@ void UIRenderer::recordCommands()
 
     for (const Entity& entity : m_Panels.getIDs()) {
         UIPanel& panel = m_pUIHandler->panels.indexID(entity);
-        if (panel.texture->getSRV() == nullptr) {
+        if (!panel.texture) {
             continue;
         }
 
@@ -127,8 +127,7 @@ void UIRenderer::recordCommands()
 
         m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerPanelBuffer);
 
-        ID3D11ShaderResourceView* pPanelSRV = panel.texture->getSRV();
-        pContext->PSSetShaderResources(0, 1, &pPanelSRV);
+        m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, panel.texture);
 
         m_pCommandList->draw(4);
     }
