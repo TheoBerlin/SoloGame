@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/Rendering/AssetContainers/Texture.hpp>
+#include <Engine/Rendering/APIAbstractions/Texture.hpp>
 
 #include <DirectXMath.h>
 

@@ -214,8 +214,7 @@ void MeshRenderer::recordCommands()
 
             /* Pixel shader */
             // Diffuse texture
-            ID3D11ShaderResourceView* pDiffuseSRV = model->Materials[mesh.materialIndex].textures[0].get()->getSRV();
-            pContext->PSSetShaderResources(0, 1, &pDiffuseSRV);
+            m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, model->Materials[mesh.materialIndex].textures[0].get());
             pContext->PSSetSamplers(0, 1, m_ppAniSampler);
 
             // Material cbuffer

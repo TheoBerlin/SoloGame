@@ -1,6 +1,7 @@
 #include "CommandListDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -92,6 +93,44 @@ void CommandListDX11::bindIndexBuffer(IBuffer* pBuffer)
     m_pContext->IASetIndexBuffer(pBufferDX, DXGI_FORMAT_R32_UINT, 0);
 }
 
+void CommandListDX11::bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture)
+{
+    ID3D11ShaderResourceView* pSRV = reinterpret_cast<TextureDX11*>(pTexture)->getSRV();
+
+    UINT uSlot = (UINT)slot;
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::VERTEX_SHADER)) {
+        m_pContext->VSSetShaderResources(uSlot, 1, &pSRV);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::HULL_SHADER)) {
+        m_pContext->HSSetShaderResources(uSlot, 1, &pSRV);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
+        m_pContext->DSSetShaderResources(uSlot, 1, &pSRV);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
+        m_pContext->GSSetShaderResources(uSlot, 1, &pSRV);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
+        m_pContext->PSSetShaderResources(uSlot, 1, &pSRV);
+    }
+}
+
+void CommandListDX11::bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil)
+{
+    TextureDX11* pRenderTargetDX = reinterpret_cast<TextureDX11*>(pRenderTarget);
+    TextureDX11* pDepthStencilDX = reinterpret_cast<TextureDX11*>(pDepthStencil);
+
+    ID3D11RenderTargetView* pRTV = pRenderTargetDX ? pRenderTargetDX->getRTV() : nullptr;
+    ID3D11DepthStencilView* pDSV = pDepthStencilDX ? pDepthStencilDX->getDSV() : nullptr;
+
+    m_pContext->OMSetRenderTargets(1, &pRTV, pDSV);
+}
+
 void CommandListDX11::bindShaders(const Program* program)
 {
     m_pContext->VSSetShader(program->vertexShader, nullptr, 0);
@@ -109,4 +148,9 @@ void CommandListDX11::draw(size_t vertexCount)
 void CommandListDX11::drawIndexed(size_t indexCount)
 {
     m_pContext->DrawIndexed((UINT)indexCount, 0, 0);
+}
+
+void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture)
+{
+    pTexture->convertTextureLayout(oldLayout, newLayout);
 }

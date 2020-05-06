@@ -21,10 +21,15 @@ public:
     void bindVertexBuffer(int slot, size_t vertexSize, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;
 
+    void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) override final;
+    void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) override final;
+
     void bindShaders(const Program* program) override final;
 
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;
+
+    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture) override final;
 
 private:
     // Deferred context

@@ -1,6 +1,7 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -36,7 +37,6 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
 
     return initBackBuffers(swapChainInfo, pWindow);
 }
-
 
 void DeviceDX11::clearBackBuffer()
 {
@@ -99,6 +99,16 @@ BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t index
     bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
 
     return createBuffer(bufferInfo);
+}
+
+Texture* DeviceDX11::createTextureFromFile(const std::string& filePath)
+{
+    return TextureDX11::createFromFile(filePath, m_pDevice);
+}
+
+Texture* DeviceDX11::createTexture(const TextureInfo& textureInfo)
+{
+    return TextureDX11::create(textureInfo, m_pDevice);
 }
 
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -240,14 +250,14 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
 
     // Create blend state
     D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
-    rtvBlendDesc.BlendEnable = TRUE;
-    rtvBlendDesc.SrcBlend = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-    rtvBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlendAlpha = D3D11_BLEND_ONE;
-    rtvBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    rtvBlendDesc.BlendEnable            = TRUE;
+    rtvBlendDesc.SrcBlend               = D3D11_BLEND_ONE;
+    rtvBlendDesc.DestBlend              = D3D11_BLEND_INV_SRC_ALPHA;
+    rtvBlendDesc.BlendOp                = D3D11_BLEND_OP_ADD;
+    rtvBlendDesc.SrcBlendAlpha          = D3D11_BLEND_ONE;
+    rtvBlendDesc.DestBlendAlpha         = D3D11_BLEND_ONE;
+    rtvBlendDesc.BlendOpAlpha           = D3D11_BLEND_OP_ADD;
+    rtvBlendDesc.RenderTargetWriteMask  = D3D11_COLOR_WRITE_ENABLE_ALL;
 
     D3D11_BLEND_DESC blendDesc = {};
     blendDesc.AlphaToCoverageEnable = FALSE;

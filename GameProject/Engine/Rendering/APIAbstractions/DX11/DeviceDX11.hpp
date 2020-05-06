@@ -23,8 +23,11 @@ public:
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
     BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
 
-    ID3D11Device* getDevice()               { return m_pDevice; }
-    ID3D11DeviceContext* getContext() { return m_pContext; }
+    Texture* createTextureFromFile(const std::string& filePath) override final;
+    Texture* createTexture(const TextureInfo& textureInfo) override final;
+
+    ID3D11Device* getDevice()           { return m_pDevice; }
+    ID3D11DeviceContext* getContext()   { return m_pContext; }
 
     ID3D11RenderTargetView* getBackBuffer()         { return m_pBackBufferRTV; }
     ID3D11DepthStencilView* getDepthStencilView()   { return m_pDepthStencilView; }

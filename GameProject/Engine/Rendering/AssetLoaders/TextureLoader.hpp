@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/Rendering/AssetContainers/Texture.hpp>
 
 #include <unordered_map>
 
 class IDevice;
+class Texture;
 
 class TextureLoader : public ComponentHandler
 {
