@@ -10,8 +10,6 @@ DeviceDX11::DeviceDX11()
     :m_pDevice(nullptr),
     m_pSwapChain(nullptr),
     m_pContext(nullptr),
-    m_pBackBuffer(nullptr),
-    m_pDepthTexture(nullptr),
     m_pDepthStencilState(nullptr),
     m_pBlendState(nullptr)
 {}
@@ -23,9 +21,6 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pContext)
     SAFERELEASE(m_pBlendState)
     SAFERELEASE(m_pDepthStencilState)
-
-    delete m_pBackBuffer;
-    delete m_pDepthTexture;
 }
 
 bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -39,8 +34,11 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
 
 void DeviceDX11::clearBackBuffer()
 {
-    m_pContext->ClearRenderTargetView(m_pBackBuffer->getRTV(), m_pClearColor);
-    m_pContext->ClearDepthStencilView(m_pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    TextureDX11* pBackBuffer = reinterpret_cast<TextureDX11*>(m_pBackBuffer);
+    TextureDX11* pDepthTexture = reinterpret_cast<TextureDX11*>(m_pDepthTexture);
+
+    m_pContext->ClearRenderTargetView(pBackBuffer->getRTV(), m_pClearColor);
+    m_pContext->ClearDepthStencilView(pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
 void DeviceDX11::presentBackBuffer()
@@ -223,7 +221,8 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    m_pContext->ClearDepthStencilView(m_pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    TextureDX11* pDepthTexture = reinterpret_cast<TextureDX11*>(m_pDepthTexture);
+    m_pContext->ClearDepthStencilView(pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 
     /* Set viewport */
     D3D11_VIEWPORT viewPort = {};

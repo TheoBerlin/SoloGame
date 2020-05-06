@@ -12,7 +12,7 @@ class Window;
 class RenderingCore
 {
 public:
-    RenderingCore(ECSCore* pECS, IDevice* pDevice, Window* pWindow);
+    RenderingCore(ECSCore* pECS, Device* pDevice, Window* pWindow);
     ~RenderingCore();
 
 private:

@@ -10,7 +10,7 @@
 
 class IBuffer;
 class ICommandList;
-class DeviceDX11;
+class Device;
 class IRasterizerState;
 class RenderableHandler;
 class Texture;
@@ -21,7 +21,7 @@ class Window;
 class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow);
+    MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow);
     ~MeshRenderer();
 
     bool init() override final;

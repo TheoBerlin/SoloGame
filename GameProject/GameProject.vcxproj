@@ -148,6 +148,7 @@
     <ClCompile Include="Engine\InputHandler.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsCore.cpp" />
     <ClCompile Include="Engine\Physics\Velocity.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Device.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
@@ -216,7 +217,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\IBuffer.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ICommandList.hpp" />
-    <ClInclude Include="Engine\Rendering\APIAbstractions\IDevice.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\IRasterizerState.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />

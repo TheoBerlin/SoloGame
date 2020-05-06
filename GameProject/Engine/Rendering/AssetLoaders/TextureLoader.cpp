@@ -1,11 +1,11 @@
 #include "TextureLoader.hpp"
 
-#include <Engine/Rendering/APIAbstractions/IDevice.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-TextureLoader::TextureLoader(ECSCore* pECS, IDevice* pDevice)
+TextureLoader::TextureLoader(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(TextureLoader)),
     m_pDevice(pDevice)
 {

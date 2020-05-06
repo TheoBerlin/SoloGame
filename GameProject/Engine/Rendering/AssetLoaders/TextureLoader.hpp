@@ -4,13 +4,13 @@
 
 #include <unordered_map>
 
-class IDevice;
+class Device;
 class Texture;
 
 class TextureLoader : public ComponentHandler
 {
 public:
-    TextureLoader(ECSCore* pECS, IDevice* pDevice);
+    TextureLoader(ECSCore* pECS, Device* pDevice);
     ~TextureLoader() = default;
 
     virtual bool initHandler() override;
@@ -20,5 +20,5 @@ public:
 private:
     std::unordered_map<std::string, std::weak_ptr<Texture>> m_Textures;
 
-    IDevice* m_pDevice;
+    Device* m_pDevice;
 };

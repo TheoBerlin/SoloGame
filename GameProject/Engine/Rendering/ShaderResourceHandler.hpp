@@ -7,13 +7,13 @@
 #include <wrl/client.h>
 
 class BufferDX11;
-class IDevice;
+class Device;
 struct Vertex;
 
 class ShaderResourceHandler : public ComponentHandler
 {
 public:
-    ShaderResourceHandler(ECSCore* pECS, IDevice* pDevice);
+    ShaderResourceHandler(ECSCore* pECS, Device* pDevice);
     ~ShaderResourceHandler();
 
     virtual bool initHandler() override;
@@ -23,7 +23,7 @@ public:
     BufferDX11* getQuarterScreenQuad();
 
 private:
-    IDevice* m_pDevice;
+    Device* m_pDevice;
 
     /* Samplers */
     Microsoft::WRL::ComPtr<ID3D11SamplerState> aniSampler;

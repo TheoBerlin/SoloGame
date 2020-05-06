@@ -12,7 +12,7 @@
 
 #include <algorithm>
 
-TextRenderer::TextRenderer(ECSCore* pECS, IDevice* pDevice)
+TextRenderer::TextRenderer(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(TextRenderer)),
     m_pDevice(pDevice)
 {

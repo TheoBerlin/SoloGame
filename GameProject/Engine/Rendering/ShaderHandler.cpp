@@ -7,7 +7,7 @@
 
 #include <d3dcompiler.h>
 
-ShaderHandler::ShaderHandler(IDevice* pDevice, ECSCore* pECS)
+ShaderHandler::ShaderHandler(Device* pDevice, ECSCore* pECS)
     :ComponentHandler(pECS, TID(ShaderHandler)),
     m_pDevice(pDevice)
 {

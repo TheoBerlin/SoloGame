@@ -3,11 +3,11 @@
 #define NOMINMAX
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/IDevice.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 
 #include <d3d11.h>
 
-class DeviceDX11 : public IDevice
+class DeviceDX11 : public Device
 {
 public:
     DeviceDX11();
@@ -32,9 +32,6 @@ public:
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
 
-    Texture* getBackBuffer()    { return m_pBackBuffer; }
-    Texture* getDepthStencil()  { return m_pDepthTexture; }
-
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
     bool initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow);
@@ -46,12 +43,9 @@ private:
 
     IDXGISwapChain* m_pSwapChain;
 
-    // Backbuffer textures
-    TextureDX11* m_pBackBuffer;
     // TODO: Remove this, each renderer should have its own blend state
     ID3D11BlendState* m_pBlendState;
 
-    TextureDX11* m_pDepthTexture;
     ID3D11DepthStencilState* m_pDepthStencilState;
 
     const FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};

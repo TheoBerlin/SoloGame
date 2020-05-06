@@ -5,7 +5,7 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-Renderer::Renderer(ECSCore* pECS, IDevice* pDevice)
+Renderer::Renderer(ECSCore* pECS, Device* pDevice)
     :m_pECS(pECS),
     m_pDevice(pDevice)
 {
