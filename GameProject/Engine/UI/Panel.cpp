@@ -19,6 +19,7 @@ UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pDevice(pDevice),
     m_pCommandList(nullptr),
     m_pQuadVertices(nullptr),
+    m_pAniSampler(nullptr),
     m_pBlendState(nullptr),
     m_pRasterizerState(nullptr)
 {
@@ -271,7 +272,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     m_pCommandList->bindVertexBuffer(0, m_pUIProgram->vertexSize, m_pQuadVertices);
     m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerObjectBuffer);
-    pContext->PSSetSamplers(0, 1, m_pAniSampler);
+    m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     pContext->OMSetDepthStencilState(nullptr, 0);

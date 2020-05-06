@@ -24,6 +24,8 @@ public:
     void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) override final;
     void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) override final;
 
+    void bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler) override final;
+
     void bindShaders(const Program* program) override final;
 
     void bindRasterizerState(IRasterizerState* pRasterizerState) override final;

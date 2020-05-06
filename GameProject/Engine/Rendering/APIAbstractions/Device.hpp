@@ -14,10 +14,12 @@ struct SwapChainInfo {
 class IBuffer;
 class ICommandList;
 class IRasterizerState;
+class ISampler;
 class Texture;
 class Window;
 struct BufferInfo;
 struct RasterizerStateInfo;
+struct SamplerInfo;
 struct TextureInfo;
 
 class Device
@@ -41,6 +43,8 @@ public:
     virtual Texture* createTexture(const TextureInfo& textureInfo) = 0;
 
     virtual IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) = 0;
+
+    virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
 
     Texture* getBackBuffer()    { return m_pBackBuffer; }
     Texture* getDepthStencil()  { return m_pDepthTexture; }

@@ -113,6 +113,11 @@ IRasterizerState* DeviceDX11::createRasterizerState(const RasterizerStateInfo& r
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }
 
+SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
+{
+    return SamplerDX11::create(samplerInfo, m_pDevice);
+}
+
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)
 {
     UINT deviceFlags = 0;

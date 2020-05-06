@@ -8,10 +8,11 @@
 
 #define MAX_POINTLIGHTS 7u
 
+class Device;
 class IBuffer;
 class ICommandList;
-class Device;
 class IRasterizerState;
+class ISampler;
 class RenderableHandler;
 class Texture;
 class TransformHandler;
@@ -62,17 +63,16 @@ private:
     /* Mesh input layout */
     ID3D11InputLayout* m_pMeshInputLayout;
 
-    /* Cbuffers */
-    // WVP and W matrices
+    /* Uniform buffers */
+    // WVP and World matrices
     IBuffer* m_pPerObjectMatrices;
     IBuffer* m_pMaterialBuffer;
     // Contains pointlights, camera position and number of lights
     IBuffer* m_pPointLightBuffer;
 
-    /* Samplers */
-    ID3D11SamplerState *const* m_ppAniSampler;
+    ISampler* m_pAniSampler;
 
-    /* Render targets */
+    // Render targets
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
 

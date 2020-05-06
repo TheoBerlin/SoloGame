@@ -5,6 +5,7 @@
 
 class IBuffer;
 class IRasterizerState;
+class ISampler;
 struct Program;
 
 class ICommandList
@@ -22,6 +23,8 @@ public:
 
     virtual void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) = 0;
     virtual void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) = 0;
+
+    virtual void bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler) = 0;
 
     virtual void bindShaders(const Program* program) = 0;
 

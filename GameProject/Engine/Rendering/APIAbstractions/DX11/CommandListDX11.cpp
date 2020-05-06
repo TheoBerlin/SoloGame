@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -130,6 +131,33 @@ void CommandListDX11::bindRenderTarget(Texture* pRenderTarget, Texture* pDepthSt
     ID3D11DepthStencilView* pDSV = pDepthStencilDX ? pDepthStencilDX->getDSV() : nullptr;
 
     m_pContext->OMSetRenderTargets(1, &pRTV, pDSV);
+}
+
+void CommandListDX11::bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler)
+{
+    ID3D11SamplerState* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler)->getSamplerState();
+
+    UINT uSlot = (UINT)slot;
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::VERTEX_SHADER)) {
+        m_pContext->VSSetSamplers(uSlot, 1, &pSamplerDX);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::HULL_SHADER)) {
+        m_pContext->HSSetSamplers(uSlot, 1, &pSamplerDX);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
+        m_pContext->DSSetSamplers(uSlot, 1, &pSamplerDX);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
+        m_pContext->GSSetSamplers(uSlot, 1, &pSamplerDX);
+    }
+
+    if (HAS_FLAG(shaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
+        m_pContext->PSSetSamplers(uSlot, 1, &pSamplerDX);
+    }
 }
 
 void CommandListDX11::bindShaders(const Program* program)
