@@ -5,6 +5,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -250,19 +251,14 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 {
     ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
 
-    // Get old viewport, and set a new one
-    UINT viewportCount = 1;
-    D3D11_VIEWPORT oldViewport = {};
-    pContext->RSGetViewports(&viewportCount, &oldViewport);
-
-    D3D11_VIEWPORT newViewport = {};
-    newViewport.TopLeftX    = 0;
-    newViewport.TopLeftY    = 0;
-    newViewport.Width       = panel.size.x * m_ClientWidth;
-    newViewport.Height      = panel.size.y * m_ClientHeight;
-    newViewport.MinDepth    = 0.0f;
-    newViewport.MaxDepth    = 1.0f;
-    pContext->RSSetViewports(1, &newViewport);
+    Viewport viewport = {};
+    viewport.TopLeftX    = 0;
+    viewport.TopLeftY    = 0;
+    viewport.Width       = panel.size.x * m_ClientWidth;
+    viewport.Height      = panel.size.y * m_ClientHeight;
+    viewport.MinDepth    = 0.0f;
+    viewport.MaxDepth    = 1.0f;
+    m_pCommandList->bindViewport(&viewport);
 
     // Rendering setup
     m_pCommandList->bindShaders(m_pUIProgram);
@@ -304,9 +300,6 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
         m_pCommandList->draw(4u);
     }
-
-    // Reset viewport
-    pContext->RSSetViewports(1, &oldViewport);
 
     m_pCommandList->execute();
 }

@@ -92,8 +92,8 @@ bool UIRenderer::init()
     m_Viewport = {};
     m_Viewport.TopLeftX = 0;
     m_Viewport.TopLeftY = 0;
-    m_Viewport.Width = (float)m_BackbufferWidth;
-    m_Viewport.Height = (float)m_BackbufferHeight;
+    m_Viewport.Width    = (float)m_BackbufferWidth;
+    m_Viewport.Height   = (float)m_BackbufferHeight;
     m_Viewport.MinDepth = 0.0f;
     m_Viewport.MaxDepth = 1.0f;
 
@@ -116,7 +116,7 @@ void UIRenderer::recordCommands()
     m_pCommandList->bindShaders(m_pUIProgram);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
-    pContext->RSSetViewports(1, &m_Viewport);
+    m_pCommandList->bindViewport(&m_Viewport);
 
     m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
     m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);

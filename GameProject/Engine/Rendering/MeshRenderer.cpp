@@ -15,8 +15,6 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-#include <DirectXMath.h>
-
 MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
@@ -198,7 +196,7 @@ void MeshRenderer::recordCommands()
 
             m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER, m_pPerObjectMatrices);
 
-            pContext->RSSetViewports(1, &m_Viewport);
+            m_pCommandList->bindViewport(&m_Viewport);
 
             /* Pixel shader */
             // Diffuse texture

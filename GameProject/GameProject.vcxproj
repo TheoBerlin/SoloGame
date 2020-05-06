@@ -225,6 +225,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\ISampler.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />
