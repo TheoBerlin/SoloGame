@@ -9,7 +9,7 @@ struct Model;
 class DeviceDX11;
 class ModelLoader;
 class ComponentSubscriber;
-class TextureLoader;
+class TextureCache;
 
 struct TubePoint {
     DirectX::XMFLOAT3 position;
@@ -37,7 +37,7 @@ private:
     void createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t pointIdx, float T);
 
 private:
-    TextureLoader* m_pTextureLoader;
+    TextureCache* m_pTextureCache;
     DeviceDX11* m_pDevice;
 
     std::vector<DirectX::XMFLOAT3> m_TubeSections;

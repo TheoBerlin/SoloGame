@@ -7,11 +7,11 @@
 class Device;
 class Texture;
 
-class TextureLoader : public ComponentHandler
+class TextureCache : public ComponentHandler
 {
 public:
-    TextureLoader(ECSCore* pECS, Device* pDevice);
-    ~TextureLoader() = default;
+    TextureCache(ECSCore* pECS, Device* pDevice);
+    ~TextureCache() = default;
 
     virtual bool initHandler() override;
 

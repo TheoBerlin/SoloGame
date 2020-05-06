@@ -4,7 +4,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/InputHandler.hpp>
-#include <Engine/Rendering/AssetLoaders/TextureLoader.hpp>
+#include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -24,7 +24,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevi
 
     UIHandler* uiHandler            = static_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
     TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
-    TextureLoader* pTextureLoader   = static_cast<TextureLoader*>(pComponentSubscriber->getComponentHandler(TID(TextureLoader)));
+    TextureCache* pTextureCache   = static_cast<TextureCache*>(pComponentSubscriber->getComponentHandler(TID(TextureCache)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
@@ -32,7 +32,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevi
 
     // Attach background and text textures to the panel
     std::array<std::shared_ptr<Texture>, 2> panelTextures = {
-        pTextureLoader->loadTexture("./Game/Assets/Models/Cube.png"),
+        pTextureCache->loadTexture("./Game/Assets/Models/Cube.png"),
         pTextRenderer->renderText("Play", "Game/Assets/Fonts/arial/arial.ttf", 50)
     };
 

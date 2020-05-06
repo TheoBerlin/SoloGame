@@ -1,12 +1,12 @@
-#include "TextureLoader.hpp"
+#include "TextureCache.hpp"
 
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-TextureLoader::TextureLoader(ECSCore* pECS, Device* pDevice)
-    :ComponentHandler(pECS, TID(TextureLoader)),
+TextureCache::TextureCache(ECSCore* pECS, Device* pDevice)
+    :ComponentHandler(pECS, TID(TextureCache)),
     m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
@@ -14,12 +14,12 @@ TextureLoader::TextureLoader(ECSCore* pECS, Device* pDevice)
     registerHandler(handlerReg);
 }
 
-bool TextureLoader::initHandler()
+bool TextureCache::initHandler()
 {
     return true;
 }
 
-std::shared_ptr<Texture> TextureLoader::loadTexture(const std::string& filePath)
+std::shared_ptr<Texture> TextureCache::loadTexture(const std::string& filePath)
 {
     // See if the texture is already loaded
     auto itr = m_Textures.find(filePath);
