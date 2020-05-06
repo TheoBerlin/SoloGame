@@ -56,10 +56,10 @@ bool MeshRenderer::init()
         return false;
     }
 
-    m_pRenderableHandler = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
-    m_pTransformHandler = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVPHandler = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
-    m_pLightHandler = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    m_pRenderableHandler    = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
+    m_pTransformHandler     = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pVPHandler            = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    m_pLightHandler         = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
 
     if (!m_pRenderableHandler || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
         return false;
@@ -105,16 +105,16 @@ bool MeshRenderer::init()
     /* Rasterizer state */
     D3D11_RASTERIZER_DESC rsDesc;
     ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rsDesc.FillMode = D3D11_FILL_SOLID;
-    rsDesc.CullMode = D3D11_CULL_BACK;
-    rsDesc.FrontCounterClockwise = false;
-    rsDesc.DepthBias = 0;
-    rsDesc.SlopeScaledDepthBias = 0.0f;
-    rsDesc.DepthBiasClamp = 0.0f;
-    rsDesc.DepthClipEnable = true;
-    rsDesc.ScissorEnable = false;
-    rsDesc.MultisampleEnable = false;
-    rsDesc.AntialiasedLineEnable = false;
+    rsDesc.FillMode                 = D3D11_FILL_SOLID;
+    rsDesc.CullMode                 = D3D11_CULL_BACK;
+    rsDesc.FrontCounterClockwise    = false;
+    rsDesc.DepthBias                = 0;
+    rsDesc.SlopeScaledDepthBias     = 0.0f;
+    rsDesc.DepthBiasClamp           = 0.0f;
+    rsDesc.DepthClipEnable          = true;
+    rsDesc.ScissorEnable            = false;
+    rsDesc.MultisampleEnable        = false;
+    rsDesc.AntialiasedLineEnable    = false;
 
     HRESULT hr = pDevice->CreateRasterizerState(&rsDesc, &m_RsState);
     if (FAILED(hr)) {
@@ -126,8 +126,8 @@ bool MeshRenderer::init()
     m_Viewport = {};
     m_Viewport.TopLeftX = 0;
     m_Viewport.TopLeftY = 0;
-    m_Viewport.Width = (float)m_BackbufferWidth;
-    m_Viewport.Height = (float)m_BackbufferHeight;
+    m_Viewport.Width    = (float)m_BackbufferWidth;
+    m_Viewport.Height   = (float)m_BackbufferHeight;
     m_Viewport.MinDepth = 0.0f;
     m_Viewport.MaxDepth = 1.0f;
 

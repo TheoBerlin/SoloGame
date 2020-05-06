@@ -1,7 +1,6 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -11,8 +10,7 @@ DeviceDX11::DeviceDX11()
     m_pSwapChain(nullptr),
     m_pContext(nullptr),
     m_pBackBufferRTV(nullptr),
-    m_pDepthStencilTX(nullptr),
-    m_pDepthStencilView(nullptr),
+    m_pDepthTexture(nullptr),
     m_pDepthStencilState(nullptr),
     m_pBlendState(nullptr)
 {}
@@ -24,9 +22,9 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pContext)
     SAFERELEASE(m_pBackBufferRTV)
     SAFERELEASE(m_pBlendState)
-    SAFERELEASE(m_pDepthStencilTX)
-    SAFERELEASE(m_pDepthStencilView)
     SAFERELEASE(m_pDepthStencilState)
+
+    delete m_pDepthTexture;
 }
 
 bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -41,7 +39,7 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
 void DeviceDX11::clearBackBuffer()
 {
     m_pContext->ClearRenderTargetView(m_pBackBufferRTV, m_pClearColor);
-    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    m_pContext->ClearDepthStencilView(m_pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
 void DeviceDX11::presentBackBuffer()
@@ -76,7 +74,7 @@ BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
 
 BufferDX11* DeviceDX11::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
 {
-    BufferInfo bufferInfo = {};
+    BufferInfo bufferInfo   = {};
     bufferInfo.ByteSize     = vertexSize * vertexCount;
     bufferInfo.pData        = pVertices;
     bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
@@ -91,7 +89,7 @@ BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t index
     DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
     ID3D11Device* pDevice = pDeviceDX->getDevice();
 
-    BufferInfo bufferInfo = {};
+    BufferInfo bufferInfo   = {};
     bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
     bufferInfo.pData        = pIndices;
     bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
@@ -101,12 +99,12 @@ BufferDX11* DeviceDX11::createIndexBuffer(const unsigned* pIndices, size_t index
     return createBuffer(bufferInfo);
 }
 
-Texture* DeviceDX11::createTextureFromFile(const std::string& filePath)
+TextureDX11* DeviceDX11::createTextureFromFile(const std::string& filePath)
 {
     return TextureDX11::createFromFile(filePath, m_pDevice);
 }
 
-Texture* DeviceDX11::createTexture(const TextureInfo& textureInfo)
+TextureDX11* DeviceDX11::createTexture(const TextureInfo& textureInfo)
 {
     return TextureDX11::create(textureInfo, m_pDevice);
 }
@@ -129,20 +127,20 @@ bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Wind
     // Create swap chain description
     DXGI_SWAP_CHAIN_DESC swapChainDesc;
     ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-    swapChainDesc.BufferDesc.Width = (UINT)pWindow->getWidth();
+    swapChainDesc.BufferDesc.Width  = (UINT)pWindow->getWidth();
     swapChainDesc.BufferDesc.Height = (UINT)pWindow->getHeight();
-    swapChainDesc.BufferDesc.RefreshRate.Numerator = (UINT)swapChainInfo.FrameRateLimit;
-    swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-    swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-    swapChainDesc.SampleDesc.Count = (UINT)swapChainInfo.Multisamples;
-    swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
-    swapChainDesc.BufferCount = 2;
-    swapChainDesc.OutputWindow = pWindow->getHWND();
-    swapChainDesc.Windowed = swapChainInfo.Windowed;
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.BufferDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapChainDesc.BufferDesc.ScanlineOrdering   = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    swapChainDesc.BufferDesc.Scaling            = DXGI_MODE_SCALING_UNSPECIFIED;
+    swapChainDesc.BufferDesc.RefreshRate.Numerator      = (UINT)swapChainInfo.FrameRateLimit;
+    swapChainDesc.BufferDesc.RefreshRate.Denominator    = 1;
+    swapChainDesc.SampleDesc.Count              = (UINT)swapChainInfo.Multisamples;
+    swapChainDesc.SampleDesc.Quality            = 0;
+    swapChainDesc.BufferUsage   = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_UNORDERED_ACCESS;
+    swapChainDesc.BufferCount   = 2;
+    swapChainDesc.OutputWindow  = pWindow->getHWND();
+    swapChainDesc.Windowed      = swapChainInfo.Windowed;
+    swapChainDesc.SwapEffect    = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
     // Create device
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
@@ -178,44 +176,36 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     }
 
     hr = m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_pBackBufferRTV);
+    pBackBuffer->Release();
+
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create Render Target: %s", hresultToString(hr).c_str());
         return false;
     }
 
-    pBackBuffer->Release();
-
     /* Depth stencil */
-    D3D11_TEXTURE2D_DESC depthTxDesc = {};
-    ZeroMemory(&depthTxDesc, sizeof(D3D11_TEXTURE2D_DESC));
-    depthTxDesc.Width = (UINT)pWindow->getWidth();
-    depthTxDesc.Height = (UINT)pWindow->getHeight();
-    depthTxDesc.MipLevels = 1;
-    depthTxDesc.ArraySize = 1;
-    depthTxDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    depthTxDesc.SampleDesc.Count = 1;
-    depthTxDesc.SampleDesc.Quality = 0;
-    depthTxDesc.Usage = D3D11_USAGE_DEFAULT;
-    depthTxDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    depthTxDesc.CPUAccessFlags = 0;
-    depthTxDesc.MiscFlags = 0;
+    TextureInfo textureInfo = {};
+    textureInfo.Dimensions      = {pWindow->getWidth(), pWindow->getHeight()};
+    textureInfo.Format          = TEXTURE_FORMAT::D32_FLOAT;
+    textureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    textureInfo.LayoutFlags     = textureInfo.InitialLayout;
 
-    hr = m_pDevice->CreateTexture2D(&depthTxDesc, nullptr, &m_pDepthStencilTX);
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create depth stencil texture: %s", hresultToString(hr).c_str());
+    m_pDepthTexture = createTexture(textureInfo);
+    if (!m_pDepthTexture) {
+        LOG_ERROR("Failed to create depth texture");
         return false;
     }
 
     D3D11_DEPTH_STENCIL_DESC dsDesc = {};
     ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-    dsDesc.DepthEnable = true;
-    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
-    dsDesc.StencilEnable = false;
+    dsDesc.DepthEnable                  = true;
+    dsDesc.DepthWriteMask               = D3D11_DEPTH_WRITE_MASK_ALL;
+    dsDesc.DepthFunc                    = D3D11_COMPARISON_LESS;
+    dsDesc.StencilEnable                = false;
     dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
-    dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-    dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_LESS;
-    dsDesc.BackFace = dsDesc.FrontFace;
+    dsDesc.FrontFace.StencilPassOp      = D3D11_STENCIL_OP_KEEP;
+    dsDesc.FrontFace.StencilFunc        = D3D11_COMPARISON_LESS;
+    dsDesc.BackFace                     = dsDesc.FrontFace;
 
     hr = m_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState);
     if (FAILED(hr)) {
@@ -223,29 +213,16 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    D3D11_DEPTH_STENCIL_VIEW_DESC dsViewDesc = {};
-    ZeroMemory(&dsViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-    dsViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    dsViewDesc.Flags = 0;
-    dsViewDesc.Texture2D.MipSlice = 0;
-
-    hr = m_pDevice->CreateDepthStencilView(m_pDepthStencilTX, &dsViewDesc, &m_pDepthStencilView);
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create depth stencil view: %s", hresultToString(hr).c_str());
-        return false;
-    }
-
-    m_pContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
+    m_pContext->ClearDepthStencilView(m_pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 
     /* Set viewport */
-    D3D11_VIEWPORT viewPort;
-    viewPort.TopLeftX = 0;
-    viewPort.TopLeftY = 0;
-    viewPort.Width = (float)pWindow->getWidth();
-    viewPort.Height = (float)pWindow->getHeight();
-    viewPort.MinDepth = 0.0f;
-    viewPort.MaxDepth = 1.0f;
+    D3D11_VIEWPORT viewPort = {};
+    viewPort.TopLeftX   = 0;
+    viewPort.TopLeftY   = 0;
+    viewPort.Width      = (float)pWindow->getWidth();
+    viewPort.Height     = (float)pWindow->getHeight();
+    viewPort.MinDepth   = 0.0f;
+    viewPort.MaxDepth   = 1.0f;
     m_pContext->RSSetViewports(1, &viewPort);
 
     // Create blend state
@@ -264,8 +241,8 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     blendDesc.RenderTarget[0] = rtvBlendDesc;
 
     hr = m_pDevice->CreateBlendState(&blendDesc, &m_pBlendState);
-    if (hr != S_OK) {
-        LOG_ERROR("Failed create blend state: %s", hresultToString(hr).c_str());
+    if (FAILED(hr)) {
+        LOG_ERROR("Failed to create blend state: %s", hresultToString(hr).c_str());
         return false;
     }
 
