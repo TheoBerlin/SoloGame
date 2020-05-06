@@ -11,6 +11,7 @@ class IBuffer;
 class ICommandList;
 class DeviceDX11;
 class ShaderHandler;
+class Texture;
 class UIHandler;
 class Window;
 struct Program;
@@ -39,8 +40,8 @@ private:
     IBuffer* m_pQuad;
 
     /* Render targets */
-    ID3D11RenderTargetView* m_pRenderTarget;
-    ID3D11DepthStencilView* m_pDepthStencilView;
+    Texture* m_pRenderTarget;
+    Texture* m_pDepthStencil;
 
     // Constant buffer
     IBuffer* m_pPerPanelBuffer;

@@ -30,8 +30,8 @@ public:
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
 
-    ID3D11RenderTargetView* getBackBuffer()         { return m_pBackBufferRTV; }
-    ID3D11DepthStencilView* getDepthStencilView()   { return m_pDepthTexture->getDSV(); }
+    Texture* getBackBuffer()    { return m_pBackBuffer; }
+    Texture* getDepthStencil()  { return m_pDepthTexture; }
 
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
@@ -45,7 +45,7 @@ private:
     IDXGISwapChain* m_pSwapChain;
 
     // Backbuffer textures
-    ID3D11RenderTargetView* m_pBackBufferRTV;
+    TextureDX11* m_pBackBuffer;
     // TODO: Remove this, each renderer should have its own blend state
     ID3D11BlendState* m_pBlendState;
 

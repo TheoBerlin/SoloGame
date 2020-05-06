@@ -3,6 +3,7 @@
 #define NOMINMAX
 #include <Engine/ECS/Renderer.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
+
 #include <d3d11.h>
 
 #define MAX_POINTLIGHTS 7u
@@ -11,6 +12,7 @@ class IBuffer;
 class ICommandList;
 class DeviceDX11;
 class RenderableHandler;
+class Texture;
 class TransformHandler;
 class VPHandler;
 class Window;
@@ -70,8 +72,8 @@ private:
     ID3D11SamplerState *const* m_ppAniSampler;
 
     /* Render targets */
-    ID3D11RenderTargetView* m_pRenderTarget;
-    ID3D11DepthStencilView* m_pDepthStencilView;
+    Texture* m_pRenderTarget;
+    Texture* m_pDepthStencil;
 
     ID3D11RasterizerState* m_RsState;
 

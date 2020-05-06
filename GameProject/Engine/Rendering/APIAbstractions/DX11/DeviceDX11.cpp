@@ -9,7 +9,7 @@ DeviceDX11::DeviceDX11()
     :m_pDevice(nullptr),
     m_pSwapChain(nullptr),
     m_pContext(nullptr),
-    m_pBackBufferRTV(nullptr),
+    m_pBackBuffer(nullptr),
     m_pDepthTexture(nullptr),
     m_pDepthStencilState(nullptr),
     m_pBlendState(nullptr)
@@ -20,10 +20,10 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDevice)
     SAFERELEASE(m_pSwapChain)
     SAFERELEASE(m_pContext)
-    SAFERELEASE(m_pBackBufferRTV)
     SAFERELEASE(m_pBlendState)
     SAFERELEASE(m_pDepthStencilState)
 
+    delete m_pBackBuffer;
     delete m_pDepthTexture;
 }
 
@@ -38,7 +38,7 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
 
 void DeviceDX11::clearBackBuffer()
 {
-    m_pContext->ClearRenderTargetView(m_pBackBufferRTV, m_pClearColor);
+    m_pContext->ClearRenderTargetView(m_pBackBuffer->getRTV(), m_pClearColor);
     m_pContext->ClearDepthStencilView(m_pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
 }
 
@@ -168,6 +168,7 @@ bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Wind
 
 bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow)
 {
+    // Create render target view from swap chain's back buffer
     ID3D11Texture2D* pBackBuffer = nullptr;
     HRESULT hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
     if (FAILED(hr)) {
@@ -175,13 +176,18 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    hr = m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_pBackBufferRTV);
+    ID3D11RenderTargetView* pBackBufferRTV = nullptr;
+    hr = m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pBackBufferRTV);
     pBackBuffer->Release();
 
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create Render Target: %s", hresultToString(hr).c_str());
         return false;
     }
+
+    D3D11_TEXTURE2D_DESC backBufferDesc = {};
+    pBackBuffer->GetDesc(&backBufferDesc);
+    m_pBackBuffer = new TextureDX11({(uint32_t)backBufferDesc.Width, (uint32_t)backBufferDesc.Height}, nullptr, nullptr, pBackBufferRTV, nullptr);
 
     /* Depth stencil */
     TextureInfo textureInfo = {};
@@ -197,7 +203,6 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     }
 
     D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-    ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
     dsDesc.DepthEnable                  = true;
     dsDesc.DepthWriteMask               = D3D11_DEPTH_WRITE_MASK_ALL;
     dsDesc.DepthFunc                    = D3D11_COMPARISON_LESS;

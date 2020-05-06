@@ -20,7 +20,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
-    m_pDepthStencilView(pDevice->getDepthStencilView()),
+    m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight())
 {
@@ -66,8 +66,7 @@ bool MeshRenderer::init()
     }
 
     // Retrieve anisotropic sampler
-    std::type_index tid_shaderResourceHandler = std::type_index(typeid(ShaderResourceHandler));
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(tid_shaderResourceHandler));
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
 
     m_ppAniSampler = pShaderResourceHandler->getAniSampler();
 
@@ -103,8 +102,7 @@ bool MeshRenderer::init()
     ID3D11Device* pDevice = pDeviceDX->getDevice();
 
     /* Rasterizer state */
-    D3D11_RASTERIZER_DESC rsDesc;
-    ZeroMemory(&rsDesc, sizeof(D3D11_RASTERIZER_DESC));
+    D3D11_RASTERIZER_DESC rsDesc    = {};
     rsDesc.FillMode                 = D3D11_FILL_SOLID;
     rsDesc.CullMode                 = D3D11_CULL_BACK;
     rsDesc.FrontCounterClockwise    = false;
@@ -170,7 +168,7 @@ void MeshRenderer::recordCommands()
     m_pCommandList->bindBuffer(1, SHADER_TYPE::FRAGMENT_SHADER, m_pPointLightBuffer);
 
     pContext->RSSetState(m_RsState);
-    pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
+    m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
         Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);

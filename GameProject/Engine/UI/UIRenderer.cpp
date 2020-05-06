@@ -15,7 +15,7 @@ UIRenderer::UIRenderer(ECSCore* pECS, DeviceDX11* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
-    m_pDepthStencilView(pDevice->getDepthStencilView()),
+    m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight()),
     m_pQuad(nullptr),
@@ -103,10 +103,7 @@ void UIRenderer::recordCommands()
     pContext->RSSetViewports(1, &m_Viewport);
 
     pContext->PSSetSamplers(0, 1, m_ppAniSampler);
-    pContext->OMSetRenderTargets(1, &m_pRenderTarget, m_pDepthStencilView);
-
-    D3D11_MAPPED_SUBRESOURCE mappedResources;
-    ZeroMemory(&mappedResources, sizeof(D3D11_MAPPED_SUBRESOURCE));
+    m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     size_t bufferSize = sizeof(
         DirectX::XMFLOAT2) * 2 +    // Position and size
