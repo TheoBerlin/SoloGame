@@ -125,8 +125,7 @@ bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Wind
     D3D_FEATURE_LEVEL createdFeatureLevel;
 
     // Create swap chain description
-    DXGI_SWAP_CHAIN_DESC swapChainDesc;
-    ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     swapChainDesc.BufferDesc.Width  = (UINT)pWindow->getWidth();
     swapChainDesc.BufferDesc.Height = (UINT)pWindow->getHeight();
     swapChainDesc.BufferDesc.Format             = DXGI_FORMAT_R8G8B8A8_UNORM;
