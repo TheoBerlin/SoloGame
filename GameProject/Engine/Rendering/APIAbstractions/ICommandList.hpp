@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 
+class BlendState;
 class IBuffer;
 class IRasterizerState;
 class ISampler;
@@ -16,10 +17,9 @@ public:
 
     virtual void execute() = 0;
 
+    // Shader resources
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
     virtual void unmap(IBuffer* pBuffer) = 0;
-
-    // Shader resources
     virtual void bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pBuffer) = 0;
     virtual void bindVertexBuffer(int slot, size_t vertexSize, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
@@ -35,6 +35,7 @@ public:
 
     // Output merger
     virtual void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) = 0;
+    virtual void bindBlendState(BlendState* pBlendState) = 0;
 
     virtual void draw(size_t vertexCount) = 0;
     virtual void drawIndexed(size_t indexCount) = 0;

@@ -68,6 +68,7 @@ struct UIButton {
 
 const std::type_index tid_UIButton = TID(UIButton);
 
+class BlendState;
 class BufferDX11;
 class Display;
 class IBuffer;
@@ -109,7 +110,7 @@ private:
     IBuffer* m_pPerObjectBuffer;
     BufferDX11* m_pQuadVertices;
     ISampler* m_pAniSampler;
-    ID3D11BlendState* m_pBlendState;
+    BlendState* m_pBlendState;
     IRasterizerState* m_pRasterizerState;
 
     unsigned int m_ClientWidth, m_ClientHeight;

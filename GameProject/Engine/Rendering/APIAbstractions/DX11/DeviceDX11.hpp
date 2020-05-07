@@ -1,11 +1,12 @@
 #pragma once
 
-#define NOMINMAX
+#include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 
+#define NOMINMAX
 #include <d3d11.h>
 
 class DeviceDX11 : public Device
@@ -28,9 +29,11 @@ public:
     TextureDX11* createTextureFromFile(const std::string& filePath) override final;
     TextureDX11* createTexture(const TextureInfo& textureInfo) override final;
 
+    SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
+
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
 
-    SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
+    BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
@@ -45,9 +48,6 @@ private:
     ID3D11DeviceContext* m_pContext;
 
     IDXGISwapChain* m_pSwapChain;
-
-    // TODO: Remove this, each renderer should have its own blend state
-    ID3D11BlendState* m_pBlendState;
 
     ID3D11DepthStencilState* m_pDepthStencilState;
 
