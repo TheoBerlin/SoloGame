@@ -1,6 +1,7 @@
 #include "Panel.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
+#include <Engine/Rendering/APIAbstractions/BlendState.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
@@ -50,8 +51,7 @@ UIHandler::~UIHandler()
     delete m_pPerObjectBuffer;
     delete m_pCommandList;
     delete m_pRasterizerState;
-
-    SAFERELEASE(m_pBlendState)
+    delete m_pBlendState;
 }
 
 bool UIHandler::initHandler()
@@ -91,24 +91,27 @@ bool UIHandler::initHandler()
         return false;
     }
 
-    D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
-    rtvBlendDesc.BlendEnable            = TRUE;
-    rtvBlendDesc.SrcBlend               = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlend              = D3D11_BLEND_INV_SRC_ALPHA;
-    rtvBlendDesc.BlendOp                = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.SrcBlendAlpha          = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlendAlpha         = D3D11_BLEND_ONE;
-    rtvBlendDesc.BlendOpAlpha           = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.RenderTargetWriteMask  = D3D11_COLOR_WRITE_ENABLE_ALL;
+    BlendRenderTargetInfo rtvBlendInfo = {};
+    rtvBlendInfo.BlendEnabled           = true;
+    rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
+    rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.SrcAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
 
-    D3D11_BLEND_DESC blendDesc = {};
-    blendDesc.AlphaToCoverageEnable = FALSE;
-    blendDesc.RenderTarget[0] = rtvBlendDesc;
+    BlendStateInfo blendStateInfo = {};
+    blendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
+    blendStateInfo.BlendInfosCount = 1u;
+    blendStateInfo.IndependentBlendEnabled = false;
+    for (float& blendConstant : blendStateInfo.pBlendConstants) {
+        blendConstant = 1.0f;
+    }
 
-    ID3D11Device* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice)->getDevice();
-    HRESULT hr = pDevice->CreateBlendState(&blendDesc, &m_pBlendState);
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed create blend state: %s", hresultToString(hr).c_str());
+    m_pBlendState = m_pDevice->createBlendState(blendStateInfo);
+    if (!m_pBlendState) {
+        LOG_ERROR("Failed to create blend state");
         return false;
     }
 
@@ -273,7 +276,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     pContext->OMSetDepthStencilState(nullptr, 0);
 
-    pContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
+    m_pCommandList->bindBlendState(m_pBlendState);
 
     // Set constant buffer data
     struct BufferData {

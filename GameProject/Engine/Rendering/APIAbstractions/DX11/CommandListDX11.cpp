@@ -1,5 +1,6 @@
 #include "CommandListDX11.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
@@ -122,17 +123,6 @@ void CommandListDX11::bindShaderResourceTexture(int slot, SHADER_TYPE shaderStag
     }
 }
 
-void CommandListDX11::bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil)
-{
-    TextureDX11* pRenderTargetDX = reinterpret_cast<TextureDX11*>(pRenderTarget);
-    TextureDX11* pDepthStencilDX = reinterpret_cast<TextureDX11*>(pDepthStencil);
-
-    ID3D11RenderTargetView* pRTV = pRenderTargetDX ? pRenderTargetDX->getRTV() : nullptr;
-    ID3D11DepthStencilView* pDSV = pDepthStencilDX ? pDepthStencilDX->getDSV() : nullptr;
-
-    m_pContext->OMSetRenderTargets(1, &pRTV, pDSV);
-}
-
 void CommandListDX11::bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler)
 {
     ID3D11SamplerState* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler)->getSamplerState();
@@ -179,6 +169,24 @@ void CommandListDX11::bindViewport(const Viewport* pViewport)
 {
     m_pContext->RSSetViewports(1u, (const D3D11_VIEWPORT*)pViewport);
 }
+
+void CommandListDX11::bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil)
+{
+    TextureDX11* pRenderTargetDX = reinterpret_cast<TextureDX11*>(pRenderTarget);
+    TextureDX11* pDepthStencilDX = reinterpret_cast<TextureDX11*>(pDepthStencil);
+
+    ID3D11RenderTargetView* pRTV = pRenderTargetDX ? pRenderTargetDX->getRTV() : nullptr;
+    ID3D11DepthStencilView* pDSV = pDepthStencilDX ? pDepthStencilDX->getDSV() : nullptr;
+
+    m_pContext->OMSetRenderTargets(1, &pRTV, pDSV);
+}
+
+void CommandListDX11::bindBlendState(BlendState* pBlendState)
+{
+    ID3D11BlendState* pBlendStateDX = reinterpret_cast<BlendStateDX11*>(pBlendState)->getBlendState();
+    m_pContext->OMSetBlendState(pBlendStateDX, (FLOAT*)pBlendState->getBlendConstants(), D3D11_COLOR_WRITE_ENABLE_ALL);
+}
+
 
 void CommandListDX11::draw(size_t vertexCount)
 {

@@ -11,12 +11,14 @@ struct SwapChainInfo {
     bool Windowed;
 };
 
+class BlendState;
 class IBuffer;
 class ICommandList;
 class IRasterizerState;
 class ISampler;
 class Texture;
 class Window;
+struct BlendStateInfo;
 struct BufferInfo;
 struct RasterizerStateInfo;
 struct SamplerInfo;
@@ -35,6 +37,7 @@ public:
 
     virtual ICommandList* createCommandList() = 0;
 
+    // Shader resources
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo) = 0;
     virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
     virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
@@ -42,9 +45,13 @@ public:
     virtual Texture* createTextureFromFile(const std::string& filePath) = 0;
     virtual Texture* createTexture(const TextureInfo& textureInfo) = 0;
 
+    virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
+
+    // Rasterizer
     virtual IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) = 0;
 
-    virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
+    // Output merger
+    virtual BlendState* createBlendState(const BlendStateInfo& blendStateInfo) = 0;
 
     Texture* getBackBuffer()    { return m_pBackBuffer; }
     Texture* getDepthStencil()  { return m_pDepthTexture; }

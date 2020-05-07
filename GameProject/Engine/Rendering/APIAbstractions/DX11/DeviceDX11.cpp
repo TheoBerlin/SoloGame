@@ -10,8 +10,7 @@ DeviceDX11::DeviceDX11()
     :m_pDevice(nullptr),
     m_pSwapChain(nullptr),
     m_pContext(nullptr),
-    m_pDepthStencilState(nullptr),
-    m_pBlendState(nullptr)
+    m_pDepthStencilState(nullptr)
 {}
 
 DeviceDX11::~DeviceDX11()
@@ -19,7 +18,6 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDevice)
     SAFERELEASE(m_pSwapChain)
     SAFERELEASE(m_pContext)
-    SAFERELEASE(m_pBlendState)
     SAFERELEASE(m_pDepthStencilState)
 }
 
@@ -108,14 +106,19 @@ TextureDX11* DeviceDX11::createTexture(const TextureInfo& textureInfo)
     return TextureDX11::create(textureInfo, m_pDevice);
 }
 
+SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
+{
+    return SamplerDX11::create(samplerInfo, m_pDevice);
+}
+
 IRasterizerState* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
 {
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }
 
-SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
+BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInfo)
 {
-    return SamplerDX11::create(samplerInfo, m_pDevice);
+    return BlendStateDX11::create(blendStateInfo, m_pDevice);
 }
 
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)
@@ -238,29 +241,6 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     viewPort.MinDepth   = 0.0f;
     viewPort.MaxDepth   = 1.0f;
     m_pContext->RSSetViewports(1, &viewPort);
-
-    // Create blend state
-    D3D11_RENDER_TARGET_BLEND_DESC rtvBlendDesc = {};
-    rtvBlendDesc.BlendEnable            = TRUE;
-    rtvBlendDesc.SrcBlend               = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlend              = D3D11_BLEND_INV_SRC_ALPHA;
-    rtvBlendDesc.BlendOp                = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.SrcBlendAlpha          = D3D11_BLEND_ONE;
-    rtvBlendDesc.DestBlendAlpha         = D3D11_BLEND_ONE;
-    rtvBlendDesc.BlendOpAlpha           = D3D11_BLEND_OP_ADD;
-    rtvBlendDesc.RenderTargetWriteMask  = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-    D3D11_BLEND_DESC blendDesc = {};
-    blendDesc.AlphaToCoverageEnable = FALSE;
-    blendDesc.RenderTarget[0] = rtvBlendDesc;
-
-    hr = m_pDevice->CreateBlendState(&blendDesc, &m_pBlendState);
-    if (FAILED(hr)) {
-        LOG_ERROR("Failed to create blend state: %s", hresultToString(hr).c_str());
-        return false;
-    }
-
-    m_pContext->OMSetBlendState(m_pBlendState, nullptr, D3D11_COLOR_WRITE_ENABLE_ALL);
 
     return true;
 }
