@@ -1,5 +1,6 @@
 #include "TextureDX11.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/ResourceFormatDX11.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -41,7 +42,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     txDesc.Height               = UINT(textureInfo.Dimensions.y);
     txDesc.MipLevels            = 1;
     txDesc.ArraySize            = 1;
-    txDesc.Format               = TextureDX11::convertFormat(textureInfo.Format);
+    txDesc.Format               = convertFormat(textureInfo.Format);
     txDesc.SampleDesc.Count     = 1;
     txDesc.SampleDesc.Quality   = 0;
     txDesc.Usage                = D3D11_USAGE_DEFAULT;
@@ -115,19 +116,6 @@ TextureDX11::~TextureDX11()
 void TextureDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout)
 {
     // DX11 does texture conversions implicitly :)
-}
-
-DXGI_FORMAT TextureDX11::convertFormat(TEXTURE_FORMAT textureFormat)
-{
-    switch (textureFormat) {
-        case TEXTURE_FORMAT::R8G8B8A8_UNORM:
-            return DXGI_FORMAT_R8G8B8A8_UNORM;
-        case TEXTURE_FORMAT::D32_FLOAT:
-            return DXGI_FORMAT_D32_FLOAT;
-        default:
-            LOG_ERROR("Unknown texture format");
-            return DXGI_FORMAT_UNKNOWN;
-    }
 }
 
 UINT TextureDX11::getBindFlags(TEXTURE_LAYOUT layoutFlags)

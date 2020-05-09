@@ -16,7 +16,7 @@ struct VS_OUT {
     float2 txCoords : TEXCOORD0;
 };
 
-VS_OUT VS_main(VS_IN v_in) {
+VS_OUT main(VS_IN v_in) {
     VS_OUT v_out = (VS_OUT) 0;
 
     // Resize the quad, timed by two because the size factors are in [0,1] but the vertex position

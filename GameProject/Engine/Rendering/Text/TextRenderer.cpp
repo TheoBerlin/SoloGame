@@ -252,7 +252,7 @@ std::shared_ptr<Texture> TextRenderer::bytemapToTexture(const Bytemap& bytemap)
 
     TextureInfo textureInfo = {};
     textureInfo.Dimensions      = {convertedBytemap.width, convertedBytemap.rows};
-    textureInfo.Format          = TEXTURE_FORMAT::R8G8B8A8_UNORM;
+    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_UNORM;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.LayoutFlags     = textureInfo.InitialLayout;
     textureInfo.pInitialData    = &initialData;

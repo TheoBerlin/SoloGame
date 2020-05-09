@@ -1,11 +1,8 @@
 #include "ShaderHandler.hpp"
 
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
-#include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
-
-#include <d3dcompiler.h>
 
 ShaderHandler::ShaderHandler(Device* pDevice, ECSCore* pECS)
     :ComponentHandler(pECS, TID(ShaderHandler)),
@@ -21,74 +18,56 @@ ShaderHandler::~ShaderHandler()
 {
     // Delete all shaders
     for (Program program : m_Programs) {
-        if (program.vertexShader)
-            program.vertexShader->Release();
-        if (program.pixelShader)
-            program.pixelShader->Release();
-        if (program.inputLayout)
-            program.inputLayout->Release();
+        delete program.pVertexShader;
+        delete program.pHullShader;
+        delete program.pDomainShader;
+        delete program.pGeometryShader;
+        delete program.pFragmentShader;
+
+        delete program.pInputLayout;
     }
 }
 
 bool ShaderHandler::initHandler()
 {
     /* Compile all shaders and associate them with program enum names */
-    // Compile Basic program
-    std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc = {
+    // Compile mesh program
+    InputLayoutInfo inputLayoutInfo = {};
+    inputLayoutInfo.Binding = 0;
+    inputLayoutInfo.VertexInputAttributes = {
         {
-            "POSITION",                     // Semantic name in shader
-            0,                              // Semantic index (not used)
-            DXGI_FORMAT_R32G32B32_FLOAT,    // Element format
-            0,                              // Input slot
-            0,                              // Byte offset to first element
-            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
-            0                               // Instance step rate
+            "POSITION",
+            RESOURCE_FORMAT::R32G32B32_FLOAT,
+            VERTEX_INPUT_RATE::PER_VERTEX
         },
         {
-            "NORMAL",                       // Semantic name in shader
-            0,                              // Semantic index (not used)
-            DXGI_FORMAT_R32G32B32_FLOAT,    // Element format
-            0,                              // Input slot
-            12,                             // Byte offset to first element
-            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
-            0                               // Instance step rate
+            "NORMAL",
+            RESOURCE_FORMAT::R32G32B32_FLOAT,
+            VERTEX_INPUT_RATE::PER_VERTEX
         },
         {
-            "TEXCOORD",                     // Semantic name in shader
-            0,                              // Semantic index (not used)
-            DXGI_FORMAT_R32G32_FLOAT,       // Element format
-            0,                              // Input slot
-            24,                             // Byte offset to first element
-            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
-            0                               // Instance step rate
-        },
+            "TEXCOORD",
+            RESOURCE_FORMAT::R32G32_FLOAT,
+            VERTEX_INPUT_RATE::PER_VERTEX
+        }
     };
-    UINT vertexSize = 32;
-    m_Programs.push_back(compileProgram(L"Mesh", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
+
+    m_Programs.push_back(createProgram("Mesh", SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, &inputLayoutInfo));
 
     // Compile UI program
-    inputLayoutDesc = {
+    inputLayoutInfo.VertexInputAttributes = {
         {
-            "POSITION",                     // Semantic name in shader
-            0,                              // Semantic index (not used)
-            DXGI_FORMAT_R32G32_FLOAT,       // Element format
-            0,                              // Input slot
-            0,                              // Byte offset to first element
-            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
-            0                               // Instance step rate
+            "POSITION",
+            RESOURCE_FORMAT::R32G32_FLOAT,
+            VERTEX_INPUT_RATE::PER_VERTEX
         },
         {
-            "TEXCOORD",                     // Semantic name in shader
-            0,                              // Semantic index (not used)
-            DXGI_FORMAT_R32G32_FLOAT,       // Element format
-            0,                              // Input slot
-            8,                              // Byte offset to first element
-            D3D11_INPUT_PER_VERTEX_DATA,    // Input classification
-            0                               // Instance step rate
-        },
+            "TEXCOORD",
+            RESOURCE_FORMAT::R32G32_FLOAT,
+            VERTEX_INPUT_RATE::PER_VERTEX
+        }
     };
-    vertexSize = 16;
-    m_Programs.push_back(compileProgram(L"UI", {SHADER_TYPE::VERTEX_SHADER, SHADER_TYPE::FRAGMENT_SHADER}, inputLayoutDesc, vertexSize));
+    m_Programs.push_back(createProgram("UI", SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, &inputLayoutInfo));
 
     return true;
 }
@@ -98,96 +77,29 @@ Program* ShaderHandler::getProgram(PROGRAM program)
     return &m_Programs[program];
 }
 
-Program ShaderHandler::compileProgram(LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes, std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize)
+Program ShaderHandler::createProgram(const std::string& programName, SHADER_TYPE shaderTypes, const InputLayoutInfo* pInputLayoutInfo)
 {
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(m_pDevice);
-    ID3D11Device* pDevice = pDeviceDX->getDevice();
+    Program program = {};
 
-    Program program = {vertexSize, nullptr, nullptr, nullptr, nullptr, nullptr};
+    if (HAS_FLAG(shaderTypes, SHADER_TYPE::VERTEX_SHADER)) {
+        program.pVertexShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, programName, pInputLayoutInfo, &program.pInputLayout);
+    }
 
-    HRESULT hr;
-    std::wstring filePath;
-    ID3DBlob* compiledCode = nullptr;
+    if (HAS_FLAG(shaderTypes, SHADER_TYPE::HULL_SHADER)) {
+        program.pHullShader = m_pDevice->createShader(SHADER_TYPE::HULL_SHADER, programName);
+    }
 
-    for (SHADER_TYPE shaderType : shaderTypes) {
-        switch (shaderType) {
-            case SHADER_TYPE::VERTEX_SHADER:
-                filePath = std::wstring(SHADERS_PATH) + programName + VS_POSTFIX;
-                compiledCode = compileShader(filePath.c_str(), VS_ENTRYPOINT, VS_TARGET);
+    if (HAS_FLAG(shaderTypes, SHADER_TYPE::DOMAIN_SHADER)) {
+        program.pDomainShader = m_pDevice->createShader(SHADER_TYPE::DOMAIN_SHADER, programName);
+    }
 
-                do {
-                    hr = pDevice->CreateVertexShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.vertexShader);
+    if (HAS_FLAG(shaderTypes, SHADER_TYPE::GEOMETRY_SHADER)) {
+        program.pGeometryShader = m_pDevice->createShader(SHADER_TYPE::GEOMETRY_SHADER, programName);
+    }
 
-                    if (FAILED(hr)) {
-                        if (program.vertexShader) {
-                            program.vertexShader->Release();
-                            program.vertexShader = nullptr;
-                        }
-
-                        LOG_ERROR("Failed to create vertex shader from compiled code: %S", filePath.c_str());
-                        system("pause");
-                    }
-                } while (program.vertexShader == nullptr);
-                hr = pDevice->CreateInputLayout(&inputLayoutDesc[0], (UINT)inputLayoutDesc.size(), compiledCode->GetBufferPointer(),
-                    compiledCode->GetBufferSize(), &program.inputLayout);
-                if (FAILED(hr))
-                    LOG_ERROR("Failed to create mesh input layout: %s", hresultToString(hr).c_str());
-                break;
-
-            case SHADER_TYPE::FRAGMENT_SHADER:
-                filePath = std::wstring(SHADERS_PATH) + programName + PS_POSTFIX;
-                compiledCode = compileShader(filePath.c_str(), PS_ENTRYPOINT, PS_TARGET);
-
-                do {
-                    hr = pDevice->CreatePixelShader((const void*)compiledCode->GetBufferPointer(), compiledCode->GetBufferSize(), nullptr, &program.pixelShader);
-
-                    if (FAILED(hr)) {
-                        if (program.pixelShader) {
-                            program.pixelShader->Release();
-                            program.pixelShader = nullptr;
-                        }
-
-                        LOG_ERROR("Failed to create pixel shader from compiled code: %S", filePath.c_str());
-                        system("pause");
-                    }
-                } while (program.pixelShader == nullptr);
-                break;
-        }
+    if (HAS_FLAG(shaderTypes, SHADER_TYPE::FRAGMENT_SHADER)) {
+        program.pFragmentShader = m_pDevice->createShader(SHADER_TYPE::FRAGMENT_SHADER, programName);
     }
 
     return program;
-}
-
-ID3DBlob* ShaderHandler::compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCSTR targetVer)
-{
-    UINT compileFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
-
-    #ifdef _DEBUG
-        compileFlags |= D3DCOMPILE_DEBUG;
-    #endif
-
-    ID3DBlob* compiledCode = nullptr, *errorMsgs = nullptr;
-
-    do {
-        HRESULT hr = D3DCompileFromFile(fileName, nullptr, nullptr, entryPoint, targetVer, compileFlags, 0, &compiledCode, &errorMsgs);
-
-        if (FAILED(hr)) {
-            LOG_ERROR("Failed to compile [%S]", fileName);
-
-            if (errorMsgs) {
-                LOG_ERROR("%s", (char*)errorMsgs->GetBufferPointer());
-                errorMsgs->Release();
-            }
-
-            if (compiledCode) {
-                compiledCode->Release();
-                compiledCode = nullptr;
-            }
-
-            LOG_INFO("Edit the shader code and press any key to reattempt a compilation");
-			std::getchar();
-        }
-    } while (compiledCode == nullptr);
-
-    return compiledCode;
 }

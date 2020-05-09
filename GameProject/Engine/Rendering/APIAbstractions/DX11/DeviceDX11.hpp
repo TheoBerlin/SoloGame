@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 
@@ -22,6 +23,7 @@ public:
 
     ICommandList* createCommandList() override final;
 
+    // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
     BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
@@ -31,8 +33,11 @@ public:
 
     SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
 
+
+    // Rasterizer
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
 
+    // Output merger
     BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
 
     ID3D11Device* getDevice()           { return m_pDevice; }
@@ -41,6 +46,9 @@ public:
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
     bool initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow);
+
+    ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
+    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final;
 
 private:
     ID3D11Device* m_pDevice;

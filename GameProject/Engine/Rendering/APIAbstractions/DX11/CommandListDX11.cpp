@@ -2,8 +2,10 @@
 
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -37,6 +39,12 @@ void CommandListDX11::execute()
 
     m_pImmediateContext->ExecuteCommandList(pCommandList, FALSE);
     pCommandList->Release();
+}
+
+void CommandListDX11::bindInputLayout(InputLayout* pInputLayout)
+{
+    ID3D11InputLayout* pInputLayoutDX = reinterpret_cast<InputLayoutDX11*>(pInputLayout)->getInputLayout();
+    m_pContext->IASetInputLayout(pInputLayoutDX);
 }
 
 void CommandListDX11::map(IBuffer* pBuffer, void** ppMappedMemory)
@@ -80,7 +88,7 @@ void CommandListDX11::bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pB
     }
 }
 
-void CommandListDX11::bindVertexBuffer(int slot, size_t vertexSize, IBuffer* pBuffer)
+void CommandListDX11::bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer)
 {
     ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
     UINT uVertexSize = (UINT)vertexSize;
@@ -152,11 +160,17 @@ void CommandListDX11::bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISamp
 
 void CommandListDX11::bindShaders(const Program* program)
 {
-    m_pContext->VSSetShader(program->vertexShader, nullptr, 0);
-    m_pContext->HSSetShader(program->hullShader, nullptr, 0);
-    m_pContext->DSSetShader(program->domainShader, nullptr, 0);
-    m_pContext->GSSetShader(program->geometryShader, nullptr, 0);
-    m_pContext->PSSetShader(program->pixelShader, nullptr, 0);
+    ID3D11VertexShader* pVertexShader       = program->pVertexShader ? reinterpret_cast<ShaderDX11*>(program->pVertexShader)->getVertexShader() : nullptr;
+    ID3D11HullShader* pHullShader           = program->pHullShader ? reinterpret_cast<ShaderDX11*>(program->pHullShader)->getHullShader() : nullptr;
+    ID3D11DomainShader* pDomainShader       = program->pDomainShader ? reinterpret_cast<ShaderDX11*>(program->pDomainShader)->getDomainShader() : nullptr;
+    ID3D11GeometryShader* pGeometryShader   = program->pGeometryShader ? reinterpret_cast<ShaderDX11*>(program->pGeometryShader)->getGeometryShader() : nullptr;
+    ID3D11PixelShader* pFragmentShader      = program->pFragmentShader ? reinterpret_cast<ShaderDX11*>(program->pFragmentShader)->getFragmentShader() : nullptr;
+
+    m_pContext->VSSetShader(pVertexShader, nullptr, 0);
+    m_pContext->HSSetShader(pHullShader, nullptr, 0);
+    m_pContext->DSSetShader(pDomainShader, nullptr, 0);
+    m_pContext->GSSetShader(pGeometryShader, nullptr, 0);
+    m_pContext->PSSetShader(pFragmentShader, nullptr, 0);
 }
 
 void CommandListDX11::bindRasterizerState(IRasterizerState* pRasterizerState)

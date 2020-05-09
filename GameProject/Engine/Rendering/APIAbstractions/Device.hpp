@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/Shader.hpp>
+
 #define NOMINMAX
 #include <DirectXMath.h>
 
@@ -14,12 +16,14 @@ struct SwapChainInfo {
 class BlendState;
 class IBuffer;
 class ICommandList;
+class InputLayout;
 class IRasterizerState;
 class ISampler;
 class Texture;
 class Window;
 struct BlendStateInfo;
 struct BufferInfo;
+struct InputLayoutInfo;
 struct RasterizerStateInfo;
 struct SamplerInfo;
 struct TextureInfo;
@@ -47,6 +51,8 @@ public:
 
     virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
 
+    Shader* createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo = nullptr, InputLayout** ppInputLayout = nullptr);
+
     // Rasterizer
     virtual IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) = 0;
 
@@ -55,6 +61,10 @@ public:
 
     Texture* getBackBuffer()    { return m_pBackBuffer; }
     Texture* getDepthStencil()  { return m_pDepthTexture; }
+
+private:
+    virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) = 0;
+    virtual std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) = 0;
 
 protected:
     Texture* m_pBackBuffer;

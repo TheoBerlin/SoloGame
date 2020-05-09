@@ -1,35 +1,23 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 
-#include <d3d11.h>
 #include <vector>
 
-const LPCWSTR SHADERS_PATH = L"Engine/Rendering/Shaders/";
-
-const LPCSTR VS_ENTRYPOINT = "VS_main";
-const LPCSTR VS_TARGET = "vs_5_0";
-const LPCWSTR VS_POSTFIX = L"_VS.hlsl";
-
-const LPCSTR PS_ENTRYPOINT = "PS_main";
-const LPCSTR PS_TARGET = "ps_5_0";
-const LPCWSTR PS_POSTFIX = L"_PS.hlsl";
-
-enum PROGRAM
-{
+enum PROGRAM {
     MESH = 0,
     UI = 1
 };
 
 struct Program {
-    UINT vertexSize;
-    ID3D11InputLayout* inputLayout;
-    ID3D11VertexShader* vertexShader;
-    ID3D11HullShader* hullShader;
-    ID3D11DomainShader* domainShader;
-    ID3D11GeometryShader* geometryShader;
-    ID3D11PixelShader* pixelShader;
+    InputLayout* pInputLayout;
+    Shader* pVertexShader;
+    Shader* pHullShader;
+    Shader* pDomainShader;
+    Shader* pGeometryShader;
+    Shader* pFragmentShader;
 };
 
 class Device;
@@ -45,9 +33,7 @@ public:
     Program* getProgram(PROGRAM program);
 
 private:
-    Program compileProgram(LPCWSTR programName, std::vector<SHADER_TYPE> shaderTypes, std::vector<D3D11_INPUT_ELEMENT_DESC>& inputLayoutDesc, UINT vertexSize);
-
-    ID3DBlob* compileShader(LPCWSTR fileName, LPCSTR entryPoint, LPCSTR targetVer);
+    Program createProgram(const std::string& programName, SHADER_TYPE shaderTypes, const InputLayoutInfo* inputLayoutInfo);
 
     std::vector<Program> m_Programs;
 

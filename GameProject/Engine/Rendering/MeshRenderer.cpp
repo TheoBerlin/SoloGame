@@ -177,9 +177,9 @@ void MeshRenderer::recordCommands()
             }
 
             // Vertex buffer
-            pContext->IASetInputLayout(pProgram->inputLayout);
+            m_pCommandList->bindInputLayout(pProgram->pInputLayout);
 
-            m_pCommandList->bindVertexBuffer(0, (size_t)pProgram->vertexSize, mesh.pVertexBuffer);
+            m_pCommandList->bindVertexBuffer(0, pProgram->pInputLayout->getVertexSize(), mesh.pVertexBuffer);
             m_pCommandList->bindIndexBuffer(mesh.pIndexBuffer);
 
             /* Vertex shader */
