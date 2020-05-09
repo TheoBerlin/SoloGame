@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
+#include <Engine/Rendering/APIAbstractions/DepthStencilState.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
@@ -12,7 +13,6 @@
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Transform.hpp>
-#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
@@ -23,7 +23,8 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
     m_BackbufferWidth(pWindow->getWidth()),
-    m_BackbufferHeight(pWindow->getHeight())
+    m_BackbufferHeight(pWindow->getHeight()),
+    m_pDepthStencilState(nullptr)
 {
     CameraComponents camSub;
     PointLightComponents pointLightSub;
@@ -46,8 +47,7 @@ MeshRenderer::~MeshRenderer()
     delete m_pPointLightBuffer;
     delete m_pCommandList;
     delete m_pRasterizerState;
-
-    SAFERELEASE(m_pMeshInputLayout)
+    delete m_pDepthStencilState;
 }
 
 bool MeshRenderer::init()
@@ -107,6 +107,20 @@ bool MeshRenderer::init()
     rasterizerInfo.DepthBiasEnable      = false;
 
     m_pRasterizerState = m_pDevice->createRasterizerState(rasterizerInfo);
+    if (!m_pRasterizerState) {
+        return false;
+    }
+
+    DepthStencilInfo depthStencilInfo = {};
+    depthStencilInfo.DepthTestEnabled = true;
+    depthStencilInfo.DepthWriteEnabled = true;
+    depthStencilInfo.DepthComparisonFunc = COMPARISON_FUNC::LESS;
+    depthStencilInfo.StencilTestEnabled = false;
+
+    m_pDepthStencilState = m_pDevice->createDepthStencilState(depthStencilInfo);
+    if (!m_pDepthStencilState) {
+        return false;
+    }
 
     // Create viewport
     m_Viewport = {};
@@ -156,12 +170,15 @@ void MeshRenderer::recordCommands()
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
+    m_pCommandList->bindDepthStencilState(m_pDepthStencilState);
+
     for (Entity renderableID : m_Renderables.getIDs()) {
         Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);
         Program* pProgram = renderable.program;
         Model* model = renderable.model;
 
         m_pCommandList->bindShaders(pProgram);
+        m_pCommandList->bindInputLayout(pProgram->pInputLayout);
 
         // Prepare camera's view*proj matrix
         const ViewProjectionMatrices& vpMatrices = m_pVPHandler->getViewProjectionMatrices(m_Camera[0]);
@@ -174,16 +191,12 @@ void MeshRenderer::recordCommands()
                 continue;
             }
 
-            // Vertex buffer
-            m_pCommandList->bindInputLayout(pProgram->pInputLayout);
-
             m_pCommandList->bindVertexBuffer(0, pProgram->pInputLayout->getVertexSize(), mesh.pVertexBuffer);
             m_pCommandList->bindIndexBuffer(mesh.pIndexBuffer);
 
             /* Vertex shader */
             PerObjectMatrices matrices;
-
-            // PerObjectMatrices cbuffer
+            // PerObjectMatrices uniform buffer
             matrices.World = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
             DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World) * camVP));
 
@@ -196,12 +209,12 @@ void MeshRenderer::recordCommands()
 
             m_pCommandList->bindViewport(&m_Viewport);
 
-            /* Pixel shader */
+            /* Fragment shader */
             // Diffuse texture
             m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, model->Materials[mesh.materialIndex].textures[0].get());
             m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 
-            // Material cbuffer
+            // Material uniform buffer
             pMappedMemory = nullptr;
             m_pCommandList->map(m_pMaterialBuffer, &pMappedMemory);
             memcpy(pMappedMemory, &model->Materials[mesh.materialIndex].attributes, sizeof(MaterialAttributes));

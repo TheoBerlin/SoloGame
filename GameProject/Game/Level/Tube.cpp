@@ -1,7 +1,7 @@
 #include "Tube.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Transform.hpp>
@@ -16,7 +16,7 @@ const float maxPointDistance = 3.0f;
 const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
-TubeHandler::TubeHandler(ECSCore* pECS, DeviceDX11* pDevice)
+TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(TubeHandler)),
     m_pTextureCache(nullptr),
     m_pDevice(pDevice)

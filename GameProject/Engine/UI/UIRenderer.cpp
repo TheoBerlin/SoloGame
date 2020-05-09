@@ -8,7 +8,6 @@
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/UI/Panel.hpp>
-#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -46,15 +45,15 @@ bool UIRenderer::init()
         return false;
     }
 
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
-    m_pShaderHandler = static_cast<ShaderHandler*>(getComponentHandler(TID(ShaderHandler)));
-    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
+    m_pShaderHandler    = static_cast<ShaderHandler*>(getComponentHandler(TID(ShaderHandler)));
+    m_pUIHandler        = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
     if (!m_pShaderHandler || !m_pUIHandler) {
         return false;
     }
 
     m_pUIProgram = m_pShaderHandler->getProgram(UI);
 
+    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
     m_pQuad = pShaderResourceHandler->getQuarterScreenQuad();
     m_pAniSampler = pShaderResourceHandler->getAniSampler();
 
@@ -105,8 +104,6 @@ void UIRenderer::recordCommands()
     if (m_Panels.size() == 0) {
         return;
     }
-
-    ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
 
     m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
     m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);

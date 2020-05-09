@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/Rendering/APIAbstractions/ResourceFormat.hpp>
+#include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Utils/EnumClass.hpp>
 
 #include <glm/glm.hpp>

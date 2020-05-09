@@ -1,6 +1,6 @@
 #include "TextureDX11.hpp"
 
-#include <Engine/Rendering/APIAbstractions/DX11/ResourceFormatDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 

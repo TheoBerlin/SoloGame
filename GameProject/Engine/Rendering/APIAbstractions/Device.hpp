@@ -16,6 +16,7 @@ struct SwapChainInfo {
 class BlendState;
 class IBuffer;
 class ICommandList;
+class IDepthStencilState;
 class InputLayout;
 class IRasterizerState;
 class ISampler;
@@ -23,6 +24,7 @@ class Texture;
 class Window;
 struct BlendStateInfo;
 struct BufferInfo;
+struct DepthStencilInfo;
 struct InputLayoutInfo;
 struct RasterizerStateInfo;
 struct SamplerInfo;
@@ -58,6 +60,7 @@ public:
 
     // Output merger
     virtual BlendState* createBlendState(const BlendStateInfo& blendStateInfo) = 0;
+    virtual IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) = 0;
 
     Texture* getBackBuffer()    { return m_pBackBuffer; }
     Texture* getDepthStencil()  { return m_pDepthTexture; }

@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
@@ -39,6 +40,7 @@ public:
 
     // Output merger
     BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
+    DepthStencilStateDX11* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final;
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }

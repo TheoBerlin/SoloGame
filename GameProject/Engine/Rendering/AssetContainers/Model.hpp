@@ -18,7 +18,7 @@ struct Vertex {
 };
 
 struct Mesh {
-    BufferDX11* pVertexBuffer, *pIndexBuffer;
+    IBuffer* pVertexBuffer, *pIndexBuffer;
     size_t vertexCount, indexCount, materialIndex;
 };
 

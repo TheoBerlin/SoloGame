@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
@@ -206,6 +207,11 @@ void CommandListDX11::bindBlendState(BlendState* pBlendState)
     m_pContext->OMSetBlendState(pBlendStateDX, (FLOAT*)pBlendState->getBlendConstants(), D3D11_COLOR_WRITE_ENABLE_ALL);
 }
 
+void CommandListDX11::bindDepthStencilState(IDepthStencilState* pDepthStencilState)
+{
+    DepthStencilStateDX11* pDepthStencilStateDX = reinterpret_cast<DepthStencilStateDX11*>(pDepthStencilState);
+    m_pContext->OMSetDepthStencilState(pDepthStencilStateDX->getDepthStencilState(), pDepthStencilStateDX->getStencilReference());
+}
 
 void CommandListDX11::draw(size_t vertexCount)
 {

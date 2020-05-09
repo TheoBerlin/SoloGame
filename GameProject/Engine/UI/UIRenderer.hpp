@@ -1,12 +1,8 @@
 #pragma once
 
-
 #include <Engine/ECS/Renderer.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Utils/IDVector.hpp>
-
-#define NOMINMAX
-#include <d3d11.h>
 
 class Device;
 class IBuffer;

@@ -13,7 +13,7 @@
 
 #include <array>
 
-MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, DeviceDX11* pDevice, InputHandler* pInputHandler)
+MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler)
     :State(pStateManager, pECS, STATE_TRANSITION::PUSH),
     m_pDevice(pDevice),
     m_pInputHandler(pInputHandler)
