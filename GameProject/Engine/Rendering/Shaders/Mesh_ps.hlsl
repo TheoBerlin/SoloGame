@@ -28,7 +28,7 @@ struct VS_OUT {
     float2 txCoords : TEXCOORD0;
 };
 
-float4 PS_main(VS_OUT ps_in) : SV_TARGET {
+float4 main(VS_OUT ps_in) : SV_TARGET {
     float3 normal = normalize(float3(ps_in.normal.xyz));
 
     float3 Kd = diffuseTX.Sample(sampAni, ps_in.txCoords).xyz;

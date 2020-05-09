@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/ResourceFormat.hpp>
 #include <Engine/Utils/EnumClass.hpp>
 
 #include <glm/glm.hpp>
@@ -12,11 +13,6 @@ enum class TEXTURE_LAYOUT : uint32_t {
 
 DEFINE_BITMASK_OPERATIONS(TEXTURE_LAYOUT)
 
-enum class TEXTURE_FORMAT {
-    R8G8B8A8_UNORM,
-    D32_FLOAT
-};
-
 struct InitialData {
     const void* pData;
     uint32_t RowSize;   // Size of a row in the texture in bytes
@@ -26,7 +22,7 @@ struct TextureInfo {
     glm::uvec2 Dimensions;
     TEXTURE_LAYOUT LayoutFlags; // Only used by DX11
     TEXTURE_LAYOUT InitialLayout;
-    TEXTURE_FORMAT Format;
+    RESOURCE_FORMAT Format;
     InitialData* pInitialData;  // Optional
 };
 

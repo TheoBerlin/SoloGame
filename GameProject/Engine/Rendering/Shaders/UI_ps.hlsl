@@ -13,7 +13,7 @@ struct VS_OUT {
     float2 txCoords : TEXCOORD0;
 };
 
-float4 PS_main(VS_OUT ps_in) : SV_TARGET {
+float4 main(VS_OUT ps_in) : SV_TARGET {
     float4 txColor = uiTexture.Sample(sampAni, ps_in.txCoords);
     return saturate(txColor + highlightFactor * txColor * highlight);
 }

@@ -192,7 +192,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     // Create underlying texture
     TextureInfo textureInfo = {};
     textureInfo.Dimensions      = {uint32_t(panel.size.x * m_ClientWidth), uint32_t(panel.size.y * m_ClientHeight)};
-    textureInfo.Format          = TEXTURE_FORMAT::R8G8B8A8_UNORM;
+    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_UNORM;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.LayoutFlags     = TEXTURE_LAYOUT::SHADER_READ_ONLY | TEXTURE_LAYOUT::RENDER_TARGET;
 
@@ -267,9 +267,9 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindShaders(m_pUIProgram);
 
     pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    pContext->IASetInputLayout(m_pUIProgram->inputLayout);
+    m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
 
-    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->vertexSize, m_pQuadVertices);
+    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuadVertices);
     m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerObjectBuffer);
     m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 

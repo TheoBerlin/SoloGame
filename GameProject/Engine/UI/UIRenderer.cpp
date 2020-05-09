@@ -109,9 +109,9 @@ void UIRenderer::recordCommands()
     ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
 
     pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    pContext->IASetInputLayout(m_pUIProgram->inputLayout);
+    m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
 
-    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->vertexSize, m_pQuad);
+    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuad);
 
     m_pCommandList->bindShaders(m_pUIProgram);
 

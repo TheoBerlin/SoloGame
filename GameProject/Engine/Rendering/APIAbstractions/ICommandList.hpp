@@ -5,6 +5,7 @@
 
 class BlendState;
 class IBuffer;
+class InputLayout;
 class IRasterizerState;
 class ISampler;
 struct Program;
@@ -17,11 +18,13 @@ public:
 
     virtual void execute() = 0;
 
+    virtual void bindInputLayout(InputLayout* pInputLayout) = 0;
+
     // Shader resources
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
     virtual void unmap(IBuffer* pBuffer) = 0;
     virtual void bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pBuffer) = 0;
-    virtual void bindVertexBuffer(int slot, size_t vertexSize, IBuffer* pBuffer) = 0;
+    virtual void bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
 
     virtual void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) = 0;

@@ -24,7 +24,6 @@ public:
     ID3D11DepthStencilView* getDSV() const      { return m_pDSV; }
 
 private:
-    static DXGI_FORMAT convertFormat(TEXTURE_FORMAT textureFormat);
     static UINT getBindFlags(TEXTURE_LAYOUT layoutFlags);
 
 private:

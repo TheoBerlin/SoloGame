@@ -1,6 +1,7 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -203,7 +204,7 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     /* Depth stencil */
     TextureInfo textureInfo = {};
     textureInfo.Dimensions      = {pWindow->getWidth(), pWindow->getHeight()};
-    textureInfo.Format          = TEXTURE_FORMAT::D32_FLOAT;
+    textureInfo.Format          = RESOURCE_FORMAT::D32_FLOAT;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
     textureInfo.LayoutFlags     = textureInfo.InitialLayout;
 
@@ -243,4 +244,40 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
     m_pContext->RSSetViewports(1, &viewPort);
 
     return true;
+}
+
+ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
+{
+    std::wstring filePathW(filePath.begin(), filePath.end());
+    std::string targetVer = ShaderDX11::getTargetVersion(shaderType);
+
+    ID3DBlob* pCompiledCode = ShaderDX11::compileShader(filePathW.c_str(), targetVer.c_str());
+    if (!pCompiledCode) {
+        return nullptr;
+    }
+
+    if (shaderType == SHADER_TYPE::VERTEX_SHADER && pInputLayoutInfo) {
+        *ppInputLayout = InputLayoutDX11::create(pInputLayoutInfo, pCompiledCode, m_pDevice);
+    }
+
+    switch (shaderType) {
+        case SHADER_TYPE::VERTEX_SHADER:
+            return ShaderDX11::createVertexShader(shaderType, pCompiledCode, filePath, m_pDevice);
+        case SHADER_TYPE::HULL_SHADER:
+            return ShaderDX11::createHullShader(shaderType, pCompiledCode, filePath, m_pDevice);
+        case SHADER_TYPE::DOMAIN_SHADER:
+            return ShaderDX11::createDomainShader(shaderType, pCompiledCode, filePath, m_pDevice);
+        case SHADER_TYPE::GEOMETRY_SHADER:
+            return ShaderDX11::createGeometryShader(shaderType, pCompiledCode, filePath, m_pDevice);
+        case SHADER_TYPE::FRAGMENT_SHADER:
+            return ShaderDX11::createFragmentShader(shaderType, pCompiledCode, filePath, m_pDevice);
+        default:
+            LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
+            return nullptr;
+    }
+}
+
+std::string DeviceDX11::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
+{
+    return ShaderDX11::getFilePostfix(shaderType) + ".hlsl";
 }
