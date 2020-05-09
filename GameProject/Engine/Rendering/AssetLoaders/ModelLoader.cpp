@@ -164,7 +164,7 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
     mesh.indexCount = indices.size();
 
     mesh.pVertexBuffer = m_pDevice->createVertexBuffer(&vertices.front(), sizeof(Vertex), vertices.size());
-    if (!mesh.pVertexBuffer->getBuffer()) {
+    if (!mesh.pVertexBuffer) {
         return;
     }
 

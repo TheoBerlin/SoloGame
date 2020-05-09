@@ -1,8 +1,7 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Utils/EnumClass.hpp>
-
-#include <stdint.h>
 
 enum class FILTER {
     NEAREST,
@@ -15,16 +14,6 @@ enum class ADDRESS_MODE {
     MIRROR_CLAMP_TO_EDGE,
     CLAMP_TO_EDGE,
     CLAMP_TO_BORDER
-};
-
-enum class COMPARISON_FUNC {
-    NEVER,
-    LESS,
-    LESS_OR_EQUAL,
-    EQUAL,
-    EQUAL_OR_GREATER,
-    GREATER,
-    ALWAYS
 };
 
 struct SamplerInfo {

@@ -10,7 +10,6 @@
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
-#include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -252,8 +251,6 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
 
 void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel)
 {
-    ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
-
     Viewport viewport = {};
     viewport.TopLeftX    = 0;
     viewport.TopLeftY    = 0;
@@ -274,7 +271,6 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
-    pContext->OMSetDepthStencilState(nullptr, 0);
 
     m_pCommandList->bindBlendState(m_pBlendState);
 

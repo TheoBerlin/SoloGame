@@ -10,5 +10,15 @@ enum class RESOURCE_FORMAT {
     D32_FLOAT
 };
 
+enum class COMPARISON_FUNC {
+    NEVER,
+    LESS,
+    LESS_OR_EQUAL,
+    EQUAL,
+    EQUAL_OR_GREATER,
+    GREATER,
+    ALWAYS
+};
+
 // Returns size of a format in bytes
 size_t getFormatSize(RESOURCE_FORMAT format);

@@ -1,4 +1,4 @@
-#include "ResourceFormat.hpp"
+#include "GeneralResources.hpp"
 
 size_t getFormatSize(RESOURCE_FORMAT format)
 {
@@ -17,4 +17,3 @@ size_t getFormatSize(RESOURCE_FORMAT format)
             return 16;
     }
 }
-

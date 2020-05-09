@@ -6,6 +6,7 @@
 
 class BlendState;
 class IBuffer;
+class IDepthStencilState;
 class IRasterizerState;
 class ISampler;
 struct Program;
@@ -41,6 +42,7 @@ public:
     // Output merger
     virtual void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) = 0;
     virtual void bindBlendState(BlendState* pBlendState) = 0;
+    virtual void bindDepthStencilState(IDepthStencilState* pDepthStencilState) = 0;
 
     virtual void draw(size_t vertexCount) = 0;
     virtual void drawIndexed(size_t indexCount) = 0;

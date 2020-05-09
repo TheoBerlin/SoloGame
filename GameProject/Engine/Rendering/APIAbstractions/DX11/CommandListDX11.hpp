@@ -38,6 +38,7 @@ public:
     // Output merger
     void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) override final;
     void bindBlendState(BlendState* pBlendState);
+    void bindDepthStencilState(IDepthStencilState* pDepthStencilState) override final;
 
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;

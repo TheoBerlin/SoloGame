@@ -5,13 +5,14 @@
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 
-#include <d3d11.h>
+#include <DirectXMath.h>
 
 #define MAX_POINTLIGHTS 7u
 
 class Device;
 class IBuffer;
 class ICommandList;
+class IDepthStencilState;
 class IRasterizerState;
 class ISampler;
 class RenderableHandler;
@@ -61,9 +62,6 @@ private:
     VPHandler* m_pVPHandler;
     LightHandler* m_pLightHandler;
 
-    /* Mesh input layout */
-    ID3D11InputLayout* m_pMeshInputLayout;
-
     /* Uniform buffers */
     // WVP and World matrices
     IBuffer* m_pPerObjectMatrices;
@@ -78,6 +76,7 @@ private:
     Texture* m_pDepthStencil;
 
     IRasterizerState* m_pRasterizerState;
+    IDepthStencilState* m_pDepthStencilState;
 
     Viewport m_Viewport;
     unsigned int m_BackbufferWidth, m_BackbufferHeight;

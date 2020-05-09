@@ -27,8 +27,6 @@ ShaderResourceHandler::~ShaderResourceHandler()
 
 bool ShaderResourceHandler::initHandler()
 {
-    ID3D11Device* pDevice = reinterpret_cast<DeviceDX11*>(m_pDevice)->getDevice();
-
     SamplerInfo samplerInfo = {};
     samplerInfo.FilterMin           = FILTER::NEAREST;
     samplerInfo.FilterMag           = FILTER::NEAREST;
@@ -66,7 +64,7 @@ bool ShaderResourceHandler::initHandler()
     return m_pQuadVertices;
 }
 
-BufferDX11* ShaderResourceHandler::getQuarterScreenQuad()
+IBuffer* ShaderResourceHandler::getQuarterScreenQuad()
 {
     return m_pQuadVertices;
 }

@@ -5,7 +5,7 @@
 #define NOMINMAX
 #include <d3d11.h>
 
-class BufferDX11;
+class IBuffer;
 class Device;
 class ISampler;
 struct Vertex;
@@ -20,7 +20,7 @@ public:
 
     ISampler* getAniSampler() { return m_pAniSampler; }
 
-    BufferDX11* getQuarterScreenQuad();
+    IBuffer* getQuarterScreenQuad();
 
 private:
     Device* m_pDevice;
@@ -28,5 +28,5 @@ private:
     ISampler* m_pAniSampler;
 
     // Quarter-screen quad
-    BufferDX11* m_pQuadVertices;
+    IBuffer* m_pQuadVertices;
 };

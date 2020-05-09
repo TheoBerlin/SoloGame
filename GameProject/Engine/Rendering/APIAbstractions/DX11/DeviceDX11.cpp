@@ -117,6 +117,11 @@ IRasterizerState* DeviceDX11::createRasterizerState(const RasterizerStateInfo& r
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }
 
+DepthStencilStateDX11* DeviceDX11::createDepthStencilState(const DepthStencilInfo& depthStencilInfo)
+{
+    return DepthStencilStateDX11::create(depthStencilInfo, m_pDevice);
+}
+
 BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInfo)
 {
     return BlendStateDX11::create(blendStateInfo, m_pDevice);
@@ -232,16 +237,6 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
 
     TextureDX11* pDepthTexture = reinterpret_cast<TextureDX11*>(m_pDepthTexture);
     m_pContext->ClearDepthStencilView(pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
-
-    /* Set viewport */
-    D3D11_VIEWPORT viewPort = {};
-    viewPort.TopLeftX   = 0;
-    viewPort.TopLeftY   = 0;
-    viewPort.Width      = (float)pWindow->getWidth();
-    viewPort.Height     = (float)pWindow->getHeight();
-    viewPort.MinDepth   = 0.0f;
-    viewPort.MaxDepth   = 1.0f;
-    m_pContext->RSSetViewports(1, &viewPort);
 
     return true;
 }

@@ -1,12 +1,14 @@
 #pragma once
 
-#define NOMINMAX
-#include <DirectXMath.h>
-#include <vector>
 #include <Engine/ECS/ComponentHandler.hpp>
 
+#define NOMINMAX
+#include <DirectXMath.h>
+
+#include <vector>
+
 struct Model;
-class DeviceDX11;
+class Device;
 class ModelLoader;
 class ComponentSubscriber;
 class TextureCache;
@@ -19,7 +21,7 @@ struct TubePoint {
 class TubeHandler : public ComponentHandler
 {
 public:
-    TubeHandler(ECSCore* pECS, DeviceDX11* pDevice);
+    TubeHandler(ECSCore* pECS, Device* pDevice);
     ~TubeHandler();
 
     virtual bool initHandler() override;
@@ -38,7 +40,7 @@ private:
 
 private:
     TextureCache* m_pTextureCache;
-    DeviceDX11* m_pDevice;
+    Device* m_pDevice;
 
     std::vector<DirectX::XMFLOAT3> m_TubeSections;
     std::vector<Model> m_Tubes;
