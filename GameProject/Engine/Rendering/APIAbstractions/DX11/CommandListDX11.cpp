@@ -41,6 +41,11 @@ void CommandListDX11::execute()
     pCommandList->Release();
 }
 
+void CommandListDX11::bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology)
+{
+    m_pContext->IASetPrimitiveTopology(convertPrimitiveTopology(primitiveTopology));
+}
+
 void CommandListDX11::bindInputLayout(InputLayout* pInputLayout)
 {
     ID3D11InputLayout* pInputLayoutDX = reinterpret_cast<InputLayoutDX11*>(pInputLayout)->getInputLayout();

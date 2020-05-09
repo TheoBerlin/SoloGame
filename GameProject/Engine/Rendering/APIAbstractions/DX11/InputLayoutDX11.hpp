@@ -5,6 +5,8 @@
 #define NOMINMAX
 #include <d3d11.h>
 
+D3D11_PRIMITIVE_TOPOLOGY convertPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology);
+
 class InputLayoutDX11 : public InputLayout
 {
 public:

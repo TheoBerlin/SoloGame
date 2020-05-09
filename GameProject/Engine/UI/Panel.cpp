@@ -266,7 +266,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     // Rendering setup
     m_pCommandList->bindShaders(m_pUIProgram);
 
-    pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
     m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
 
     m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuadVertices);

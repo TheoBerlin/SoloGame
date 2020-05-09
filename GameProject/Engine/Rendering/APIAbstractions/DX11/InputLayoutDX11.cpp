@@ -4,6 +4,33 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+D3D11_PRIMITIVE_TOPOLOGY convertPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology)
+{
+    switch (primitiveTopology) {
+        case PRIMITIVE_TOPOLOGY::POINT_LIST:
+            return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+        case PRIMITIVE_TOPOLOGY::LINE_LIST:
+            return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+        case PRIMITIVE_TOPOLOGY::LINE_STRIP:
+            return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+        case PRIMITIVE_TOPOLOGY::TRIANGLE_LIST:
+            return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        case PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP:
+            return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+        case PRIMITIVE_TOPOLOGY::LINE_LIST_WITH_ADJACENCY:
+            return D3D11_PRIMITIVE_TOPOLOGY_LINELIST_ADJ;
+        case PRIMITIVE_TOPOLOGY::LINE_STRIP_WITH_ADJACENCY:
+            return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ;
+        case PRIMITIVE_TOPOLOGY::TRIANGLE_LIST_WITH_ADJACENCY:
+            return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ;
+        case PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP_WITH_ADJACENCY:
+            return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ;
+        default:
+            LOG_ERROR("Erroneous primitive topology: %d", (int)primitiveTopology);
+            return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    }
+}
+
 InputLayoutDX11* InputLayoutDX11::create(const InputLayoutInfo* pInputLayoutInfo, ID3DBlob* pShaderCode, ID3D11Device* pDevice)
 {
     std::vector<D3D11_INPUT_ELEMENT_DESC> attributeDescs(pInputLayoutInfo->VertexInputAttributes.size());

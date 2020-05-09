@@ -1,11 +1,11 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 
 class BlendState;
 class IBuffer;
-class InputLayout;
 class IRasterizerState;
 class ISampler;
 struct Program;
@@ -18,6 +18,8 @@ public:
 
     virtual void execute() = 0;
 
+    // Input assember
+    virtual void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) = 0;
     virtual void bindInputLayout(InputLayout* pInputLayout) = 0;
 
     // Shader resources

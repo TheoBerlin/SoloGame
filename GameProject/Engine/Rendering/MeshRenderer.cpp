@@ -1,8 +1,8 @@
 #include "MeshRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
+#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
@@ -126,9 +126,7 @@ void MeshRenderer::recordCommands()
        return;
     }
 
-    ID3D11DeviceContext* pContext = reinterpret_cast<CommandListDX11*>(m_pCommandList)->getContext();
-
-    pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_LIST);
 
     // Point light cbuffer
     PerFrameBuffer perFrame;

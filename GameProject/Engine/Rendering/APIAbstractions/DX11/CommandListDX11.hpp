@@ -15,6 +15,8 @@ public:
 
     void execute() override final;
 
+    // Input assembler
+    void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) override final;
     void bindInputLayout(InputLayout* pInputLayout) override final;
 
     // Shader resources
