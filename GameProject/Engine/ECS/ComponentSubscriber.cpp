@@ -91,6 +91,7 @@ size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegis
 
         newSub.subscriber = subReq.m_pSubscriber;
         newSub.onEntityAdded = subReq.m_OnEntityAdded;
+        newSub.onEntityRemoved = subReq.m_OnEntityRemoved;
 
         for (const ComponentAccess& componentReg : componentRegs) {
             auto queryItr = m_ComponentStorage.find(componentReg.TID);
@@ -201,7 +202,7 @@ void ComponentSubscriber::newComponent(Entity entityID, std::type_index componen
         if (m_pEntityRegistry->entityHasTypes(entityID, sysSub.componentTypes)) {
             sysSub.subscriber->push_back(entityID);
 
-            if (sysSub.onEntityAdded != nullptr) {
+            if (sysSub.onEntityAdded) {
                 sysSub.onEntityAdded(entityID);
             }
         }
@@ -222,6 +223,10 @@ void ComponentSubscriber::removedComponent(Entity entityID, std::type_index comp
         if (sysSub.subscriber->hasElement(entityID) == false) {
             subBucketItr++;
             continue;
+        }
+
+        if (sysSub.onEntityRemoved) {
+            sysSub.onEntityRemoved(entityID);
         }
 
         sysSub.subscriber->pop(entityID);
