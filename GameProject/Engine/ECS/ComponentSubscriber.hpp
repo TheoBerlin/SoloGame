@@ -22,6 +22,8 @@ struct ComponentSubscriptions {
     std::vector<std::type_index> componentTypes;
     // Optional: Called after an entity was added due to the subscription
     std::function<void(Entity)> onEntityAdded;
+    // Optional: Called before an entity was removed
+    std::function<void(Entity)> onEntityRemoved;
 };
 
 // Indices for subscription storage
