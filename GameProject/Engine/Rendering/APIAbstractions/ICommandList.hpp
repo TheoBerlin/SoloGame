@@ -7,6 +7,7 @@
 class BlendState;
 class IBuffer;
 class IDepthStencilState;
+class DescriptorSet;
 class IRasterizerState;
 class ISampler;
 struct Program;
@@ -24,15 +25,13 @@ public:
     virtual void bindInputLayout(InputLayout* pInputLayout) = 0;
 
     // Shader resources
+    virtual void bindDescriptorSet(DescriptorSet* pDescriptorSet) = 0;
+
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
     virtual void unmap(IBuffer* pBuffer) = 0;
-    virtual void bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pBuffer) = 0;
     virtual void bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
 
-    virtual void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) = 0;
-
-    virtual void bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler) = 0;
     virtual void bindShaders(const Program* program) = 0;
 
     // Rasterizer

@@ -37,7 +37,10 @@ bool IGame::init()
     swapChainInfo.Multisamples      = 1;
     swapChainInfo.Windowed          = true;
 
-    if (!m_Device.init(swapChainInfo, &m_Window)) {
+    DescriptorCounts descriptorPoolSize;
+    descriptorPoolSize.setAll(100u);
+
+    if (!m_Device.init(swapChainInfo, &m_Window, descriptorPoolSize)) {
         return false;
     }
 

@@ -1,4 +1,4 @@
-cbuffer perObject : register(b0)
+cbuffer perObject : register(b2)
 {
     // Position of the bottom left corner of the quad
     float2 position, size;

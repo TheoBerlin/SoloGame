@@ -1,4 +1,4 @@
-cbuffer perObject : register(b0)
+cbuffer perObject : register(b2)
 {
     float4x4 wvp;
     float4x4 world;

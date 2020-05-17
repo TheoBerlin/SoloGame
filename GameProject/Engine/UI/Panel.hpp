@@ -68,14 +68,21 @@ struct UIButton {
 const std::type_index tid_UIButton = TID(UIButton);
 
 class BlendState;
+class DescriptorSet;
 class Display;
 class IBuffer;
 class ICommandList;
+class IDescriptorSetLayout;
 class IRasterizerState;
 class ISampler;
 class Device;
 class Window;
 struct Program;
+
+struct AttachmentRenderResources {
+    DescriptorSet* pDescriptorSet;
+    IBuffer* pAttachmentBuffer;
+};
 
 class UIHandler : public ComponentHandler
 {
@@ -99,17 +106,20 @@ private:
     void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
+    bool createDescriptorSetLayout();
+    bool createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel);
 
 private:
     Device* m_pDevice;
     ICommandList* m_pCommandList;
 
     Program* m_pUIProgram;
-    IBuffer* m_pPerObjectBuffer;
     IBuffer* m_pQuadVertices;
     ISampler* m_pAniSampler;
     BlendState* m_pBlendState;
     IRasterizerState* m_pRasterizerState;
+
+    IDescriptorSetLayout* m_pDescriptorSetLayout;
 
     unsigned int m_ClientWidth, m_ClientHeight;
 };

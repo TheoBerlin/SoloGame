@@ -30,10 +30,25 @@ void RenderingHandler::render()
 {
     m_pDevice->clearBackBuffer();
 
+    updateBuffers();
     recordCommandBuffers();
     executeCommandBuffers();
 
     m_pDevice->presentBackBuffer();
+}
+
+void RenderingHandler::updateBuffers()
+{
+    std::vector<std::thread> threads;
+    threads.reserve(m_Renderers.size());
+
+    for (Renderer* pRenderer : m_Renderers) {
+        threads.push_back(std::thread(&Renderer::updateBuffers, pRenderer));
+    }
+
+    for (std::thread& thread : threads) {
+        thread.join();
+    }
 }
 
 void RenderingHandler::recordCommandBuffers()

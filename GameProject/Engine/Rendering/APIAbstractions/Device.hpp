@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 
 #define NOMINMAX
@@ -36,12 +37,15 @@ public:
     Device();
     virtual ~Device();
 
-    virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow) = 0;
+    virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) = 0;
 
     virtual void clearBackBuffer() = 0;
     virtual void presentBackBuffer() = 0;
 
     virtual ICommandList* createCommandList() = 0;
+
+    virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
+    DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
 
     // Shader resources
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo) = 0;
@@ -65,11 +69,18 @@ public:
     Texture* getBackBuffer()    { return m_pBackBuffer; }
     Texture* getDepthStencil()  { return m_pDepthTexture; }
 
+protected:
+    friend DescriptorPoolHandler;
+
+    virtual DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) = 0;
+
+protected:
+    DescriptorPoolHandler m_DescriptorPoolHandler;
+
+    Texture* m_pBackBuffer;
+    Texture* m_pDepthTexture;
+
 private:
     virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) = 0;
     virtual std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) = 0;
-
-protected:
-    Texture* m_pBackBuffer;
-    Texture* m_pDepthTexture;
 };

@@ -1,6 +1,7 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -22,11 +23,13 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDepthStencilState)
 }
 
-bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow)
+bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts)
 {
     if (!initDeviceAndSwapChain(swapChainInfo, pWindow)) {
         return false;
     }
+
+    m_DescriptorPoolHandler.init(descriptorCounts, this);
 
     return initBackBuffers(swapChainInfo, pWindow);
 }
@@ -57,6 +60,11 @@ ICommandList* DeviceDX11::createCommandList()
     }
 
     return pCommandList;
+}
+
+IDescriptorSetLayout* DeviceDX11::createDescriptorSetLayout()
+{
+    return new DescriptorSetLayoutDX11();
 }
 
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
@@ -125,6 +133,13 @@ DepthStencilStateDX11* DeviceDX11::createDepthStencilState(const DepthStencilInf
 BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInfo)
 {
     return BlendStateDX11::create(blendStateInfo, m_pDevice);
+}
+
+DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorCounts& poolSize)
+{
+    DescriptorPoolDX11* pNewDescriptorPool = new DescriptorPoolDX11();
+    pNewDescriptorPool->init(poolSize);
+    return pNewDescriptorPool;
 }
 
 bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)

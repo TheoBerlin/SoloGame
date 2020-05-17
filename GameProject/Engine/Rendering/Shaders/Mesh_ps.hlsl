@@ -1,7 +1,7 @@
-Texture2D diffuseTX : register(t0);
-SamplerState sampAni;
+Texture2D diffuseTX : register(t4);
+SamplerState sampAni : register(s1);
 
-cbuffer material : register(b0) {
+cbuffer material : register(b3) {
     float4 Ks;
 };
 
@@ -14,7 +14,7 @@ struct PointLight {
     float padding;
 };
 
-cbuffer perFrame : register(b1) {
+cbuffer perFrame : register(b0) {
     PointLight pointLights[MAX_LIGHTS];
     float3 camPos;
     uint numLights;

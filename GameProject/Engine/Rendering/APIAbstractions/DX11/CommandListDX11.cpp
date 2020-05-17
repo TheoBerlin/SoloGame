@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
@@ -53,6 +54,12 @@ void CommandListDX11::bindInputLayout(InputLayout* pInputLayout)
     m_pContext->IASetInputLayout(pInputLayoutDX);
 }
 
+void CommandListDX11::bindDescriptorSet(DescriptorSet* pDescriptorSet)
+{
+    DescriptorSetDX11* pDescriptorSetDX = reinterpret_cast<DescriptorSetDX11*>(pDescriptorSet);
+    pDescriptorSetDX->bind(m_pContext);
+}
+
 void CommandListDX11::map(IBuffer* pBuffer, void** ppMappedMemory)
 {
     ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
@@ -65,33 +72,6 @@ void CommandListDX11::map(IBuffer* pBuffer, void** ppMappedMemory)
 void CommandListDX11::unmap(IBuffer* pBuffer)
 {
     m_pContext->Unmap(reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer(), 0u);
-}
-
-void CommandListDX11::bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pBuffer)
-{
-    ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
-
-    UINT uSlot = (UINT)slot;
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::VERTEX_SHADER)) {
-        m_pContext->VSSetConstantBuffers(uSlot, 1, &pBufferDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::HULL_SHADER)) {
-        m_pContext->HSSetConstantBuffers(uSlot, 1, &pBufferDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
-        m_pContext->DSSetConstantBuffers(uSlot, 1, &pBufferDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
-        m_pContext->GSSetConstantBuffers(uSlot, 1, &pBufferDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
-        m_pContext->PSSetConstantBuffers(uSlot, 1, &pBufferDX);
-    }
 }
 
 void CommandListDX11::bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer)
@@ -108,60 +88,6 @@ void CommandListDX11::bindIndexBuffer(IBuffer* pBuffer)
     ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
 
     m_pContext->IASetIndexBuffer(pBufferDX, DXGI_FORMAT_R32_UINT, 0);
-}
-
-void CommandListDX11::bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture)
-{
-    ID3D11ShaderResourceView* pSRV = reinterpret_cast<TextureDX11*>(pTexture)->getSRV();
-
-    UINT uSlot = (UINT)slot;
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::VERTEX_SHADER)) {
-        m_pContext->VSSetShaderResources(uSlot, 1, &pSRV);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::HULL_SHADER)) {
-        m_pContext->HSSetShaderResources(uSlot, 1, &pSRV);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
-        m_pContext->DSSetShaderResources(uSlot, 1, &pSRV);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
-        m_pContext->GSSetShaderResources(uSlot, 1, &pSRV);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
-        m_pContext->PSSetShaderResources(uSlot, 1, &pSRV);
-    }
-}
-
-void CommandListDX11::bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler)
-{
-    ID3D11SamplerState* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler)->getSamplerState();
-
-    UINT uSlot = (UINT)slot;
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::VERTEX_SHADER)) {
-        m_pContext->VSSetSamplers(uSlot, 1, &pSamplerDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::HULL_SHADER)) {
-        m_pContext->HSSetSamplers(uSlot, 1, &pSamplerDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
-        m_pContext->DSSetSamplers(uSlot, 1, &pSamplerDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
-        m_pContext->GSSetSamplers(uSlot, 1, &pSamplerDX);
-    }
-
-    if (HAS_FLAG(shaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
-        m_pContext->PSSetSamplers(uSlot, 1, &pSamplerDX);
-    }
 }
 
 void CommandListDX11::bindShaders(const Program* program)

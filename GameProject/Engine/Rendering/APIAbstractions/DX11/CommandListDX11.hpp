@@ -20,15 +20,14 @@ public:
     void bindInputLayout(InputLayout* pInputLayout) override final;
 
     // Shader resources
+    void bindDescriptorSet(DescriptorSet* pDescriptorSet) override final;
+
     void map(IBuffer* pBuffer, void** ppMappedMemory);
     void unmap(IBuffer* pBuffer);
-    void bindBuffer(int slot, SHADER_TYPE shaderStages, IBuffer* pBuffer) override final;
+
     void bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;
 
-    void bindShaderResourceTexture(int slot, SHADER_TYPE shaderStages, Texture* pTexture) override final;
-
-    void bindSampler(uint32_t slot, SHADER_TYPE shaderStages, ISampler* pSampler) override final;
     void bindShaders(const Program* program) override final;
 
     // Rasterizer

@@ -8,10 +8,7 @@
 Renderer::Renderer(ECSCore* pECS, Device* pDevice)
     :m_pECS(pECS),
     m_pDevice(pDevice)
-{
-    DeviceDX11* pDeviceDX = reinterpret_cast<DeviceDX11*>(pDevice);
-    m_pImmediateContext = pDeviceDX->getContext();
-}
+{}
 
 Renderer::~Renderer()
 {
