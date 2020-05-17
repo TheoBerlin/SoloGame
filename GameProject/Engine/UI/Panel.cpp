@@ -2,6 +2,7 @@
 
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
+#include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
@@ -22,7 +23,8 @@ UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pQuadVertices(nullptr),
     m_pAniSampler(nullptr),
     m_pBlendState(nullptr),
-    m_pRasterizerState(nullptr)
+    m_pRasterizerState(nullptr),
+    m_pDescriptorSetLayout(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -47,10 +49,10 @@ UIHandler::~UIHandler()
         delete panel.texture;
     }
 
-    delete m_pPerObjectBuffer;
     delete m_pCommandList;
     delete m_pRasterizerState;
     delete m_pBlendState;
+    delete m_pDescriptorSetLayout;
 }
 
 bool UIHandler::initHandler()
@@ -72,23 +74,6 @@ bool UIHandler::initHandler()
 
     m_pUIProgram = pShaderHandler->getProgram(PROGRAM::UI);
     m_pAniSampler = pShaderResourceHandler->getAniSampler();
-
-    // Create constant buffer for texture rendering
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize =
-        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
-        sizeof(DirectX::XMFLOAT4) +     // Highlight color
-        sizeof(float) +                 // Highlight factor
-        sizeof(DirectX::XMFLOAT3);      // Padding
-    bufferInfo.GPUAccess = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess = BUFFER_DATA_ACCESS::WRITE;
-    bufferInfo.Usage = BUFFER_USAGE::UNIFORM_BUFFER;
-
-    m_pPerObjectBuffer = m_pDevice->createBuffer(bufferInfo);
-    if (!m_pPerObjectBuffer) {
-        LOG_ERROR("Failed to create per-object uniform buffer");
-        return false;
-    }
 
     BlendRenderTargetInfo rtvBlendInfo = {};
     rtvBlendInfo.BlendEnabled           = true;
@@ -123,6 +108,10 @@ bool UIHandler::initHandler()
     m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
     if (!m_pRasterizerState) {
         LOG_ERROR("Failed to create rasterizer state");
+        return false;
+    }
+
+    if (!createDescriptorSetLayout()) {
         return false;
     }
 
@@ -251,6 +240,12 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
 
 void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel)
 {
+    std::vector<AttachmentRenderResources> renderResources;
+    if (!createPanelRenderResources(renderResources, attachments, panel)) {
+        LOG_ERROR("Failed to render textures onto panel, could not create create render resources");
+        return;
+    }
+
     Viewport viewport = {};
     viewport.TopLeftX    = 0;
     viewport.TopLeftY    = 0;
@@ -265,40 +260,81 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
     m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
-
     m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuadVertices);
-    m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerObjectBuffer);
-    m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
-
     m_pCommandList->bindBlendState(m_pBlendState);
 
-    // Set constant buffer data
+    m_pCommandList->bindRenderTarget(panel.texture, nullptr);
+
+    for (AttachmentRenderResources& attachmentResources : renderResources) {
+        m_pCommandList->bindDescriptorSet(attachmentResources.pDescriptorSet);
+        m_pCommandList->draw(4u);
+    }
+
+    m_pCommandList->execute();
+
+    // Delete render resources
+    for (AttachmentRenderResources& attachmentResources : renderResources) {
+        delete attachmentResources.pDescriptorSet;
+        delete attachmentResources.pAttachmentBuffer;
+    }
+}
+
+bool UIHandler::createDescriptorSetLayout()
+{
+    // Create a single layout, even if some descriptors are per-panel and per-texture attachment
+    m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
+    m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    return m_pDescriptorSetLayout->finalize();
+}
+
+bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel)
+{
+    renderResources.reserve(attachments.size());
+
     struct BufferData {
         DirectX::XMFLOAT2 position, size;
         DirectX::XMFLOAT4 highlight;
         float highlightFactor;
     };
 
-    m_pCommandList->bindRenderTarget(panel.texture, nullptr);
+    BufferData bufferData = {};
 
-    for (TextureAttachment& attachment : attachments) {
-        m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, attachment.texture.get());
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize =
+        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
+        sizeof(DirectX::XMFLOAT4) +     // Highlight color
+        sizeof(float) +                 // Highlight factor
+        sizeof(DirectX::XMFLOAT3);      // Padding
+    bufferInfo.GPUAccess = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess = BUFFER_DATA_ACCESS::WRITE;
+    bufferInfo.Usage = BUFFER_USAGE::UNIFORM_BUFFER;
+    bufferInfo.pData = &bufferData;
 
-        BufferData bufferData = {
-            attachment.position, attachment.size,
-            {0.0f, 0.0f, 0.0f, 0.0f},               // No highlight color is desired
-            0.0f
-        };
+    for (const TextureAttachment& attachment : attachments) {
+        bufferData.position = attachment.position;
+        bufferData.size     = attachment.size;
 
-        void* pMappedMemory = nullptr;
-        m_pCommandList->map(m_pPerObjectBuffer, &pMappedMemory);
-        std::memcpy(pMappedMemory, &bufferData, sizeof(BufferData));
-        m_pCommandList->unmap(m_pPerObjectBuffer);
+        IBuffer* pPerAttachmentBuffer = m_pDevice->createBuffer(bufferInfo);
+        if (!pPerAttachmentBuffer) {
+            LOG_ERROR("Failed to create per-object uniform buffer");
+            return false;
+        }
 
-        m_pCommandList->draw(4u);
+        DescriptorSet* pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayout);
+        if (!pDescriptorSet) {
+            return false;
+        }
+
+        pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, pPerAttachmentBuffer);
+        pDescriptorSet->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
+        pDescriptorSet->writeSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get());
+
+        renderResources.push_back({pDescriptorSet, pPerAttachmentBuffer});
     }
 
-    m_pCommandList->execute();
+    return true;
 }

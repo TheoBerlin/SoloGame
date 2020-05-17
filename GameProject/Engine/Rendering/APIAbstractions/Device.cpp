@@ -14,6 +14,11 @@ Device::~Device()
     delete m_pDepthTexture;
 }
 
+DescriptorSet* Device::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
+{
+    return m_DescriptorPoolHandler.allocateDescriptorSet(pDescriptorSetLayout, this);
+}
+
 Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
 {
     // Create full path to shader file

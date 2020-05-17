@@ -4,8 +4,6 @@
 
 #include <Engine/ECS/ComponentSubscriptionRequest.hpp>
 
-#include <d3d11.h>
-
 class ComponentHandler;
 class ECSCore;
 class Device;
@@ -23,6 +21,8 @@ public:
     ~Renderer();
 
     virtual bool init() = 0;
+
+    virtual void updateBuffers() = 0;
     virtual void recordCommands() = 0;
     virtual void executeCommands() = 0;
 
@@ -37,8 +37,6 @@ protected:
 
 private:
     ECSCore* m_pECS;
-
-    ID3D11DeviceContext* m_pImmediateContext;
 
     size_t m_ComponentSubscriptionID;
 };

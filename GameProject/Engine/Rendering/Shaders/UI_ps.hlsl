@@ -1,7 +1,7 @@
-Texture2D uiTexture : register(t0);
-SamplerState sampAni;
+Texture2D uiTexture : register(t4);
+SamplerState sampAni : register(s1);
 
-cbuffer perObject : register(b0)
+cbuffer perObject : register(b2)
 {
     float2 position, size;
     float4 highlight;

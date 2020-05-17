@@ -14,6 +14,7 @@ public:
     void render();
 
 private:
+    void updateBuffers();
     void recordCommandBuffers();
     void executeCommandBuffers();
 

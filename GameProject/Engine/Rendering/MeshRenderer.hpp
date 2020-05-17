@@ -9,9 +9,11 @@
 
 #define MAX_POINTLIGHTS 7u
 
+class DescriptorSet;
 class Device;
 class IBuffer;
 class ICommandList;
+class IDescriptorSetLayout;
 class IDepthStencilState;
 class IRasterizerState;
 class ISampler;
@@ -21,6 +23,20 @@ class TransformHandler;
 class VPHandler;
 class Window;
 
+struct MeshRenderResources {
+    // Points at the mesh's material attributes buffer and diffuse texture
+    DescriptorSet* pDescriptorSet;
+    IBuffer* pMaterialBuffer;
+};
+
+struct ModelRenderResources {
+    // Points at the WVP buffer
+    DescriptorSet* pDescriptorSet;
+    IBuffer* pWVPBuffer;
+
+    std::vector<MeshRenderResources> MeshRenderResources;
+};
+
 class MeshRenderer : public Renderer
 {
 public:
@@ -28,6 +44,8 @@ public:
     ~MeshRenderer();
 
     bool init() override final;
+
+    void updateBuffers() override final;
     void recordCommands() override final;
     void executeCommands() override final;
 
@@ -51,9 +69,19 @@ private:
     };
 
 private:
+    bool createBuffers();
+    bool createDescriptorSetLayouts();
+    bool createCommonDescriptorSet();
+
+    void onMeshAdded(Entity entity);
+    void onMeshRemoved(Entity entity);
+
+private:
     IDVector m_Renderables;
     IDVector m_Camera;
     IDVector m_PointLights;
+
+    IDDVector<ModelRenderResources> m_ModelRenderResources;
 
     ICommandList* m_pCommandList;
 
@@ -62,11 +90,13 @@ private:
     VPHandler* m_pVPHandler;
     LightHandler* m_pLightHandler;
 
-    /* Uniform buffers */
-    // WVP and World matrices
-    IBuffer* m_pPerObjectMatrices;
-    IBuffer* m_pMaterialBuffer;
-    // Contains pointlights, camera position and number of lights
+    IDescriptorSetLayout* m_pDescriptorSetLayoutCommon; // Common for all models and mesh: Sampler and point lights
+    IDescriptorSetLayout* m_pDescriptorSetLayoutModel;  // Per model: WVP matrices
+    IDescriptorSetLayout* m_pDescriptorSetLayoutMesh;   // Per mesh: Material attributes and diffuse texture
+
+    DescriptorSet* m_pDescriptorSetCommon;
+
+    // Contains point lights, camera position and number of lights
     IBuffer* m_pPointLightBuffer;
 
     ISampler* m_pAniSampler;

@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DescriptorPoolDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
@@ -17,12 +18,14 @@ public:
     DeviceDX11();
     ~DeviceDX11();
 
-    bool init(const SwapChainInfo& swapChainInfo, Window* pWindow) override final;
+    bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) override final;
 
     void clearBackBuffer() override final;
     void presentBackBuffer() override final;
 
     ICommandList* createCommandList() override final;
+
+    IDescriptorSetLayout* createDescriptorSetLayout() override final;
 
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
@@ -44,6 +47,9 @@ public:
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }
+
+protected:
+    DescriptorPoolDX11* createDescriptorPool(const DescriptorCounts& poolSize) override final;
 
 private:
     bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);

@@ -220,7 +220,7 @@ void ComponentSubscriber::removedComponent(Entity entityID, std::type_index comp
         // Use indices stored in the component type -> component storage mapping to get the component subscription
         ComponentSubscriptions& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
 
-        if (sysSub.subscriber->hasElement(entityID) == false) {
+        if (!sysSub.subscriber->hasElement(entityID)) {
             subBucketItr++;
             continue;
         }

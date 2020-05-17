@@ -1,5 +1,7 @@
 #include "UIRenderer.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
+#include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
@@ -19,12 +21,14 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight()),
     m_pQuad(nullptr),
-    m_pPerPanelBuffer(nullptr),
+    m_pDescriptorSetLayoutCommon(nullptr),
+    m_pDescriptorSetLayoutPanel(nullptr),
+    m_pDescriptorSetCommon(nullptr),
     m_pAniSampler(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
-        {{{R, tid_UIPanel}}, &m_Panels}
+        {{{R, tid_UIPanel}}, &m_Panels, [this](Entity entity){ onPanelAdded(entity); }, [this](Entity entity){ onPanelRemoved(entity); }}
     };
     rendererReg.pRenderer = this;
 
@@ -34,8 +38,15 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
 UIRenderer::~UIRenderer()
 {
     delete m_pCommandList;
-    delete m_pPerPanelBuffer;
+    delete m_pDescriptorSetLayoutCommon;
+    delete m_pDescriptorSetLayoutPanel;
+    delete m_pDescriptorSetCommon;
     delete m_pRasterizerState;
+
+    // Delete all panel render resources
+    for (Entity entity : m_Panels.getIDs()) {
+        onPanelRemoved(entity);
+    }
 }
 
 bool UIRenderer::init()
@@ -57,21 +68,11 @@ bool UIRenderer::init()
     m_pQuad = pShaderResourceHandler->getQuarterScreenQuad();
     m_pAniSampler = pShaderResourceHandler->getAniSampler();
 
-    // Create per-panel constant buffer
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize = sizeof(
-        DirectX::XMFLOAT2) * 2 +    // Position and size
-        sizeof(DirectX::XMFLOAT4) + // Highlight color
-        sizeof(float) +             // Highlight factor
-        sizeof(DirectX::XMFLOAT3    // Padding
-    );
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
-    bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;
+    if (!createDescriptorSetLayouts()) {
+        return false;
+    }
 
-    m_pPerPanelBuffer = m_pDevice->createBuffer(bufferInfo);
-    if (!m_pPerPanelBuffer) {
-        LOG_ERROR("Failed to create per-object unfiform buffer");
+    if (!createCommonDescriptorSet()) {
         return false;
     }
 
@@ -99,6 +100,25 @@ bool UIRenderer::init()
     return true;
 }
 
+void UIRenderer::updateBuffers()
+{
+    size_t bufferSize = sizeof(
+        DirectX::XMFLOAT2) * 2 +    // Position and size
+        sizeof(DirectX::XMFLOAT4) + // Highlight color
+        sizeof(float);              // Highlight factor
+
+    for (const Entity& entity : m_Panels.getIDs()) {
+        UIPanel& panel = m_pUIHandler->panels.indexID(entity);
+        PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
+
+        // Set per-object buffer
+        void* pMappedBuffer = nullptr;
+        m_pCommandList->map(panelRenderResources.pBuffer, &pMappedBuffer);
+        memcpy(pMappedBuffer, &panel, bufferSize);
+        m_pCommandList->unmap(panelRenderResources.pBuffer);
+    }
+}
+
 void UIRenderer::recordCommands()
 {
     if (m_Panels.size() == 0) {
@@ -107,38 +127,18 @@ void UIRenderer::recordCommands()
 
     m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
     m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
-
     m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuad);
 
     m_pCommandList->bindShaders(m_pUIProgram);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     m_pCommandList->bindViewport(&m_Viewport);
-
-    m_pCommandList->bindSampler(0u, SHADER_TYPE::FRAGMENT_SHADER, m_pAniSampler);
     m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
-    size_t bufferSize = sizeof(
-        DirectX::XMFLOAT2) * 2 +    // Position and size
-        sizeof(DirectX::XMFLOAT4) + // Highlight color
-        sizeof(float);              // Highlight factor
+    m_pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
 
-    for (const Entity& entity : m_Panels.getIDs()) {
-        UIPanel& panel = m_pUIHandler->panels.indexID(entity);
-        if (!panel.texture) {
-            continue;
-        }
-
-        // Set per-object buffer
-        void* pMappedBuffer = nullptr;
-        m_pCommandList->map(m_pPerPanelBuffer, &pMappedBuffer);
-        memcpy(pMappedBuffer, &panel, bufferSize);
-        m_pCommandList->unmap(m_pPerPanelBuffer);
-
-        m_pCommandList->bindBuffer(0, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, m_pPerPanelBuffer);
-
-        m_pCommandList->bindShaderResourceTexture(0, SHADER_TYPE::FRAGMENT_SHADER, panel.texture);
-
+    for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
+        m_pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
         m_pCommandList->draw(4);
     }
 }
@@ -146,4 +146,81 @@ void UIRenderer::recordCommands()
 void UIRenderer::executeCommands()
 {
     m_pCommandList->execute();
+}
+
+bool UIRenderer::createDescriptorSetLayouts()
+{
+    m_pDescriptorSetLayoutCommon = m_pDevice->createDescriptorSetLayout();
+    if (!m_pDescriptorSetLayoutCommon) {
+        return false;
+    }
+
+    m_pDescriptorSetLayoutCommon->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    if (!m_pDescriptorSetLayoutCommon->finalize()) {
+        return false;
+    }
+
+    m_pDescriptorSetLayoutPanel = m_pDevice->createDescriptorSetLayout();
+    if (!m_pDescriptorSetLayoutPanel) {
+        return false;
+    }
+
+    m_pDescriptorSetLayoutPanel->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayoutPanel->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    return m_pDescriptorSetLayoutPanel->finalize();
+}
+
+bool UIRenderer::createCommonDescriptorSet()
+{
+    m_pDescriptorSetCommon = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutCommon);
+    if (!m_pDescriptorSetCommon) {
+        return false;
+    }
+
+    m_pDescriptorSetCommon->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
+    return true;
+}
+
+void UIRenderer::onPanelAdded(Entity entity)
+{
+    UIPanel& panel = m_pUIHandler->panels.indexID(entity);
+
+    PanelRenderResources panelRenderResources = {};
+
+    // Create panel buffer
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize = sizeof(
+        DirectX::XMFLOAT2) * 2 +    // Position and size
+        sizeof(DirectX::XMFLOAT4) + // Highlight color
+        sizeof(float) +             // Highlight factor
+        sizeof(DirectX::XMFLOAT3    // Padding
+    );
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
+    bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;
+
+    panelRenderResources.pBuffer = m_pDevice->createBuffer(bufferInfo);
+    if (!panelRenderResources.pBuffer) {
+        return;
+    }
+
+    // Create descriptor set
+    panelRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutPanel);
+    if (!panelRenderResources.pDescriptorSet) {
+        return;
+    }
+
+    panelRenderResources.pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, panelRenderResources.pBuffer);
+    panelRenderResources.pDescriptorSet->writeSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, panel.texture);
+
+    m_PanelRenderResources.push_back(panelRenderResources, entity);
+}
+
+void UIRenderer::onPanelRemoved(Entity entity)
+{
+    PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
+    delete panelRenderResources.pBuffer;
+    delete panelRenderResources.pDescriptorSet;
+
+    m_PanelRenderResources.pop(entity);
 }
