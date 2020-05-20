@@ -90,7 +90,7 @@ void SoundPlayer::stereoPan(Sound& sound, const DirectX::XMVECTOR& camToSound, c
     // Ignore vertical difference between camera and sound, this allows for calculating the yaw
     DirectX::XMVECTOR camToSoundNorm = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
 
-    float angle = -m_pTransformHandler->getOrientedAngle(camToSound, camDirFlat, g_DefaultUp);
+    float angle = -m_pTransformHandler->getOrientedAngle(camToSoundNorm, camDirFlat, g_DefaultUp);
     float cosAngle = std::cosf(angle);
     float sinAngle = std::sinf(angle);
 

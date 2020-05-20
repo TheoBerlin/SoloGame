@@ -42,8 +42,15 @@ GameSession::GameSession(MainMenu* pMainMenu)
         {-3.0f, -6.0f, -42.0f},
     };
 
+    std::string soundPath = "./Game/Assets/Sounds/CakedInReverb1.wav";
+    createCube({1.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
+
+    soundPath = "./Game/Assets/Sounds/MetalTrolly3.wav";
+    createCube({2.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
+
+    soundPath = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
     for (const DirectX::XMFLOAT3& sectionPoint : sectionPoints) {
-        createCube(sectionPoint, pSoundHandler, pTransformHandler, pRenderableHandler);
+        createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
     }
 
     createPointLights(pSoundHandler, pTransformHandler, pComponentSubscriber);
@@ -71,13 +78,13 @@ void GameSession::startMusic(SoundHandler* pSoundHandler)
 
     Entity music = m_pECS->createEntity();
     if (pSoundHandler->createSound(music, "./Game/Assets/Sounds/30306__erh__tension.wav")) {
-        pSoundHandler->setVolume(music, musicVolume);
         pSoundHandler->loopSound(music);
         pSoundHandler->playSound(music);
+        pSoundHandler->setVolume(music, musicVolume);
     }
 }
 
-void GameSession::createCube(const DirectX::XMFLOAT3& position, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
+void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
 {
     Entity cube = m_pECS->createEntity();
     pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
@@ -85,8 +92,8 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, SoundHandler* pS
     pRenderableHandler->createRenderable(cube, "./Game/Assets/Models/Cube.dae", PROGRAM::MESH);
 
     // Attach sound to the cube
-    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
-    if (pSoundHandler->createSound(cube, soundFile)) {
+    if (pSoundHandler->createSound(cube, soundPath)) {
+        pSoundHandler->loopSound(cube);
         pSoundHandler->playSound(cube);
     }
 }
@@ -105,6 +112,7 @@ void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandle
         pTransformHandler->createPosition(lightID, lightPos);
 
         if (pSoundHandler->createSound(lightID, soundFile)) {
+            pSoundHandler->loopSound(lightID);
             pSoundHandler->playSound(lightID);
         }
     }
@@ -149,6 +157,6 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
 
     pVPHandler->createViewProjectionMatrices(player, viewMatrixInfo, projMatrixInfo);
 
-    m_TrackPositionHandler.createTrackPosition(player);
-    m_TrackPositionHandler.createTrackSpeed(player);
+    //m_TrackPositionHandler.createTrackPosition(player);
+    //m_TrackPositionHandler.createTrackSpeed(player);
 }
