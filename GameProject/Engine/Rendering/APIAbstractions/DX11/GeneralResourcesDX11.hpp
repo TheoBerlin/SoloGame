@@ -5,6 +5,7 @@
 #define NOMINMAX
 #include <d3d11.h>
 
-DXGI_FORMAT convertFormat(RESOURCE_FORMAT textureFormat);
+DXGI_FORMAT convertFormatToDX(RESOURCE_FORMAT textureFormat);
+RESOURCE_FORMAT convertFormatFromDX(DXGI_FORMAT format);
 
 D3D11_COMPARISON_FUNC convertComparisonFunc(COMPARISON_FUNC comparisonFunc);

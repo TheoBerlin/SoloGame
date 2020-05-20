@@ -162,9 +162,11 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetLayoutDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\InputLayoutDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\RasterizerStateDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\RenderPassDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\SamplerDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\ShaderDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
@@ -240,12 +242,15 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorPoolDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetLayoutDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\InputLayoutDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RasterizerStateDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RenderPassDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\SamplerDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\ShaderDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Framebuffer.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\IBuffer.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ICommandList.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
@@ -254,6 +259,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\IRasterizerState.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ISampler.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\GeneralResources.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\RenderPass.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />

@@ -6,6 +6,8 @@
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
+#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
@@ -13,6 +15,8 @@
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
+
+const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
 
 UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :ComponentHandler(pECS, TID(UIHandler)),
@@ -24,6 +28,7 @@ UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pAniSampler(nullptr),
     m_pBlendState(nullptr),
     m_pRasterizerState(nullptr),
+    m_pRenderPass(nullptr),
     m_pDescriptorSetLayout(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
@@ -53,6 +58,7 @@ UIHandler::~UIHandler()
     delete m_pRasterizerState;
     delete m_pBlendState;
     delete m_pDescriptorSetLayout;
+    delete m_pRenderPass;
 }
 
 bool UIHandler::initHandler()
@@ -108,6 +114,10 @@ bool UIHandler::initHandler()
     m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
     if (!m_pRasterizerState) {
         LOG_ERROR("Failed to create rasterizer state");
+        return false;
+    }
+
+    if (!createRenderPass()) {
         return false;
     }
 
@@ -175,12 +185,52 @@ void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, Di
     this->registerComponent(entity, tid_UIButton);
 }
 
+bool UIHandler::createRenderPass()
+{
+    RenderPassInfo renderPassInfo   = {};
+
+    // Render pass attachments
+    AttachmentInfo panelTextureAttachment   = {};
+    panelTextureAttachment.Format           = g_PanelTextureFormat;
+    panelTextureAttachment.Samples          = 1u;
+    panelTextureAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
+    panelTextureAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    panelTextureAttachment.InitialLayout    = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    panelTextureAttachment.FinalLayout      = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+
+    // Subpass
+    SubpassInfo subpass = {};
+    AttachmentReference panelTextureRef = {};
+    panelTextureRef.AttachmentIndex     = 0u;
+    panelTextureRef.Layout              = TEXTURE_LAYOUT::RENDER_TARGET;
+
+    subpass.ColorAttachments    = { panelTextureRef };
+    subpass.PipelineBindPoint   = PIPELINE_BIND_POINT::GRAPHICS;
+
+    // Subpass dependency
+    SubpassDependency subpassDependency = {};
+    subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
+    subpassDependency.DstSubpass        = 0;
+    subpassDependency.SrcStage          = PIPELINE_STAGE::BOTTOM_OF_PIPE;
+    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::SHADER_READ;
+    subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
+
+    renderPassInfo.AttachmentInfos  = { panelTextureAttachment };
+    renderPassInfo.Subpasses        = { subpass };
+    renderPassInfo.Dependencies     = { subpassDependency };
+
+    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
+    return m_pRenderPass;
+}
+
 void UIHandler::createPanelTexture(UIPanel& panel)
 {
     // Create underlying texture
     TextureInfo textureInfo = {};
     textureInfo.Dimensions      = {uint32_t(panel.size.x * m_ClientWidth), uint32_t(panel.size.y * m_ClientHeight)};
-    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_UNORM;
+    textureInfo.Format          = g_PanelTextureFormat;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.LayoutFlags     = TEXTURE_LAYOUT::SHADER_READ_ONLY | TEXTURE_LAYOUT::RENDER_TARGET;
 
@@ -246,6 +296,12 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         return;
     }
 
+    IFramebuffer* pFramebuffer = createFramebuffer(panel);
+
+    RenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.pFramebuffer        = pFramebuffer;
+    m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
+
     Viewport viewport = {};
     viewport.TopLeftX    = 0;
     viewport.TopLeftY    = 0;
@@ -265,8 +321,6 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     m_pCommandList->bindBlendState(m_pBlendState);
 
-    m_pCommandList->bindRenderTarget(panel.texture, nullptr);
-
     for (AttachmentRenderResources& attachmentResources : renderResources) {
         m_pCommandList->bindDescriptorSet(attachmentResources.pDescriptorSet);
         m_pCommandList->draw(4u);
@@ -279,6 +333,8 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         delete attachmentResources.pDescriptorSet;
         delete attachmentResources.pAttachmentBuffer;
     }
+
+    delete pFramebuffer;
 }
 
 bool UIHandler::createDescriptorSetLayout()
@@ -337,4 +393,14 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
     }
 
     return true;
+}
+
+IFramebuffer* UIHandler::createFramebuffer(UIPanel& panel)
+{
+    FramebufferInfo framebufferInfo = {};
+    framebufferInfo.pRenderPass     = m_pRenderPass;
+    framebufferInfo.Dimensions      = {(uint32_t)panel.size.x, (uint32_t)panel.size.y};
+    framebufferInfo.Attachments     = { panel.texture };
+
+    return m_pDevice->createFramebuffer(framebufferInfo);
 }

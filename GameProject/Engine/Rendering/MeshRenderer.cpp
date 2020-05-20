@@ -4,9 +4,11 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
@@ -21,6 +23,7 @@
 MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
+    m_pDevice(pDevice),
     m_pRenderableHandler(nullptr),
     m_pTransformHandler(nullptr),
     m_pVPHandler(nullptr),
@@ -33,6 +36,8 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pAniSampler(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
+    m_pFramebuffer(nullptr),
+    m_pRenderPass(nullptr),
     m_BackbufferWidth(pWindow->getWidth()),
     m_BackbufferHeight(pWindow->getHeight()),
     m_pDepthStencilState(nullptr)
@@ -53,19 +58,21 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
 
 MeshRenderer::~MeshRenderer()
 {
-    delete m_pPointLightBuffer;
-    delete m_pCommandList;
-    delete m_pRasterizerState;
-    delete m_pDepthStencilState;
-    delete m_pDescriptorSetLayoutCommon;
-    delete m_pDescriptorSetLayoutModel;
-    delete m_pDescriptorSetLayoutMesh;
-    delete m_pDescriptorSetCommon;
-
     // Delete all model rendering resources
     for (Entity entity : m_ModelRenderResources.getIDs()) {
         onMeshRemoved(entity);
     }
+
+    delete m_pPointLightBuffer;
+    delete m_pCommandList;
+    delete m_pRasterizerState;
+    delete m_pDepthStencilState;
+    delete m_pDescriptorSetCommon;
+    delete m_pDescriptorSetLayoutCommon;
+    delete m_pDescriptorSetLayoutModel;
+    delete m_pDescriptorSetLayoutMesh;
+    delete m_pFramebuffer;
+    delete m_pRenderPass;
 }
 
 bool MeshRenderer::init()
@@ -98,6 +105,14 @@ bool MeshRenderer::init()
     }
 
     if (!createCommonDescriptorSet()) {
+        return false;
+    }
+
+    if (!createRenderPass()) {
+        return false;
+    }
+
+    if (!createFramebuffer()) {
         return false;
     }
 
@@ -189,6 +204,13 @@ void MeshRenderer::updateBuffers()
 
 void MeshRenderer::recordCommands()
 {
+    RenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
+    renderPassBeginInfo.ClearColors         = { {0.0f, 0.0f, 0.0f, 0.0f} };
+    renderPassBeginInfo.ClearDepthStencilValue.Depth = 1.0f;
+
+    m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
+
     if (m_Renderables.size() == 0 || m_Camera.size() == 0) {
        return;
     }
@@ -196,7 +218,6 @@ void MeshRenderer::recordCommands()
     m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_LIST);
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
-    m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     m_pCommandList->bindDepthStencilState(m_pDepthStencilState);
     m_pCommandList->bindViewport(&m_Viewport);
@@ -299,6 +320,72 @@ bool MeshRenderer::createCommonDescriptorSet()
     m_pDescriptorSetCommon->writeUniformBufferDescriptor(SHADER_BINDING::PER_FRAME, m_pPointLightBuffer);
     m_pDescriptorSetCommon->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
     return true;
+}
+
+bool MeshRenderer::createRenderPass()
+{
+    RenderPassInfo renderPassInfo   = {};
+
+    // Render pass attachments
+    Texture* pBackbuffer = m_pDevice->getBackBuffer();
+    AttachmentInfo backBufferAttachment   = {};
+    backBufferAttachment.Format           = pBackbuffer->getFormat();
+    backBufferAttachment.Samples          = 1u;
+    backBufferAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
+    backBufferAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
+    backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::RENDER_TARGET;
+
+    Texture* pDepthStencil = m_pDevice->getDepthStencil();
+    AttachmentInfo depthStencilAttachment = {};
+    depthStencilAttachment.Format           = pDepthStencil->getFormat();
+    depthStencilAttachment.Samples          = 1u;
+    depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
+    depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+
+    // Subpass
+    SubpassInfo subpass = {};
+    AttachmentReference backbufferRef   = {};
+    backbufferRef.AttachmentIndex       = 0;
+    backbufferRef.Layout                = TEXTURE_LAYOUT::RENDER_TARGET;
+
+    AttachmentReference depthStencilRef = {};
+    depthStencilRef.AttachmentIndex     = 1;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+
+    subpass.ColorAttachments        = { backbufferRef };
+    subpass.DepthStencilAttachment  = { depthStencilRef };
+    subpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
+
+    // Subpass dependency
+    SubpassDependency subpassDependency = {};
+    subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
+    subpassDependency.DstSubpass        = 0;
+    subpassDependency.SrcStage          = PIPELINE_STAGE::BOTTOM_OF_PIPE;
+    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::MEMORY_READ;
+    subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
+
+    renderPassInfo.AttachmentInfos  = { backBufferAttachment, depthStencilAttachment };
+    renderPassInfo.Subpasses        = { subpass };
+    renderPassInfo.Dependencies     = { subpassDependency };
+
+    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
+    return m_pRenderPass;
+}
+
+bool MeshRenderer::createFramebuffer()
+{
+    FramebufferInfo framebufferInfo = {};
+    framebufferInfo.Attachments = { m_pDevice->getBackBuffer(), m_pDevice->getDepthStencil() };
+    framebufferInfo.Dimensions  = m_pDevice->getBackBuffer()->getDimensions();
+    framebufferInfo.pRenderPass = m_pRenderPass;
+
+    m_pFramebuffer = m_pDevice->createFramebuffer(framebufferInfo);
+    return m_pFramebuffer;
 }
 
 void MeshRenderer::onMeshAdded(Entity entity)

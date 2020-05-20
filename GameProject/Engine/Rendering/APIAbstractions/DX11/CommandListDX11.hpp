@@ -15,6 +15,8 @@ public:
 
     void execute() override final;
 
+    void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
+
     // Input assembler
     void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) override final;
     void bindInputLayout(InputLayout* pInputLayout) override final;
@@ -35,7 +37,6 @@ public:
     void bindViewport(const Viewport* pViewport) override final;
 
     // Output merger
-    void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) override final;
     void bindBlendState(BlendState* pBlendState);
     void bindDepthStencilState(IDepthStencilState* pDepthStencilState) override final;
 

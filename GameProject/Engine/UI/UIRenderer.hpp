@@ -9,7 +9,9 @@ class Device;
 class IBuffer;
 class ICommandList;
 class IDescriptorSetLayout;
+class IFramebuffer;
 class IRasterizerState;
+class IRenderPass;
 class ISampler;
 class ShaderHandler;
 class Texture;
@@ -37,6 +39,9 @@ public:
 private:
     bool createDescriptorSetLayouts();
     bool createCommonDescriptorSet();
+    bool createRenderPass();
+    bool createFramebuffer();
+
     void onPanelAdded(Entity entity);
     void onPanelRemoved(Entity entity);
 
@@ -59,6 +64,8 @@ private:
     Texture* m_pDepthStencil;
     ISampler* m_pAniSampler;
     IRasterizerState* m_pRasterizerState;
+    IRenderPass* m_pRenderPass;
+    IFramebuffer* m_pFramebuffer;
 
     IDescriptorSetLayout* m_pDescriptorSetLayoutCommon; // Common for all panels: Sampler
     IDescriptorSetLayout* m_pDescriptorSetLayoutPanel;  // Per panel: Buffer containing transform and highlight settings, texture

@@ -1,6 +1,6 @@
 #include "GeneralResourcesDX11.hpp"
 
-DXGI_FORMAT convertFormat(RESOURCE_FORMAT textureFormat)
+DXGI_FORMAT convertFormatToDX(RESOURCE_FORMAT textureFormat)
 {
     switch (textureFormat) {
         case RESOURCE_FORMAT::R32G32B32A32_FLOAT:
@@ -9,6 +9,8 @@ DXGI_FORMAT convertFormat(RESOURCE_FORMAT textureFormat)
             return DXGI_FORMAT_R32G32B32_FLOAT;
         case RESOURCE_FORMAT::R32G32_FLOAT:
             return DXGI_FORMAT_R32G32_FLOAT;
+        case RESOURCE_FORMAT::B8G8R8A8_UNORM:
+            return DXGI_FORMAT_B8G8R8A8_UNORM;
         case RESOURCE_FORMAT::R8G8B8A8_UNORM:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
         case RESOURCE_FORMAT::D32_FLOAT:
@@ -16,6 +18,28 @@ DXGI_FORMAT convertFormat(RESOURCE_FORMAT textureFormat)
         default:
             LOG_ERROR("Unknown resource format");
             return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+RESOURCE_FORMAT convertFormatFromDX(DXGI_FORMAT format)
+{
+    switch (format) {
+        case DXGI_FORMAT_R32G32B32A32_FLOAT:
+            return RESOURCE_FORMAT::R32G32B32A32_FLOAT;
+        case DXGI_FORMAT_R32G32B32_FLOAT:
+            return RESOURCE_FORMAT::R32G32B32_FLOAT;
+        case DXGI_FORMAT_R32G32_FLOAT:
+            return RESOURCE_FORMAT::R32G32_FLOAT;
+        case DXGI_FORMAT_R8G8B8A8_UNORM:
+            return RESOURCE_FORMAT::R8G8B8A8_UNORM;
+        case DXGI_FORMAT_B8G8R8A8_UNORM:
+            return RESOURCE_FORMAT::B8G8R8A8_UNORM;
+        case DXGI_FORMAT_D32_FLOAT:
+            return RESOURCE_FORMAT::D32_FLOAT;
+
+        default:
+            LOG_ERROR("Unknown resource format: %d", (int)format);
+            return RESOURCE_FORMAT::R32G32B32A32_FLOAT;
     }
 }
 

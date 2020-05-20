@@ -9,8 +9,10 @@ class IBuffer;
 class IDepthStencilState;
 class DescriptorSet;
 class IRasterizerState;
+class IRenderPass;
 class ISampler;
 struct Program;
+struct RenderPassBeginInfo;
 struct Viewport;
 
 class ICommandList
@@ -19,6 +21,8 @@ public:
     virtual ~ICommandList() = 0 {};
 
     virtual void execute() = 0;
+
+    virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
 
     // Input assember
     virtual void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) = 0;
@@ -39,7 +43,6 @@ public:
     virtual void bindViewport(const Viewport* pViewport) = 0;
 
     // Output merger
-    virtual void bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil) = 0;
     virtual void bindBlendState(BlendState* pBlendState) = 0;
     virtual void bindDepthStencilState(IDepthStencilState* pDepthStencilState) = 0;
 

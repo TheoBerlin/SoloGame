@@ -32,7 +32,7 @@ TextureDX11* TextureDX11::createFromFile(const std::string& filePath, ID3D11Devi
 
     SAFERELEASE(pTextureResource)
 
-    return new TextureDX11(dimensions, pSRV, nullptr, nullptr, nullptr);
+    return new TextureDX11(dimensions, convertFormatFromDX(txDesc.Format), pSRV, nullptr, nullptr, nullptr);
 }
 
 TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* pDevice)
@@ -42,11 +42,11 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     txDesc.Height               = UINT(textureInfo.Dimensions.y);
     txDesc.MipLevels            = 1;
     txDesc.ArraySize            = 1;
-    txDesc.Format               = convertFormat(textureInfo.Format);
+    txDesc.Format               = convertFormatToDX(textureInfo.Format);
     txDesc.SampleDesc.Count     = 1;
     txDesc.SampleDesc.Quality   = 0;
     txDesc.Usage                = D3D11_USAGE_DEFAULT;
-    txDesc.BindFlags            = TextureDX11::getBindFlags(textureInfo.LayoutFlags);
+    txDesc.BindFlags            = TextureDX11::convertBindFlags(textureInfo.LayoutFlags);
     txDesc.CPUAccessFlags       = 0;
     txDesc.MiscFlags            = 0;
 
@@ -94,11 +94,11 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
         }
     }
 
-    return new TextureDX11(textureInfo.Dimensions, pSRV, pDSV, pRTV, nullptr);
+    return new TextureDX11(textureInfo.Dimensions, textureInfo.Format, pSRV, pDSV, pRTV, nullptr);
 }
 
-TextureDX11::TextureDX11(const glm::uvec2& dimensions, ID3D11ShaderResourceView* pSRV, ID3D11DepthStencilView* pDSV, ID3D11RenderTargetView* pRTV, ID3D11UnorderedAccessView* pUAV)
-    :Texture(dimensions),
+TextureDX11::TextureDX11(const glm::uvec2& dimensions, RESOURCE_FORMAT format, ID3D11ShaderResourceView* pSRV, ID3D11DepthStencilView* pDSV, ID3D11RenderTargetView* pRTV, ID3D11UnorderedAccessView* pUAV)
+    :Texture(dimensions, format),
     m_pSRV(pSRV),
     m_pDSV(pDSV),
     m_pRTV(pRTV),
@@ -115,10 +115,10 @@ TextureDX11::~TextureDX11()
 
 void TextureDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout)
 {
-    // DX11 does texture conversions implicitly :)
+    // TODO
 }
 
-UINT TextureDX11::getBindFlags(TEXTURE_LAYOUT layoutFlags)
+UINT TextureDX11::convertBindFlags(TEXTURE_LAYOUT layoutFlags)
 {
     return
         HAS_FLAG(layoutFlags, TEXTURE_LAYOUT::SHADER_READ_ONLY) * D3D11_BIND_SHADER_RESOURCE |
