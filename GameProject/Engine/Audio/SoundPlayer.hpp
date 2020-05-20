@@ -29,6 +29,7 @@ private:
 
 private:
     IDVector m_Sounds;
+    IDVector m_LoopedSounds;
     IDVector m_Cameras;
 
     LightHandler* m_pLightHandler;

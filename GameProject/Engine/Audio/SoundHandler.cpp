@@ -13,7 +13,8 @@ SoundHandler::SoundHandler(ECSCore* pECS)
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
     handlerReg.ComponentRegistrations = {
-        {g_TIDSound, &m_Sounds, [this](Entity entity){ m_Sounds.indexID(entity).pSound->release(); }}
+        {g_TIDSound, &m_Sounds, [this](Entity entity){ m_Sounds.indexID(entity).pSound->release(); }},
+        {g_TIDSoundLooper, &m_SoundLoopers}
     };
     registerHandler(handlerReg);
 }
@@ -80,20 +81,30 @@ bool SoundHandler::setVolume(Entity entity, float volume)
     return true;
 }
 
+float SoundHandler::getSoundDuration(Entity entity)
+{
+    if (!m_Sounds.hasElement(entity)) {
+        LOG_WARNING("Tried to loop sound of entity that does not have a sound component: %d", entity);
+        return false;
+    }
+
+    Sound& sound = m_Sounds.indexID(entity);
+
+    unsigned int soundDurationMS = 0;
+    FMOD_RESULT result = sound.pSound->getLength(&soundDurationMS, FMOD_TIMEUNIT_MS);
+    if (result != FMOD_OK) {
+        LOG_WARNING("Failed to get sound duration, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        return 0.0f;
+    }
+
+    return float(soundDurationMS) * 0.001f;
+}
+
 bool SoundHandler::loopSound(Entity entity)
 {
-    Sound& sound = m_Sounds.indexID(entity);
-    FMOD_RESULT result = sound.pSound->setMode(FMOD_LOOP_NORMAL);
-    if (result != FMOD_OK) {
-        LOG_WARNING("Failed to set mode FMOD_LOOP_NORMAL, entity: %d, error: %s", entity, FMOD_ErrorString(result));
-        return false;
-    }
-
-    result = sound.pSound->setLoopCount(-1);
-    if (result != FMOD_OK) {
-        LOG_WARNING("Failed to set loop count, entity: %d, error: %s", entity, FMOD_ErrorString(result));
-        return false;
-    }
-
+    SoundLooper soundLooper = {};
+    soundLooper.NextLoopCountdown = getSoundDuration(entity);
+    m_SoundLoopers.push_back(soundLooper, entity);
+    registerComponent(entity, g_TIDSoundLooper);
     return true;
 }
