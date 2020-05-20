@@ -66,8 +66,8 @@ void CameraSystem::update(float dt)
                 addedPitch = newPitch > 0.0f ? maxPitch - pitch : -maxPitch - pitch;
             }
 
-            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(g_DefaultUp, (float)mouseMove.x * dt));
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(pitchAxis, addedPitch));
+            rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(g_DefaultUp, (float)mouseMove.x * dt));
             DirectX::XMStoreFloat4(&rotationQuaternion, rotation);
             lookDir = m_pTransformHandler->getForward(rotationQuaternion);
         }
