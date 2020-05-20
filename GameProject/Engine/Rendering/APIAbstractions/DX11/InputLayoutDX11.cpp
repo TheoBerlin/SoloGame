@@ -42,7 +42,7 @@ InputLayoutDX11* InputLayoutDX11::create(const InputLayoutInfo* pInputLayoutInfo
 
         attributeDesc.SemanticName          = (LPCSTR)attributeInfo.SemanticName.c_str();
         attributeDesc.SemanticIndex         = 0u;
-        attributeDesc.Format                = convertFormat(attributeInfo.Format);
+        attributeDesc.Format                = convertFormatToDX(attributeInfo.Format);
         attributeDesc.InputSlot             = (UINT)pInputLayoutInfo->Binding;
         attributeDesc.AlignedByteOffset     = attributeOffset;
         attributeDesc.InputSlotClass        = attributeInfo.InputRate == VERTEX_INPUT_RATE::PER_VERTEX ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;

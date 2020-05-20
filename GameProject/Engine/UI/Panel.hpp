@@ -73,7 +73,9 @@ class Display;
 class IBuffer;
 class ICommandList;
 class IDescriptorSetLayout;
+class IFramebuffer;
 class IRasterizerState;
+class IRenderPass;
 class ISampler;
 class Device;
 class Window;
@@ -102,12 +104,15 @@ public:
     IDDVector<UIButton> buttons;
 
 private:
+    bool createRenderPass();
+
     // Creates a texture for a panel, which can be used as both a RTV and SRV
     void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
     bool createDescriptorSetLayout();
     bool createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel);
+    IFramebuffer* createFramebuffer(UIPanel& panel);
 
 private:
     Device* m_pDevice;
@@ -118,6 +123,7 @@ private:
     ISampler* m_pAniSampler;
     BlendState* m_pBlendState;
     IRasterizerState* m_pRasterizerState;
+    IRenderPass* m_pRenderPass;
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

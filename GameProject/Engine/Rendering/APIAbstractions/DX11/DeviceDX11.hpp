@@ -20,12 +20,14 @@ public:
 
     bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) override final;
 
-    void clearBackBuffer() override final;
     void presentBackBuffer() override final;
 
     ICommandList* createCommandList() override final;
 
     IDescriptorSetLayout* createDescriptorSetLayout() override final;
+
+    IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final;
+    IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
@@ -36,7 +38,6 @@ public:
     TextureDX11* createTexture(const TextureInfo& textureInfo) override final;
 
     SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
-
 
     // Rasterizer
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;

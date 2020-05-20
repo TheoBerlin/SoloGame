@@ -15,7 +15,9 @@ class IBuffer;
 class ICommandList;
 class IDescriptorSetLayout;
 class IDepthStencilState;
+class IFramebuffer;
 class IRasterizerState;
+class IRenderPass;
 class ISampler;
 class RenderableHandler;
 class Texture;
@@ -72,6 +74,8 @@ private:
     bool createBuffers();
     bool createDescriptorSetLayouts();
     bool createCommonDescriptorSet();
+    bool createRenderPass();
+    bool createFramebuffer();
 
     void onMeshAdded(Entity entity);
     void onMeshRemoved(Entity entity);
@@ -83,6 +87,7 @@ private:
 
     IDDVector<ModelRenderResources> m_ModelRenderResources;
 
+    Device* m_pDevice;
     ICommandList* m_pCommandList;
 
     RenderableHandler* m_pRenderableHandler;
@@ -104,6 +109,9 @@ private:
     // Render targets
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
+
+    IFramebuffer* m_pFramebuffer;
+    IRenderPass* m_pRenderPass;
 
     IRasterizerState* m_pRasterizerState;
     IDepthStencilState* m_pDepthStencilState;

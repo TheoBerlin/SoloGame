@@ -14,7 +14,7 @@ public:
     static TextureDX11* create(const TextureInfo& textureInfo, ID3D11Device* pDevice);
 
 public:
-    TextureDX11(const glm::uvec2& dimensions, ID3D11ShaderResourceView* pSRV, ID3D11DepthStencilView* pDSV, ID3D11RenderTargetView* pRTV, ID3D11UnorderedAccessView* pUAV);
+    TextureDX11(const glm::uvec2& dimensions, RESOURCE_FORMAT format, ID3D11ShaderResourceView* pSRV, ID3D11DepthStencilView* pDSV, ID3D11RenderTargetView* pRTV, ID3D11UnorderedAccessView* pUAV);
     ~TextureDX11();
 
     void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout) override final;
@@ -24,7 +24,7 @@ public:
     ID3D11DepthStencilView* getDSV() const      { return m_pDSV; }
 
 private:
-    static UINT getBindFlags(TEXTURE_LAYOUT layoutFlags);
+    static UINT convertBindFlags(TEXTURE_LAYOUT layoutFlags);
 
 private:
     ID3D11ShaderResourceView* m_pSRV;

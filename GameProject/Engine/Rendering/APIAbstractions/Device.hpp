@@ -18,8 +18,10 @@ class BlendState;
 class IBuffer;
 class ICommandList;
 class IDepthStencilState;
+class IFramebuffer;
 class InputLayout;
 class IRasterizerState;
+class IRenderPass;
 class ISampler;
 class Texture;
 class Window;
@@ -27,7 +29,9 @@ struct BlendStateInfo;
 struct BufferInfo;
 struct DepthStencilInfo;
 struct InputLayoutInfo;
+struct FramebufferInfo;
 struct RasterizerStateInfo;
+struct RenderPassInfo;
 struct SamplerInfo;
 struct TextureInfo;
 
@@ -39,13 +43,15 @@ public:
 
     virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) = 0;
 
-    virtual void clearBackBuffer() = 0;
     virtual void presentBackBuffer() = 0;
 
     virtual ICommandList* createCommandList() = 0;
 
     virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
+
+    virtual IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) = 0;
+    virtual IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) = 0;
 
     // Shader resources
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo) = 0;

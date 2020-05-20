@@ -3,8 +3,10 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
+#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
@@ -24,7 +26,10 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pDescriptorSetLayoutCommon(nullptr),
     m_pDescriptorSetLayoutPanel(nullptr),
     m_pDescriptorSetCommon(nullptr),
-    m_pAniSampler(nullptr)
+    m_pAniSampler(nullptr),
+    m_pRasterizerState(nullptr),
+    m_pRenderPass(nullptr),
+    m_pFramebuffer(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -37,16 +42,18 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
 
 UIRenderer::~UIRenderer()
 {
-    delete m_pCommandList;
-    delete m_pDescriptorSetLayoutCommon;
-    delete m_pDescriptorSetLayoutPanel;
-    delete m_pDescriptorSetCommon;
-    delete m_pRasterizerState;
-
     // Delete all panel render resources
     for (Entity entity : m_Panels.getIDs()) {
         onPanelRemoved(entity);
     }
+
+    delete m_pCommandList;
+    delete m_pDescriptorSetCommon;
+    delete m_pDescriptorSetLayoutCommon;
+    delete m_pDescriptorSetLayoutPanel;
+    delete m_pRasterizerState;
+    delete m_pRenderPass;
+    delete m_pFramebuffer;
 }
 
 bool UIRenderer::init()
@@ -73,6 +80,14 @@ bool UIRenderer::init()
     }
 
     if (!createCommonDescriptorSet()) {
+        return false;
+    }
+
+    if (!createRenderPass()) {
+        return false;
+    }
+
+    if (!createFramebuffer()) {
         return false;
     }
 
@@ -121,6 +136,10 @@ void UIRenderer::updateBuffers()
 
 void UIRenderer::recordCommands()
 {
+    RenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
+    m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
+
     if (m_Panels.size() == 0) {
         return;
     }
@@ -133,7 +152,6 @@ void UIRenderer::recordCommands()
 
     m_pCommandList->bindRasterizerState(m_pRasterizerState);
     m_pCommandList->bindViewport(&m_Viewport);
-    m_pCommandList->bindRenderTarget(m_pRenderTarget, m_pDepthStencil);
 
     m_pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
 
@@ -179,6 +197,74 @@ bool UIRenderer::createCommonDescriptorSet()
 
     m_pDescriptorSetCommon->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
     return true;
+}
+
+bool UIRenderer::createRenderPass()
+{
+    RenderPassInfo renderPassInfo   = {};
+
+    // Render pass attachments
+    Texture* pBackbuffer = m_pDevice->getBackBuffer();
+    AttachmentInfo backBufferAttachment   = {};
+    backBufferAttachment.Format           = pBackbuffer->getFormat();
+    backBufferAttachment.Samples          = 1u;
+    backBufferAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
+    backBufferAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::RENDER_TARGET;
+    backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::PRESENT;
+
+    Texture* pDepthStencil = m_pDevice->getDepthStencil();
+    AttachmentInfo depthStencilAttachment   = {};
+    depthStencilAttachment.Format           = pDepthStencil->getFormat();
+    depthStencilAttachment.Samples          = 1u;
+    depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
+    depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+
+    // Subpass
+    SubpassInfo subpass = {};
+    AttachmentReference backbufferRef   = {};
+    backbufferRef.AttachmentIndex       = 0;
+    backbufferRef.Layout                = TEXTURE_LAYOUT::RENDER_TARGET;
+
+    AttachmentReference depthStencilRef = {};
+    depthStencilRef.AttachmentIndex     = 1;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+
+    subpass.ColorAttachments        = { backbufferRef };
+    subpass.DepthStencilAttachment  = { depthStencilRef };
+    subpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
+
+    // Subpass dependency
+    SubpassDependency subpassDependency = {};
+    subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
+    subpassDependency.DstSubpass        = 0;
+    subpassDependency.SrcStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.DstStage          = PIPELINE_STAGE::FRAGMENT_SHADER;
+    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
+
+    renderPassInfo.AttachmentInfos  = { backBufferAttachment, depthStencilAttachment };
+    renderPassInfo.Subpasses        = { subpass };
+    renderPassInfo.Dependencies     = { subpassDependency };
+
+    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
+    return m_pRenderPass;
+}
+
+bool UIRenderer::createFramebuffer()
+{
+    Texture* pBackbuffer = m_pDevice->getBackBuffer();
+
+    FramebufferInfo framebufferInfo = {};
+    framebufferInfo.pRenderPass     = m_pRenderPass;
+    framebufferInfo.Attachments     = { m_pDevice->getBackBuffer(), m_pDevice->getDepthStencil() };
+    framebufferInfo.Dimensions      = pBackbuffer->getDimensions();
+
+    m_pFramebuffer = m_pDevice->createFramebuffer(framebufferInfo);
+    return m_pFramebuffer;
 }
 
 void UIRenderer::onPanelAdded(Entity entity)

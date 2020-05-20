@@ -28,8 +28,6 @@ bool RenderingHandler::init()
 
 void RenderingHandler::render()
 {
-    m_pDevice->clearBackBuffer();
-
     updateBuffers();
     recordCommandBuffers();
     executeCommandBuffers();

@@ -3,7 +3,10 @@
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/RenderPassDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -34,15 +37,6 @@ bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow, const
     return initBackBuffers(swapChainInfo, pWindow);
 }
 
-void DeviceDX11::clearBackBuffer()
-{
-    TextureDX11* pBackBuffer = reinterpret_cast<TextureDX11*>(m_pBackBuffer);
-    TextureDX11* pDepthTexture = reinterpret_cast<TextureDX11*>(m_pDepthTexture);
-
-    m_pContext->ClearRenderTargetView(pBackBuffer->getRTV(), m_pClearColor);
-    m_pContext->ClearDepthStencilView(pDepthTexture->getDSV(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0, 0);
-}
-
 void DeviceDX11::presentBackBuffer()
 {
     HRESULT hr = m_pSwapChain->Present(0, 0);
@@ -65,6 +59,16 @@ ICommandList* DeviceDX11::createCommandList()
 IDescriptorSetLayout* DeviceDX11::createDescriptorSetLayout()
 {
     return new DescriptorSetLayoutDX11();
+}
+
+IFramebuffer* DeviceDX11::createFramebuffer(const FramebufferInfo& framebufferInfo)
+{
+    return FramebufferDX11::create(framebufferInfo);
+}
+
+IRenderPass* DeviceDX11::createRenderPass(const RenderPassInfo& renderPassInfo)
+{
+    return RenderPassDX11::create(renderPassInfo);
 }
 
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
@@ -217,9 +221,9 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
         return false;
     }
 
-    D3D11_TEXTURE2D_DESC backBufferDesc = {};
-    pBackBuffer->GetDesc(&backBufferDesc);
-    m_pBackBuffer = new TextureDX11({(uint32_t)backBufferDesc.Width, (uint32_t)backBufferDesc.Height}, nullptr, nullptr, pBackBufferRTV, nullptr);
+    D3D11_TEXTURE2D_DESC backbufferDesc = {};
+    pBackBuffer->GetDesc(&backbufferDesc);
+    m_pBackBuffer = new TextureDX11({(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height}, convertFormatFromDX(backbufferDesc.Format), nullptr, nullptr, pBackBufferRTV, nullptr);
 
     /* Depth stencil */
     TextureInfo textureInfo = {};

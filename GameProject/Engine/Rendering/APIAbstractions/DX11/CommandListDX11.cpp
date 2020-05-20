@@ -6,6 +6,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/RenderPassDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
@@ -41,6 +42,12 @@ void CommandListDX11::execute()
 
     m_pImmediateContext->ExecuteCommandList(pCommandList, FALSE);
     pCommandList->Release();
+}
+
+void CommandListDX11::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo)
+{
+    RenderPassDX11* pRenderPassDX = reinterpret_cast<RenderPassDX11*>(pRenderPass);
+    pRenderPassDX->begin(beginInfo, m_pContext);
 }
 
 void CommandListDX11::bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology)
@@ -114,17 +121,6 @@ void CommandListDX11::bindRasterizerState(IRasterizerState* pRasterizerState)
 void CommandListDX11::bindViewport(const Viewport* pViewport)
 {
     m_pContext->RSSetViewports(1u, (const D3D11_VIEWPORT*)pViewport);
-}
-
-void CommandListDX11::bindRenderTarget(Texture* pRenderTarget, Texture* pDepthStencil)
-{
-    TextureDX11* pRenderTargetDX = reinterpret_cast<TextureDX11*>(pRenderTarget);
-    TextureDX11* pDepthStencilDX = reinterpret_cast<TextureDX11*>(pDepthStencil);
-
-    ID3D11RenderTargetView* pRTV = pRenderTargetDX ? pRenderTargetDX->getRTV() : nullptr;
-    ID3D11DepthStencilView* pDSV = pDepthStencilDX ? pDepthStencilDX->getDSV() : nullptr;
-
-    m_pContext->OMSetRenderTargets(1, &pRTV, pDSV);
 }
 
 void CommandListDX11::bindBlendState(BlendState* pBlendState)
