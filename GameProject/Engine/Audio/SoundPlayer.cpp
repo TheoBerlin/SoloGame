@@ -18,6 +18,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     sysReg.pSystem = this;
     sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
         {{{RW, g_TIDSound}, {R, g_TIDPosition}}, &m_Sounds},
+        {{{RW, g_TIDSoundLooper}}, &m_LoopedSounds},
         {{{R, g_TIDVelocity}}, {&cameraComponents}, &m_Cameras}
     };
 
@@ -59,10 +60,9 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     float camSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(camVelocity));
 
     size_t soundCount = m_Sounds.size();
-    IDDVector<Sound>& sounds = m_pSoundHandler->m_Sounds;
 
     for (Entity soundEntity : m_Sounds.getIDs()) {
-        Sound& sound = sounds.indexID(soundEntity);
+        Sound& sound = m_pSoundHandler->getSound(soundEntity);
         DirectX::XMFLOAT3& soundPosition = m_pTransformHandler->getPosition(soundEntity);
 
         DirectX::XMVECTOR soundPos = DirectX::XMLoadFloat3(&soundPosition);
@@ -82,6 +82,16 @@ void SoundPlayer::update([[maybe_unused]] float dt)
         }
 
         dopplerEffect(sound, camPos, camVelocity, camSpeed, soundPos, objectVelocity);
+    }
+
+    for (Entity loopedSound : m_LoopedSounds.getIDs()) {
+        SoundLooper& soundLooper = m_pSoundHandler->getSoundLooper(loopedSound);
+        soundLooper.NextLoopCountdown -= dt;
+
+        if (soundLooper.NextLoopCountdown < 0.0f) {
+            m_pSoundHandler->playSound(loopedSound);
+            soundLooper.NextLoopCountdown = m_pSoundHandler->getSoundDuration(loopedSound);
+        }
     }
 }
 
