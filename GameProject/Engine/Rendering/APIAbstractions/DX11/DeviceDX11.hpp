@@ -4,6 +4,9 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorPoolDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/PipelineDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/PipelineLayoutDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
@@ -29,6 +32,9 @@ public:
     IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final;
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
+    PipelineDX11* createPipeline(const PipelineInfo& pipelineInfo) override final;
+    PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return new PipelineLayoutDX11(); }
+
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
@@ -39,8 +45,10 @@ public:
 
     SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
 
+    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final;
+
     // Rasterizer
-    IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
+    RasterizerStateDX11* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
 
     // Output merger
     BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
@@ -57,7 +65,6 @@ private:
     bool initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow);
 
     ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
-    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final;
 
 private:
     ID3D11Device* m_pDevice;

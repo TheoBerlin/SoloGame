@@ -10,7 +10,7 @@ class AssetLoadersCore
 {
 public:
     AssetLoadersCore(ECSCore* pECS, Device* pDevice);
-    ~AssetLoadersCore();
+    ~AssetLoadersCore() = default;
 
 private:
     TextureCache m_TextureLoader;

@@ -4,7 +4,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Physics/Velocity.hpp>
-#include <Engine/Rendering/Components/Renderable.hpp>
+#include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/MeshRenderer.hpp>
 #include <Engine/Transform.hpp>
@@ -28,9 +28,9 @@ GameSession::GameSession(MainMenu* pMainMenu)
     // Set mouse mode to relative and hide the cursor
     m_pInputHandler->hideCursor();
 
-    TransformHandler* pTransformHandler = static_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    RenderableHandler* pRenderableHandler = static_cast<RenderableHandler*>(pComponentSubscriber->getComponentHandler(TID(RenderableHandler)));
-    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
+    ModelLoader* pModelLoader           = reinterpret_cast<ModelLoader*>(pComponentSubscriber->getComponentHandler(TID(ModelLoader)));
+    TransformHandler* pTransformHandler = reinterpret_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
+    SoundHandler* pSoundHandler         = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
 
     startMusic(pSoundHandler);
 
@@ -43,18 +43,18 @@ GameSession::GameSession(MainMenu* pMainMenu)
     };
 
     std::string soundPath = "./Game/Assets/Sounds/CakedInReverb1.wav";
-    createCube({1.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
+    createCube({1.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
 
     soundPath = "./Game/Assets/Sounds/MetalTrolly3.wav";
-    createCube({2.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
+    createCube({2.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
 
     soundPath = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
     for (const DirectX::XMFLOAT3& sectionPoint : sectionPoints) {
-        createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pRenderableHandler);
+        createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
     }
 
     createPointLights(pSoundHandler, pTransformHandler, pComponentSubscriber);
-    createTube(sectionPoints, pTransformHandler, pRenderableHandler);
+    createTube(sectionPoints, pTransformHandler, pModelLoader);
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
 
@@ -84,12 +84,12 @@ void GameSession::startMusic(SoundHandler* pSoundHandler)
     }
 }
 
-void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
+void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
 {
     Entity cube = m_pECS->createEntity();
     pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
     pTransformHandler->createWorldMatrix(cube);
-    pRenderableHandler->createRenderable(cube, "./Game/Assets/Models/Cube.dae", PROGRAM::MESH);
+    pModelLoader->loadModel(cube, "./Game/Assets/Models/Cube.dae");
 
     // Attach sound to the cube
     if (pSoundHandler->createSound(cube, soundPath)) {
@@ -118,14 +118,14 @@ void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandle
     }
 }
 
-void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler)
+void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
 {
     const float tubeRadius = 1.5f;
     const unsigned int tubeFaces = 10;
-    Model* tubeModel = m_TubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
+    Model* pTubeModel = m_TubeHandler.createTube(sectionPoints, tubeRadius, tubeFaces);
 
     Entity tube = m_pECS->createEntity();
-    pRenderableHandler->createRenderable(tube, tubeModel, PROGRAM::MESH);
+    pModelLoader->registerModel(tube, pTubeModel);
     pTransformHandler->createTransform(tube);
     pTransformHandler->createWorldMatrix(tube);
 }

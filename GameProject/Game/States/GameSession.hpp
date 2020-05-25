@@ -8,7 +8,7 @@
 
 class InputHandler;
 class MainMenu;
-class RenderableHandler;
+class ModelLoader;
 class SoundHandler;
 
 class GameSession : public State
@@ -24,9 +24,9 @@ public:
 
 private:
     void startMusic(SoundHandler* pSoundHandler);
-    void createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
     void createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
-    void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, RenderableHandler* pRenderableHandler);
+    void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
     void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
 
 private:

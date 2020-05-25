@@ -6,12 +6,11 @@
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
+#define NOMINMAX
 #include <DirectXMath.h>
-#include <d3d11.h>
 #include <map>
 #include <memory>
 #include <string>
-#include <wrl/client.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -63,14 +62,4 @@ private:
     std::vector<std::weak_ptr<Texture>> m_Textures;
 
     FT_Library ftLib;
-
-    /* Rendering resources */
-    Program* uiProgram;
-
-    ID3D11SamplerState *const* aniSampler;
-
-    Microsoft::WRL::ComPtr<ID3D11Buffer> quad;
-
-    // Constant buffer for UI vertex shader
-    Microsoft::WRL::ComPtr<ID3D11Buffer> perCharBuffer;
 };

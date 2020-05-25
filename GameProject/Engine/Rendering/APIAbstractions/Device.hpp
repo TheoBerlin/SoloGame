@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
+#include <Engine/Rendering/ShaderHandler.hpp>
 
 #define NOMINMAX
 #include <DirectXMath.h>
@@ -20,6 +21,8 @@ class ICommandList;
 class IDepthStencilState;
 class IFramebuffer;
 class InputLayout;
+class IPipeline;
+class IPipelineLayout;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
@@ -30,6 +33,7 @@ struct BufferInfo;
 struct DepthStencilInfo;
 struct InputLayoutInfo;
 struct FramebufferInfo;
+struct PipelineInfo;
 struct RasterizerStateInfo;
 struct RenderPassInfo;
 struct SamplerInfo;
@@ -42,6 +46,7 @@ public:
     virtual ~Device();
 
     virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) = 0;
+    bool finalize();
 
     virtual void presentBackBuffer() = 0;
 
@@ -52,6 +57,9 @@ public:
 
     virtual IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) = 0;
     virtual IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) = 0;
+
+    virtual IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) = 0;
+    virtual IPipeline* createPipeline(const PipelineInfo& pipelineInfo) = 0;
 
     // Shader resources
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo) = 0;
@@ -64,6 +72,7 @@ public:
     virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
 
     Shader* createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo = nullptr, InputLayout** ppInputLayout = nullptr);
+    virtual std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) = 0;
 
     // Rasterizer
     virtual IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) = 0;
@@ -72,8 +81,9 @@ public:
     virtual BlendState* createBlendState(const BlendStateInfo& blendStateInfo) = 0;
     virtual IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) = 0;
 
-    Texture* getBackBuffer()    { return m_pBackBuffer; }
-    Texture* getDepthStencil()  { return m_pDepthTexture; }
+    Texture* getBackBuffer()            { return m_pBackBuffer; }
+    Texture* getDepthStencil()          { return m_pDepthTexture; }
+    ShaderHandler* getShaderHandler()   { return m_pShaderHandler; }
 
 protected:
     friend DescriptorPoolHandler;
@@ -88,5 +98,7 @@ protected:
 
 private:
     virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) = 0;
-    virtual std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) = 0;
+
+private:
+    ShaderHandler* m_pShaderHandler;
 };

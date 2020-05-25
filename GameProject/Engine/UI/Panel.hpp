@@ -74,6 +74,8 @@ class IBuffer;
 class ICommandList;
 class IDescriptorSetLayout;
 class IFramebuffer;
+class IPipeline;
+class IPipelineLayout;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
@@ -105,12 +107,13 @@ public:
 
 private:
     bool createRenderPass();
+    bool createDescriptorSetLayout();
+    bool createPipeline();
 
     // Creates a texture for a panel, which can be used as both a RTV and SRV
     void createPanelTexture(UIPanel& panel);
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
-    bool createDescriptorSetLayout();
     bool createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel);
     IFramebuffer* createFramebuffer(UIPanel& panel);
 
@@ -121,11 +124,10 @@ private:
     Program* m_pUIProgram;
     IBuffer* m_pQuadVertices;
     ISampler* m_pAniSampler;
-    BlendState* m_pBlendState;
-    IRasterizerState* m_pRasterizerState;
-    IRenderPass* m_pRenderPass;
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 
-    unsigned int m_ClientWidth, m_ClientHeight;
+    IRenderPass* m_pRenderPass;
+    IPipelineLayout* m_pPipelineLayout;
+    IPipeline* m_pPipeline;
 };

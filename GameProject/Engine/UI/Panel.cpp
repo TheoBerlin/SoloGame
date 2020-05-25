@@ -2,13 +2,16 @@
 
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
+#include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
+#include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
+#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
+#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
+#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -20,16 +23,14 @@ const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
 
 UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :ComponentHandler(pECS, TID(UIHandler)),
-    m_ClientWidth(pWindow->getWidth()),
-    m_ClientHeight(pWindow->getHeight()),
     m_pDevice(pDevice),
     m_pCommandList(nullptr),
     m_pQuadVertices(nullptr),
     m_pAniSampler(nullptr),
-    m_pBlendState(nullptr),
-    m_pRasterizerState(nullptr),
+    m_pDescriptorSetLayout(nullptr),
     m_pRenderPass(nullptr),
-    m_pDescriptorSetLayout(nullptr)
+    m_pPipelineLayout(nullptr),
+    m_pPipeline(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
@@ -39,8 +40,7 @@ UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
     };
 
     handlerReg.HandlerDependencies = {
-        TID(ShaderResourceHandler),
-        TID(ShaderHandler)
+        TID(ShaderResourceHandler)
     };
 
     this->registerHandler(handlerReg);
@@ -55,10 +55,10 @@ UIHandler::~UIHandler()
     }
 
     delete m_pCommandList;
-    delete m_pRasterizerState;
-    delete m_pBlendState;
     delete m_pDescriptorSetLayout;
     delete m_pRenderPass;
+    delete m_pPipelineLayout;
+    delete m_pPipeline;
 }
 
 bool UIHandler::initHandler()
@@ -70,52 +70,13 @@ bool UIHandler::initHandler()
 
     // Retrieve quad from shader resource handler
     ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
-    m_pQuadVertices = pShaderResourceHandler->getQuarterScreenQuad();
-
     // Retrieve UI rendering shader program from shader handler
-    ShaderHandler* pShaderHandler = static_cast<ShaderHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderHandler)));
-    if (!pShaderResourceHandler || !pShaderHandler) {
+    if (!pShaderResourceHandler) {
         return false;
     }
 
-    m_pUIProgram = pShaderHandler->getProgram(PROGRAM::UI);
-    m_pAniSampler = pShaderResourceHandler->getAniSampler();
-
-    BlendRenderTargetInfo rtvBlendInfo = {};
-    rtvBlendInfo.BlendEnabled           = true;
-    rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
-    rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
-    rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
-    rtvBlendInfo.SrcAlphaBlendFactor    = BLEND_FACTOR::ONE;
-    rtvBlendInfo.DstAlphaBlendFactor    = BLEND_FACTOR::ONE;
-    rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
-    rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
-
-    BlendStateInfo blendStateInfo = {};
-    blendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
-    blendStateInfo.BlendInfosCount = 1u;
-    blendStateInfo.IndependentBlendEnabled = false;
-    for (float& blendConstant : blendStateInfo.pBlendConstants) {
-        blendConstant = 1.0f;
-    }
-
-    m_pBlendState = m_pDevice->createBlendState(blendStateInfo);
-    if (!m_pBlendState) {
-        LOG_ERROR("Failed to create blend state");
-        return false;
-    }
-
-    RasterizerStateInfo rsInfo = {};
-    rsInfo.PolygonMode          = POLYGON_MODE::FILL;
-    rsInfo.CullMode             = CULL_MODE::NONE;
-    rsInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    rsInfo.DepthBiasEnable      = false;
-
-    m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
-    if (!m_pRasterizerState) {
-        LOG_ERROR("Failed to create rasterizer state");
-        return false;
-    }
+    m_pQuadVertices = pShaderResourceHandler->getQuarterScreenQuad();
+    m_pAniSampler   = pShaderResourceHandler->getAniSampler();
 
     if (!createRenderPass()) {
         return false;
@@ -125,7 +86,7 @@ bool UIHandler::initHandler()
         return false;
     }
 
-    return true;
+    return createPipeline();
 }
 
 void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor)
@@ -225,11 +186,79 @@ bool UIHandler::createRenderPass()
     return m_pRenderPass;
 }
 
+bool UIHandler::createDescriptorSetLayout()
+{
+    // Create a single layout, even if some descriptors are per-panel and per-texture attachment
+    m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
+    m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    return m_pDescriptorSetLayout->finalize();
+}
+
+bool UIHandler::createPipeline()
+{
+    m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayout });
+    if (!m_pPipelineLayout) {
+        return false;
+    }
+
+    PipelineInfo pipelineInfo = {};
+    pipelineInfo.ShaderInfos = {
+        {"UI", SHADER_TYPE::VERTEX_SHADER},
+        {"UI", SHADER_TYPE::FRAGMENT_SHADER}
+    };
+
+    pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP;
+
+    pipelineInfo.RasterizerStateInfo = {};
+    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::NONE;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+
+    pipelineInfo.DepthStencilStateInfo = {};
+    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
+    pipelineInfo.DepthStencilStateInfo.DepthWriteEnabled    = true;
+    pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
+    pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
+
+    pipelineInfo.BlendStateInfo = {};
+
+    BlendRenderTargetInfo rtvBlendInfo = {};
+    rtvBlendInfo.BlendEnabled           = true;
+    rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
+    rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.SrcAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
+
+    BlendStateInfo blendStateInfo = {};
+    blendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
+    blendStateInfo.BlendInfosCount = 1u;
+    blendStateInfo.IndependentBlendEnabled = false;
+    for (float& blendConstant : blendStateInfo.pBlendConstants) {
+        blendConstant = 1.0f;
+    }
+
+    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::VIEWPORT };
+    pipelineInfo.pLayout        = m_pPipelineLayout;
+    pipelineInfo.pRenderPass    = m_pRenderPass;
+    pipelineInfo.Subpass        = 0u;
+
+    m_pPipeline = m_pDevice->createPipeline(pipelineInfo);
+    return m_pPipeline;
+}
+
 void UIHandler::createPanelTexture(UIPanel& panel)
 {
+    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+
     // Create underlying texture
     TextureInfo textureInfo = {};
-    textureInfo.Dimensions      = {uint32_t(panel.size.x * m_ClientWidth), uint32_t(panel.size.y * m_ClientHeight)};
+    textureInfo.Dimensions      = { uint32_t(panel.size.x * backbufferDims.x), uint32_t(panel.size.y * backbufferDims.y) };
     textureInfo.Format          = g_PanelTextureFormat;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.LayoutFlags     = TEXTURE_LAYOUT::SHADER_READ_ONLY | TEXTURE_LAYOUT::RENDER_TARGET;
@@ -251,7 +280,9 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
         const glm::uvec2& txDimensions = texture->getDimensions();
 
         const DirectX::XMFLOAT2& panelSize = panel.size;
-        attachment.size = {(float)txDimensions.x / ((float)m_ClientWidth * panelSize.x), (float)txDimensions.y / ((float)m_ClientHeight * panelSize.y)};
+        const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+
+        attachment.size = {(float)txDimensions.x / ((float)backbufferDims.x * panelSize.x), (float)txDimensions.y / ((float)backbufferDims.x * panelSize.y)};
     } else if (attachmentInfo.sizeSetting == TX_SIZE_EXPLICIT) {
         attachment.size = attachmentInfo.explicitSize;
     }
@@ -302,24 +333,20 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     renderPassBeginInfo.pFramebuffer        = pFramebuffer;
     m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
+    m_pCommandList->bindPipeline(m_pPipeline);
+
+    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+
     Viewport viewport = {};
     viewport.TopLeftX    = 0;
     viewport.TopLeftY    = 0;
-    viewport.Width       = panel.size.x * m_ClientWidth;
-    viewport.Height      = panel.size.y * m_ClientHeight;
+    viewport.Width       = panel.size.x * backbufferDims.x;
+    viewport.Height      = panel.size.y * backbufferDims.y;
     viewport.MinDepth    = 0.0f;
     viewport.MaxDepth    = 1.0f;
     m_pCommandList->bindViewport(&viewport);
 
-    // Rendering setup
-    m_pCommandList->bindShaders(m_pUIProgram);
-
-    m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
-    m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
-    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuadVertices);
-
-    m_pCommandList->bindRasterizerState(m_pRasterizerState);
-    m_pCommandList->bindBlendState(m_pBlendState);
+    m_pCommandList->bindVertexBuffer(0, m_pQuadVertices);
 
     for (AttachmentRenderResources& attachmentResources : renderResources) {
         m_pCommandList->bindDescriptorSet(attachmentResources.pDescriptorSet);
@@ -335,16 +362,6 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     }
 
     delete pFramebuffer;
-}
-
-bool UIHandler::createDescriptorSetLayout()
-{
-    // Create a single layout, even if some descriptors are per-panel and per-texture attachment
-    m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
-    m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    return m_pDescriptorSetLayout->finalize();
 }
 
 bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel)

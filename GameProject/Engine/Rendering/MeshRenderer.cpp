@@ -7,13 +7,15 @@
 #include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
+#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
+#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
 #include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+#include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
-#include <Engine/Rendering/Components/Renderable.hpp>
 #include <Engine/Rendering/ShaderBindings.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -24,7 +26,7 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pDevice(pDevice),
-    m_pRenderableHandler(nullptr),
+    m_pModelLoader(nullptr),
     m_pTransformHandler(nullptr),
     m_pVPHandler(nullptr),
     m_pLightHandler(nullptr),
@@ -32,22 +34,18 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pDescriptorSetLayoutModel(nullptr),
     m_pDescriptorSetLayoutMesh(nullptr),
     m_pDescriptorSetCommon(nullptr),
-    m_pRasterizerState(nullptr),
     m_pAniSampler(nullptr),
-    m_pRenderTarget(pDevice->getBackBuffer()),
-    m_pDepthStencil(pDevice->getDepthStencil()),
     m_pFramebuffer(nullptr),
     m_pRenderPass(nullptr),
-    m_BackbufferWidth(pWindow->getWidth()),
-    m_BackbufferHeight(pWindow->getHeight()),
-    m_pDepthStencilState(nullptr)
+    m_pPipelineLayout(nullptr),
+    m_pPipeline(nullptr)
 {
     CameraComponents camSub;
     PointLightComponents pointLightSub;
 
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
-        {{{R, g_TIDRenderable}, {R, g_TIDWorldMatrix}}, &m_Renderables, [this](Entity entity){ onMeshAdded(entity); }, [this](Entity entity){ onMeshRemoved(entity); }},
+        {{{R, g_TIDModel}, {R, g_TIDWorldMatrix}}, &m_Renderables, [this](Entity entity){ onMeshAdded(entity); }, [this](Entity entity){ onMeshRemoved(entity); }},
         {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
         {{&pointLightSub}, &m_PointLights}
     };
@@ -65,14 +63,14 @@ MeshRenderer::~MeshRenderer()
 
     delete m_pPointLightBuffer;
     delete m_pCommandList;
-    delete m_pRasterizerState;
-    delete m_pDepthStencilState;
     delete m_pDescriptorSetCommon;
     delete m_pDescriptorSetLayoutCommon;
     delete m_pDescriptorSetLayoutModel;
     delete m_pDescriptorSetLayoutMesh;
     delete m_pFramebuffer;
     delete m_pRenderPass;
+    delete m_pPipelineLayout;
+    delete m_pPipeline;
 }
 
 bool MeshRenderer::init()
@@ -82,12 +80,12 @@ bool MeshRenderer::init()
         return false;
     }
 
-    m_pRenderableHandler    = static_cast<RenderableHandler*>(getComponentHandler(TID(RenderableHandler)));
-    m_pTransformHandler     = static_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVPHandler            = static_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
-    m_pLightHandler         = static_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
+    m_pModelLoader      = reinterpret_cast<ModelLoader*>(getComponentHandler(TID(ModelLoader)));
+    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
+    m_pVPHandler        = reinterpret_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    m_pLightHandler     = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
 
-    if (!m_pRenderableHandler || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
+    if (!m_pModelLoader || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
         return false;
     }
 
@@ -116,39 +114,7 @@ bool MeshRenderer::init()
         return false;
     }
 
-    // Rasterizer state
-    RasterizerStateInfo rasterizerInfo = {};
-    rasterizerInfo.PolygonMode          = POLYGON_MODE::FILL;
-    rasterizerInfo.CullMode             = CULL_MODE::BACK;
-    rasterizerInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    rasterizerInfo.DepthBiasEnable      = false;
-
-    m_pRasterizerState = m_pDevice->createRasterizerState(rasterizerInfo);
-    if (!m_pRasterizerState) {
-        return false;
-    }
-
-    DepthStencilInfo depthStencilInfo = {};
-    depthStencilInfo.DepthTestEnabled = true;
-    depthStencilInfo.DepthWriteEnabled = true;
-    depthStencilInfo.DepthComparisonFunc = COMPARISON_FUNC::LESS;
-    depthStencilInfo.StencilTestEnabled = false;
-
-    m_pDepthStencilState = m_pDevice->createDepthStencilState(depthStencilInfo);
-    if (!m_pDepthStencilState) {
-        return false;
-    }
-
-    // Create viewport
-    m_Viewport = {};
-    m_Viewport.TopLeftX = 0;
-    m_Viewport.TopLeftY = 0;
-    m_Viewport.Width    = (float)m_BackbufferWidth;
-    m_Viewport.Height   = (float)m_BackbufferHeight;
-    m_Viewport.MinDepth = 0.0f;
-    m_Viewport.MaxDepth = 1.0f;
-
-    return true;
+    return createPipeline();
 }
 
 void MeshRenderer::updateBuffers()
@@ -181,8 +147,6 @@ void MeshRenderer::updateBuffers()
     m_pCommandList->unmap(m_pPointLightBuffer);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
-        Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);
-        Model* model = renderable.model;
         ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
 
         // Prepare camera's view*proj matrix
@@ -215,23 +179,13 @@ void MeshRenderer::recordCommands()
        return;
     }
 
-    m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_LIST);
-
-    m_pCommandList->bindRasterizerState(m_pRasterizerState);
-
-    m_pCommandList->bindDepthStencilState(m_pDepthStencilState);
-    m_pCommandList->bindViewport(&m_Viewport);
+    m_pCommandList->bindPipeline(m_pPipeline);
 
     m_pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
-        Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(renderableID);
-        Program* pProgram = renderable.program;
-        Model* pModel = renderable.model;
+        Model* pModel = m_pModelLoader->getModel(renderableID);
         const ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
-
-        m_pCommandList->bindShaders(pProgram);
-        m_pCommandList->bindInputLayout(pProgram->pInputLayout);
 
         m_pCommandList->bindDescriptorSet(modelRenderResources.pDescriptorSet);
 
@@ -245,7 +199,7 @@ void MeshRenderer::recordCommands()
 
             const MeshRenderResources& meshRenderResources = modelRenderResources.MeshRenderResources[meshIdx];
 
-            m_pCommandList->bindVertexBuffer(0, pProgram->pInputLayout->getVertexSize(), mesh.pVertexBuffer);
+            m_pCommandList->bindVertexBuffer(0, mesh.pVertexBuffer);
             m_pCommandList->bindIndexBuffer(mesh.pIndexBuffer);
 
             m_pCommandList->bindDescriptorSet(meshRenderResources.pDescriptorSet);
@@ -388,11 +342,75 @@ bool MeshRenderer::createFramebuffer()
     return m_pFramebuffer;
 }
 
+bool MeshRenderer::createPipeline()
+{
+    m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayoutCommon, m_pDescriptorSetLayoutModel, m_pDescriptorSetLayoutMesh });
+    if (!m_pPipelineLayout) {
+        return false;
+    }
+
+    PipelineInfo pipelineInfo = {};
+    pipelineInfo.ShaderInfos = {
+        {"Mesh", SHADER_TYPE::VERTEX_SHADER},
+        {"Mesh", SHADER_TYPE::FRAGMENT_SHADER}
+    };
+
+    pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_LIST;
+
+    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+
+    Viewport viewport = {};
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.Width    = (float)backbufferDims.x;
+    viewport.Height   = (float)backbufferDims.y;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    pipelineInfo.Viewports = { viewport };
+
+    pipelineInfo.RasterizerStateInfo = {};
+    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::BACK;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+
+    pipelineInfo.DepthStencilStateInfo = {};
+    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
+    pipelineInfo.DepthStencilStateInfo.DepthWriteEnabled    = true;
+    pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
+    pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
+
+    pipelineInfo.BlendStateInfo = {};
+
+    BlendRenderTargetInfo rtvBlendInfo = {};
+    rtvBlendInfo.BlendEnabled           = true;
+    rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
+    rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.SrcAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
+
+    BlendStateInfo blendStateInfo = {};
+    blendStateInfo.pRenderTargetBlendInfos  = &rtvBlendInfo;
+    blendStateInfo.BlendInfosCount          = 1u;
+    blendStateInfo.IndependentBlendEnabled  = false;
+    for (float& blendConstant : blendStateInfo.pBlendConstants) {
+        blendConstant = 1.0f;
+    }
+
+    pipelineInfo.pLayout        = m_pPipelineLayout;
+    pipelineInfo.pRenderPass    = m_pRenderPass;
+    pipelineInfo.Subpass        = 0u;
+
+    m_pPipeline = m_pDevice->createPipeline(pipelineInfo);
+    return m_pPipeline;
+}
+
 void MeshRenderer::onMeshAdded(Entity entity)
 {
-    Renderable& renderable = m_pRenderableHandler->m_Renderables.indexID(entity);
-    Program* pProgram = renderable.program;
-    Model* pModel = renderable.model;
+    Model* pModel = m_pModelLoader->getModel(entity);
 
     // Create buffers and descriptor sets for the model and its meshes
     ModelRenderResources modelRenderResources = {};
