@@ -172,7 +172,6 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\ShaderDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\GeneralResources.cpp" />
-    <ClCompile Include="Engine\Rendering\APIAbstractions\Pipeline.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
