@@ -65,7 +65,7 @@ std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& s
     // The vertex stage is not in the cache, compile it with the corresponding input layout info
     auto inputLayoutItr = m_InputLayoutInfos.find(shaderName);
     if (inputLayoutItr == m_InputLayoutInfos.end()) {
-        LOG_WARNING("Could not find input layout info for shader: %s", shaderName.c_str());
+        LOG_ERROR("Could not find input layout info for shader: %s", shaderName.c_str());
         return nullptr;
     }
 
@@ -73,7 +73,7 @@ std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& s
     Shader* pShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, shaderName, &inputLayoutItr->second, &pInputLayout);
 
     std::shared_ptr<VertexStage> vertexStage(new VertexStage(pInputLayout, pShader));
-    m_VertexStageCache[shaderName] = vertexStage;
+    m_VertexStageCache[fullShaderName] = vertexStage;
 
     return vertexStage;
 }
@@ -100,7 +100,7 @@ std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName,
 
     // The shader is not in the cache, compile it
     std::shared_ptr<Shader> shader(m_pDevice->createShader(shaderType, shaderName));
-    m_ShaderCache[shaderName] = shader;
+    m_ShaderCache[fullShaderName] = shader;
 
     return shader;
 }
