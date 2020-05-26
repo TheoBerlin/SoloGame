@@ -15,7 +15,7 @@ class GameSession : public State
 {
 public:
     GameSession(MainMenu* mainMenu);
-    ~GameSession();
+    ~GameSession() = default;
 
     void resume();
     void pause();

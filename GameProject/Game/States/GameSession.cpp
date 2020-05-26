@@ -18,19 +18,18 @@ GameSession::GameSession(MainMenu* pMainMenu)
     m_TubeHandler(m_pECS, pMainMenu->getDevice()),
     m_TrackPositionHandler(m_pECS),
     m_LightSpinner(m_pECS),
-    m_RacerMover(m_pECS, pMainMenu->getInputHandler())
+    m_RacerMover(m_pECS, pMainMenu->getInputHandler(), &m_TubeHandler)
 {
     m_pECS->performRegistrations();
     LOG_INFO("Started game session");
 
-    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
-
     // Set mouse mode to relative and hide the cursor
     m_pInputHandler->hideCursor();
 
-    ModelLoader* pModelLoader           = reinterpret_cast<ModelLoader*>(pComponentSubscriber->getComponentHandler(TID(ModelLoader)));
-    TransformHandler* pTransformHandler = reinterpret_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    SoundHandler* pSoundHandler         = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
+    ComponentSubscriber* pComponentSubscriber   = m_pECS->getComponentSubscriber();
+    ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pComponentSubscriber->getComponentHandler(TID(ModelLoader)));
+    TransformHandler* pTransformHandler         = reinterpret_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
+    SoundHandler* pSoundHandler                 = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
 
     startMusic(pSoundHandler);
 
@@ -57,9 +56,6 @@ GameSession::GameSession(MainMenu* pMainMenu)
     createTube(sectionPoints, pTransformHandler, pModelLoader);
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
-
-GameSession::~GameSession()
-{}
 
 void GameSession::resume()
 {

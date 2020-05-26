@@ -31,7 +31,7 @@ const float startingCenterDistance = 0.5f;
 class RacerController : public System
 {
 public:
-    RacerController(ECSCore* pECS, InputHandler* pInputHandler);
+    RacerController(ECSCore* pECS, InputHandler* pInputHandler, TubeHandler* pTubeHandler);
     ~RacerController();
 
     virtual bool initSystem() override;

@@ -18,13 +18,11 @@ struct TubePoint {
     DirectX::XMFLOAT4 rotationQuat;
 };
 
-class TubeHandler : public ComponentHandler
+class TubeHandler
 {
 public:
     TubeHandler(ECSCore* pECS, Device* pDevice);
     ~TubeHandler() = default;
-
-    virtual bool initHandler() override;
 
     Model* createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces);
 
