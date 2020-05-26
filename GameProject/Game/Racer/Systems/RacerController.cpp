@@ -10,12 +10,12 @@
 
 #include <cmath>
 
-RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler)
+RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler, TubeHandler* pTubeHandler)
     :System(pECS),
     m_pInputHandler(pInputHandler),
     m_pTransformHandler(nullptr),
     m_pTrackHandler(nullptr),
-    m_pTubeHandler(nullptr),
+    m_pTubeHandler(pTubeHandler),
     m_pVelocityHandler(nullptr)
 {
     SystemRegistration sysReg = {};
@@ -35,10 +35,9 @@ bool RacerController::initSystem()
 {
     m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
     m_pTrackHandler     = reinterpret_cast<TrackHandler*>(getComponentHandler(TID(TrackHandler)));
-    m_pTubeHandler      = reinterpret_cast<TubeHandler*>(getComponentHandler(TID(TubeHandler)));
     m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
 
-    return m_pTransformHandler && m_pTrackHandler && m_pTubeHandler && m_pVelocityHandler;
+    return m_pTransformHandler && m_pTrackHandler && m_pVelocityHandler;
 }
 
 void RacerController::update(float dt)

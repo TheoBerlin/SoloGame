@@ -17,23 +17,10 @@ const float deltaT = -0.0001f;
 const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
-    :ComponentHandler(pECS, TID(TubeHandler)),
-    m_pTextureCache(nullptr),
+    :m_pTextureCache(nullptr),
     m_pDevice(pDevice)
 {
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-    handlerReg.HandlerDependencies = {
-        TID(TextureCache)
-    };
-
-    registerHandler(handlerReg);
-}
-
-bool TubeHandler::initHandler()
-{
-    m_pTextureCache = reinterpret_cast<TextureCache*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
-    return m_pTextureCache;
+    m_pTextureCache = reinterpret_cast<TextureCache*>(pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)

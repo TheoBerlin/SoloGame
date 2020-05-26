@@ -22,9 +22,9 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
 
     pInputHandler->showCursor();
 
-    UIHandler* uiHandler            = static_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
-    TextRenderer* pTextRenderer     = static_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
-    TextureCache* pTextureCache   = static_cast<TextureCache*>(pComponentSubscriber->getComponentHandler(TID(TextureCache)));
+    UIHandler* uiHandler        = reinterpret_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
+    TextRenderer* pTextRenderer = reinterpret_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
+    TextureCache* pTextureCache = reinterpret_cast<TextureCache*>(pComponentSubscriber->getComponentHandler(TID(TextureCache)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
