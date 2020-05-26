@@ -7,6 +7,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RenderPassDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -46,7 +47,7 @@ void DeviceDX11::presentBackBuffer()
 
 ICommandList* DeviceDX11::createCommandList()
 {
-    CommandListDX11* pCommandList = new CommandListDX11(m_pContext, m_pDevice);
+    CommandListDX11* pCommandList = DBG_NEW CommandListDX11(m_pContext, m_pDevice);
     if (!pCommandList->getContext()) {
         delete pCommandList;
         pCommandList = nullptr;
@@ -57,7 +58,7 @@ ICommandList* DeviceDX11::createCommandList()
 
 IDescriptorSetLayout* DeviceDX11::createDescriptorSetLayout()
 {
-    return new DescriptorSetLayoutDX11();
+    return DBG_NEW DescriptorSetLayoutDX11();
 }
 
 IFramebuffer* DeviceDX11::createFramebuffer(const FramebufferInfo& framebufferInfo)
@@ -77,7 +78,7 @@ PipelineDX11* DeviceDX11::createPipeline(const PipelineInfo& pipelineInfo)
 
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
 {
-    BufferDX11* pBuffer = new BufferDX11(m_pDevice, bufferInfo);
+    BufferDX11* pBuffer = DBG_NEW BufferDX11(m_pDevice, bufferInfo);
     if (!pBuffer->getBuffer()) {
         delete pBuffer;
         pBuffer = nullptr;
@@ -145,7 +146,7 @@ BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInf
 
 DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorCounts& poolSize)
 {
-    DescriptorPoolDX11* pNewDescriptorPool = new DescriptorPoolDX11();
+    DescriptorPoolDX11* pNewDescriptorPool = DBG_NEW DescriptorPoolDX11();
     pNewDescriptorPool->init(poolSize);
     return pNewDescriptorPool;
 }
@@ -227,7 +228,7 @@ bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWi
 
     D3D11_TEXTURE2D_DESC backbufferDesc = {};
     pBackBuffer->GetDesc(&backbufferDesc);
-    m_pBackBuffer = new TextureDX11({(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height}, convertFormatFromDX(backbufferDesc.Format), nullptr, nullptr, pBackBufferRTV, nullptr);
+    m_pBackBuffer = DBG_NEW TextureDX11({(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height}, convertFormatFromDX(backbufferDesc.Format), nullptr, nullptr, pBackBufferRTV, nullptr);
 
     /* Depth stencil */
     TextureInfo textureInfo = {};

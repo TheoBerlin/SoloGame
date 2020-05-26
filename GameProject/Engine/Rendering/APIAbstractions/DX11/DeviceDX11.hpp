@@ -11,6 +11,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Utils/Debug.hpp>
 
 #define NOMINMAX
 #include <d3d11.h>
@@ -33,7 +34,7 @@ public:
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     PipelineDX11* createPipeline(const PipelineInfo& pipelineInfo) override final;
-    PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return new PipelineLayoutDX11(); }
+    PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return DBG_NEW PipelineLayoutDX11(); }
 
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;

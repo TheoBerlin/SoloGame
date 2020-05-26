@@ -1,14 +1,19 @@
 #define NOMINMAX
 
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <Game/Game.hpp>
 
-#include <crtdbg.h>
+#ifdef _DEBUG
+    #include <crtdbg.h>
+#endif
 
 int main()
 {
     // Check for memory leaks. Disabled when not debugging
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #ifdef _DEBUG
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
 
     Logger::init();
 

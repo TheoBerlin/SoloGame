@@ -1,6 +1,7 @@
 #include "Device.hpp"
 
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 Device::Device()
@@ -18,7 +19,7 @@ Device::~Device()
 
 bool Device::finalize()
 {
-    m_pShaderHandler = new ShaderHandler(this);
+    m_pShaderHandler = DBG_NEW ShaderHandler(this);
     return m_pShaderHandler;
 }
 

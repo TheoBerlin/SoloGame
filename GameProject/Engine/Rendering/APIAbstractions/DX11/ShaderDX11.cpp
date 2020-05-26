@@ -1,5 +1,6 @@
 #include "ShaderDX11.hpp"
 
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -15,7 +16,7 @@ ShaderDX11* ShaderDX11::createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCo
         return nullptr;
     }
 
-    return new ShaderDX11(shaderType, pVertexShader, nullptr, nullptr, nullptr, nullptr);
+    return DBG_NEW ShaderDX11(shaderType, pVertexShader, nullptr, nullptr, nullptr, nullptr);
 }
 
 ShaderDX11* ShaderDX11::createHullShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
@@ -28,7 +29,7 @@ ShaderDX11* ShaderDX11::createHullShader(SHADER_TYPE shaderType, ID3DBlob* pComp
         return nullptr;
     }
 
-    return new ShaderDX11(shaderType, nullptr, pHullShader, nullptr, nullptr, nullptr);
+    return DBG_NEW ShaderDX11(shaderType, nullptr, pHullShader, nullptr, nullptr, nullptr);
 }
 
 ShaderDX11* ShaderDX11::createDomainShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
@@ -41,7 +42,7 @@ ShaderDX11* ShaderDX11::createDomainShader(SHADER_TYPE shaderType, ID3DBlob* pCo
         return nullptr;
     }
 
-    return new ShaderDX11(shaderType, nullptr, nullptr, pDomainShader, nullptr, nullptr);
+    return DBG_NEW ShaderDX11(shaderType, nullptr, nullptr, pDomainShader, nullptr, nullptr);
 }
 
 ShaderDX11* ShaderDX11::createGeometryShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
@@ -54,7 +55,7 @@ ShaderDX11* ShaderDX11::createGeometryShader(SHADER_TYPE shaderType, ID3DBlob* p
         return nullptr;
     }
 
-    return new ShaderDX11(shaderType, nullptr, nullptr, nullptr, pGeometryShader, nullptr);
+    return DBG_NEW ShaderDX11(shaderType, nullptr, nullptr, nullptr, pGeometryShader, nullptr);
 }
 
 ShaderDX11* ShaderDX11::createFragmentShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
@@ -67,7 +68,7 @@ ShaderDX11* ShaderDX11::createFragmentShader(SHADER_TYPE shaderType, ID3DBlob* p
         return nullptr;
     }
 
-    return new ShaderDX11(shaderType, nullptr, nullptr, nullptr, nullptr, pFragmentShader);
+    return DBG_NEW ShaderDX11(shaderType, nullptr, nullptr, nullptr, nullptr, pFragmentShader);
 }
 
 std::string ShaderDX11::getFilePostfix(SHADER_TYPE shaderType)

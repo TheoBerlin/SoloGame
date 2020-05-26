@@ -1,6 +1,7 @@
 #include "DepthStencilStateDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -26,7 +27,7 @@ DepthStencilStateDX11* DepthStencilStateDX11::create(const DepthStencilInfo& dep
         return nullptr;
     }
 
-    return new DepthStencilStateDX11(pDepthStencilState, (UINT)depthStencilInfo.Reference);
+    return DBG_NEW DepthStencilStateDX11(pDepthStencilState, (UINT)depthStencilInfo.Reference);
 }
 
 DepthStencilStateDX11::DepthStencilStateDX11(ID3D11DepthStencilState* pDepthStencilState, UINT stencilReference)

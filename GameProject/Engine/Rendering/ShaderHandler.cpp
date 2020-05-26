@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
 ShaderHandler::ShaderHandler(Device* pDevice)
@@ -72,7 +73,7 @@ std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& s
     InputLayout* pInputLayout = nullptr;
     Shader* pShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, shaderName, &inputLayoutItr->second, &pInputLayout);
 
-    std::shared_ptr<VertexStage> vertexStage(new VertexStage(pInputLayout, pShader));
+    std::shared_ptr<VertexStage> vertexStage(DBG_NEW VertexStage(pInputLayout, pShader));
     m_VertexStageCache[fullShaderName] = vertexStage;
 
     return vertexStage;

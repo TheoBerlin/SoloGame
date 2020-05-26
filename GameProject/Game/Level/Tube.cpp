@@ -5,6 +5,7 @@
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Transform.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -108,7 +109,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 		startVertexIndex += 2;
     }
 
-    Model* pModel = new Model();
+    Model* pModel = DBG_NEW Model();
     pModel->Meshes.resize(1);
 
     Mesh& mesh          = pModel->Meshes.front();

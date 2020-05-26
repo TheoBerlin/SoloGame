@@ -1,6 +1,7 @@
 #include "FramebufferDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 FramebufferDX11* FramebufferDX11::create(const FramebufferInfo& framebufferInfo)
@@ -32,7 +33,7 @@ FramebufferDX11* FramebufferDX11::create(const FramebufferInfo& framebufferInfo)
         }
     }
 
-    return new FramebufferDX11(renderTargets, pDSV, depthStencilIdx);
+    return DBG_NEW FramebufferDX11(renderTargets, pDSV, depthStencilIdx);
 }
 
 FramebufferDX11::FramebufferDX11(const std::vector<ID3D11RenderTargetView*>& renderTargets, ID3D11DepthStencilView* pDepthStencil, size_t depthStencilIdx)

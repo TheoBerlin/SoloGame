@@ -1,5 +1,6 @@
 #include "BlendStateDX11.hpp"
 
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -42,7 +43,7 @@ BlendStateDX11* BlendStateDX11::create(const BlendStateInfo& blendStateInfo, ID3
         return nullptr;
     }
 
-    return new BlendStateDX11(pBlendState, blendStateInfo.pBlendConstants);
+    return DBG_NEW BlendStateDX11(pBlendState, blendStateInfo.pBlendConstants);
 }
 
 BlendStateDX11::BlendStateDX11(ID3D11BlendState* pBlendState, const float pBlendConstants[4])

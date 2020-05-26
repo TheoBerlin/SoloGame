@@ -290,6 +290,7 @@
     <ClInclude Include="Engine\UI\Panel.hpp" />
     <ClInclude Include="Engine\UI\UICore.hpp" />
     <ClInclude Include="Engine\UI\UIRenderer.hpp" />
+    <ClInclude Include="Engine\Utils\Debug.hpp" />
     <ClInclude Include="Engine\Utils\DirectXUtils.hpp" />
     <ClInclude Include="Engine\Utils\ECSUtils.hpp" />
     <ClInclude Include="Engine\Utils\EnumClass.hpp" />

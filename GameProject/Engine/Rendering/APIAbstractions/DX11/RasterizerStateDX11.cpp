@@ -1,5 +1,6 @@
 #include "RasterizerStateDX11.hpp"
 
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -40,7 +41,7 @@ RasterizerStateDX11* RasterizerStateDX11::create(const RasterizerStateInfo& rast
         return nullptr;
     }
 
-    return new RasterizerStateDX11(pRsState);
+    return DBG_NEW RasterizerStateDX11(pRsState);
 }
 
 RasterizerStateDX11::~RasterizerStateDX11()

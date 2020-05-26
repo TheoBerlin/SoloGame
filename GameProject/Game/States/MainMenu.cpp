@@ -7,6 +7,7 @@
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
 #include <Engine/UI/Panel.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <Game/States/GameSession.hpp>
@@ -45,7 +46,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
     uiHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures.data(), panelTextures.size());
 
     // Make the panel a button
-    uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ new GameSession(this); });
+    uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ DBG_NEW GameSession(this); });
 
     // Create test sound
     Entity soundEntity = m_pECS->createEntity();
@@ -73,6 +74,6 @@ void MainMenu::pause()
 void MainMenu::update(float dt)
 {
     if (m_pInputHandler->keyState(GLFW_KEY_E)) {
-        new GameSession(this);
+        DBG_NEW GameSession(this);
     }
 }

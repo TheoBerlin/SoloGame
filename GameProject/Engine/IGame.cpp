@@ -1,6 +1,7 @@
 #include "IGame.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 
 #include <iostream>
 
@@ -44,13 +45,13 @@ bool IGame::init()
         return false;
     }
 
-    m_pPhysicsCore      = new PhysicsCore(&m_ECS);
-    m_pAssetLoaders     = new AssetLoadersCore(&m_ECS, &m_Device);
-    m_pUICore           = new UICore(&m_ECS, &m_Device, &m_Window);
-    m_pRenderingCore    = new RenderingCore(&m_ECS, &m_Device, &m_Window);
-    m_pAudioCore        = new AudioCore(&m_ECS);
+    m_pPhysicsCore      = DBG_NEW PhysicsCore(&m_ECS);
+    m_pAssetLoaders     = DBG_NEW AssetLoadersCore(&m_ECS, &m_Device);
+    m_pUICore           = DBG_NEW UICore(&m_ECS, &m_Device, &m_Window);
+    m_pRenderingCore    = DBG_NEW RenderingCore(&m_ECS, &m_Device, &m_Window);
+    m_pAudioCore        = DBG_NEW AudioCore(&m_ECS);
 
-    m_pRenderingHandler = new RenderingHandler(&m_ECS, &m_Device, &m_Window);
+    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, &m_Device, &m_Window);
 
     m_ECS.performRegistrations();
     m_Window.show();

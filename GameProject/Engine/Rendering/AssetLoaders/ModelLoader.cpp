@@ -7,6 +7,7 @@
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
@@ -71,7 +72,7 @@ Model* ModelLoader::loadModel(Entity entity, const std::string& filePath)
         LOG_INFO("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
     }
 
-    std::shared_ptr<Model> pLoadedModel = std::shared_ptr<Model>(new Model(), releaseModel);
+    std::shared_ptr<Model> pLoadedModel = std::shared_ptr<Model>(DBG_NEW Model(), releaseModel);
 
     // Traverse nodes to find which meshes to load
     std::vector<unsigned int> meshIndices;

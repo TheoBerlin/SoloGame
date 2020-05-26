@@ -1,5 +1,6 @@
 #include "SamplerDX11.hpp"
 
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -30,7 +31,7 @@ SamplerDX11* SamplerDX11::create(const SamplerInfo& samplerInfo, ID3D11Device* p
         return nullptr;
     }
 
-    return new SamplerDX11(pSamplerState);
+    return DBG_NEW SamplerDX11(pSamplerState);
 }
 
 SamplerDX11::SamplerDX11(ID3D11SamplerState* pSamplerState)
