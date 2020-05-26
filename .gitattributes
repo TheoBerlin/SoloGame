@@ -10,3 +10,6 @@
 # Line endings in .sln and .vcxproj are CRLF
 *.vcxproj text eol=CRLF
 *.sln text eol=CRLF
+
+# Exclude vendored files from language statistics
+include/* linguist-vendored
