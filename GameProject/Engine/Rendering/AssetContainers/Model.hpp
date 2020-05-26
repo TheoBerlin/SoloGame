@@ -33,4 +33,6 @@ inline void releaseModel(Model* pModel)
         delete mesh.pVertexBuffer;
         delete mesh.pIndexBuffer;
     }
+
+    delete pModel;
 }

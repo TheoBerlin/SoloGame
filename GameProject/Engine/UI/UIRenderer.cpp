@@ -4,8 +4,10 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
-#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
+#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
+#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
@@ -20,16 +22,15 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
-    m_BackbufferWidth(pWindow->getWidth()),
-    m_BackbufferHeight(pWindow->getHeight()),
     m_pQuad(nullptr),
     m_pDescriptorSetLayoutCommon(nullptr),
     m_pDescriptorSetLayoutPanel(nullptr),
     m_pDescriptorSetCommon(nullptr),
     m_pAniSampler(nullptr),
-    m_pRasterizerState(nullptr),
     m_pRenderPass(nullptr),
-    m_pFramebuffer(nullptr)
+    m_pFramebuffer(nullptr),
+    m_pPipelineLayout(nullptr),
+    m_pPipeline(nullptr)
 {
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -51,9 +52,10 @@ UIRenderer::~UIRenderer()
     delete m_pDescriptorSetCommon;
     delete m_pDescriptorSetLayoutCommon;
     delete m_pDescriptorSetLayoutPanel;
-    delete m_pRasterizerState;
     delete m_pRenderPass;
     delete m_pFramebuffer;
+    delete m_pPipelineLayout;
+    delete m_pPipeline;
 }
 
 bool UIRenderer::init()
@@ -63,17 +65,14 @@ bool UIRenderer::init()
         return false;
     }
 
-    m_pShaderHandler    = static_cast<ShaderHandler*>(getComponentHandler(TID(ShaderHandler)));
-    m_pUIHandler        = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
-    if (!m_pShaderHandler || !m_pUIHandler) {
+    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
+    if (!m_pUIHandler) {
         return false;
     }
 
-    m_pUIProgram = m_pShaderHandler->getProgram(UI);
-
     ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
-    m_pQuad = pShaderResourceHandler->getQuarterScreenQuad();
-    m_pAniSampler = pShaderResourceHandler->getAniSampler();
+    m_pQuad         = pShaderResourceHandler->getQuarterScreenQuad();
+    m_pAniSampler   = pShaderResourceHandler->getAniSampler();
 
     if (!createDescriptorSetLayouts()) {
         return false;
@@ -91,28 +90,7 @@ bool UIRenderer::init()
         return false;
     }
 
-    RasterizerStateInfo rsInfo = {};
-    rsInfo.PolygonMode          = POLYGON_MODE::FILL;
-    rsInfo.CullMode             = CULL_MODE::NONE;
-    rsInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    rsInfo.DepthBiasEnable      = false;
-
-    m_pRasterizerState = m_pDevice->createRasterizerState(rsInfo);
-    if (!m_pRasterizerState) {
-        LOG_ERROR("Failed to create rasterizer state");
-        return false;
-    }
-
-    // Create viewport
-    m_Viewport = {};
-    m_Viewport.TopLeftX = 0;
-    m_Viewport.TopLeftY = 0;
-    m_Viewport.Width    = (float)m_BackbufferWidth;
-    m_Viewport.Height   = (float)m_BackbufferHeight;
-    m_Viewport.MinDepth = 0.0f;
-    m_Viewport.MaxDepth = 1.0f;
-
-    return true;
+    return createPipeline();
 }
 
 void UIRenderer::updateBuffers()
@@ -144,14 +122,8 @@ void UIRenderer::recordCommands()
         return;
     }
 
-    m_pCommandList->bindPrimitiveTopology(PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP);
-    m_pCommandList->bindInputLayout(m_pUIProgram->pInputLayout);
-    m_pCommandList->bindVertexBuffer(0, m_pUIProgram->pInputLayout->getVertexSize(), m_pQuad);
-
-    m_pCommandList->bindShaders(m_pUIProgram);
-
-    m_pCommandList->bindRasterizerState(m_pRasterizerState);
-    m_pCommandList->bindViewport(&m_Viewport);
+    m_pCommandList->bindPipeline(m_pPipeline);
+    m_pCommandList->bindVertexBuffer(0, m_pQuad);
 
     m_pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
 
@@ -265,6 +237,70 @@ bool UIRenderer::createFramebuffer()
 
     m_pFramebuffer = m_pDevice->createFramebuffer(framebufferInfo);
     return m_pFramebuffer;
+}
+
+bool UIRenderer::createPipeline()
+{
+    m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayoutCommon, m_pDescriptorSetLayoutPanel });
+    if (!m_pPipelineLayout) {
+        return false;
+    }
+
+    PipelineInfo pipelineInfo = {};
+    pipelineInfo.ShaderInfos = {
+        {"UI", SHADER_TYPE::VERTEX_SHADER},
+        {"UI", SHADER_TYPE::FRAGMENT_SHADER}
+    };
+
+    pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP;
+
+    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+
+    Viewport viewport = {};
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.Width    = (float)backbufferDims.x;
+    viewport.Height   = (float)backbufferDims.y;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    pipelineInfo.Viewports = { viewport };
+
+    pipelineInfo.RasterizerStateInfo = {};
+    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::NONE;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+
+    pipelineInfo.DepthStencilStateInfo = {};
+    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
+    pipelineInfo.DepthStencilStateInfo.DepthWriteEnabled    = true;
+    pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
+    pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
+
+
+    BlendRenderTargetInfo rtvBlendInfo = {};
+    rtvBlendInfo.BlendEnabled           = true;
+    rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
+    rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.SrcAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.DstAlphaBlendFactor    = BLEND_FACTOR::ONE;
+    rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
+    rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
+
+    pipelineInfo.BlendStateInfo = {};
+    pipelineInfo.BlendStateInfo.RenderTargetBlendInfos  = { rtvBlendInfo };
+    pipelineInfo.BlendStateInfo.IndependentBlendEnabled = false;
+    for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
+        blendConstant = 1.0f;
+    }
+
+    pipelineInfo.pLayout        = m_pPipelineLayout;
+    pipelineInfo.pRenderPass    = m_pRenderPass;
+    pipelineInfo.Subpass        = 0u;
+
+    m_pPipeline = m_pDevice->createPipeline(pipelineInfo);
+    return m_pPipeline;
 }
 
 void UIRenderer::onPanelAdded(Entity entity)

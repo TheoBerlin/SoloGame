@@ -4,7 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
-#include <Engine/Utils/DirectXUtils.hpp>
+#include <Engine/Utils/Rendering.hpp>
 
 DescriptorSetDX11::DescriptorSetDX11(const DescriptorSetLayoutDX11* pDescriptorSetLayout, DescriptorPool* pDescriptorPool)
     :DescriptorSet(pDescriptorPool, pDescriptorSetLayout),

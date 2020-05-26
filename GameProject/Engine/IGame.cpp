@@ -40,7 +40,7 @@ bool IGame::init()
     DescriptorCounts descriptorPoolSize;
     descriptorPoolSize.setAll(100u);
 
-    if (!m_Device.init(swapChainInfo, &m_Window, descriptorPoolSize)) {
+    if (!m_Device.init(swapChainInfo, &m_Window, descriptorPoolSize) || !m_Device.finalize()) {
         return false;
     }
 

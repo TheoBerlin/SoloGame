@@ -22,6 +22,8 @@ public:
     Shader(SHADER_TYPE shaderType);
     virtual ~Shader() = 0 {};
 
+    inline SHADER_TYPE getShaderType() const { return m_ShaderType; }
+
 private:
     SHADER_TYPE m_ShaderType;
 };

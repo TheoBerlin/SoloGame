@@ -10,6 +10,8 @@ class IBuffer;
 class ICommandList;
 class IDescriptorSetLayout;
 class IFramebuffer;
+class IPipeline;
+class IPipelineLayout;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
@@ -41,6 +43,7 @@ private:
     bool createCommonDescriptorSet();
     bool createRenderPass();
     bool createFramebuffer();
+    bool createPipeline();
 
     void onPanelAdded(Entity entity);
     void onPanelRemoved(Entity entity);
@@ -53,17 +56,12 @@ private:
 
     UIHandler* m_pUIHandler;
 
-    ShaderHandler* m_pShaderHandler;
-
-    Program* m_pUIProgram;
-
     // Vertex buffer
     IBuffer* m_pQuad;
 
     Texture* m_pRenderTarget;
     Texture* m_pDepthStencil;
     ISampler* m_pAniSampler;
-    IRasterizerState* m_pRasterizerState;
     IRenderPass* m_pRenderPass;
     IFramebuffer* m_pFramebuffer;
 
@@ -72,5 +70,7 @@ private:
     DescriptorSet* m_pDescriptorSetCommon;
 
     Viewport m_Viewport;
-    unsigned int m_BackbufferWidth, m_BackbufferHeight;
+
+    IPipelineLayout* m_pPipelineLayout;
+    IPipeline* m_pPipeline;
 };

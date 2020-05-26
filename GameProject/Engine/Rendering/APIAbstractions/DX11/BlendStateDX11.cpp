@@ -8,11 +8,11 @@
 
 BlendStateDX11* BlendStateDX11::create(const BlendStateInfo& blendStateInfo, ID3D11Device* pDevice)
 {
-    if (blendStateInfo.BlendInfosCount > 8) {
-        LOG_ERROR("DirectX 11 does not support more than 8 simultaneous render targets, attempted nr: %d", blendStateInfo.BlendInfosCount);
+    if (blendStateInfo.RenderTargetBlendInfos.size() > 8) {
+        LOG_ERROR("DirectX 11 does not support more than 8 simultaneous render targets, attempted nr: %d", blendStateInfo.RenderTargetBlendInfos.size());
     }
 
-    size_t blendInfosCount = (size_t)std::min(blendStateInfo.BlendInfosCount, 8u);
+    size_t blendInfosCount = std::min(blendStateInfo.RenderTargetBlendInfos.size(), size_t(8u));
 
     D3D11_BLEND_DESC blendDesc = {};
     blendDesc.AlphaToCoverageEnable = FALSE;
@@ -20,7 +20,7 @@ BlendStateDX11* BlendStateDX11::create(const BlendStateInfo& blendStateInfo, ID3
 
     // Convert blend states
     for (size_t blendDescIdx = 0; blendDescIdx < blendInfosCount; blendDescIdx++) {
-        BlendRenderTargetInfo& rtvBlendInfo = blendStateInfo.pRenderTargetBlendInfos[blendDescIdx];
+        const BlendRenderTargetInfo& rtvBlendInfo = blendStateInfo.RenderTargetBlendInfos[blendDescIdx];
 
         D3D11_RENDER_TARGET_BLEND_DESC& rtvBlendDesc = blendDesc.RenderTarget[blendDescIdx];
         rtvBlendDesc = {};

@@ -16,10 +16,12 @@ class ICommandList;
 class IDescriptorSetLayout;
 class IDepthStencilState;
 class IFramebuffer;
+class IPipeline;
+class IPipelineLayout;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
-class RenderableHandler;
+class ModelLoader;
 class Texture;
 class TransformHandler;
 class VPHandler;
@@ -76,6 +78,7 @@ private:
     bool createCommonDescriptorSet();
     bool createRenderPass();
     bool createFramebuffer();
+    bool createPipeline();
 
     void onMeshAdded(Entity entity);
     void onMeshRemoved(Entity entity);
@@ -90,7 +93,7 @@ private:
     Device* m_pDevice;
     ICommandList* m_pCommandList;
 
-    RenderableHandler* m_pRenderableHandler;
+    ModelLoader* m_pModelLoader;
     TransformHandler* m_pTransformHandler;
     VPHandler* m_pVPHandler;
     LightHandler* m_pLightHandler;
@@ -106,16 +109,8 @@ private:
 
     ISampler* m_pAniSampler;
 
-    // Render targets
-    Texture* m_pRenderTarget;
-    Texture* m_pDepthStencil;
-
     IFramebuffer* m_pFramebuffer;
     IRenderPass* m_pRenderPass;
-
-    IRasterizerState* m_pRasterizerState;
-    IDepthStencilState* m_pDepthStencilState;
-
-    Viewport m_Viewport;
-    unsigned int m_BackbufferWidth, m_BackbufferHeight;
+    IPipeline* m_pPipeline;
+    IPipelineLayout* m_pPipelineLayout;
 };

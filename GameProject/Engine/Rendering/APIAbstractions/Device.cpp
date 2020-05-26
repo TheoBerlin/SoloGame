@@ -5,13 +5,21 @@
 
 Device::Device()
     :m_pBackBuffer(nullptr),
-    m_pDepthTexture(nullptr)
+    m_pDepthTexture(nullptr),
+    m_pShaderHandler(nullptr)
 {}
 
 Device::~Device()
 {
     delete m_pBackBuffer;
     delete m_pDepthTexture;
+    delete m_pShaderHandler;
+}
+
+bool Device::finalize()
+{
+    m_pShaderHandler = new ShaderHandler(this);
+    return m_pShaderHandler;
 }
 
 DescriptorSet* Device::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)

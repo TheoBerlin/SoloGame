@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <vector>
 
 enum class BLEND_FACTOR {
     ZERO,
@@ -52,8 +53,7 @@ struct BlendRenderTargetInfo {
 };
 
 struct BlendStateInfo {
-    BlendRenderTargetInfo* pRenderTargetBlendInfos;
-    uint32_t BlendInfosCount;
+    std::vector<BlendRenderTargetInfo> RenderTargetBlendInfos;
     bool IndependentBlendEnabled;
     float pBlendConstants[4];
 };

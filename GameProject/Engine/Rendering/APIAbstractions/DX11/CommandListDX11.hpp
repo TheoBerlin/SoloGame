@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 
+class PipelineDX11;
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 
@@ -16,10 +17,7 @@ public:
     void execute() override final;
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
-
-    // Input assembler
-    void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) override final;
-    void bindInputLayout(InputLayout* pInputLayout) override final;
+    void bindPipeline(IPipeline* pPipeline) override final;
 
     // Shader resources
     void bindDescriptorSet(DescriptorSet* pDescriptorSet) override final;
@@ -27,18 +25,11 @@ public:
     void map(IBuffer* pBuffer, void** ppMappedMemory);
     void unmap(IBuffer* pBuffer);
 
-    void bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer) override final;
+    void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;
 
-    void bindShaders(const Program* program) override final;
-
     // Rasterizer
-    void bindRasterizerState(IRasterizerState* pRasterizerState) override final;
     void bindViewport(const Viewport* pViewport) override final;
-
-    // Output merger
-    void bindBlendState(BlendState* pBlendState);
-    void bindDepthStencilState(IDepthStencilState* pDepthStencilState) override final;
 
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;
@@ -49,4 +40,6 @@ private:
     // Deferred context
     ID3D11DeviceContext* m_pContext;
     ID3D11DeviceContext* m_pImmediateContext;
+
+    PipelineDX11* m_pBoundPipeline;
 };

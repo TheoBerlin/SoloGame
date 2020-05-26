@@ -8,6 +8,7 @@ class BlendState;
 class IBuffer;
 class IDepthStencilState;
 class DescriptorSet;
+class IPipeline;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
@@ -23,28 +24,19 @@ public:
     virtual void execute() = 0;
 
     virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
-
-    // Input assember
-    virtual void bindPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology) = 0;
-    virtual void bindInputLayout(InputLayout* pInputLayout) = 0;
+    virtual void bindPipeline(IPipeline* pPipeline) = 0;
 
     // Shader resources
     virtual void bindDescriptorSet(DescriptorSet* pDescriptorSet) = 0;
 
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
     virtual void unmap(IBuffer* pBuffer) = 0;
-    virtual void bindVertexBuffer(int slot, uint32_t vertexSize, IBuffer* pBuffer) = 0;
+
+    virtual void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
 
-    virtual void bindShaders(const Program* program) = 0;
-
     // Rasterizer
-    virtual void bindRasterizerState(IRasterizerState* pRasterizerState) = 0;
     virtual void bindViewport(const Viewport* pViewport) = 0;
-
-    // Output merger
-    virtual void bindBlendState(BlendState* pBlendState) = 0;
-    virtual void bindDepthStencilState(IDepthStencilState* pDepthStencilState) = 0;
 
     virtual void draw(size_t vertexCount) = 0;
     virtual void drawIndexed(size_t indexCount) = 0;

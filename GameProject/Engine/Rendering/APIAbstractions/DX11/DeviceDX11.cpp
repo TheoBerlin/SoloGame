@@ -5,7 +5,6 @@
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RenderPassDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -71,6 +70,11 @@ IRenderPass* DeviceDX11::createRenderPass(const RenderPassInfo& renderPassInfo)
     return RenderPassDX11::create(renderPassInfo);
 }
 
+PipelineDX11* DeviceDX11::createPipeline(const PipelineInfo& pipelineInfo)
+{
+    return PipelineDX11::create(pipelineInfo, this);
+}
+
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
 {
     BufferDX11* pBuffer = new BufferDX11(m_pDevice, bufferInfo);
@@ -124,7 +128,7 @@ SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
     return SamplerDX11::create(samplerInfo, m_pDevice);
 }
 
-IRasterizerState* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
+RasterizerStateDX11* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
 {
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }

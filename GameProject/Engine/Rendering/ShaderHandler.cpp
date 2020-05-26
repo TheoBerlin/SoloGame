@@ -4,34 +4,10 @@
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
-ShaderHandler::ShaderHandler(Device* pDevice, ECSCore* pECS)
-    :ComponentHandler(pECS, TID(ShaderHandler)),
-    m_pDevice(pDevice)
+ShaderHandler::ShaderHandler(Device* pDevice)
+    :m_pDevice(pDevice)
 {
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-
-    registerHandler(handlerReg);
-}
-
-ShaderHandler::~ShaderHandler()
-{
-    // Delete all shaders
-    for (Program program : m_Programs) {
-        delete program.pVertexShader;
-        delete program.pHullShader;
-        delete program.pDomainShader;
-        delete program.pGeometryShader;
-        delete program.pFragmentShader;
-
-        delete program.pInputLayout;
-    }
-}
-
-bool ShaderHandler::initHandler()
-{
-    /* Compile all shaders and associate them with program enum names */
-    // Compile mesh program
+    // Create and map all input layout infos
     InputLayoutInfo inputLayoutInfo = {};
     inputLayoutInfo.Binding = 0;
     inputLayoutInfo.VertexInputAttributes = {
@@ -52,7 +28,7 @@ bool ShaderHandler::initHandler()
         }
     };
 
-    m_Programs.push_back(createProgram("Mesh", SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, &inputLayoutInfo));
+    m_InputLayoutInfos["Mesh"] = inputLayoutInfo;
 
     // Compile UI program
     inputLayoutInfo.VertexInputAttributes = {
@@ -67,39 +43,64 @@ bool ShaderHandler::initHandler()
             VERTEX_INPUT_RATE::PER_VERTEX
         }
     };
-    m_Programs.push_back(createProgram("UI", SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER, &inputLayoutInfo));
 
-    return true;
+    m_InputLayoutInfos["UI"] = inputLayoutInfo;
 }
 
-Program* ShaderHandler::getProgram(PROGRAM program)
+std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& shaderName)
 {
-    return &m_Programs[program];
+    std::string fullShaderName = shaderName + m_pDevice->getShaderPostfixAndExtension(SHADER_TYPE::VERTEX_SHADER);
+    auto shaderItr = m_VertexStageCache.find(fullShaderName);
+    if (shaderItr != m_VertexStageCache.end()) {
+        std::weak_ptr<VertexStage>& shaderPtr = shaderItr->second;
+
+        if (shaderPtr.expired()) {
+            // The shader used to exist but has been deleted
+            m_VertexStageCache.erase(shaderItr);
+        } else {
+            return shaderPtr.lock();
+        }
+    }
+
+    // The vertex stage is not in the cache, compile it with the corresponding input layout info
+    auto inputLayoutItr = m_InputLayoutInfos.find(shaderName);
+    if (inputLayoutItr == m_InputLayoutInfos.end()) {
+        LOG_ERROR("Could not find input layout info for shader: %s", shaderName.c_str());
+        return nullptr;
+    }
+
+    InputLayout* pInputLayout = nullptr;
+    Shader* pShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, shaderName, &inputLayoutItr->second, &pInputLayout);
+
+    std::shared_ptr<VertexStage> vertexStage(new VertexStage(pInputLayout, pShader));
+    m_VertexStageCache[fullShaderName] = vertexStage;
+
+    return vertexStage;
 }
 
-Program ShaderHandler::createProgram(const std::string& programName, SHADER_TYPE shaderTypes, const InputLayoutInfo* pInputLayoutInfo)
+std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName, SHADER_TYPE shaderType)
 {
-    Program program = {};
-
-    if (HAS_FLAG(shaderTypes, SHADER_TYPE::VERTEX_SHADER)) {
-        program.pVertexShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, programName, pInputLayoutInfo, &program.pInputLayout);
+    if (HAS_FLAG(shaderType, SHADER_TYPE::VERTEX_SHADER)) {
+        LOG_WARNING("Vertex shaders must be loaded using loadVertexStage, not loadShader: %s", shaderName.c_str());
+        return nullptr;
     }
 
-    if (HAS_FLAG(shaderTypes, SHADER_TYPE::HULL_SHADER)) {
-        program.pHullShader = m_pDevice->createShader(SHADER_TYPE::HULL_SHADER, programName);
+    std::string fullShaderName = shaderName + m_pDevice->getShaderPostfixAndExtension(shaderType);
+    auto shaderItr = m_ShaderCache.find(fullShaderName);
+    if (shaderItr != m_ShaderCache.end()) {
+        std::weak_ptr<Shader>& shaderPtr = shaderItr->second;
+
+        if (shaderPtr.expired()) {
+            // The shader used to exist but has been deleted
+            m_ShaderCache.erase(shaderItr);
+        } else {
+            return shaderPtr.lock();
+        }
     }
 
-    if (HAS_FLAG(shaderTypes, SHADER_TYPE::DOMAIN_SHADER)) {
-        program.pDomainShader = m_pDevice->createShader(SHADER_TYPE::DOMAIN_SHADER, programName);
-    }
+    // The shader is not in the cache, compile it
+    std::shared_ptr<Shader> shader(m_pDevice->createShader(shaderType, shaderName));
+    m_ShaderCache[fullShaderName] = shader;
 
-    if (HAS_FLAG(shaderTypes, SHADER_TYPE::GEOMETRY_SHADER)) {
-        program.pGeometryShader = m_pDevice->createShader(SHADER_TYPE::GEOMETRY_SHADER, programName);
-    }
-
-    if (HAS_FLAG(shaderTypes, SHADER_TYPE::FRAGMENT_SHADER)) {
-        program.pFragmentShader = m_pDevice->createShader(SHADER_TYPE::FRAGMENT_SHADER, programName);
-    }
-
-    return program;
+    return shader;
 }

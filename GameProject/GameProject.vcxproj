@@ -165,6 +165,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\InputLayoutDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\PipelineDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\RasterizerStateDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\RenderPassDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\SamplerDX11.cpp" />
@@ -178,7 +179,6 @@
     <ClCompile Include="Engine\Rendering\Camera.cpp" />
     <ClCompile Include="Engine\Rendering\Components\PointLight.cpp" />
     <ClCompile Include="Engine\Rendering\Components\VPMatrices.cpp" />
-    <ClCompile Include="Engine\Rendering\Components\Renderable.cpp" />
     <ClCompile Include="Engine\Rendering\MeshRenderer.cpp" />
     <ClCompile Include="Engine\Rendering\RenderingCore.cpp" />
     <ClCompile Include="Engine\Rendering\RenderingHandler.cpp" />
@@ -245,6 +245,8 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\InputLayoutDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\PipelineDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\PipelineLayoutDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RasterizerStateDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RenderPassDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\SamplerDX11.hpp" />
@@ -259,6 +261,8 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\IRasterizerState.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ISampler.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\GeneralResources.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Pipeline.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\PipelineLayout.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\RenderPass.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
@@ -273,7 +277,6 @@
     <ClInclude Include="Engine\Rendering\Components\ComponentGroups.hpp" />
     <ClInclude Include="Engine\Rendering\Components\VPMatrices.hpp" />
     <ClInclude Include="Engine\Rendering\Components\PointLight.hpp" />
-    <ClInclude Include="Engine\Rendering\Components\Renderable.hpp" />
     <ClInclude Include="Engine\Rendering\MeshRenderer.hpp" />
     <ClInclude Include="Engine\Rendering\RenderingCore.hpp" />
     <ClInclude Include="Engine\Rendering\RenderingHandler.hpp" />
@@ -295,6 +298,7 @@
     <ClInclude Include="Engine\Utils\IDGenerator.hpp" />
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
+    <ClInclude Include="Engine\Utils\Rendering.hpp" />
     <ClInclude Include="Game\Game.hpp" />
     <ClInclude Include="Game\Level\Tube.hpp" />
     <ClInclude Include="Game\LightSpinner.hpp" />

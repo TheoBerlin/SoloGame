@@ -3,6 +3,8 @@
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
+#include <Engine/Utils/ECSUtils.hpp>
+#include <Engine/Utils/IDVector.hpp>
 
 #include <assimp/material.h>
 #include <assimp/mesh.h>
@@ -12,19 +14,23 @@
 #include <vector>
 #include <unordered_map>
 
+class Device;
 class TextureCache;
+
+const std::type_index g_TIDModel = TID(Model);
 
 class ModelLoader : public ComponentHandler
 {
 public:
-    ModelLoader(ECSCore* pECS, TextureCache* txLoader, DeviceDX11* pDevice);
-    ~ModelLoader();
+    ModelLoader(ECSCore* pECS, TextureCache* txLoader, Device* pDevice);
+    ~ModelLoader() = default;
 
     virtual bool initHandler() override { return true; };
 
-    Model* loadModel(const std::string& filePath);
+    Model* loadModel(Entity entity, const std::string& filePath);
+    void registerModel(Entity entity, Model* pModel);
 
-    void deleteAllModels();
+    Model* getModel(Entity entity) { return m_ModelComponents.indexID(entity).get(); }
 
 private:
     /*
@@ -37,9 +43,10 @@ private:
     void loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene);
 
 private:
+    // The same model can be used by multiple entities, hence the shared pointer
+    IDDVector<std::shared_ptr<Model>> m_ModelComponents;
+    std::unordered_map<std::string, std::weak_ptr<Model>> m_ModelCache;
+
     TextureCache* m_pTXLoader;
-
-    DeviceDX11* m_pDevice;
-
-    std::unordered_map<std::string, Model*> m_Models;
+    Device* m_pDevice;
 };

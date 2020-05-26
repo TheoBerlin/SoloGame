@@ -3,8 +3,8 @@
 #define NOMINMAX
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
@@ -16,29 +16,34 @@
 
 #include <algorithm>
 
-ModelLoader::ModelLoader(ECSCore* pECS, TextureCache* txLoader, DeviceDX11* pDevice)
+ModelLoader::ModelLoader(ECSCore* pECS, TextureCache* txLoader, Device* pDevice)
     :ComponentHandler(pECS, TID(ModelLoader)),
     m_pTXLoader(txLoader),
     m_pDevice(pDevice)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
+    handlerReg.ComponentRegistrations = {
+        {{g_TIDModel}, &m_ModelComponents}
+    };
     registerHandler(handlerReg);
 }
 
-ModelLoader::~ModelLoader()
+Model* ModelLoader::loadModel(Entity entity, const std::string& filePath)
 {
-    ModelLoader::deleteAllModels();
-}
+    auto itr = m_ModelCache.find(filePath);
+    if (itr != m_ModelCache.end()) {
+        std::weak_ptr<Model>& modelPtr = itr->second;
 
-Model* ModelLoader::loadModel(const std::string& filePath)
-{
-    // See if the model is already loaded
-    auto itr = m_Models.find(filePath);
-
-    if (itr != m_Models.end()) {
-        // The model was found, return it
-        return itr->second;
+        if (modelPtr.expired()) {
+            // The texture used to exist but has been deleted
+            m_ModelCache.erase(itr);
+        } else {
+            std::shared_ptr<Model> model = modelPtr.lock();
+            m_ModelComponents.push_back(model, entity);
+            registerComponent(entity, g_TIDModel);
+            return model.get();
+        }
     }
 
     // Get the directory path
@@ -66,48 +71,46 @@ Model* ModelLoader::loadModel(const std::string& filePath)
         LOG_INFO("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
     }
 
-    Model* loadedModel = new Model();
+    std::shared_ptr<Model> pLoadedModel = std::shared_ptr<Model>(new Model(), releaseModel);
 
     // Traverse nodes to find which meshes to load
     std::vector<unsigned int> meshIndices;
     loadNode(meshIndices, scene->mRootNode, scene);
 
     // Load meshes
-    loadedModel->Meshes.reserve(meshIndices.size());
+    pLoadedModel->Meshes.reserve(meshIndices.size());
 
     for (unsigned int meshIndex : meshIndices) {
-        loadMesh(scene->mMeshes[meshIndex], loadedModel->Meshes);
+        loadMesh(scene->mMeshes[meshIndex], pLoadedModel->Meshes);
     }
 
     // Load materials
-    loadedModel->Materials.reserve(scene->mNumMaterials);
+    pLoadedModel->Materials.reserve(scene->mNumMaterials);
 
     for (unsigned int i = 0; i < scene->mNumMaterials; i += 1) {
-        loadMaterial(scene->mMaterials[i], loadedModel->Materials, directory);
+        loadMaterial(scene->mMaterials[i], pLoadedModel->Materials, directory);
     }
 
     // Not all materials might have been loaded, subtract the material indices to compensate
-    size_t materialIndexOffset = scene->mNumMaterials - loadedModel->Materials.size();
+    size_t materialIndexOffset = scene->mNumMaterials - pLoadedModel->Materials.size();
     if (materialIndexOffset > 0) {
-        for (Mesh& mesh : loadedModel->Meshes) {
+        for (Mesh& mesh : pLoadedModel->Meshes) {
             mesh.materialIndex -= materialIndexOffset;
         }
     }
 
-    // Store a pointer to the loaded model
-    m_Models[filePath] = loadedModel;
+    // Map the model for caching and store it as a component
+    m_ModelCache[filePath] = pLoadedModel;
+    m_ModelComponents.push_back(pLoadedModel, entity);
+    registerComponent(entity, g_TIDModel);
 
-    return loadedModel;
+    return pLoadedModel.get();
 }
 
-void ModelLoader::deleteAllModels()
+void ModelLoader::registerModel(Entity entity, Model* pModel)
 {
-    for (auto& itr : m_Models) {
-        releaseModel(itr.second);
-        delete itr.second;
-    }
-
-    m_Models.clear();
+    m_ModelComponents.push_back(std::shared_ptr<Model>(pModel, releaseModel), entity);
+    registerComponent(entity, g_TIDModel);
 }
 
 void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
