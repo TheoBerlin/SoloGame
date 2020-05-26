@@ -25,14 +25,6 @@ public:
 
     void update(float dt);
 
-// TODO: Add page, remove page, unregister page entities and re-register page entities when pushing, popping, pausing and resuming states
-/*
-    Push state: Add page
-    Pop state: Remove page
-    Pause state: Unregister entities in page
-    Resume state: re-register page entities
-*/
-
 private:
     // Stack of game states with vector as storage class to allow for contiguous element storage
     std::stack<State*, std::vector<State*>> m_States;

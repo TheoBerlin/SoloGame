@@ -1,6 +1,7 @@
 #include "PipelineDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 
 PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11* pDevice)
 {
@@ -25,11 +26,16 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
     pipelineInfoDX.pDepthStencilState   = pDevice->createDepthStencilState(pipelineInfo.DepthStencilStateInfo);
     pipelineInfoDX.pBlendState          = pDevice->createBlendState(pipelineInfo.BlendStateInfo);
 
-    return new PipelineDX11(pipelineInfoDX);
+    return DBG_NEW PipelineDX11(pipelineInfoDX);
 }
 
 PipelineDX11::PipelineDX11(const PipelineInfoDX11& pipelineInfo)
-    :m_PipelineInfo(pipelineInfo)
+    :m_PipelineInfo(pipelineInfo),
+    m_pVertexShader(nullptr),
+    m_pHullShader(nullptr),
+    m_pDomainShader(nullptr),
+    m_pGeometryShader(nullptr),
+    m_pFragmentShader(nullptr)
 {
     if (pipelineInfo.VertexStage) {
         m_pVertexShader = reinterpret_cast<ShaderDX11*>(pipelineInfo.VertexStage->getVertexShader())->getVertexShader();

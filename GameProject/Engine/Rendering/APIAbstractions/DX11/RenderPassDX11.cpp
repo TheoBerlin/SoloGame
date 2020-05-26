@@ -1,6 +1,7 @@
 #include "RenderPassDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 
 RenderPassDX11* RenderPassDX11::create(const RenderPassInfo& renderPassInfo)
 {
@@ -14,7 +15,7 @@ RenderPassDX11* RenderPassDX11::create(const RenderPassInfo& renderPassInfo)
         }
     }
 
-    return new RenderPassDX11(clearIndices);
+    return DBG_NEW RenderPassDX11(clearIndices);
 }
 
 RenderPassDX11::RenderPassDX11(std::vector<size_t> clearIndices)

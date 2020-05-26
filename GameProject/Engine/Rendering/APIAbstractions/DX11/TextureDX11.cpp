@@ -1,6 +1,7 @@
 #include "TextureDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -32,7 +33,7 @@ TextureDX11* TextureDX11::createFromFile(const std::string& filePath, ID3D11Devi
 
     SAFERELEASE(pTextureResource)
 
-    return new TextureDX11(dimensions, convertFormatFromDX(txDesc.Format), pSRV, nullptr, nullptr, nullptr);
+    return DBG_NEW TextureDX11(dimensions, convertFormatFromDX(txDesc.Format), pSRV, nullptr, nullptr, nullptr);
 }
 
 TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* pDevice)
@@ -94,7 +95,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
         }
     }
 
-    return new TextureDX11(textureInfo.Dimensions, textureInfo.Format, pSRV, pDSV, pRTV, nullptr);
+    return DBG_NEW TextureDX11(textureInfo.Dimensions, textureInfo.Format, pSRV, pDSV, pRTV, nullptr);
 }
 
 TextureDX11::TextureDX11(const glm::uvec2& dimensions, RESOURCE_FORMAT format, ID3D11ShaderResourceView* pSRV, ID3D11DepthStencilView* pDSV, ID3D11RenderTargetView* pRTV, ID3D11UnorderedAccessView* pUAV)

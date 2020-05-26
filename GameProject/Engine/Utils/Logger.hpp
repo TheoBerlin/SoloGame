@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/Utils/Debug.hpp>
+
 #include <memory>
 #include <string>
 #include <Windows.h>
@@ -66,7 +68,7 @@ std::string Logger::formatString(const std::string& format, Args&& ... args)
 {
     // Create a char buffer to hold the formatted string and a null termination
     size_t size = (size_t)snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args) ...) + 1;
-    std::unique_ptr<char[]> buffer(new char[size]);
+    std::unique_ptr<char[]> buffer(DBG_NEW char[size]);
 
     // Format string
     snprintf(buffer.get(), size, format.c_str(), std::forward<Args>(args) ...);

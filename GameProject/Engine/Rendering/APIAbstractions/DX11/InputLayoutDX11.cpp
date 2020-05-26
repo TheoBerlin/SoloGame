@@ -1,6 +1,7 @@
 #include "InputLayoutDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -59,7 +60,7 @@ InputLayoutDX11* InputLayoutDX11::create(const InputLayoutInfo* pInputLayoutInfo
         return nullptr;
     }
 
-    return new InputLayoutDX11(pInputLayout, (uint32_t)attributeOffset);
+    return DBG_NEW InputLayoutDX11(pInputLayout, (uint32_t)attributeOffset);
 }
 
 InputLayoutDX11::InputLayoutDX11(ID3D11InputLayout* pInputLayout, uint32_t vertexSize)
