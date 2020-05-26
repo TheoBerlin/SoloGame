@@ -235,11 +235,10 @@ bool UIHandler::createPipeline()
     rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
     rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
 
-    BlendStateInfo blendStateInfo = {};
-    blendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
-    blendStateInfo.BlendInfosCount = 1u;
-    blendStateInfo.IndependentBlendEnabled = false;
-    for (float& blendConstant : blendStateInfo.pBlendConstants) {
+    pipelineInfo.BlendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
+    pipelineInfo.BlendStateInfo.BlendInfosCount         = 1u;
+    pipelineInfo.BlendStateInfo.IndependentBlendEnabled = false;
+    for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
         blendConstant = 1.0f;
     }
 
@@ -282,7 +281,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
         const DirectX::XMFLOAT2& panelSize = panel.size;
         const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
 
-        attachment.size = {(float)txDimensions.x / ((float)backbufferDims.x * panelSize.x), (float)txDimensions.y / ((float)backbufferDims.x * panelSize.y)};
+        attachment.size = {(float)txDimensions.x / ((float)backbufferDims.x * panelSize.x), (float)txDimensions.y / ((float)backbufferDims.y * panelSize.y)};
     } else if (attachmentInfo.sizeSetting == TX_SIZE_EXPLICIT) {
         attachment.size = attachmentInfo.explicitSize;
     }

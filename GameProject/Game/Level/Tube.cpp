@@ -30,13 +30,6 @@ TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
     registerHandler(handlerReg);
 }
 
-TubeHandler::~TubeHandler()
-{
-    for (Model& tube : m_Tubes) {
-        releaseModel(&tube);
-    }
-}
-
 bool TubeHandler::initHandler()
 {
     m_pTextureCache = reinterpret_cast<TextureCache*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
@@ -116,27 +109,25 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
     for (unsigned i = 0; i <= (unsigned)indices.size() - 6; i += 6) {
         // Triangle 1
-        indices[i] = startVertexIndex;
-        indices[i+1] = startVertexIndex + faces*2;
-        indices[i+2] = startVertexIndex + 1;
+        indices[i]      = startVertexIndex;
+        indices[i+1]    = startVertexIndex + faces * 2;
+        indices[i+2]    = startVertexIndex + 1;
 
         // Triangle 2
         indices[i+3] = startVertexIndex + 1;
-        indices[i+4] = startVertexIndex + faces*2;
-        indices[i+5] = startVertexIndex + faces*2 + 1;
+        indices[i+4] = startVertexIndex + faces * 2;
+        indices[i+5] = startVertexIndex + faces * 2 + 1;
 
 		startVertexIndex += 2;
     }
 
-    m_Tubes.push_back(Model());
+    Model* pModel = new Model();
+    pModel->Meshes.resize(1);
 
-    Model& model = m_Tubes.front();
-    model.Meshes.resize(1);
-
-    Mesh& mesh = model.Meshes.front();
-    mesh.materialIndex = 0;
-    mesh.vertexCount = vertices.size();
-    mesh.indexCount = indices.size();
+    Mesh& mesh          = pModel->Meshes.front();
+    mesh.materialIndex  = 0;
+    mesh.vertexCount    = vertices.size();
+    mesh.indexCount     = indices.size();
 
     mesh.pVertexBuffer = m_pDevice->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
     if (!mesh.pVertexBuffer) {
@@ -149,13 +140,13 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     }
 
     // Create material
-    model.Materials.resize(1);
-    Material& material = model.Materials.front();
+    pModel->Materials.resize(1);
+    Material& material = pModel->Materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
     material.textures.push_back(m_pTextureCache->loadTexture("./Game/Assets/Models/Cube.png"));
 
-    return &model;
+    return pModel;
 }
 
 const std::vector<DirectX::XMFLOAT3>& TubeHandler::getTubeSections() const

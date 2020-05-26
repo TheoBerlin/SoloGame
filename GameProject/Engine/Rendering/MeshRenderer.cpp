@@ -380,8 +380,6 @@ bool MeshRenderer::createPipeline()
     pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
     pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
 
-    pipelineInfo.BlendStateInfo = {};
-
     BlendRenderTargetInfo rtvBlendInfo = {};
     rtvBlendInfo.BlendEnabled           = true;
     rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
@@ -392,11 +390,10 @@ bool MeshRenderer::createPipeline()
     rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
     rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
 
-    BlendStateInfo blendStateInfo = {};
-    blendStateInfo.pRenderTargetBlendInfos  = &rtvBlendInfo;
-    blendStateInfo.BlendInfosCount          = 1u;
-    blendStateInfo.IndependentBlendEnabled  = false;
-    for (float& blendConstant : blendStateInfo.pBlendConstants) {
+    pipelineInfo.BlendStateInfo.pRenderTargetBlendInfos  = &rtvBlendInfo;
+    pipelineInfo.BlendStateInfo.BlendInfosCount          = 1u;
+    pipelineInfo.BlendStateInfo.IndependentBlendEnabled  = false;
+    for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
         blendConstant = 1.0f;
     }
 

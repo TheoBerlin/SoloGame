@@ -39,7 +39,10 @@ Model* ModelLoader::loadModel(Entity entity, const std::string& filePath)
             // The texture used to exist but has been deleted
             m_ModelCache.erase(itr);
         } else {
-            return modelPtr.lock().get();
+            std::shared_ptr<Model> model = modelPtr.lock();
+            m_ModelComponents.push_back(model, entity);
+            registerComponent(entity, g_TIDModel);
+            return model.get();
         }
     }
 

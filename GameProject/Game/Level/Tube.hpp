@@ -22,7 +22,7 @@ class TubeHandler : public ComponentHandler
 {
 public:
     TubeHandler(ECSCore* pECS, Device* pDevice);
-    ~TubeHandler();
+    ~TubeHandler() = default;
 
     virtual bool initHandler() override;
 
@@ -43,7 +43,6 @@ private:
     Device* m_pDevice;
 
     std::vector<DirectX::XMFLOAT3> m_TubeSections;
-    std::vector<Model> m_Tubes;
     float m_TubeRadius;
 
     // Gets the forward vector of a point at T0 pointing at T1 in a catmull-rom curve
