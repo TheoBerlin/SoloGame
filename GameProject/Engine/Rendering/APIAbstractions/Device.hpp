@@ -71,6 +71,7 @@ public:
 
     virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
 
+    // Shader's file path excludes the base path to the shaders folder
     Shader* createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo = nullptr, InputLayout** ppInputLayout = nullptr);
     virtual std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) = 0;
 

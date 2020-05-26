@@ -235,8 +235,7 @@ bool UIHandler::createPipeline()
     rtvBlendInfo.AlphaBlendOp           = BLEND_OP::ADD;
     rtvBlendInfo.ColorWriteMask         = COLOR_WRITE_MASK::ENABLE_ALL;
 
-    pipelineInfo.BlendStateInfo.pRenderTargetBlendInfos = &rtvBlendInfo;
-    pipelineInfo.BlendStateInfo.BlendInfosCount         = 1u;
+    pipelineInfo.BlendStateInfo.RenderTargetBlendInfos  = { rtvBlendInfo };
     pipelineInfo.BlendStateInfo.IndependentBlendEnabled = false;
     for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
         blendConstant = 1.0f;
