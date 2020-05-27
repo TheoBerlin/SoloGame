@@ -6,7 +6,7 @@
 class RenderingHandler
 {
 public:
-    RenderingHandler(ECSCore* pECS, Device* pDevice, Window* pWindow);
+    RenderingHandler(ECSCore* pECS, Device* pDevice);
     ~RenderingHandler();
 
     bool init();

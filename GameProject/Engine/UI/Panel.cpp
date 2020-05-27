@@ -1,27 +1,13 @@
 #include "Panel.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/Rendering/APIAbstractions/BlendState.hpp>
-#include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
-#include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
-#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
-#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
-#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
-#include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
-#include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
 
 const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
 
-UIHandler::UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
+UIHandler::UIHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(UIHandler)),
     m_pDevice(pDevice),
     m_pCommandList(nullptr),
@@ -69,7 +55,7 @@ bool UIHandler::initHandler()
     }
 
     // Retrieve quad from shader resource handler
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
+    ShaderResourceHandler* pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
     // Retrieve UI rendering shader program from shader handler
     if (!pShaderResourceHandler) {
         return false;

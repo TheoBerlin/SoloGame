@@ -86,6 +86,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\EnginePCH.hpp</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Engine/EnginePCH.hpp</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.130.0\Lib;D:\VulkanSDK\1.1.130.0\Lib;$(ProjectDir)libs\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -116,6 +119,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Engine\EnginePCH.hpp</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Engine/EnginePCH.hpp</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.130.0\Lib;D:\VulkanSDK\1.1.130.0\Lib;$(ProjectDir)libs\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -142,6 +148,10 @@
     <ClCompile Include="Engine\ECS\System.cpp" />
     <ClCompile Include="Engine\ECS\ComponentSubscriber.cpp" />
     <ClCompile Include="Engine\ECS\SystemUpdater.cpp" />
+    <ClCompile Include="Engine\EnginePCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Engine\GameState\State.cpp" />
     <ClCompile Include="Engine\GameState\StateManager.cpp" />
     <ClCompile Include="Engine\IGame.cpp" />
@@ -223,6 +233,7 @@
     <ClInclude Include="Engine\ECS\System.hpp" />
     <ClInclude Include="Engine\ECS\ComponentSubscriber.hpp" />
     <ClInclude Include="Engine\ECS\SystemUpdater.hpp" />
+    <ClInclude Include="Engine\EnginePCH.hpp" />
     <ClInclude Include="Engine\GameState\State.hpp" />
     <ClInclude Include="Engine\GameState\StateManager.hpp" />
     <ClInclude Include="Engine\IGame.hpp" />
