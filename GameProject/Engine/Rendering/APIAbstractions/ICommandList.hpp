@@ -12,7 +12,6 @@ class IPipeline;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
-struct Program;
 struct RenderPassBeginInfo;
 struct Viewport;
 

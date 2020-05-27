@@ -67,21 +67,7 @@ struct UIButton {
 
 const std::type_index tid_UIButton = TID(UIButton);
 
-class BlendState;
-class DescriptorSet;
-class Display;
-class IBuffer;
-class ICommandList;
-class IDescriptorSetLayout;
-class IFramebuffer;
-class IPipeline;
-class IPipelineLayout;
-class IRasterizerState;
-class IRenderPass;
-class ISampler;
 class Device;
-class Window;
-struct Program;
 
 struct AttachmentRenderResources {
     DescriptorSet* pDescriptorSet;
@@ -91,7 +77,7 @@ struct AttachmentRenderResources {
 class UIHandler : public ComponentHandler
 {
 public:
-    UIHandler(ECSCore* pECS, Device* pDevice, Window* pWindow);
+    UIHandler(ECSCore* pECS, Device* pDevice);
     ~UIHandler();
 
     virtual bool initHandler() override;
@@ -121,7 +107,6 @@ private:
     Device* m_pDevice;
     ICommandList* m_pCommandList;
 
-    Program* m_pUIProgram;
     IBuffer* m_pQuadVertices;
     ISampler* m_pAniSampler;
 

@@ -9,23 +9,10 @@
 
 #define MAX_POINTLIGHTS 7u
 
-class DescriptorSet;
-class Device;
-class IBuffer;
-class ICommandList;
-class IDescriptorSetLayout;
-class IDepthStencilState;
-class IFramebuffer;
-class IPipeline;
-class IPipelineLayout;
-class IRasterizerState;
-class IRenderPass;
-class ISampler;
 class ModelLoader;
 class Texture;
 class TransformHandler;
 class VPHandler;
-class Window;
 
 struct MeshRenderResources {
     // Points at the mesh's material attributes buffer and diffuse texture
@@ -44,7 +31,7 @@ struct ModelRenderResources {
 class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow);
+    MeshRenderer(ECSCore* pECS, Device* pDevice);
     ~MeshRenderer();
 
     bool init() override final;

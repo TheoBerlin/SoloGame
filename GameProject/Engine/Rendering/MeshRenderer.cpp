@@ -1,16 +1,5 @@
 #include "MeshRenderer.hpp"
 
-#include <Engine/Rendering/APIAbstractions/DepthStencilState.hpp>
-#include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
-#include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
-#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
-#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
-#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
@@ -18,11 +7,9 @@
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/ShaderBindings.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
-#include <Engine/Rendering/Window.hpp>
 #include <Engine/Transform.hpp>
-#include <Engine/Utils/Logger.hpp>
 
-MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
+MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pDevice(pDevice),

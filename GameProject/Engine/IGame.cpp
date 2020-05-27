@@ -51,7 +51,7 @@ bool IGame::init()
     m_pRenderingCore    = DBG_NEW RenderingCore(&m_ECS, &m_Device, &m_Window);
     m_pAudioCore        = DBG_NEW AudioCore(&m_ECS);
 
-    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, &m_Device, &m_Window);
+    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, &m_Device);
 
     m_ECS.performRegistrations();
     m_Window.show();

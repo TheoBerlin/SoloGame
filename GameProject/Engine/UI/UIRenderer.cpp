@@ -1,23 +1,11 @@
 #include "UIRenderer.hpp"
 
-#include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
-#include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
-#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
-#include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
-#include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
-#include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
-#include <Engine/Rendering/ShaderHandler.hpp>
-#include <Engine/Rendering/Window.hpp>
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
 
-UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow)
+UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     :Renderer(pECS, pDevice),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),

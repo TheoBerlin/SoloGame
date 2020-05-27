@@ -6,11 +6,11 @@
 
 #include <thread>
 
-RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice, Window* pWindow)
+RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice)
     :m_pECS(pECS),
     m_pDevice(pDevice),
-    m_MeshRenderer(pECS, pDevice, pWindow),
-    m_UIRenderer(pECS, pDevice, pWindow)
+    m_MeshRenderer(pECS, pDevice),
+    m_UIRenderer(pECS, pDevice)
 {}
 
 RenderingHandler::~RenderingHandler()

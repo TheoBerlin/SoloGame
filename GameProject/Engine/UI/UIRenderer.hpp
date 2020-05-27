@@ -4,22 +4,8 @@
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
-class DescriptorSet;
-class Device;
-class IBuffer;
-class ICommandList;
-class IDescriptorSetLayout;
-class IFramebuffer;
-class IPipeline;
-class IPipelineLayout;
-class IRasterizerState;
-class IRenderPass;
-class ISampler;
-class ShaderHandler;
 class Texture;
 class UIHandler;
-class Window;
-struct Program;
 
 struct PanelRenderResources {
     DescriptorSet* pDescriptorSet;
@@ -29,7 +15,7 @@ struct PanelRenderResources {
 class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, Device* pDevice, Window* pWindow);
+    UIRenderer(ECSCore* pECS, Device* pDevice);
     ~UIRenderer();
 
     bool init() override final;
