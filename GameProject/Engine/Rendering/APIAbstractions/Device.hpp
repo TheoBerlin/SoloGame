@@ -9,7 +9,7 @@
 
 #include <string>
 
-struct SwapChainInfo {
+struct SwapchainInfo {
     uint32_t FrameRateLimit;
     uint32_t Multisamples;
     bool Windowed;
@@ -39,14 +39,22 @@ struct RenderPassInfo;
 struct SamplerInfo;
 struct TextureInfo;
 
+enum class RENDERING_API {
+    DIRECTX11,
+    VULKAN
+};
+
 class Device
 {
+public:
+    static Device* create(RENDERING_API API);
+
 public:
     Device();
     virtual ~Device();
 
-    virtual bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) = 0;
-    bool finalize();
+    virtual bool init(const SwapchainInfo& swapChainInfo, Window* pWindow) = 0;
+    bool finalize(const DescriptorCounts& descriptorCounts);
 
     virtual void presentBackBuffer() = 0;
 

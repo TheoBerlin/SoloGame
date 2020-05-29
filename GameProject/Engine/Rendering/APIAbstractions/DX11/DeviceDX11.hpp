@@ -22,7 +22,7 @@ public:
     DeviceDX11();
     ~DeviceDX11();
 
-    bool init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts) override final;
+    bool init(const SwapchainInfo& swapChainInfo, Window* pWindow) override final;
 
     void presentBackBuffer() override final;
 
@@ -62,8 +62,8 @@ protected:
     DescriptorPoolDX11* createDescriptorPool(const DescriptorCounts& poolSize) override final;
 
 private:
-    bool initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow);
-    bool initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow);
+    bool initDeviceAndSwapChain(const SwapchainInfo& swapChainInfo, Window* pWindow);
+    bool initBackBuffers(const SwapchainInfo& swapChainInfo, Window* pWindow);
 
     ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
 

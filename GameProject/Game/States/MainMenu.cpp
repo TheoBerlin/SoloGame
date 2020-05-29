@@ -23,13 +23,13 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
 
     pInputHandler->showCursor();
 
-    UIHandler* uiHandler        = reinterpret_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
+    UIHandler* pUIHandler       = reinterpret_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
     TextRenderer* pTextRenderer = reinterpret_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
     TextureCache* pTextureCache = reinterpret_cast<TextureCache*>(pComponentSubscriber->getComponentHandler(TID(TextureCache)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
-    uiHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 1.0f);
+    pUIHandler->createPanel(uiEntity, {0.4f, 0.45f}, {0.2f, 0.1f}, {0.0f, 0.0f, 0.0f, 0.0f}, 1.0f);
 
     // Attach background and text textures to the panel
     std::array<std::shared_ptr<Texture>, 2> panelTextures = {
@@ -43,10 +43,10 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
     txAttachmentInfos[1].verticalAlignment      = TX_VERTICAL_ALIGNMENT_CENTER;
     txAttachmentInfos[1].sizeSetting            = TX_SIZE_CLIENT_RESOLUTION_DEPENDENT;
 
-    uiHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures.data(), panelTextures.size());
+    pUIHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures.data(), panelTextures.size());
 
     // Make the panel a button
-    uiHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ DBG_NEW GameSession(this); });
+    pUIHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ DBG_NEW GameSession(this); });
 
     // Create test sound
     Entity soundEntity = m_pECS->createEntity();

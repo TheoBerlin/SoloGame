@@ -1,8 +1,23 @@
 #include "Device.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
+
+Device* Device::create(RENDERING_API API)
+{
+    switch (API) {
+        case RENDERING_API::DIRECTX11:
+            return new DeviceDX11();
+        case RENDERING_API::VULKAN:
+            return new DeviceVK();
+        default:
+            LOG_ERROR("Erroneous API: %d", (int)API);
+            return nullptr;
+    }
+}
 
 Device::Device()
     :m_pBackBuffer(nullptr),
@@ -17,8 +32,10 @@ Device::~Device()
     delete m_pShaderHandler;
 }
 
-bool Device::finalize()
+bool Device::finalize(const DescriptorCounts& descriptorCounts)
 {
+    m_DescriptorPoolHandler.init(descriptorCounts, this);
+
     m_pShaderHandler = DBG_NEW ShaderHandler(this);
     return m_pShaderHandler;
 }
