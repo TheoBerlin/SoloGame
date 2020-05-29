@@ -16,13 +16,20 @@
 #define NOMINMAX
 #include <d3d11.h>
 
+struct DeviceInfoDX11 {
+    Texture* pBackBuffer;
+    Texture* pDepthTexture;
+    ID3D11Device* pDevice;
+    ID3D11DeviceContext* pImmediateContext;
+    IDXGISwapChain* pSwapChain;
+    ID3D11DepthStencilState* pDepthStencilState;
+};
+
 class DeviceDX11 : public Device
 {
 public:
-    DeviceDX11();
+    DeviceDX11(const DeviceInfoDX11& deviceInfo);
     ~DeviceDX11();
-
-    bool init(const SwapchainInfo& swapChainInfo, Window* pWindow) override final;
 
     void presentBackBuffer() override final;
 
@@ -62,9 +69,6 @@ protected:
     DescriptorPoolDX11* createDescriptorPool(const DescriptorCounts& poolSize) override final;
 
 private:
-    bool initDeviceAndSwapChain(const SwapchainInfo& swapChainInfo, Window* pWindow);
-    bool initBackBuffers(const SwapchainInfo& swapChainInfo, Window* pWindow);
-
     ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
 
 private:
@@ -73,7 +77,6 @@ private:
     ID3D11DeviceContext* m_pContext;
 
     IDXGISwapChain* m_pSwapChain;
-
     ID3D11DepthStencilState* m_pDepthStencilState;
 
     const FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};

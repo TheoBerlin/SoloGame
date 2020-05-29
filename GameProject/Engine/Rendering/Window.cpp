@@ -57,12 +57,12 @@ bool Window::shouldClose()
     return glfwWindowShouldClose(m_pWindow);
 }
 
-HWND Window::getHWND()
+HWND Window::getHWND() const
 {
     return glfwGetWin32Window(m_pWindow);
 }
 
-std::vector<std::string> Window::getRequiredInstanceExtensions()
+std::vector<std::string> Window::getRequiredInstanceExtensions() const
 {
     const char** ppExtensions = nullptr;
     uint32_t extensionCount = 0u;

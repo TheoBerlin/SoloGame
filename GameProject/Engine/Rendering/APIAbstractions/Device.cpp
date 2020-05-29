@@ -1,27 +1,40 @@
 #include "Device.hpp"
 
+#include <Engine/Rendering/APIAbstractions/DeviceCreator.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceCreatorDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/DeviceCreatorVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-Device* Device::create(RENDERING_API API)
+Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow)
 {
+    IDeviceCreator* pDeviceCreator = nullptr;
+
     switch (API) {
         case RENDERING_API::DIRECTX11:
-            return new DeviceDX11();
+            pDeviceCreator = DBG_NEW DeviceCreatorDX11();
+            break;
         case RENDERING_API::VULKAN:
-            return new DeviceVK();
+            pDeviceCreator = DBG_NEW DeviceCreatorVK();
+            break;
         default:
             LOG_ERROR("Erroneous API: %d", (int)API);
+            delete pDeviceCreator;
             return nullptr;
     }
+
+    Device* pDevice = pDeviceCreator->createDevice(swapchainInfo, pWindow);
+    delete pDeviceCreator;
+
+    return pDevice;
 }
 
-Device::Device()
-    :m_pBackBuffer(nullptr),
-    m_pDepthTexture(nullptr),
+Device::Device(Texture* pBackBuffer, Texture* pDepthTexture)
+    :m_pBackBuffer(pBackBuffer),
+    m_pDepthTexture(pDepthTexture),
     m_pShaderHandler(nullptr)
 {}
 
@@ -32,7 +45,7 @@ Device::~Device()
     delete m_pShaderHandler;
 }
 
-bool Device::finalize(const DescriptorCounts& descriptorCounts)
+bool Device::init(const DescriptorCounts& descriptorCounts)
 {
     m_DescriptorPoolHandler.init(descriptorCounts, this);
 

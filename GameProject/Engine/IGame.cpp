@@ -42,8 +42,8 @@ bool IGame::init()
     DescriptorCounts descriptorPoolSize;
     descriptorPoolSize.setAll(100u);
 
-    m_pDevice = Device::create(RENDERING_API::DIRECTX11);
-    if (!m_pDevice->init(swapChainInfo, &m_Window) || !m_pDevice->finalize(descriptorPoolSize)) {
+    m_pDevice = Device::create(RENDERING_API::DIRECTX11, swapChainInfo, &m_Window);
+    if (!m_pDevice || !m_pDevice->init(descriptorPoolSize)) {
         return false;
     }
 

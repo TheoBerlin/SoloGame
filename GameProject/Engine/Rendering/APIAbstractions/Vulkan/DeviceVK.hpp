@@ -15,13 +15,28 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> PresentModes;
 };
 
+struct DeviceInfoVK {
+    Texture* pBackBuffer;
+    Texture* pDepthTexture;
+    VkInstance Instance;
+    VkPhysicalDevice PhysicalDevice;
+    VkDevice Device;
+    VkSurfaceKHR Surface;
+    VkSwapchainKHR Swapchain;
+    std::vector<VkImage> SwapchainImages;
+    std::vector<VkImageView> SwapchainImageViews;
+    VkSurfaceFormatKHR SwapchainFormat;
+    VkDebugUtilsMessengerEXT DebugMessenger;
+    QueueFamilyIndices QueueFamilyIndices;
+};
+
+class DeviceCreatorVK;
+
 class DeviceVK : public Device
 {
 public:
-    DeviceVK();
+    DeviceVK(const DeviceInfoVK& deviceInfo);
     ~DeviceVK();
-
-    bool init(const SwapchainInfo& swapchainInfo, Window* pWindow) override final;
 
     void presentBackBuffer() override final {};
 
@@ -55,28 +70,11 @@ protected:
     DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) override final { return nullptr; }
 
 private:
+    friend DeviceCreatorVK;
     static VKAPI_ATTR VkBool32 VKAPI_CALL vulkanCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
 private:
     Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final { return nullptr; }
-
-private:
-    bool initInstance(Window* pWindow, bool debugMode);
-    bool initDebugLayerCallback();
-    bool initSurface(Window* pWindow);
-    bool pickPhysicalDevice();
-    bool pickQueueFamilyIndices();
-    bool initLogicalDevice();
-    bool initSwapchain(const Window* pWindow);
-    bool initSwapchainImageViews();
-
-    bool verifyRequiredExtensionsSupported(const std::vector<std::string>& extensionNames);
-    bool verifyRequiredDeviceExtensionsSupported(VkPhysicalDevice physicalDevice);
-    bool verifyLayerSupport();
-    bool querySwapchainSupport(VkPhysicalDevice physicalDevice, SwapchainSupportDetails& supportDetails) const;
-    void chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
-    VkExtent2D chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities, const Window* pWindow) const;
 
 private:
     VkInstance m_Instance;
