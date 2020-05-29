@@ -27,3 +27,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 
 #include <Engine/Utils/Logger.hpp>
+
+#include <string>
+#include <unordered_map>
+#include <unordered_set>

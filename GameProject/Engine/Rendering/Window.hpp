@@ -15,15 +15,15 @@ public:
     ~Window();
 
     bool init();
-
     void show();
 
     void pollEvents();
-
     bool shouldClose();
-    HWND getHWND();
 
-public:
+    HWND getHWND();
+    // Vulkan-specific
+    std::vector<std::string> getRequiredInstanceExtensions();
+
     uint32_t getWidth() const   { return m_Width; }
     uint32_t getHeight() const  { return m_Height; }
 

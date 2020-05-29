@@ -1,7 +1,5 @@
 #include "Window.hpp"
 
-#include <Engine/Utils/Logger.hpp>
-
 Window::Window(uint32_t clientHeight, float aspectRatio, bool windowed)
     :m_Width(uint32_t(float(clientHeight) * aspectRatio)),
     m_Height(clientHeight),
@@ -62,6 +60,20 @@ bool Window::shouldClose()
 HWND Window::getHWND()
 {
     return glfwGetWin32Window(m_pWindow);
+}
+
+std::vector<std::string> Window::getRequiredInstanceExtensions()
+{
+    const char** ppExtensions = nullptr;
+    uint32_t extensionCount = 0u;
+    ppExtensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+
+    std::vector<std::string> extensionStrings((size_t)extensionCount);
+    for (size_t extensionIdx = 0u; extensionIdx < extensionStrings.size(); extensionIdx += 1u) {
+        extensionStrings[extensionIdx] = std::string(ppExtensions[extensionIdx]);
+    }
+
+    return extensionStrings;
 }
 
 void Window::glfwErrorCallback(int error, const char* pDescription)

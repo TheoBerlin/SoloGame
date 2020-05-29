@@ -1,12 +1,12 @@
 #include "IGame.hpp"
 
-#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Utils/Debug.hpp>
 
 #include <iostream>
 
 IGame::IGame()
     :m_Window(720u, 16.0f / 9.0f, true),
+    m_pDevice(nullptr),
     m_StateManager(&m_ECS),
     m_pPhysicsCore(nullptr),
     m_pAssetLoaders(nullptr),
@@ -25,6 +25,7 @@ IGame::~IGame()
     delete m_pAudioCore;
 
     delete m_pRenderingHandler;
+    delete m_pDevice;
 }
 
 bool IGame::init()
@@ -33,25 +34,26 @@ bool IGame::init()
         return false;
     }
 
-    SwapChainInfo swapChainInfo = {};
+    SwapchainInfo swapChainInfo = {};
     swapChainInfo.FrameRateLimit    = 60u;
-    swapChainInfo.Multisamples      = 1;
+    swapChainInfo.Multisamples      = 1u;
     swapChainInfo.Windowed          = true;
 
     DescriptorCounts descriptorPoolSize;
     descriptorPoolSize.setAll(100u);
 
-    if (!m_Device.init(swapChainInfo, &m_Window, descriptorPoolSize) || !m_Device.finalize()) {
+    m_pDevice = Device::create(RENDERING_API::DIRECTX11);
+    if (!m_pDevice->init(swapChainInfo, &m_Window) || !m_pDevice->finalize(descriptorPoolSize)) {
         return false;
     }
 
     m_pPhysicsCore      = DBG_NEW PhysicsCore(&m_ECS);
-    m_pAssetLoaders     = DBG_NEW AssetLoadersCore(&m_ECS, &m_Device);
-    m_pUICore           = DBG_NEW UICore(&m_ECS, &m_Device, &m_Window);
-    m_pRenderingCore    = DBG_NEW RenderingCore(&m_ECS, &m_Device, &m_Window);
+    m_pAssetLoaders     = DBG_NEW AssetLoadersCore(&m_ECS, m_pDevice);
+    m_pUICore           = DBG_NEW UICore(&m_ECS, m_pDevice, &m_Window);
+    m_pRenderingCore    = DBG_NEW RenderingCore(&m_ECS, m_pDevice, &m_Window);
     m_pAudioCore        = DBG_NEW AudioCore(&m_ECS);
 
-    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, &m_Device);
+    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, m_pDevice);
 
     m_ECS.performRegistrations();
     m_Window.show();

@@ -26,13 +26,11 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDepthStencilState)
 }
 
-bool DeviceDX11::init(const SwapChainInfo& swapChainInfo, Window* pWindow, const DescriptorCounts& descriptorCounts)
+bool DeviceDX11::init(const SwapchainInfo& swapChainInfo, Window* pWindow)
 {
     if (!initDeviceAndSwapChain(swapChainInfo, pWindow)) {
         return false;
     }
-
-    m_DescriptorPoolHandler.init(descriptorCounts, this);
 
     return initBackBuffers(swapChainInfo, pWindow);
 }
@@ -151,7 +149,7 @@ DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorCounts& poo
     return pNewDescriptorPool;
 }
 
-bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Window* pWindow)
+bool DeviceDX11::initDeviceAndSwapChain(const SwapchainInfo& swapChainInfo, Window* pWindow)
 {
     UINT deviceFlags = 0;
 
@@ -207,7 +205,7 @@ bool DeviceDX11::initDeviceAndSwapChain(const SwapChainInfo& swapChainInfo, Wind
     return true;
 }
 
-bool DeviceDX11::initBackBuffers(const SwapChainInfo& swapChainInfo, Window* pWindow)
+bool DeviceDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, Window* pWindow)
 {
     // Create render target view from swap chain's back buffer
     ID3D11Texture2D* pBackBuffer = nullptr;
