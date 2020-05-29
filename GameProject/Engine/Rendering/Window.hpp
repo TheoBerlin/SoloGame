@@ -20,9 +20,9 @@ public:
     void pollEvents();
     bool shouldClose();
 
-    HWND getHWND();
+    HWND getHWND() const;
     // Vulkan-specific
-    std::vector<std::string> getRequiredInstanceExtensions();
+    std::vector<std::string> getRequiredInstanceExtensions() const;
 
     uint32_t getWidth() const   { return m_Width; }
     uint32_t getHeight() const  { return m_Height; }

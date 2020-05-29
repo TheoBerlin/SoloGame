@@ -171,6 +171,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorPoolDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetLayoutDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceCreatorDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.cpp" />
@@ -183,6 +184,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\GeneralResources.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
@@ -247,6 +249,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DescriptorPool.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DescriptorPoolHandler.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DescriptorSetLayout.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DeviceCreator.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\BlendStateDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.hpp" />
@@ -254,6 +257,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorPoolDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetLayoutDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceCreatorDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\FramebufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\GeneralResourcesDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\InputLayoutDX11.hpp" />
@@ -279,6 +283,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />

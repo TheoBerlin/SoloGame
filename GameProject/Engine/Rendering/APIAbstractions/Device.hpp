@@ -47,14 +47,13 @@ enum class RENDERING_API {
 class Device
 {
 public:
-    static Device* create(RENDERING_API API);
+    static Device* create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow);
 
 public:
-    Device();
+    Device(Texture* pBackBuffer, Texture* pDepthTexture);
     virtual ~Device();
 
-    virtual bool init(const SwapchainInfo& swapChainInfo, Window* pWindow) = 0;
-    bool finalize(const DescriptorCounts& descriptorCounts);
+    bool init(const DescriptorCounts& descriptorCounts);
 
     virtual void presentBackBuffer() = 0;
 
