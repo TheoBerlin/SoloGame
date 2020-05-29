@@ -21,6 +21,7 @@
 CommandListDX11::CommandListDX11(ID3D11DeviceContext* pImmediateContext, ID3D11Device* pDevice)
     :m_pContext(nullptr),
     m_pImmediateContext(pImmediateContext),
+    m_pDevice(pDevice),
     m_pBoundPipeline(nullptr)
 {
     HRESULT hr = pDevice->CreateDeferredContext(0, &m_pContext);
@@ -112,5 +113,6 @@ void CommandListDX11::drawIndexed(size_t indexCount)
 
 void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture)
 {
-    pTexture->convertTextureLayout(oldLayout, newLayout);
+    TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
+    pTextureDX->convertTextureLayout(m_pContext, m_pDevice, oldLayout, newLayout);
 }

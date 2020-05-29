@@ -36,8 +36,6 @@ public:
     const glm::uvec2& getDimensions() const { return m_Dimensions; }
     inline RESOURCE_FORMAT getFormat() const { return m_Format; }
 
-    virtual void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout) = 0;
-
 protected:
     glm::uvec2 m_Dimensions;
     RESOURCE_FORMAT m_Format;
