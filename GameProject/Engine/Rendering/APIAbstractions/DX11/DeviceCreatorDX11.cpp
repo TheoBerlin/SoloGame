@@ -103,10 +103,16 @@ bool DeviceCreatorDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, cons
 
     D3D11_TEXTURE2D_DESC backbufferDesc = {};
     pBackBuffer->GetDesc(&backbufferDesc);
-    m_pBackBuffer = DBG_NEW TextureDX11({(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height}, convertFormatFromDX(backbufferDesc.Format), nullptr, nullptr, pBackBufferRTV, nullptr);
+
+    TextureInfoDX11 textureInfoDX = {};
+    textureInfoDX.Dimensions  = {(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height};
+    textureInfoDX.Format      = convertFormatFromDX(backbufferDesc.Format);
+    textureInfoDX.LayoutFlags = TextureDX11::convertBindFlags(backbufferDesc.BindFlags);
+    textureInfoDX.pRTV        = pBackBufferRTV;
+    m_pBackBuffer = DBG_NEW TextureDX11(textureInfoDX);
 
     /* Depth stencil */
-    TextureInfo textureInfo = {};
+    TextureInfo textureInfo     = {};
     textureInfo.Dimensions      = {pWindow->getWidth(), pWindow->getHeight()};
     textureInfo.Format          = RESOURCE_FORMAT::D32_FLOAT;
     textureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;

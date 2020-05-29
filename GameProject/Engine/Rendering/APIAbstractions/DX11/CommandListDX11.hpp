@@ -41,5 +41,7 @@ private:
     ID3D11DeviceContext* m_pContext;
     ID3D11DeviceContext* m_pImmediateContext;
 
+    ID3D11Device* m_pDevice;
+
     PipelineDX11* m_pBoundPipeline;
 };
