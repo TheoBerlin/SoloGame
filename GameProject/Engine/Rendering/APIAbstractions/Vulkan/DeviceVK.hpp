@@ -2,6 +2,12 @@
 
 #include <vulkan/vulkan.h>
 
+class DeviceCreatorVK;
+struct VmaAllocator_T;
+
+#define NOMINMAX
+#include <vma/vk_mem_alloc.h>
+
 struct QueueFamilyIndices {
     uint32_t GraphicsFamily;
     uint32_t TransferFamily;
@@ -15,12 +21,14 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> PresentModes;
 };
 
+
 struct DeviceInfoVK {
     Texture* pBackBuffer;
     Texture* pDepthTexture;
     VkInstance Instance;
     VkPhysicalDevice PhysicalDevice;
     VkDevice Device;
+    VmaAllocator Allocator;
     VkSurfaceKHR Surface;
     VkSwapchainKHR Swapchain;
     std::vector<VkImage> SwapchainImages;
@@ -29,8 +37,6 @@ struct DeviceInfoVK {
     VkDebugUtilsMessengerEXT DebugMessenger;
     QueueFamilyIndices QueueFamilyIndices;
 };
-
-class DeviceCreatorVK;
 
 class DeviceVK : public Device
 {
@@ -59,7 +65,7 @@ public:
 
     ISampler* createSampler(const SamplerInfo& samplerInfo) override final      { return nullptr; }
 
-    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) { return ""; }
+    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType)            { return ""; }
 
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final       { return nullptr; }
 
@@ -76,10 +82,14 @@ private:
 private:
     Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final { return nullptr; }
 
+    bool allocateBuffer(VkBuffer buffer, VkDevice device, const BufferInfo& bufferInfo);
+
 private:
     VkInstance m_Instance;
     VkPhysicalDevice m_PhysicalDevice;
     VkDevice m_Device;
+    VmaAllocator m_Allocator;
+
     VkSurfaceKHR m_Surface;
     VkSwapchainKHR m_Swapchain;
     std::vector<VkImage> m_SwapchainImages;

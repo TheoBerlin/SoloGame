@@ -18,6 +18,7 @@ private:
     bool pickPhysicalDevice();
     bool pickQueueFamilyIndices();
     bool initLogicalDevice();
+    bool initAllocator();
     bool initSwapchain(const Window* pWindow);
     bool initSwapchainImageViews();
 
@@ -33,6 +34,8 @@ private:
     VkInstance m_Instance;
     VkPhysicalDevice m_PhysicalDevice;
     VkDevice m_Device;
+    VmaAllocator m_Allocator;
+
     VkSurfaceKHR m_Surface;
     VkSwapchainKHR m_Swapchain;
     std::vector<VkImage> m_SwapchainImages;

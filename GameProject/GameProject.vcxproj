@@ -186,6 +186,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\TextureCache.cpp" />
@@ -223,6 +224,8 @@
     <ClInclude Include="..\include\DirectXTK\pch.h" />
     <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
     <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
+    <ClInclude Include="..\include\stb\stb_image.h" />
+    <ClInclude Include="..\include\vma\vk_mem_alloc.h" />
     <ClInclude Include="Engine\Audio\AudioCore.hpp" />
     <ClInclude Include="Engine\Audio\SoundHandler.hpp" />
     <ClInclude Include="Engine\Audio\SoundPlayer.hpp" />
@@ -285,6 +288,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Model.hpp" />

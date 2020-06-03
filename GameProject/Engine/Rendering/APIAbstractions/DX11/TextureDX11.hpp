@@ -19,7 +19,6 @@ struct TextureInfoDX11 {
 class TextureDX11 : public Texture
 {
 public:
-    // Create texture by reading from file
     static TextureDX11* createFromFile(const std::string& filePath, ID3D11Device* pDevice);
     static TextureDX11* create(const TextureInfo& textureInfo, ID3D11Device* pDevice);
 

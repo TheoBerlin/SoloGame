@@ -3,6 +3,7 @@
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/Debug.hpp>
 
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan_win32.h>
 
 const std::vector<const char*> g_RequiredLayerNames         = { "VK_LAYER_KHRONOS_validation" };
@@ -39,6 +40,10 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
         return nullptr;
     }
 
+    if (!initAllocator()) {
+        return nullptr;
+    }
+
     if (!initSwapchain(pWindow)) {
         return nullptr;
     }
@@ -51,6 +56,7 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
     deviceInfo.Instance             = m_Instance;
     deviceInfo.PhysicalDevice       = m_PhysicalDevice;
     deviceInfo.Device               = m_Device;
+    deviceInfo.Allocator            = m_Allocator;
     deviceInfo.Surface              = m_Surface;
     deviceInfo.Swapchain            = m_Swapchain;
     deviceInfo.SwapchainImages      = m_SwapchainImages;
@@ -314,6 +320,21 @@ bool DeviceCreatorVK::initLogicalDevice()
 
     if (vkCreateDevice(m_PhysicalDevice, &deviceInfo, nullptr, &m_Device) != VK_SUCCESS) {
         LOG_ERROR("Failed to create device");
+        return false;
+    }
+
+    return true;
+}
+
+bool DeviceCreatorVK::initAllocator()
+{
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice    = m_PhysicalDevice;
+    allocatorInfo.device            = m_Device;
+    allocatorInfo.instance          = m_Instance;
+
+    if (!vmaCreateAllocator(&allocatorInfo, &m_Allocator) != VK_SUCCESS) {
+        LOG_ERROR("Failed to create vulkan memory allocator");
         return false;
     }
 
