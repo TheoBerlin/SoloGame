@@ -2,6 +2,9 @@
 
 #include <Engine/Rendering/Window.hpp>
 
+#define NOMINMAX
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan_win32.h>
 
 DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
@@ -9,6 +12,7 @@ DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
     m_Instance(deviceInfo.Instance),
     m_PhysicalDevice(deviceInfo.PhysicalDevice),
     m_Device(deviceInfo.Device),
+    m_Allocator(deviceInfo.Allocator),
     m_Surface(deviceInfo.Surface),
     m_SwapchainImages(deviceInfo.SwapchainImages),
     m_SwapchainImageViews(deviceInfo.SwapchainImageViews),
@@ -32,6 +36,7 @@ DeviceVK::~DeviceVK()
         vkDestroyImageView(m_Device, imageView, nullptr);
     }
 
+    vmaDestroyAllocator(m_Allocator);
     vkDestroySwapchainKHR(m_Device, m_Swapchain, nullptr);
     vkDestroyDevice(m_Device, nullptr);
     vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
@@ -53,4 +58,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
             LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
     }
+}
+
+bool DeviceVK::allocateBuffer(VkBuffer buffer, VkDevice device, const BufferInfo& bufferInfo)
+{
+    return false;
 }
