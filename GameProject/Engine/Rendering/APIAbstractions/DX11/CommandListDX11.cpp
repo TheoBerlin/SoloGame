@@ -116,3 +116,14 @@ void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAY
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
     pTextureDX->convertTextureLayout(m_pContext, m_pDevice, oldLayout, newLayout);
 }
+
+void CommandListDX11::copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize)
+{
+    BufferDX11* pSrcDX = reinterpret_cast<BufferDX11*>(pSrc);
+    BufferDX11* pDstDX = reinterpret_cast<BufferDX11*>(pDst);
+
+    D3D11_BOX srcBox = {};
+    srcBox.right = (UINT)byteSize;
+
+    m_pContext->CopySubresourceRegion(pDstDX->getBuffer(), 0u, 0u, 0u, 0u, pSrcDX->getBuffer(), 0u, &srcBox);
+}

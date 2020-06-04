@@ -184,6 +184,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\GeneralResources.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.cpp" />
@@ -286,6 +287,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.hpp" />

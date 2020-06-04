@@ -36,6 +36,8 @@ public:
 
     void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture) override final;
 
+    void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
+
 private:
     // Deferred context
     ID3D11DeviceContext* m_pContext;

@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 
 class DeviceCreatorVK;
-struct VmaAllocator_T;
 
 #define NOMINMAX
 #include <vma/vk_mem_alloc.h>
@@ -71,6 +70,9 @@ public:
 
     BlendState* createBlendState(const BlendStateInfo& blendStateInfo) override final                       { return nullptr; }
     IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final    { return nullptr; }
+
+    VmaAllocator getVulkanAllocator() { return m_Allocator; }
+    VkDevice getDevice() { return m_Device; }
 
 protected:
     DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) override final { return nullptr; }
