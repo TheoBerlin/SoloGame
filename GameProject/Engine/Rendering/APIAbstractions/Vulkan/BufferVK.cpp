@@ -43,7 +43,9 @@ BufferVK* BufferVK::create(const BufferInfo& bufferInfo, DeviceVK* pDevice, Stag
             stagingResources.pCommandList->copyBuffer(stagingResources.pStagingBuffer, pBuffer, bufferInfo.ByteSize);
 
             if (!pStagingResources) {
-                // These resources were created only to be used temporarily
+                // The staging resources were created only to be used temporarily
+                stagingResources.pCommandList->execute();
+
                 delete stagingResources.pCommandList;
                 delete stagingResources.pStagingBuffer;
             }

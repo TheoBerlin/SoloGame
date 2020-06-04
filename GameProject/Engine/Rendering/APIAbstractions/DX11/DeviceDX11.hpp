@@ -44,7 +44,7 @@ public:
     PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return DBG_NEW PipelineLayoutDX11(); }
 
     // Shader resources
-    BufferDX11* createBuffer(const BufferInfo& bufferInfo) override final;
+    BufferDX11* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final;
     BufferDX11* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final;
     BufferDX11* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final;
 

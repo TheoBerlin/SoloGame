@@ -8,11 +8,6 @@
 
 class DeviceVK;
 
-struct StagingResources {
-    ICommandList* pCommandList;
-    IBuffer* pStagingBuffer;
-};
-
 class BufferVK : public IBuffer
 {
 public:

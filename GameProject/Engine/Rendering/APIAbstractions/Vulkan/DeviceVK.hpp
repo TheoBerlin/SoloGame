@@ -55,7 +55,7 @@ public:
     IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return nullptr; }
     IPipeline* createPipeline(const PipelineInfo& pipelineInfo) override final { return nullptr; }
 
-    IBuffer* createBuffer(const BufferInfo& bufferInfo) override final                                          { return nullptr; }
+    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final                                          { return nullptr; }
     IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final    { return nullptr; }
     IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final                      { return nullptr; }
 

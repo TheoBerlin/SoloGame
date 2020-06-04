@@ -5,6 +5,14 @@
 
 #include <stdint.h>
 
+class IBuffer;
+class ICommandList;
+
+struct StagingResources {
+    ICommandList* pCommandList;
+    IBuffer* pStagingBuffer;
+};
+
 enum class BUFFER_DATA_ACCESS : uint32_t {
     NONE    = 0,
     READ    = 1,

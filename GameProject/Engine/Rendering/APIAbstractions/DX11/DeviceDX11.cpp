@@ -66,7 +66,7 @@ PipelineDX11* DeviceDX11::createPipeline(const PipelineInfo& pipelineInfo)
     return PipelineDX11::create(pipelineInfo, this);
 }
 
-BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo)
+BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources)
 {
     BufferDX11* pBuffer = DBG_NEW BufferDX11(m_pDevice, bufferInfo);
     if (!pBuffer->getBuffer()) {
