@@ -41,4 +41,6 @@ public:
     virtual void drawIndexed(size_t indexCount) = 0;
 
     virtual void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture) = 0;
+
+    virtual void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) = 0;
 };

@@ -37,6 +37,7 @@ struct PipelineInfo;
 struct RasterizerStateInfo;
 struct RenderPassInfo;
 struct SamplerInfo;
+struct StagingResources;
 struct TextureInfo;
 
 enum class RENDERING_API {
@@ -69,7 +70,7 @@ public:
     virtual IPipeline* createPipeline(const PipelineInfo& pipelineInfo) = 0;
 
     // Shader resources
-    virtual IBuffer* createBuffer(const BufferInfo& bufferInfo) = 0;
+    virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;
     virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
     virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
 

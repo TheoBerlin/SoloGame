@@ -90,3 +90,8 @@ enum class RESOURCE_ACCESS : uint32_t {
 };
 
 DEFINE_BITMASK_OPERATIONS(RESOURCE_ACCESS)
+
+enum class SHARING_MODE {
+    EXCLUSIVE   = 0,
+    CONCURRENT  = 1
+};

@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 
 class DeviceCreatorVK;
-struct VmaAllocator_T;
 
 #define NOMINMAX
 #include <vma/vk_mem_alloc.h>
@@ -56,7 +55,7 @@ public:
     IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return nullptr; }
     IPipeline* createPipeline(const PipelineInfo& pipelineInfo) override final { return nullptr; }
 
-    IBuffer* createBuffer(const BufferInfo& bufferInfo) override final                                          { return nullptr; }
+    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final                                          { return nullptr; }
     IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final    { return nullptr; }
     IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final                      { return nullptr; }
 
@@ -71,6 +70,9 @@ public:
 
     BlendState* createBlendState(const BlendStateInfo& blendStateInfo) override final                       { return nullptr; }
     IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final    { return nullptr; }
+
+    VmaAllocator getVulkanAllocator() { return m_Allocator; }
+    VkDevice getDevice() { return m_Device; }
 
 protected:
     DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) override final { return nullptr; }

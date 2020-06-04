@@ -1,8 +1,17 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Utils/EnumClass.hpp>
 
 #include <stdint.h>
+
+class IBuffer;
+class ICommandList;
+
+struct StagingResources {
+    ICommandList* pCommandList;
+    IBuffer* pStagingBuffer;
+};
 
 enum class BUFFER_DATA_ACCESS : uint32_t {
     NONE    = 0,
@@ -25,6 +34,8 @@ struct BufferInfo {
     BUFFER_DATA_ACCESS CPUAccess;
     BUFFER_DATA_ACCESS GPUAccess;
     BUFFER_USAGE Usage;
+    SHARING_MODE SharingMode;
+    std::vector<uint32_t> QueueFamilyIndices;
 };
 
 class IBuffer
