@@ -2,14 +2,17 @@
 
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 
+class DeviceDX11;
 class PipelineDX11;
-struct ID3D11Device;
 struct ID3D11DeviceContext;
 
 class CommandListDX11 : public ICommandList
 {
 public:
-    CommandListDX11(ID3D11DeviceContext* pImmediateContext, ID3D11Device* pDevice);
+    static CommandListDX11* create(DeviceDX11* pDevice);
+
+public:
+    CommandListDX11(ID3D11DeviceContext* pContext, DeviceDX11* pDevice);
     ~CommandListDX11() override final;
 
     ID3D11DeviceContext* getContext() { return m_pContext; }
@@ -43,7 +46,7 @@ private:
     ID3D11DeviceContext* m_pContext;
     ID3D11DeviceContext* m_pImmediateContext;
 
-    ID3D11Device* m_pDevice;
+    DeviceDX11* m_pDevice;
 
     PipelineDX11* m_pBoundPipeline;
 };

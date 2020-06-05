@@ -78,6 +78,7 @@ private:
     IDDVector<ModelRenderResources> m_ModelRenderResources;
 
     Device* m_pDevice;
+    ICommandPool* m_pCommandPool;
     ICommandList* m_pCommandList;
 
     ModelLoader* m_pModelLoader;

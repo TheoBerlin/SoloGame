@@ -167,6 +167,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\BlendStateDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\CommandPoolDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DepthStencilStateDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorPoolDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.cpp" />
@@ -185,6 +186,8 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\GeneralResources.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.cpp" />
@@ -248,6 +251,7 @@
     <ClInclude Include="Engine\Physics\PhysicsCore.hpp" />
     <ClInclude Include="Engine\Physics\Velocity.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\BlendState.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\CommandPool.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DepthStencilState.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DescriptorCounts.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DescriptorPool.hpp" />
@@ -257,6 +261,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\BlendStateDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\BufferDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\CommandListDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\CommandPoolDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DepthStencilStateDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorPoolDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DescriptorSetDX11.hpp" />
@@ -288,6 +293,8 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.hpp" />

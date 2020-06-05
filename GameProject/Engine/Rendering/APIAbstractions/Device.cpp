@@ -32,8 +32,9 @@ Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, co
     return pDevice;
 }
 
-Device::Device(Texture* pBackBuffer, Texture* pDepthTexture)
-    :m_pBackBuffer(pBackBuffer),
+Device::Device(QueueFamilyIndices queueFamilyIndices, Texture* pBackBuffer, Texture* pDepthTexture)
+    :m_QueueFamilyIndices(queueFamilyIndices),
+    m_pBackBuffer(pBackBuffer),
     m_pDepthTexture(pDepthTexture),
     m_pShaderHandler(nullptr)
 {}

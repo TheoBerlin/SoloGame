@@ -45,20 +45,27 @@ enum class RENDERING_API {
     VULKAN
 };
 
+struct QueueFamilyIndices {
+    uint32_t GraphicsFamily;
+    uint32_t TransferFamily;
+    uint32_t ComputeFamily;
+    uint32_t PresentFamily;
+};
+
 class Device
 {
 public:
     static Device* create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow);
 
 public:
-    Device(Texture* pBackBuffer, Texture* pDepthTexture);
+    Device(QueueFamilyIndices queueFamilyIndices, Texture* pBackBuffer, Texture* pDepthTexture);
     virtual ~Device();
 
     bool init(const DescriptorCounts& descriptorCounts);
 
     virtual void presentBackBuffer() = 0;
 
-    virtual ICommandList* createCommandList() = 0;
+    virtual ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) = 0;
 
     virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
@@ -70,6 +77,7 @@ public:
     virtual IPipeline* createPipeline(const PipelineInfo& pipelineInfo) = 0;
 
     // Shader resources
+    // pStagingResources is only needed if the buffer has initial data and is not CPU-writable
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;
     virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
     virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
@@ -93,6 +101,7 @@ public:
     Texture* getBackBuffer()            { return m_pBackBuffer; }
     Texture* getDepthStencil()          { return m_pDepthTexture; }
     ShaderHandler* getShaderHandler()   { return m_pShaderHandler; }
+    const QueueFamilyIndices& getQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 
 protected:
     friend DescriptorPoolHandler;
@@ -110,4 +119,5 @@ private:
 
 private:
     ShaderHandler* m_pShaderHandler;
+    QueueFamilyIndices m_QueueFamilyIndices;
 };

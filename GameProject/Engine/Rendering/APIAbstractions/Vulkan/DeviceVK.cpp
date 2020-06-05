@@ -1,5 +1,6 @@
 #include "DeviceVK.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
 #define NOMINMAX
@@ -8,7 +9,7 @@
 #include <vulkan/vulkan_win32.h>
 
 DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
-    :Device(deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
+    :Device(deviceInfo.QueueFamilyIndices, deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
     m_Instance(deviceInfo.Instance),
     m_PhysicalDevice(deviceInfo.PhysicalDevice),
     m_Device(deviceInfo.Device),
@@ -17,8 +18,7 @@ DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
     m_SwapchainImages(deviceInfo.SwapchainImages),
     m_SwapchainImageViews(deviceInfo.SwapchainImageViews),
     m_SwapchainFormat(deviceInfo.SwapchainFormat),
-    m_DebugMessenger(deviceInfo.DebugMessenger),
-    m_QueueFamilyIndices(deviceInfo.QueueFamilyIndices)
+    m_DebugMessenger(deviceInfo.DebugMessenger)
 {}
 
 DeviceVK::~DeviceVK()
@@ -60,7 +60,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
     }
 }
 
-bool DeviceVK::allocateBuffer(VkBuffer buffer, VkDevice device, const BufferInfo& bufferInfo)
+ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)
 {
-    return false;
+    return CommandPoolVK::create(creationFlags, queueFamilyIndex, this);
 }

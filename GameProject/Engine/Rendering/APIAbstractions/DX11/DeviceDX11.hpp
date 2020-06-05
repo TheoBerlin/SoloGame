@@ -33,7 +33,7 @@ public:
 
     void presentBackBuffer() override final;
 
-    ICommandList* createCommandList() override final;
+    ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 
     IDescriptorSetLayout* createDescriptorSetLayout() override final;
 

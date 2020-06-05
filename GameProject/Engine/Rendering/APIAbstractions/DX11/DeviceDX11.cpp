@@ -1,6 +1,7 @@
 #include "DeviceDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/CommandListDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/CommandPoolDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
@@ -12,7 +13,7 @@
 #include <Engine/Utils/Logger.hpp>
 
 DeviceDX11::DeviceDX11(const DeviceInfoDX11& deviceInfo)
-    :Device(deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
+    :Device({}, deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
     m_pDevice(deviceInfo.pDevice),
     m_pSwapChain(deviceInfo.pSwapChain),
     m_pContext(deviceInfo.pImmediateContext),
@@ -35,15 +36,9 @@ void DeviceDX11::presentBackBuffer()
     }
 }
 
-ICommandList* DeviceDX11::createCommandList()
+ICommandPool* DeviceDX11::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)
 {
-    CommandListDX11* pCommandList = DBG_NEW CommandListDX11(m_pContext, m_pDevice);
-    if (!pCommandList->getContext()) {
-        delete pCommandList;
-        pCommandList = nullptr;
-    }
-
-    return pCommandList;
+    return DBG_NEW CommandPoolDX11(this);
 }
 
 IDescriptorSetLayout* DeviceDX11::createDescriptorSetLayout()
