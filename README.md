@@ -25,7 +25,3 @@ The updating of systems is done in
 
 ## What will the final game look like?
 I'm trying to make something very small, to make sure the game is finished in time for my graduation in 2021.
-
-The current idea is a game where you move along a track what could be described as a waterslide, but without the water and gravity.
-You have to rotate the camera around the center of the slide/tube in order to avoid geometrical obstacles along the tracks. I know there's
-an existing game very similar to this, but I haven't been able to find it.
