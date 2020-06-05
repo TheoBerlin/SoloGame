@@ -7,13 +7,6 @@ class DeviceCreatorVK;
 #define NOMINMAX
 #include <vma/vk_mem_alloc.h>
 
-struct QueueFamilyIndices {
-    uint32_t GraphicsFamily;
-    uint32_t TransferFamily;
-    uint32_t ComputeFamily;
-    uint32_t PresentFamily;
-};
-
 struct SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR SurfaceCapabilities;
     std::vector<VkSurfaceFormatKHR> Formats;
@@ -45,7 +38,7 @@ public:
 
     void presentBackBuffer() override final {};
 
-    ICommandList* createCommandList() override final { return nullptr; }
+    ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 
     IDescriptorSetLayout* createDescriptorSetLayout() override final { return nullptr; }
 
@@ -84,8 +77,6 @@ private:
 private:
     Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final { return nullptr; }
 
-    bool allocateBuffer(VkBuffer buffer, VkDevice device, const BufferInfo& bufferInfo);
-
 private:
     VkInstance m_Instance;
     VkPhysicalDevice m_PhysicalDevice;
@@ -100,6 +91,4 @@ private:
     VkSurfaceFormatKHR m_SwapchainFormat;
 
     VkDebugUtilsMessengerEXT m_DebugMessenger;
-
-    QueueFamilyIndices m_QueueFamilyIndices;
 };

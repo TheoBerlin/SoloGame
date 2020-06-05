@@ -2,6 +2,7 @@
 
 // All rendering API abstractions
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
+#include <Engine/Rendering/APIAbstractions/CommandPool.hpp>
 #include <Engine/Rendering/APIAbstractions/DepthStencilState.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorCounts.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorPool.hpp>

@@ -105,6 +105,7 @@ private:
 
 private:
     Device* m_pDevice;
+    ICommandPool* m_pCommandPool;
     ICommandList* m_pCommandList;
 
     IBuffer* m_pQuadVertices;

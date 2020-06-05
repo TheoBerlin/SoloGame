@@ -10,6 +10,7 @@ const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
 UIHandler::UIHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(UIHandler)),
     m_pDevice(pDevice),
+    m_pCommandPool(nullptr),
     m_pCommandList(nullptr),
     m_pQuadVertices(nullptr),
     m_pAniSampler(nullptr),
@@ -41,6 +42,7 @@ UIHandler::~UIHandler()
     }
 
     delete m_pCommandList;
+    delete m_pCommandPool;
     delete m_pDescriptorSetLayout;
     delete m_pRenderPass;
     delete m_pPipelineLayout;
@@ -49,7 +51,12 @@ UIHandler::~UIHandler()
 
 bool UIHandler::initHandler()
 {
-    m_pCommandList = m_pDevice->createCommandList();
+    m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().GraphicsFamily);
+    if (!m_pCommandPool) {
+        return false;
+    }
+
+    m_pCommandPool->allocateCommandLists(&m_pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY);
     if (!m_pCommandList) {
         return false;
     }

@@ -7,6 +7,7 @@
 
 UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     :Renderer(pECS, pDevice),
+    m_pCommandPool(nullptr),
     m_pCommandList(nullptr),
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
@@ -37,6 +38,7 @@ UIRenderer::~UIRenderer()
     }
 
     delete m_pCommandList;
+    delete m_pCommandPool;
     delete m_pDescriptorSetCommon;
     delete m_pDescriptorSetLayoutCommon;
     delete m_pDescriptorSetLayoutPanel;
@@ -48,7 +50,12 @@ UIRenderer::~UIRenderer()
 
 bool UIRenderer::init()
 {
-    m_pCommandList = m_pDevice->createCommandList();
+    m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().GraphicsFamily);
+    if (!m_pCommandPool) {
+        return false;
+    }
+
+    m_pCommandPool->allocateCommandLists(&m_pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY);
     if (!m_pCommandList) {
         return false;
     }

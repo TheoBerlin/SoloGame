@@ -34,21 +34,16 @@ BufferVK* BufferVK::create(const BufferInfo& bufferInfo, DeviceVK* pDevice, Stag
             }
         } else {
             // Write data to a staging buffer, then copy the data to the target buffer
-            StagingResources stagingResources = pStagingResources ? *pStagingResources : createTemporaryStagingResources(pDevice, bufferInfo.ByteSize);
+            if (!pStagingResources) {
+                LOG_WARNING("pStagingResources cannot be nullptr; it is needed since the buffer has initial data and is not CPU-writable");
+                return pBuffer;
+            }
 
             if (!pBuffer->mapCopyUnmap(bufferInfo.pData, (VkDeviceSize)bufferInfo.ByteSize)) {
                 return nullptr;
             }
 
-            stagingResources.pCommandList->copyBuffer(stagingResources.pStagingBuffer, pBuffer, bufferInfo.ByteSize);
-
-            if (!pStagingResources) {
-                // The staging resources were created only to be used temporarily
-                stagingResources.pCommandList->execute();
-
-                delete stagingResources.pCommandList;
-                delete stagingResources.pStagingBuffer;
-            }
+            pStagingResources->pCommandList->copyBuffer(pStagingResources->pStagingBuffer, pBuffer, bufferInfo.ByteSize);
         }
     }
 
@@ -131,21 +126,6 @@ VmaAllocationCreateInfo BufferVK::writeAllocationInfo(const BufferInfo& bufferIn
     }
 
     return memoryInfo;
-}
-
-StagingResources BufferVK::createTemporaryStagingResources(DeviceVK* pDevice, size_t bufferSize)
-{
-    StagingResources stagingResources = {};
-    stagingResources.pCommandList = pDevice->createCommandList();
-
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = bufferSize;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.Usage        = BUFFER_USAGE::STAGING_BUFFER;
-    stagingResources.pStagingBuffer = BufferVK::create(bufferInfo, pDevice, nullptr);
-
-    return stagingResources;
 }
 
 bool BufferVK::mapCopyUnmap(const void* pData, VkDeviceSize size)

@@ -38,6 +38,7 @@ private:
     IDVector m_Panels;
     IDDVector<PanelRenderResources> m_PanelRenderResources;
 
+    ICommandPool* m_pCommandPool;
     ICommandList* m_pCommandList;
 
     UIHandler* m_pUIHandler;

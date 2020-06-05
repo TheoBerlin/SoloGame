@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
@@ -18,17 +19,24 @@
 #define NOMINMAX
 #include <d3d11.h>
 
-CommandListDX11::CommandListDX11(ID3D11DeviceContext* pImmediateContext, ID3D11Device* pDevice)
-    :m_pContext(nullptr),
-    m_pImmediateContext(pImmediateContext),
-    m_pDevice(pDevice),
-    m_pBoundPipeline(nullptr)
+CommandListDX11* CommandListDX11::create(DeviceDX11* pDevice)
 {
-    HRESULT hr = pDevice->CreateDeferredContext(0, &m_pContext);
+    ID3D11DeviceContext* pContext = nullptr;
+    HRESULT hr = pDevice->getDevice()->CreateDeferredContext(0, &pContext);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create deferred context: %s", hresultToString(hr).c_str());
+        return nullptr;
     }
+
+    return DBG_NEW CommandListDX11(pContext, pDevice);
 }
+
+CommandListDX11::CommandListDX11(ID3D11DeviceContext* pContext, DeviceDX11* pDevice)
+    :m_pContext(pContext),
+    m_pImmediateContext(pDevice->getContext()),
+    m_pDevice(pDevice),
+    m_pBoundPipeline(nullptr)
+{}
 
 CommandListDX11::~CommandListDX11()
 {
@@ -114,7 +122,7 @@ void CommandListDX11::drawIndexed(size_t indexCount)
 void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture)
 {
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
-    pTextureDX->convertTextureLayout(m_pContext, m_pDevice, oldLayout, newLayout);
+    pTextureDX->convertTextureLayout(m_pContext, m_pDevice->getDevice(), oldLayout, newLayout);
 }
 
 void CommandListDX11::copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize)
