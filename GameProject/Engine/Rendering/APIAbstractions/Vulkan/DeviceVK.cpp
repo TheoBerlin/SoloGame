@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
 #define NOMINMAX
@@ -94,6 +95,26 @@ void DeviceVK::unmap(IBuffer* pBuffer)
     vkUnmapMemory(m_Device, allocationInfo.deviceMemory);
 }
 
+ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)
+{
+    return CommandPoolVK::create(creationFlags, queueFamilyIndex, this);
+}
+
+IFence* DeviceVK::createFence(bool createSignaled)
+{
+    return FenceVK::create(createSignaled, this);
+}
+
+bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout)
+{
+    std::vector<VkFence> fences((size_t)fenceCount);
+    for (uint32_t fenceIdx = 0u; fenceIdx < fenceCount; fenceIdx++) {
+        fences[fenceIdx] = reinterpret_cast<FenceVK*>(ppFences[fenceIdx])->getFence();
+    }
+
+    return vkWaitForFences(m_Device, fenceCount, fences.data(), (VkBool32)waitAll, timeout) == VK_SUCCESS;
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     switch (messageSeverity) {
@@ -109,11 +130,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
             LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
     }
-}
-
-ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)
-{
-    return CommandPoolVK::create(creationFlags, queueFamilyIndex, this);
 }
 
 bool DeviceVK::executeCommandBuffer(VkQueue queue, ICommandList* pCommandList)

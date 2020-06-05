@@ -18,6 +18,7 @@ class BlendState;
 class IBuffer;
 class ICommandList;
 class IDepthStencilState;
+class IFence;
 class IFramebuffer;
 class InputLayout;
 class IPipeline;
@@ -83,6 +84,8 @@ public:
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
     virtual void unmap(IBuffer* pBuffer) = 0;
 
+    virtual IFence* createFence(bool createSignaled) = 0;
+
     // Shader resources
     // pStagingResources is only needed if the buffer has initial data and is not CPU-writable
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;
@@ -104,6 +107,9 @@ public:
     // Output merger
     virtual BlendState* createBlendState(const BlendStateInfo& blendStateInfo) = 0;
     virtual IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) = 0;
+
+    // waitAll: Wait for every fence or just one. timeout: Nanoseconds
+    virtual bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) = 0;
 
     Texture* getBackBuffer()            { return m_pBackBuffer; }
     Texture* getDepthStencil()          { return m_pDepthTexture; }

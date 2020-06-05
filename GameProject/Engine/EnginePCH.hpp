@@ -10,6 +10,7 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
+#include <Engine/Rendering/APIAbstractions/Fence.hpp>
 #include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
