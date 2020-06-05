@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorPoolDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/FenceDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
@@ -50,6 +51,8 @@ public:
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
     void unmap(IBuffer* pBuffer) override final;
 
+    IFence* createFence(bool createSignaled) override final { return DBG_NEW FenceDX11(); }
+
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final;
 
@@ -66,6 +69,8 @@ public:
     // Output merger
     BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
     DepthStencilStateDX11* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final;
+
+    bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final { return true; }
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }

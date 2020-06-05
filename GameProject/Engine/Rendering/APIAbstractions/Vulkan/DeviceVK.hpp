@@ -56,6 +56,8 @@ public:
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
     void unmap(IBuffer* pBuffer) override final;
 
+    IFence* createFence(bool createSignaled) override final;
+
     // Shader resources
     IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
 
@@ -70,6 +72,8 @@ public:
 
     BlendState* createBlendState(const BlendStateInfo& blendStateInfo) override final                       { return nullptr; }
     IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final    { return nullptr; }
+
+    bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final;
 
     VmaAllocator getVulkanAllocator()   { return m_Allocator; }
     VkDevice getDevice()                { return m_Device; }
