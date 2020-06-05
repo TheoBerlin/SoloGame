@@ -86,8 +86,8 @@ public:
     // Shader resources
     // pStagingResources is only needed if the buffer has initial data and is not CPU-writable
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;
-    virtual IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) = 0;
-    virtual IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) = 0;
+    IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount);
+    IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount);
 
     virtual Texture* createTextureFromFile(const std::string& filePath) = 0;
     virtual Texture* createTexture(const TextureInfo& textureInfo) = 0;

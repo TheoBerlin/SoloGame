@@ -59,6 +59,30 @@ DescriptorSet* Device::allocateDescriptorSet(const IDescriptorSetLayout* pDescri
     return m_DescriptorPoolHandler.allocateDescriptorSet(pDescriptorSetLayout, this);
 }
 
+IBuffer* Device::createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount)
+{
+    BufferInfo bufferInfo   = {};
+    bufferInfo.ByteSize     = vertexSize * vertexCount;
+    bufferInfo.pData        = pVertices;
+    bufferInfo.Usage        = BUFFER_USAGE::VERTEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return createBuffer(bufferInfo);
+}
+
+IBuffer* Device::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
+{
+    BufferInfo bufferInfo   = {};
+    bufferInfo.ByteSize     = sizeof(unsigned) * indexCount;
+    bufferInfo.pData        = pIndices;
+    bufferInfo.Usage        = BUFFER_USAGE::INDEX_BUFFER;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::NONE;
+
+    return createBuffer(bufferInfo);
+}
+
 Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
 {
     // Create full path to shader file
