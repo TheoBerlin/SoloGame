@@ -51,7 +51,7 @@ UIHandler::~UIHandler()
 
 bool UIHandler::initHandler()
 {
-    m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().GraphicsFamily);
+    m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
     if (!m_pCommandPool) {
         return false;
     }
