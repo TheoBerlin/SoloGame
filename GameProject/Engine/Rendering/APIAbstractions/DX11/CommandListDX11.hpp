@@ -4,6 +4,7 @@
 
 class DeviceDX11;
 class PipelineDX11;
+struct ID3D11CommandList;
 struct ID3D11DeviceContext;
 
 class CommandListDX11 : public ICommandList
@@ -17,7 +18,9 @@ public:
 
     ID3D11DeviceContext* getContext() { return m_pContext; }
 
-    void execute() override final;
+    bool begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo) override final;
+    bool reset() override final;
+    bool end() override final;
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
     void bindPipeline(IPipeline* pPipeline) override final;
@@ -41,10 +44,12 @@ public:
 
     void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
 
+    inline ID3D11CommandList* getCommandList() { return m_pCommandList; }
+
 private:
     // Deferred context
     ID3D11DeviceContext* m_pContext;
-    ID3D11DeviceContext* m_pImmediateContext;
+    ID3D11CommandList* m_pCommandList;
 
     DeviceDX11* m_pDevice;
 

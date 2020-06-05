@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
+#include <Engine/Utils/EnumClass.hpp>
 
 class BlendState;
 class IBuffer;
@@ -15,12 +16,30 @@ class ISampler;
 struct RenderPassBeginInfo;
 struct Viewport;
 
+// Needed to begin recording on secondary command lists
+struct CommandListBeginInfo {
+    IRenderPass* pRenderPass;
+    uint32_t Subpass;
+    IFramebuffer* pFramebuffer; // Optional, but may improve performance if specified
+};
+
+enum class COMMAND_LIST_USAGE : uint32_t {
+    ONE_TIME_SUBMIT     = 1,
+    WITHIN_RENDER_PASS  = ONE_TIME_SUBMIT << 1,
+    SIMULTANEOUS_USE    = WITHIN_RENDER_PASS << 1
+};
+
+DEFINE_BITMASK_OPERATIONS(COMMAND_LIST_USAGE)
+
 class ICommandList
 {
 public:
     virtual ~ICommandList() = 0 {};
 
-    virtual void execute() = 0;
+    // Implicitly resets the command list
+    virtual bool begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo) = 0;
+    virtual bool reset() = 0;
+    virtual bool end() = 0;
 
     virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
     virtual void bindPipeline(IPipeline* pPipeline) = 0;

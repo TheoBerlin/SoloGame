@@ -13,7 +13,6 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> PresentModes;
 };
 
-
 struct DeviceInfoVK {
     Texture* pBackBuffer;
     Texture* pDepthTexture;
@@ -35,6 +34,10 @@ class DeviceVK : public Device
 public:
     DeviceVK(const DeviceInfoVK& deviceInfo);
     ~DeviceVK();
+
+    bool graphicsQueueSubmit(ICommandList* pCommandList) override final;
+    bool transferQueueSubmit(ICommandList* pCommandList) override final;
+    bool computeQueueSubmit(ICommandList* pCommandList) override final;
 
     void presentBackBuffer() override final {};
 
@@ -76,6 +79,7 @@ private:
 
 private:
     Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final { return nullptr; }
+    bool executeCommandBuffer(VkQueue queue, ICommandList* pCommandList);
 
 private:
     VkInstance m_Instance;

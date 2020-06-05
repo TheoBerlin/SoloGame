@@ -33,26 +33,40 @@ CommandListDX11* CommandListDX11::create(DeviceDX11* pDevice)
 
 CommandListDX11::CommandListDX11(ID3D11DeviceContext* pContext, DeviceDX11* pDevice)
     :m_pContext(pContext),
-    m_pImmediateContext(pDevice->getContext()),
+    m_pCommandList(nullptr),
     m_pDevice(pDevice),
     m_pBoundPipeline(nullptr)
 {}
 
 CommandListDX11::~CommandListDX11()
 {
+    SAFERELEASE(m_pCommandList)
     SAFERELEASE(m_pContext)
 }
 
-void CommandListDX11::execute()
+bool CommandListDX11::begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo)
 {
-    ID3D11CommandList* pCommandList = nullptr;
-    HRESULT hr = m_pContext->FinishCommandList(FALSE, &pCommandList);
+    SAFERELEASE(m_pCommandList)
+    m_pCommandList = nullptr;
+    return true;
+}
+
+bool CommandListDX11::reset()
+{
+    SAFERELEASE(m_pCommandList)
+    m_pCommandList = nullptr;
+    return true;
+}
+
+bool CommandListDX11::end()
+{
+    HRESULT hr = m_pContext->FinishCommandList(FALSE, &m_pCommandList);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to finish command list: %s", hresultToString(hr).c_str());
+        return false;
     }
 
-    m_pImmediateContext->ExecuteCommandList(pCommandList, FALSE);
-    pCommandList->Release();
+    return true;
 }
 
 void CommandListDX11::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo)

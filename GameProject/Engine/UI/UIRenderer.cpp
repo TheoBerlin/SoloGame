@@ -109,11 +109,18 @@ void UIRenderer::updateBuffers()
 
 void UIRenderer::recordCommands()
 {
+    CommandListBeginInfo beginInfo = {};
+    beginInfo.pRenderPass   = m_pRenderPass;
+    beginInfo.Subpass       = 0u;
+    beginInfo.pFramebuffer  = m_pFramebuffer;
+    m_pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+
     RenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
     m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
     if (m_Panels.size() == 0) {
+        m_pCommandList->end();
         return;
     }
 
@@ -126,11 +133,13 @@ void UIRenderer::recordCommands()
         m_pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
         m_pCommandList->draw(4);
     }
+
+    m_pCommandList->end();
 }
 
 void UIRenderer::executeCommands()
 {
-    m_pCommandList->execute();
+    m_pDevice->graphicsQueueSubmit(m_pCommandList);
 }
 
 bool UIRenderer::createDescriptorSetLayouts()

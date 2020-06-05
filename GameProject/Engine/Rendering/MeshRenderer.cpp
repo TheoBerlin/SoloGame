@@ -162,6 +162,12 @@ void MeshRenderer::updateBuffers()
 
 void MeshRenderer::recordCommands()
 {
+    CommandListBeginInfo beginInfo = {};
+    beginInfo.pRenderPass   = m_pRenderPass;
+    beginInfo.Subpass       = 0u;
+    beginInfo.pFramebuffer  = m_pFramebuffer;
+    m_pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+
     RenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
     renderPassBeginInfo.ClearColors         = { {0.0f, 0.0f, 0.0f, 0.0f} };
@@ -170,7 +176,8 @@ void MeshRenderer::recordCommands()
     m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
     if (m_Renderables.size() == 0 || m_Camera.size() == 0) {
-       return;
+        m_pCommandList->end();
+        return;
     }
 
     m_pCommandList->bindPipeline(m_pPipeline);
@@ -203,11 +210,13 @@ void MeshRenderer::recordCommands()
             meshIdx += 1;
         }
     }
+
+    m_pCommandList->end();
 }
 
 void MeshRenderer::executeCommands()
 {
-    m_pCommandList->execute();
+    m_pDevice->graphicsQueueSubmit(m_pCommandList);
 }
 
 bool MeshRenderer::createBuffers()

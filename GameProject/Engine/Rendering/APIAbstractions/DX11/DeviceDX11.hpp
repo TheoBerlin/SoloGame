@@ -31,6 +31,10 @@ public:
     DeviceDX11(const DeviceInfoDX11& deviceInfo);
     ~DeviceDX11();
 
+    bool graphicsQueueSubmit(ICommandList* pCommandList) override final;
+    bool transferQueueSubmit(ICommandList* pCommandList) override final;
+    bool computeQueueSubmit(ICommandList* pCommandList) override final;
+
     void presentBackBuffer() override final;
 
     ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
@@ -70,6 +74,7 @@ protected:
 
 private:
     ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
+    bool executeCommandList(ICommandList* pCommandList);
 
 private:
     ID3D11Device* m_pDevice;
