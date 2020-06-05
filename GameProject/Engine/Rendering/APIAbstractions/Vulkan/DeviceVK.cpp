@@ -19,7 +19,8 @@ DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
     m_SwapchainImages(deviceInfo.SwapchainImages),
     m_SwapchainImageViews(deviceInfo.SwapchainImageViews),
     m_SwapchainFormat(deviceInfo.SwapchainFormat),
-    m_DebugMessenger(deviceInfo.DebugMessenger)
+    m_DebugMessenger(deviceInfo.DebugMessenger),
+    m_QueueHandles(deviceInfo.QueueHandles)
 {}
 
 DeviceVK::~DeviceVK()
@@ -46,8 +47,7 @@ DeviceVK::~DeviceVK()
 
 bool DeviceVK::graphicsQueueSubmit(ICommandList* pCommandList)
 {
-    // TODO: Queues
-    if (!executeCommandBuffer(VK_NULL_HANDLE, pCommandList)) {
+    if (!executeCommandBuffer(m_QueueHandles.Graphics, pCommandList)) {
         LOG_WARNING("Failed to submit to graphics queue");
         return false;
     }
@@ -57,9 +57,8 @@ bool DeviceVK::graphicsQueueSubmit(ICommandList* pCommandList)
 
 bool DeviceVK::transferQueueSubmit(ICommandList* pCommandList)
 {
-    // TODO: Queues
-    if (!executeCommandBuffer(VK_NULL_HANDLE, pCommandList)) {
-        LOG_WARNING("Failed to submit to graphics queue");
+    if (!executeCommandBuffer(m_QueueHandles.Transfer, pCommandList)) {
+        LOG_WARNING("Failed to submit to transfer queue");
         return false;
     }
 
@@ -68,9 +67,8 @@ bool DeviceVK::transferQueueSubmit(ICommandList* pCommandList)
 
 bool DeviceVK::computeQueueSubmit(ICommandList* pCommandList)
 {
-    // TODO: Queues
-    if (!executeCommandBuffer(VK_NULL_HANDLE, pCommandList)) {
-        LOG_WARNING("Failed to submit to graphics queue");
+    if (!executeCommandBuffer(m_QueueHandles.Compute, pCommandList)) {
+        LOG_WARNING("Failed to submit to compute queue");
         return false;
     }
 

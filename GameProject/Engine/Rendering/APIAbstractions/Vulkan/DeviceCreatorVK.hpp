@@ -3,6 +3,12 @@
 #include <Engine/Rendering/APIAbstractions/DeviceCreator.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 
+struct SwapchainSupportDetails {
+    VkSurfaceCapabilitiesKHR SurfaceCapabilities;
+    std::vector<VkSurfaceFormatKHR> Formats;
+    std::vector<VkPresentModeKHR> PresentModes;
+};
+
 class DeviceCreatorVK : public IDeviceCreator
 {
 public:
@@ -18,6 +24,7 @@ private:
     bool pickPhysicalDevice();
     bool pickQueueFamilyIndices();
     bool initLogicalDevice();
+    void initQueues();
     bool initAllocator();
     bool initSwapchain(const Window* pWindow);
     bool initSwapchainImageViews();
@@ -46,4 +53,5 @@ private:
     VkDebugUtilsMessengerEXT m_DebugMessenger;
 
     QueueFamilyIndices m_QueueFamilyIndices;
+    Queues m_Queues;
 };

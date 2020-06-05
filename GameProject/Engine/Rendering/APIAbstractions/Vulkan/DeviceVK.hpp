@@ -7,10 +7,11 @@ class DeviceCreatorVK;
 #define NOMINMAX
 #include <vma/vk_mem_alloc.h>
 
-struct SwapchainSupportDetails {
-    VkSurfaceCapabilitiesKHR SurfaceCapabilities;
-    std::vector<VkSurfaceFormatKHR> Formats;
-    std::vector<VkPresentModeKHR> PresentModes;
+struct Queues {
+    VkQueue Graphics;
+    VkQueue Transfer;
+    VkQueue Compute;
+    VkQueue Present;
 };
 
 struct DeviceInfoVK {
@@ -27,6 +28,7 @@ struct DeviceInfoVK {
     VkSurfaceFormatKHR SwapchainFormat;
     VkDebugUtilsMessengerEXT DebugMessenger;
     QueueFamilyIndices QueueFamilyIndices;
+    Queues QueueHandles;
 };
 
 class DeviceVK : public Device
@@ -95,4 +97,6 @@ private:
     VkSurfaceFormatKHR m_SwapchainFormat;
 
     VkDebugUtilsMessengerEXT m_DebugMessenger;
+
+    Queues m_QueueHandles;
 };

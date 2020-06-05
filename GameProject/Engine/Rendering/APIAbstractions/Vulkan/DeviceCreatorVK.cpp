@@ -40,6 +40,8 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
         return nullptr;
     }
 
+    initQueues();
+
     if (!initAllocator()) {
         return nullptr;
     }
@@ -64,6 +66,7 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
     deviceInfo.SwapchainFormat      = m_SwapchainFormat;
     deviceInfo.DebugMessenger       = m_DebugMessenger;
     deviceInfo.QueueFamilyIndices   = m_QueueFamilyIndices;
+    deviceInfo.QueueHandles         = m_Queues;
 
     return DBG_NEW DeviceVK(deviceInfo);
 }
@@ -232,7 +235,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
             }
 
             if (presentSupported) {
-                m_QueueFamilyIndices.PresentFamily = (uint32_t)queueFamilyIdx;
+                m_QueueFamilyIndices.Present = (uint32_t)queueFamilyIdx;
                 foundPresentFamily = true;
             }
         }
@@ -245,9 +248,9 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
 
     // Choose a queue family for graphics, compute and transfer operations. Queue families with more queues get prioritized.
     std::array<std::pair<VkQueueFlagBits, uint32_t*>, 3> queueFamilyIndices = {
-        std::make_pair(VK_QUEUE_GRAPHICS_BIT, &m_QueueFamilyIndices.GraphicsFamily),
-        std::make_pair(VK_QUEUE_COMPUTE_BIT, &m_QueueFamilyIndices.ComputeFamily),
-        std::make_pair(VK_QUEUE_TRANSFER_BIT, &m_QueueFamilyIndices.TransferFamily)
+        std::make_pair(VK_QUEUE_GRAPHICS_BIT, &m_QueueFamilyIndices.Graphics),
+        std::make_pair(VK_QUEUE_COMPUTE_BIT, &m_QueueFamilyIndices.Compute),
+        std::make_pair(VK_QUEUE_TRANSFER_BIT, &m_QueueFamilyIndices.Transfer)
     };
 
     std::unordered_set<uint32_t> usedQueueFamilyIndices;
@@ -290,7 +293,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
 
 bool DeviceCreatorVK::initLogicalDevice()
 {
-    std::unordered_set<uint32_t> queueFamilyIndices = {m_QueueFamilyIndices.GraphicsFamily, m_QueueFamilyIndices.TransferFamily, m_QueueFamilyIndices.ComputeFamily, m_QueueFamilyIndices.PresentFamily};
+    std::unordered_set<uint32_t> queueFamilyIndices = {m_QueueFamilyIndices.Graphics, m_QueueFamilyIndices.Transfer, m_QueueFamilyIndices.Compute, m_QueueFamilyIndices.Present};
     std::vector<VkDeviceQueueCreateInfo> queueInfos;
     queueInfos.reserve(queueFamilyIndices.size());
 
@@ -324,6 +327,15 @@ bool DeviceCreatorVK::initLogicalDevice()
     }
 
     return true;
+}
+
+void DeviceCreatorVK::initQueues()
+{
+    m_Queues = {};
+    vkGetDeviceQueue(m_Device, m_QueueFamilyIndices.Graphics, 0u, &m_Queues.Graphics);
+    vkGetDeviceQueue(m_Device, m_QueueFamilyIndices.Transfer, 0u, &m_Queues.Transfer);
+    vkGetDeviceQueue(m_Device, m_QueueFamilyIndices.Compute, 0u, &m_Queues.Compute);
+    vkGetDeviceQueue(m_Device, m_QueueFamilyIndices.Present, 0u, &m_Queues.Present);
 }
 
 bool DeviceCreatorVK::initAllocator()

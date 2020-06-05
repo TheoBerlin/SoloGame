@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
-#include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
 #define NOMINMAX
@@ -46,10 +45,10 @@ enum class RENDERING_API {
 };
 
 struct QueueFamilyIndices {
-    uint32_t GraphicsFamily;
-    uint32_t TransferFamily;
-    uint32_t ComputeFamily;
-    uint32_t PresentFamily;
+    uint32_t Graphics;
+    uint32_t Transfer;
+    uint32_t Compute;
+    uint32_t Present;
 };
 
 class Device
