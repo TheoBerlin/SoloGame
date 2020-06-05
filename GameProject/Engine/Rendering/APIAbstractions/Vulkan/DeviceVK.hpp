@@ -57,9 +57,7 @@ public:
     void unmap(IBuffer* pBuffer) override final;
 
     // Shader resources
-    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final   { return nullptr; }
-    IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final            { return nullptr; }
-    IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final                              { return nullptr; }
+    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
 
     Texture* createTextureFromFile(const std::string& filePath) override final  { return nullptr; }
     Texture* createTexture(const TextureInfo& textureInfo) override final       { return nullptr; }
