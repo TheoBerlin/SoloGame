@@ -47,9 +47,6 @@ public:
     // Shader resources
     virtual void bindDescriptorSet(DescriptorSet* pDescriptorSet) = 0;
 
-    virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
-    virtual void unmap(IBuffer* pBuffer) = 0;
-
     virtual void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
 

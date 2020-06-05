@@ -80,6 +80,9 @@ public:
     virtual IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) = 0;
     virtual IPipeline* createPipeline(const PipelineInfo& pipelineInfo) = 0;
 
+    virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;
+    virtual void unmap(IBuffer* pBuffer) = 0;
+
     // Shader resources
     // pStagingResources is only needed if the buffer has initial data and is not CPU-writable
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;

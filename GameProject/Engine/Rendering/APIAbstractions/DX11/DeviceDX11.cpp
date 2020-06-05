@@ -76,6 +76,20 @@ PipelineDX11* DeviceDX11::createPipeline(const PipelineInfo& pipelineInfo)
     return PipelineDX11::create(pipelineInfo, this);
 }
 
+void DeviceDX11::map(IBuffer* pBuffer, void** ppMappedMemory)
+{
+    ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
+
+    D3D11_MAPPED_SUBRESOURCE mappedResources = {};
+    m_pContext->Map(pBufferDX, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &mappedResources);
+    (*ppMappedMemory) = mappedResources.pData;
+}
+
+void DeviceDX11::unmap(IBuffer* pBuffer)
+{
+    m_pContext->Unmap(reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer(), 0u);
+}
+
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources)
 {
     BufferDX11* pBuffer = DBG_NEW BufferDX11(m_pDevice, bufferInfo);

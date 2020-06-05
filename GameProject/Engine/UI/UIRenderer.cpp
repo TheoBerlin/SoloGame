@@ -101,9 +101,9 @@ void UIRenderer::updateBuffers()
 
         // Set per-object buffer
         void* pMappedBuffer = nullptr;
-        m_pCommandList->map(panelRenderResources.pBuffer, &pMappedBuffer);
+        m_pDevice->map(panelRenderResources.pBuffer, &pMappedBuffer);
         memcpy(pMappedBuffer, &panel, bufferSize);
-        m_pCommandList->unmap(panelRenderResources.pBuffer);
+        m_pDevice->unmap(panelRenderResources.pBuffer);
     }
 }
 

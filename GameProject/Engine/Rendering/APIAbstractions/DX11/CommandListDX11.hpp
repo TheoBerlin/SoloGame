@@ -28,9 +28,6 @@ public:
     // Shader resources
     void bindDescriptorSet(DescriptorSet* pDescriptorSet) override final;
 
-    void map(IBuffer* pBuffer, void** ppMappedMemory);
-    void unmap(IBuffer* pBuffer);
-
     void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;
 

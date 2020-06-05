@@ -62,6 +62,13 @@ BufferVK::~BufferVK()
     vkDestroyBuffer(m_pDevice->getDevice(), m_Buffer, nullptr);
 }
 
+VmaAllocationInfo BufferVK::getAllocationInfo() const
+{
+    VmaAllocationInfo allocationInfo = {};
+    vmaGetAllocationInfo(m_pDevice->getVulkanAllocator(), m_Allocation, &allocationInfo);
+    return allocationInfo;
+}
+
 VkBufferCreateInfo BufferVK::convertBufferInfo(const BufferInfo& bufferInfo)
 {
     VkBufferCreateInfo createInfo = {};
@@ -130,11 +137,10 @@ VmaAllocationCreateInfo BufferVK::writeAllocationInfo(const BufferInfo& bufferIn
 
 bool BufferVK::mapCopyUnmap(const void* pData, VkDeviceSize size)
 {
+    VmaAllocationInfo allocationInfo = getAllocationInfo();
     VkDevice device = m_pDevice->getDevice();
-    VmaAllocationInfo allocationInfo = {};
-    vmaGetAllocationInfo(m_pDevice->getVulkanAllocator(), m_Allocation, &allocationInfo);
-
     void* pMappedData = nullptr;
+
     if (vkMapMemory(device, allocationInfo.deviceMemory, 0u, size, 0, &pMappedData) != VK_SUCCESS) {
         LOG_WARNING("Failed to map buffer memory");
         return false;
