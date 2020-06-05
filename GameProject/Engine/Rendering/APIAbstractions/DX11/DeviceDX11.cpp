@@ -28,6 +28,21 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDepthStencilState)
 }
 
+bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList)
+{
+    return executeCommandList(pCommandList);
+}
+
+bool DeviceDX11::transferQueueSubmit(ICommandList* pCommandList)
+{
+    return executeCommandList(pCommandList);
+}
+
+bool DeviceDX11::computeQueueSubmit(ICommandList* pCommandList)
+{
+    return executeCommandList(pCommandList);
+}
+
 void DeviceDX11::presentBackBuffer()
 {
     HRESULT hr = m_pSwapChain->Present(0, 0);
@@ -114,6 +129,11 @@ SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
     return SamplerDX11::create(samplerInfo, m_pDevice);
 }
 
+std::string DeviceDX11::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
+{
+    return ShaderDX11::getFilePostfix(shaderType) + ".hlsl";
+}
+
 RasterizerStateDX11* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
 {
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
@@ -167,7 +187,12 @@ ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string&
     }
 }
 
-std::string DeviceDX11::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
+bool DeviceDX11::executeCommandList(ICommandList* pCommandList)
 {
-    return ShaderDX11::getFilePostfix(shaderType) + ".hlsl";
+    ID3D11CommandList* pCommandListDX = reinterpret_cast<CommandListDX11*>(pCommandList)->getCommandList();
+    if (pCommandListDX) {
+        m_pContext->ExecuteCommandList(pCommandListDX, FALSE);
+    }
+
+    return true;
 }

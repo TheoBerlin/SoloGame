@@ -320,6 +320,12 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     IFramebuffer* pFramebuffer = createFramebuffer(panel);
 
+    CommandListBeginInfo beginInfo = {};
+    beginInfo.pRenderPass   = m_pRenderPass;
+    beginInfo.Subpass       = 0u;
+    beginInfo.pFramebuffer  = pFramebuffer;
+    m_pCommandList->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT | COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+
     RenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.pFramebuffer        = pFramebuffer;
     m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
@@ -344,7 +350,8 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         m_pCommandList->draw(4u);
     }
 
-    m_pCommandList->execute();
+    m_pCommandList->end();
+    m_pDevice->graphicsQueueSubmit(m_pCommandList);
 
     // Delete render resources
     for (AttachmentRenderResources& attachmentResources : renderResources) {

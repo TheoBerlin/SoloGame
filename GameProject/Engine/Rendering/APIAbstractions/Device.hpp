@@ -63,6 +63,11 @@ public:
 
     bool init(const DescriptorCounts& descriptorCounts);
 
+    // TODO: Specifiable fences and semaphores
+    virtual bool graphicsQueueSubmit(ICommandList* pCommandList) = 0;
+    virtual bool transferQueueSubmit(ICommandList* pCommandList) = 0;
+    virtual bool computeQueueSubmit(ICommandList* pCommandList) = 0;
+
     virtual void presentBackBuffer() = 0;
 
     virtual ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) = 0;
