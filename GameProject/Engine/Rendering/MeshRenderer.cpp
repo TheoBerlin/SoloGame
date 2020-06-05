@@ -136,9 +136,9 @@ void MeshRenderer::updateBuffers()
     perFrame.NumLights = numLights;
 
     void* pMappedMemory = nullptr;
-    m_pCommandList->map(m_pPointLightBuffer, &pMappedMemory);
+    m_pDevice->map(m_pPointLightBuffer, &pMappedMemory);
     memcpy(pMappedMemory, &perFrame, sizeof(PerFrameBuffer));
-    m_pCommandList->unmap(m_pPointLightBuffer);
+    m_pDevice->unmap(m_pPointLightBuffer);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
         ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
@@ -154,9 +154,9 @@ void MeshRenderer::updateBuffers()
         DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World) * camVP));
 
         pMappedMemory = nullptr;
-        m_pCommandList->map(modelRenderResources.pWVPBuffer, &pMappedMemory);
+        m_pDevice->map(modelRenderResources.pWVPBuffer, &pMappedMemory);
         memcpy(pMappedMemory, &matrices, sizeof(PerObjectMatrices));
-        m_pCommandList->unmap(modelRenderResources.pWVPBuffer);
+        m_pDevice->unmap(modelRenderResources.pWVPBuffer);
     }
 }
 

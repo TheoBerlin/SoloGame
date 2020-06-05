@@ -88,20 +88,6 @@ void CommandListDX11::bindDescriptorSet(DescriptorSet* pDescriptorSet)
     pDescriptorSetDX->bind(m_pContext);
 }
 
-void CommandListDX11::map(IBuffer* pBuffer, void** ppMappedMemory)
-{
-    ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
-
-    D3D11_MAPPED_SUBRESOURCE mappedResources = {};
-    m_pContext->Map(pBufferDX, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &mappedResources);
-    (*ppMappedMemory) = mappedResources.pData;
-}
-
-void CommandListDX11::unmap(IBuffer* pBuffer)
-{
-    m_pContext->Unmap(reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer(), 0u);
-}
-
 void CommandListDX11::bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer)
 {
     ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();

@@ -18,6 +18,7 @@ public:
     ~BufferVK();
 
     inline VkBuffer getBuffer() { return m_Buffer; }
+    VmaAllocationInfo getAllocationInfo() const;
 
 private:
     static VkBufferCreateInfo convertBufferInfo(const BufferInfo& bufferInfo);

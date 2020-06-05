@@ -1,5 +1,6 @@
 #include "DeviceVK.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -73,6 +74,24 @@ bool DeviceVK::computeQueueSubmit(ICommandList* pCommandList)
     }
 
     return true;
+}
+
+void DeviceVK::map(IBuffer* pBuffer, void** ppMappedMemory)
+{
+    BufferVK* pBufferVK = reinterpret_cast<BufferVK*>(pBuffer);
+    VmaAllocationInfo allocationInfo = pBufferVK->getAllocationInfo();
+
+    if (vkMapMemory(m_Device, allocationInfo.deviceMemory, 0u, VK_WHOLE_SIZE, 0, ppMappedMemory) != VK_SUCCESS) {
+        LOG_WARNING("Failed to map buffer memory");
+    }
+}
+
+void DeviceVK::unmap(IBuffer* pBuffer)
+{
+    BufferVK* pBufferVK = reinterpret_cast<BufferVK*>(pBuffer);
+    VmaAllocationInfo allocationInfo = pBufferVK->getAllocationInfo();
+
+    vkUnmapMemory(m_Device, allocationInfo.deviceMemory);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)

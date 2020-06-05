@@ -2,10 +2,10 @@
 
 #include <vulkan/vulkan.h>
 
-class DeviceCreatorVK;
-
 #define NOMINMAX
 #include <vma/vk_mem_alloc.h>
+
+class DeviceCreatorVK;
 
 struct Queues {
     VkQueue Graphics;
@@ -53,24 +53,28 @@ public:
     IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return nullptr; }
     IPipeline* createPipeline(const PipelineInfo& pipelineInfo) override final { return nullptr; }
 
-    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final                                          { return nullptr; }
-    IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final    { return nullptr; }
-    IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final                      { return nullptr; }
+    void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
+    void unmap(IBuffer* pBuffer) override final;
+
+    // Shader resources
+    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final   { return nullptr; }
+    IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount) override final            { return nullptr; }
+    IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount) override final                              { return nullptr; }
 
     Texture* createTextureFromFile(const std::string& filePath) override final  { return nullptr; }
     Texture* createTexture(const TextureInfo& textureInfo) override final       { return nullptr; }
 
     ISampler* createSampler(const SamplerInfo& samplerInfo) override final      { return nullptr; }
 
-    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType)            { return ""; }
+    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final { return ""; }
 
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final       { return nullptr; }
 
     BlendState* createBlendState(const BlendStateInfo& blendStateInfo) override final                       { return nullptr; }
     IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final    { return nullptr; }
 
-    VmaAllocator getVulkanAllocator() { return m_Allocator; }
-    VkDevice getDevice() { return m_Device; }
+    VmaAllocator getVulkanAllocator()   { return m_Allocator; }
+    VkDevice getDevice()                { return m_Device; }
 
 protected:
     DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) override final { return nullptr; }
