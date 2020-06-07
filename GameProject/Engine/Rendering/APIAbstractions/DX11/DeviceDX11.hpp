@@ -9,6 +9,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/SamplerDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/SemaphoreDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
@@ -32,9 +33,9 @@ public:
     DeviceDX11(const DeviceInfoDX11& deviceInfo);
     ~DeviceDX11();
 
-    bool graphicsQueueSubmit(ICommandList* pCommandList) override final;
-    bool transferQueueSubmit(ICommandList* pCommandList) override final;
-    bool computeQueueSubmit(ICommandList* pCommandList) override final;
+    bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
+    bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
+    bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
 
     void presentBackBuffer() override final;
 
@@ -52,6 +53,7 @@ public:
     void unmap(IBuffer* pBuffer) override final;
 
     IFence* createFence(bool createSignaled) override final { return DBG_NEW FenceDX11(); }
+    ISemaphore* createSemaphore() override final { return DBG_NEW SemaphoreDX11(); }
 
     // Shader resources
     BufferDX11* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final;

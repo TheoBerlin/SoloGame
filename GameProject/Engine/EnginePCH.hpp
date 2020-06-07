@@ -21,6 +21,7 @@
 #include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
 #include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
 #include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
+#include <Engine/Rendering/APIAbstractions/Semaphore.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>

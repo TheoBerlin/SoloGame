@@ -351,7 +351,8 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     }
 
     m_pCommandList->end();
-    m_pDevice->graphicsQueueSubmit(m_pCommandList);
+    SemaphoreSubmitInfo semaphoreInfo = {};
+    m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
 
     // Delete render resources
     for (AttachmentRenderResources& attachmentResources : renderResources) {

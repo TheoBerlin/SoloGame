@@ -28,17 +28,17 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pDepthStencilState)
 }
 
-bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList)
+bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
 {
     return executeCommandList(pCommandList);
 }
 
-bool DeviceDX11::transferQueueSubmit(ICommandList* pCommandList)
+bool DeviceDX11::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
 {
     return executeCommandList(pCommandList);
 }
 
-bool DeviceDX11::computeQueueSubmit(ICommandList* pCommandList)
+bool DeviceDX11::computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
 {
     return executeCommandList(pCommandList);
 }
