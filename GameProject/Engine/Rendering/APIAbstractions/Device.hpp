@@ -1,18 +1,13 @@
 #pragma once
 
 #include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
+#include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
 #define NOMINMAX
 #include <DirectXMath.h>
 
 #include <string>
-
-struct SwapchainInfo {
-    uint32_t FrameRateLimit;
-    uint32_t Multisamples;
-    bool Windowed;
-};
 
 class BlendState;
 class IBuffer;
@@ -26,6 +21,7 @@ class IPipelineLayout;
 class IRasterizerState;
 class IRenderPass;
 class ISampler;
+class ISemaphore;
 class Texture;
 class Window;
 struct BlendStateInfo;
@@ -40,6 +36,12 @@ struct SamplerInfo;
 struct StagingResources;
 struct TextureInfo;
 
+struct SwapchainInfo {
+    uint32_t FrameRateLimit;
+    uint32_t Multisamples;
+    bool Windowed;
+};
+
 enum class RENDERING_API {
     DIRECTX11,
     VULKAN
@@ -50,6 +52,14 @@ struct QueueFamilyIndices {
     uint32_t Transfer;
     uint32_t Compute;
     uint32_t Present;
+};
+
+struct SemaphoreSubmitInfo {
+    ISemaphore** ppWaitSemaphores;
+    uint32_t waitSemaphoreCount;
+    PIPELINE_STAGE* pWaitStageFlags;
+    ISemaphore** ppSignalSemaphores;
+    uint32_t signalSemaphoreCount;
 };
 
 class Device
@@ -63,10 +73,9 @@ public:
 
     bool init(const DescriptorCounts& descriptorCounts);
 
-    // TODO: Specifiable fences and semaphores
-    virtual bool graphicsQueueSubmit(ICommandList* pCommandList) = 0;
-    virtual bool transferQueueSubmit(ICommandList* pCommandList) = 0;
-    virtual bool computeQueueSubmit(ICommandList* pCommandList) = 0;
+    virtual bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
+    virtual bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
+    virtual bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
 
     virtual void presentBackBuffer() = 0;
 
@@ -85,6 +94,7 @@ public:
     virtual void unmap(IBuffer* pBuffer) = 0;
 
     virtual IFence* createFence(bool createSignaled) = 0;
+    virtual ISemaphore* createSemaphore() = 0;
 
     // Shader resources
     // pStagingResources is only needed if the buffer has initial data and is not CPU-writable

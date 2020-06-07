@@ -139,7 +139,8 @@ void UIRenderer::recordCommands()
 
 void UIRenderer::executeCommands()
 {
-    m_pDevice->graphicsQueueSubmit(m_pCommandList);
+    SemaphoreSubmitInfo semaphoreInfo = {};
+    m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
 }
 
 bool UIRenderer::createDescriptorSetLayouts()

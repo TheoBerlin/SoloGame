@@ -37,9 +37,9 @@ public:
     DeviceVK(const DeviceInfoVK& deviceInfo);
     ~DeviceVK();
 
-    bool graphicsQueueSubmit(ICommandList* pCommandList) override final;
-    bool transferQueueSubmit(ICommandList* pCommandList) override final;
-    bool computeQueueSubmit(ICommandList* pCommandList) override final;
+    bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
+    bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
+    bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
 
     void presentBackBuffer() override final {};
 
@@ -57,6 +57,7 @@ public:
     void unmap(IBuffer* pBuffer) override final;
 
     IFence* createFence(bool createSignaled) override final;
+    ISemaphore* createSemaphore() override final;
 
     // Shader resources
     IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
@@ -87,7 +88,7 @@ private:
 
 private:
     Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final { return nullptr; }
-    bool executeCommandBuffer(VkQueue queue, ICommandList* pCommandList);
+    bool executeCommandBuffer(VkQueue queue, ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo);
 
 private:
     VkInstance m_Instance;

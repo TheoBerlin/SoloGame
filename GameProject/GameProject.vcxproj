@@ -191,6 +191,8 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\AssetLoadersCore.cpp" />
     <ClCompile Include="Engine\Rendering\AssetLoaders\ModelLoader.cpp" />
@@ -277,6 +279,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RasterizerStateDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\RenderPassDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\SamplerDX11.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\SemaphoreDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\ShaderDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Fence.hpp" />
@@ -292,6 +295,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Pipeline.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\PipelineLayout.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\RenderPass.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Semaphore.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
@@ -301,6 +305,8 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\AssetResources.hpp" />
     <ClInclude Include="Engine\Rendering\AssetContainers\Material.hpp" />
