@@ -18,8 +18,8 @@ template <typename T>
 class IDDVector : public IDContainer
 {
 public:
-    IDDVector() {}
-    ~IDDVector() {}
+    IDDVector() = default;
+    ~IDDVector() = default;
 
     // Index vector directly
     inline T operator[](size_t index) const

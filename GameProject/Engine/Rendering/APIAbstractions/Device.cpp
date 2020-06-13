@@ -9,6 +9,8 @@
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+#include <thread>
+
 Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow)
 {
     IDeviceCreator* pDeviceCreator = nullptr;
@@ -48,6 +50,10 @@ Device::~Device()
 
 bool Device::init(const DescriptorCounts& descriptorCounts)
 {
+    if (initTempCommandPools()) {
+        return false;
+    }
+
     m_DescriptorPoolHandler.init(descriptorCounts, this);
 
     m_pShaderHandler = DBG_NEW ShaderHandler(this);
@@ -106,4 +112,50 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
     }
 
     return pShader;
+}
+
+bool Device::initTempCommandPools()
+{
+    // Create pool of command pools
+    // hardware_concurrency might return 0
+    unsigned int threadCount = std::thread::hardware_concurrency();
+    threadCount = threadCount == 0 ? 4u : threadCount;
+    std::vector<ICommandPool*> commandPools((size_t)threadCount);
+
+    std::array<TempCommandPoolInfo, 3u> commandPoolInfos = {{
+        {
+            m_QueueFamilyIndices.Graphics,
+            &m_CommandPoolsTempGraphics
+        },
+        {
+            m_QueueFamilyIndices.Transfer,
+            &m_CommandPoolsTempTransfer
+        },
+        {
+            m_QueueFamilyIndices.Compute,
+            &m_CommandPoolsTempCompute
+        }
+    }};
+
+    for (TempCommandPoolInfo& commandPoolInfo : commandPoolInfos) {
+        if (!initTempCommandPool(commandPools, commandPoolInfo)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Device::initTempCommandPool(std::vector<ICommandPool*>& commandPools, TempCommandPoolInfo& commandPoolInfo)
+{
+    for (ICommandPool* pCommandPool : commandPools) {
+        pCommandPool = createCommandPool(COMMAND_POOL_FLAG::TEMPORARY_COMMAND_LISTS, commandPoolInfo.queueFamilyIndex);
+
+        if (!pCommandPool) {
+            return false;
+        }
+    }
+
+    commandPoolInfo.pTargetCommandPool->init(commandPools);
+    return true;
 }
