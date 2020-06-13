@@ -341,6 +341,7 @@
     <ClInclude Include="Engine\Utils\IDVector.hpp" />
     <ClInclude Include="Engine\Utils\Logger.hpp" />
     <ClInclude Include="Engine\Utils\Rendering.hpp" />
+    <ClInclude Include="Engine\Utils\ResourcePool.hpp" />
     <ClInclude Include="Game\Game.hpp" />
     <ClInclude Include="Game\Level\Tube.hpp" />
     <ClInclude Include="Game\LightSpinner.hpp" />

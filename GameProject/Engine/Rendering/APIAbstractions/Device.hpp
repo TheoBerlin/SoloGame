@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
+#include <Engine/Utils/ResourcePool.hpp>
 
 #define NOMINMAX
 #include <DirectXMath.h>
@@ -80,6 +81,9 @@ public:
     virtual void presentBackBuffer() = 0;
 
     virtual ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) = 0;
+    PooledResource<ICommandPool> acquireTempCommandPoolGraphics()  {return m_CommandPoolsTempGraphics.acquire(); }
+    PooledResource<ICommandPool> acquireTempCommandPoolTransfer()  {return m_CommandPoolsTempTransfer.acquire(); }
+    PooledResource<ICommandPool> acquireTempCommandPoolCompute()   {return m_CommandPoolsTempCompute.acquire(); }
 
     virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
@@ -140,7 +144,20 @@ protected:
 private:
     virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) = 0;
 
+    struct TempCommandPoolInfo {
+        uint32_t queueFamilyIndex;
+        ResourcePool<ICommandPool>* pTargetCommandPool;
+    };
+
+    bool initTempCommandPools();
+    bool initTempCommandPool(std::vector<ICommandPool*>& commandPools, TempCommandPoolInfo& commandPoolInfo);
+
 private:
     ShaderHandler* m_pShaderHandler;
     QueueFamilyIndices m_QueueFamilyIndices;
+
+    // Each pool contains one command pool for each thread. The generated command lists are temporary, i.e. short lived.
+    ResourcePool<ICommandPool> m_CommandPoolsTempGraphics;
+    ResourcePool<ICommandPool> m_CommandPoolsTempTransfer;
+    ResourcePool<ICommandPool> m_CommandPoolsTempCompute;
 };
