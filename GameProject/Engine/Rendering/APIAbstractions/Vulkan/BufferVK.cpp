@@ -25,6 +25,11 @@ BufferVK* BufferVK::create(const BufferInfo& bufferInfo, DeviceVK* pDevice, Stag
         return nullptr;
     }
 
+    if (vmaBindBufferMemory(vulkanAllocator, allocation, buffer) != VK_SUCCESS) {
+        LOG_ERROR("Failed to bind buffer memory");
+        return nullptr;
+    }
+
     BufferVK* pBuffer = DBG_NEW BufferVK(buffer, allocation, pDevice);
 
     if (bufferInfo.pData) {

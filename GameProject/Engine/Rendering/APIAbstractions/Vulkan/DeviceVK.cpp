@@ -3,7 +3,6 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
-#include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/Window.hpp>
@@ -102,7 +101,7 @@ ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint3
     return CommandPoolVK::create(creationFlags, queueFamilyIndex, this);
 }
 
-IFence* DeviceVK::createFence(bool createSignaled)
+FenceVK* DeviceVK::createFence(bool createSignaled)
 {
     return FenceVK::create(createSignaled, this);
 }

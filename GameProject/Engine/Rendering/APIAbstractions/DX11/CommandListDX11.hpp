@@ -6,6 +6,7 @@ class DeviceDX11;
 class PipelineDX11;
 struct ID3D11CommandList;
 struct ID3D11DeviceContext;
+struct ID3D11Resource;
 
 class CommandListDX11 : public ICommandList
 {
@@ -37,11 +38,15 @@ public:
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;
 
-    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture) override final;
+    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage) override final;
 
     void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
+    void copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height) override final;
 
     inline ID3D11CommandList* getCommandList() { return m_pCommandList; }
+
+private:
+    void copyResource(ID3D11Resource* pSrc, ID3D11Resource* pDst, UINT width, UINT height);
 
 private:
     // Deferred context

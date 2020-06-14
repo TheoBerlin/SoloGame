@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
+
 #include <vulkan/vulkan.h>
 
 #define NOMINMAX
@@ -56,11 +59,11 @@ public:
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
     void unmap(IBuffer* pBuffer) override final;
 
-    IFence* createFence(bool createSignaled) override final;
+    FenceVK* createFence(bool createSignaled) override final;
     ISemaphore* createSemaphore() override final;
 
     // Shader resources
-    IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
+    BufferVK* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
 
     Texture* createTextureFromFile(const std::string& filePath) override final  { return nullptr; }
     Texture* createTexture(const TextureInfo& textureInfo) override final       { return nullptr; }

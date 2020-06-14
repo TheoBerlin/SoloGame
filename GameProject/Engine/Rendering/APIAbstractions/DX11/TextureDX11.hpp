@@ -31,6 +31,7 @@ public:
     ID3D11ShaderResourceView* getSRV() const    { return m_pSRV; }
     ID3D11RenderTargetView* getRTV() const      { return m_pRTV; }
     ID3D11DepthStencilView* getDSV() const      { return m_pDSV; }
+    ID3D11Resource* getResource();
 
     static TEXTURE_LAYOUT convertBindFlags(UINT bindFlags);
 
