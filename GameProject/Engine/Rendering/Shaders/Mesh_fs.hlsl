@@ -8,10 +8,10 @@ cbuffer material : register(b3) {
 #define MAX_LIGHTS 7
 
 struct PointLight {
-    float3 lightPos;
-    float lightRadiusReciprocal;
-    float3 light;
-    float padding;
+    float3 Position;
+    float RadiusRec;
+    float3 Light;
+    float Padding;
 };
 
 cbuffer perFrame : register(b0) {
@@ -29,31 +29,32 @@ struct VS_OUT {
 };
 
 float4 main(VS_OUT ps_in) : SV_TARGET {
-    float3 normal = normalize(float3(ps_in.normal.xyz));
+    float3 normal = normalize(ps_in.normal);
 
     float3 Kd = diffuseTX.Sample(sampAni, ps_in.txCoords).xyz;
-    float3 finalColor = Kd * 0.08;
+
+    float3 ambient = Kd * 0.08;
 
     float3 pointLight = (float3) 0;
 
-    for (uint i = 0; i < numLights; i += 1) {
-        float3 toLight = pointLights[i].lightPos - ps_in.worldPos;
+    for (uint lightIdx = 0; lightIdx < numLights; lightIdx += 1) {
+        float3 toLight = pointLights[lightIdx].Position - ps_in.worldPos;
         float distToLight = length(toLight);
         toLight /= distToLight;
         float cosAngle = saturate(dot(normal, toLight));
 
         // Diffuse
-        pointLight += cosAngle * pointLights[i].light;
+        pointLight += cosAngle * pointLights[lightIdx].Light;
 
         // Specular
         float3 toEye = normalize(camPos-ps_in.worldPos);
         float3 halfwayVec = normalize(toLight + toEye);
-        pointLight += pointLights[i].light.rgb * pow(saturate(dot(halfwayVec, ps_in.normal)), Ks.r) * Ks.g;
+        pointLight += pointLights[lightIdx].Light * pow(saturate(dot(halfwayVec, ps_in.normal)), Ks.r) * Ks.g;
 
         // Attenuation
-        float attenuation = 1.0 - saturate(pointLights[i].lightRadiusReciprocal * distToLight);
+        float attenuation = 1.0 - saturate(pointLights[lightIdx].RadiusRec * distToLight);
         pointLight *= Kd * attenuation;
     }
 
-    return float4(saturate(finalColor + pointLight), 1.0);
+    return float4(saturate(ambient + pointLight), 1.0);
 }

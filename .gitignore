@@ -23,3 +23,5 @@ log.txt
 
 !GameProject/libs/Debug/
 !GameProject/libs/Release/
+
+*.spv
