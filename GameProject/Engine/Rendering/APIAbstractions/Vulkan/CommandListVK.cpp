@@ -1,6 +1,8 @@
 #include "CommandListVK.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 
 CommandListVK::CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool commandPool, DeviceVK* pDevice)
     :m_CommandBuffer(commandBuffer),
@@ -41,6 +43,27 @@ bool CommandListVK::reset()
     }
 
     return true;
+}
+
+void CommandListVK::copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height)
+{
+    VkBufferImageCopy copyInfo = {};
+    copyInfo.bufferOffset       = 0u;
+    copyInfo.bufferRowLength    = 0u;
+    copyInfo.bufferImageHeight  = 0u;
+    copyInfo.imageSubresource.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyInfo.imageSubresource.mipLevel          = 0u;
+    copyInfo.imageSubresource.baseArrayLayer    = 0u;
+    copyInfo.imageSubresource.layerCount        = 0u;
+    copyInfo.imageOffset    = {0u, 0u, 0u};
+    copyInfo.imageExtent    = {width, height, 1u};
+
+    TextureVK* pTextureVK = reinterpret_cast<TextureVK*>(pTexture);
+
+    VkBuffer srcBuffer          = reinterpret_cast<BufferVK*>(pBuffer)->getBuffer();
+    VkImage dstImage            = pTextureVK->getImage();
+
+    vkCmdCopyBufferToImage(m_CommandBuffer, srcBuffer, dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1u, &copyInfo);
 }
 
 VkCommandBufferUsageFlags CommandListVK::convertUsageFlags(COMMAND_LIST_USAGE usageFlags)

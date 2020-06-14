@@ -119,7 +119,7 @@ void CommandListDX11::drawIndexed(size_t indexCount)
     m_pContext->DrawIndexed((UINT)indexCount, 0, 0);
 }
 
-void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture)
+void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage)
 {
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
     pTextureDX->convertTextureLayout(m_pContext, m_pDevice->getDevice(), oldLayout, newLayout);
@@ -130,8 +130,22 @@ void CommandListDX11::copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize)
     BufferDX11* pSrcDX = reinterpret_cast<BufferDX11*>(pSrc);
     BufferDX11* pDstDX = reinterpret_cast<BufferDX11*>(pDst);
 
-    D3D11_BOX srcBox = {};
-    srcBox.right = (UINT)byteSize;
+    copyResource(pSrcDX->getBuffer(), pDstDX->getBuffer(), (UINT)byteSize, 0u);
+}
 
-    m_pContext->CopySubresourceRegion(pDstDX->getBuffer(), 0u, 0u, 0u, 0u, pSrcDX->getBuffer(), 0u, &srcBox);
+void CommandListDX11::copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height)
+{
+    ID3D11Resource* pBufferResource = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
+    ID3D11Resource* pTextureResource = reinterpret_cast<TextureDX11*>(pTexture)->getResource();
+
+    copyResource(pBufferResource, pTextureResource, (UINT)width, (UINT)height);
+}
+
+void CommandListDX11::copyResource(ID3D11Resource* pSrc, ID3D11Resource* pDst, UINT width, UINT height)
+{
+    D3D11_BOX srcBox = {};
+    srcBox.right    = width;
+    srcBox.bottom   = height;
+
+    m_pContext->CopySubresourceRegion(pDst, 0u, 0u, 0u, 0u, pSrc, 0u, &srcBox);
 }

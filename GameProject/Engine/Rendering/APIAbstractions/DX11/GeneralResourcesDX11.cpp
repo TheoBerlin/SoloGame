@@ -13,6 +13,8 @@ DXGI_FORMAT convertFormatToDX(RESOURCE_FORMAT textureFormat)
             return DXGI_FORMAT_B8G8R8A8_UNORM;
         case RESOURCE_FORMAT::R8G8B8A8_UNORM:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case RESOURCE_FORMAT::R8G8B8A8_SRGB:
+            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         case RESOURCE_FORMAT::D32_FLOAT:
             return DXGI_FORMAT_D32_FLOAT;
         default:
@@ -30,10 +32,12 @@ RESOURCE_FORMAT convertFormatFromDX(DXGI_FORMAT format)
             return RESOURCE_FORMAT::R32G32B32_FLOAT;
         case DXGI_FORMAT_R32G32_FLOAT:
             return RESOURCE_FORMAT::R32G32_FLOAT;
-        case DXGI_FORMAT_R8G8B8A8_UNORM:
-            return RESOURCE_FORMAT::R8G8B8A8_UNORM;
         case DXGI_FORMAT_B8G8R8A8_UNORM:
             return RESOURCE_FORMAT::B8G8R8A8_UNORM;
+        case DXGI_FORMAT_R8G8B8A8_UNORM:
+            return RESOURCE_FORMAT::R8G8B8A8_UNORM;
+        case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+            return RESOURCE_FORMAT::R8G8B8A8_SRGB;
         case DXGI_FORMAT_D32_FLOAT:
             return RESOURCE_FORMAT::D32_FLOAT;
 

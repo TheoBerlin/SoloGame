@@ -143,16 +143,7 @@ void TextureDX11::convertTextureLayout(ID3D11DeviceContext* pContext, ID3D11Devi
     m_LayoutFlags = oldLayout | newLayout;
 
     // Get resource pointer
-    ID3D11Resource* pResource = nullptr;
-    if (m_pSRV) {
-        m_pSRV->GetResource(&pResource);
-    } else if (m_pDSV) {
-        m_pDSV->GetResource(&pResource);
-    } else if (m_pRTV) {
-        m_pRTV->GetResource(&pResource);
-    } else if (m_pUAV) {
-        m_pUAV->GetResource(&pResource);
-    }
+    ID3D11Resource* pResource = getResource();
 
     // Get old texture description and only change the bind flags
     D3D11_TEXTURE2D_DESC txDesc = {};
@@ -187,6 +178,23 @@ void TextureDX11::convertTextureLayout(ID3D11DeviceContext* pContext, ID3D11Devi
     if (FAILED(hr)) {
         LOG_WARNING("Failed to create new texture view after conversion, old and new layouts: %d -> %d", (int)oldLayout, (int)newLayout);
     }
+}
+
+ID3D11Resource* TextureDX11::getResource()
+{
+    ID3D11Resource* pResource = nullptr;
+
+    if (m_pSRV) {
+        m_pSRV->GetResource(&pResource);
+    } else if (m_pDSV) {
+        m_pDSV->GetResource(&pResource);
+    } else if (m_pRTV) {
+        m_pRTV->GetResource(&pResource);
+    } else if (m_pUAV) {
+        m_pUAV->GetResource(&pResource);
+    }
+
+    return pResource;
 }
 
 TEXTURE_LAYOUT TextureDX11::convertBindFlags(UINT bindFlags)

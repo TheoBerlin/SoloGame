@@ -12,8 +12,9 @@ class PooledResource
 public:
     ~PooledResource() = default;
 
-    ResourceType& operator*()   { return *m_pResource; }
-    ResourceType* operator->()  { return m_pResource; }
+    inline ResourceType& operator*()    { return *m_pResource; }
+    inline ResourceType* operator->()   { return m_pResource; }
+    inline ResourceType* get()          { return m_pResource; }
 
     inline void release()
     {
@@ -78,7 +79,7 @@ public:
     }
 
 protected:
-    friend PooledResource<ResourceType*>;
+    friend PooledResource<ResourceType>;
     void release(size_t resourceIndex)
     {
         std::scoped_lock<std::mutex> lock(m_VectorsLock);
