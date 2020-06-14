@@ -20,7 +20,7 @@ def listGLSLShaders():
     glslShaders = []
 
     for shader in allShaders:
-        if ".hlsl" in shader:
+        if ".glsl" in shader:
             glslShaders.append(shader)
 
     return glslShaders
@@ -42,8 +42,11 @@ def compileShaders(glslcPath):
             stage = "fragment"
         elif "_cs" in shader:
             stage = "compute"
+        else:
+            print("Failed to recognize shader stage by file name: {}".format(shader))
+            continue
 
-        os.system("{} -O -fshader-stage={} {}{} -o {}".format(glslcPath, stage, shadersFolder, shader, shader.replace(".glsl",  ".spv")))
+        os.system("{} -O -fshader-stage={} {}{} -o {}{}".format(glslcPath, stage, shadersFolder, shader, shadersFolder, shader.replace(".glsl",  ".spv")))
 
     print("Compiled {} shaders".format(len(shaders)))
 
