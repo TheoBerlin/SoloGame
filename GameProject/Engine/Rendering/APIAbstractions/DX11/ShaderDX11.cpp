@@ -83,7 +83,7 @@ std::string ShaderDX11::getFilePostfix(SHADER_TYPE shaderType)
         case SHADER_TYPE::GEOMETRY_SHADER:
             return "_gs";
         case SHADER_TYPE::FRAGMENT_SHADER:
-            return "_ps";
+            return "_fs";
         default:
             LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
             return "_vs";
