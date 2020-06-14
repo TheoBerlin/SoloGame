@@ -50,7 +50,7 @@ Device::~Device()
 
 bool Device::init(const DescriptorCounts& descriptorCounts)
 {
-    if (initTempCommandPools()) {
+    if (!initTempCommandPools()) {
         return false;
     }
 
@@ -148,7 +148,7 @@ bool Device::initTempCommandPools()
 
 bool Device::initTempCommandPool(std::vector<ICommandPool*>& commandPools, TempCommandPoolInfo& commandPoolInfo)
 {
-    for (ICommandPool* pCommandPool : commandPools) {
+    for (ICommandPool*& pCommandPool : commandPools) {
         pCommandPool = createCommandPool(COMMAND_POOL_FLAG::TEMPORARY_COMMAND_LISTS, commandPoolInfo.queueFamilyIndex);
 
         if (!pCommandPool) {
