@@ -4,6 +4,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
@@ -20,98 +21,48 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
         return nullptr;
     }
 
-    VkDeviceSize texSize = width * height * 4;
+    // Let TextureVK::create handle the rest of the creation steps
+    InitialData initialData = {};
+    initialData.pData   = pPixelData;
+    initialData.RowSize = 4u * (uint32_t)width;
 
-    std::unique_ptr<BufferVK> pStagingBuffer(createStagingBuffer(pPixelData, texSize, pDevice));
-    if (!pStagingBuffer) {
-        LOG_WARNING("Failed to create staging buffer during texture creation");
-        return nullptr;
-    }
+    TextureInfo textureInfo = {};
+    textureInfo.Dimensions      = { (uint32_t)width, (uint32_t)height };
+    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_SRGB;
+    textureInfo.pInitialData    = &initialData;
+
+    TextureVK* pTexture = create(textureInfo, pDevice);
 
     stbi_image_free(pPixelData);
 
+    return pTexture;
+}
+
+TextureVK* TextureVK::create(const TextureInfo& textureInfo, DeviceVK* pDevice)
+{
+    TextureInfoVK textureInfoVK = convertTextureInfo(textureInfo);
+    VkImageLayout initialLayout = textureInfo.pInitialData ? VK_IMAGE_LAYOUT_UNDEFINED : textureInfoVK.Layout;
+
     VkImage image = VK_NULL_HANDLE;
     VmaAllocation allocation = {};
-    if (!createImage(image, allocation, (uint32_t)width, (uint32_t)height, pDevice)) {
+    if (!createImage(image, allocation, textureInfoVK, initialLayout, pDevice)) {
         return nullptr;
     }
 
     VkDevice device = pDevice->getDevice();
-    VkImageView imageView = createImageView(image, VK_FORMAT_R8G8B8A8_SRGB, device);
+    VkImageView imageView = createImageView(image, textureInfoVK.Format, device);
     if (imageView == VK_NULL_HANDLE) {
         return nullptr;
     }
 
-    // Although the texture object is created here, it still needs its data, and layout conversions
-    std::unique_ptr<TextureVK> pTexture(DBG_NEW TextureVK({(unsigned int)width, (unsigned int)height}, RESOURCE_FORMAT::R8G8B8A8_SRGB, pDevice, image, imageView, allocation));
+    std::unique_ptr<TextureVK> pTexture(DBG_NEW TextureVK(textureInfo.Dimensions, textureInfo.Format, pDevice, image, imageView, allocation));
 
-    PooledResource<ICommandPool> commandPoolTemp = pDevice->acquireTempCommandPoolGraphics();
-    // TODO: Implement CommandPoolVK
-    //CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
-    ICommandList* pCommandList = nullptr;
-
-    if (!commandPoolTemp->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
-        LOG_WARNING("Failed to create temporary command list during texture creation");
+    if (textureInfoVK.pInitialData && !setInitialData(pTexture.get(), textureInfoVK, pDevice)) {
         return nullptr;
     }
-
-    CommandListVK* pCommandListVK = reinterpret_cast<CommandListVK*>(pCommandList);
-    if (!pCommandListVK->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, nullptr)) {
-        return nullptr;
-    }
-
-    VkCommandBuffer commandBuffer = pCommandListVK->getCommandBuffer();
-    if (!convertTextureLayout(commandBuffer, image,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT)
-    ) {
-        LOG_WARNING("Failed to convert image for a transfer from staging buffer");
-        return nullptr;
-    }
-
-    pCommandListVK->copyBufferToTexture(pStagingBuffer.get(), pTexture.get(), (uint32_t)width, (uint32_t)height);
-
-    if (!convertTextureLayout(commandBuffer, image,
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
-    ) {
-        LOG_WARNING("Failed to convert image for shader reading");
-        return nullptr;
-    }
-
-    if (!pCommandList->end()) {
-        return nullptr;
-    }
-
-    commandPoolTemp.release();
-
-    FenceVK* pFence = pDevice->createFence(false);
-    if (!pFence) {
-        return nullptr;
-    }
-
-    SemaphoreSubmitInfo semaphoreInfo = {};
-    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, semaphoreInfo)) {
-        return nullptr;
-    }
-
-    // Have a separate thread delete the temporary command list and fence when the commands have finished
-    std::function<void()> commandsFinishedFnc = [pFence, pCommandList, pDevice]() {
-        IFence* pIFence = pFence;
-        pDevice->waitForFences(&pIFence, 1u, false, 0u);
-        delete pFence;
-        delete pCommandList;
-    };
-
-    std::thread destructorThread(commandsFinishedFnc);
 
     return pTexture.release();
-}
-
-TextureVK* TextureVK::create(const TextureInfo& textureInfo)
-{
-    // TODO
-    return nullptr;
 }
 
 TextureVK::TextureVK(const glm::uvec2 dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation)
@@ -131,11 +82,81 @@ TextureVK::~TextureVK()
     vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
 }
 
-BufferVK* TextureVK::createStagingBuffer(const unsigned char* pPixelData, VkDeviceSize textureSize, DeviceVK* pDevice)
+bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, DeviceVK* pDevice)
+{
+    std::unique_ptr<BufferVK> pStagingBuffer(createStagingBuffer(textureInfo, pDevice));
+    if (!pStagingBuffer) {
+        LOG_WARNING("Failed to create staging buffer during texture creation");
+        return false;
+    }
+
+    PooledResource<ICommandPool> commandPoolTemp = pDevice->acquireTempCommandPoolGraphics();
+    // TODO: Implement CommandPoolVK
+    //CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
+    ICommandList* pCommandList = nullptr;
+
+    if (!commandPoolTemp->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
+        LOG_WARNING("Failed to create temporary command list during texture creation");
+        return false;
+    }
+
+    CommandListVK* pCommandListVK = reinterpret_cast<CommandListVK*>(pCommandList);
+    if (!pCommandListVK->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, nullptr)) {
+        return false;
+    }
+
+    VkCommandBuffer commandBuffer = pCommandListVK->getCommandBuffer();
+    if (!convertTextureLayout(commandBuffer, pTexture->getImage(),
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT)
+    ) {
+        LOG_WARNING("Failed to convert image for a transfer from staging buffer");
+        return false;
+    }
+
+    pCommandListVK->copyBufferToTexture(pStagingBuffer.get(), pTexture, textureInfo.Dimensions.x, textureInfo.Dimensions.y);
+
+    if (!convertTextureLayout(commandBuffer, pTexture->getImage(),
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    ) {
+        LOG_WARNING("Failed to convert image for shader reading");
+        return false;
+    }
+
+    if (!pCommandList->end()) {
+        return false;
+    }
+
+    commandPoolTemp.release();
+
+    FenceVK* pFence = pDevice->createFence(false);
+    if (!pFence) {
+        return false;
+    }
+
+    SemaphoreSubmitInfo semaphoreInfo = {};
+    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, semaphoreInfo)) {
+        return false;
+    }
+
+    // Have a separate thread delete the temporary command list and fence when the commands have finished
+    std::function<void()> commandsFinishedFnc = [pFence, pCommandList, pDevice]() {
+        IFence* pIFence = pFence;
+        pDevice->waitForFences(&pIFence, 1u, false, 0u);
+        delete pFence;
+        delete pCommandList;
+    };
+
+    std::thread destructorThread(commandsFinishedFnc);
+    return true;
+}
+
+BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, DeviceVK* pDevice)
 {
     BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize = (size_t)textureSize;
-    bufferInfo.pData    = pPixelData;
+    bufferInfo.ByteSize = size_t(textureInfo.Dimensions.x * textureInfo.Dimensions.y);
+    bufferInfo.pData    = textureInfo.pInitialData->pData;
     bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
     bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
     bufferInfo.Usage        = BUFFER_USAGE::STAGING_BUFFER;
@@ -144,19 +165,19 @@ BufferVK* TextureVK::createStagingBuffer(const unsigned char* pPixelData, VkDevi
     return pDevice->createBuffer(bufferInfo, nullptr);
 }
 
-bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, uint32_t width, uint32_t height, DeviceVK* pDevice)
+bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, VkImageLayout initialLayout, DeviceVK* pDevice)
 {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType     = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width  = width;
-    imageInfo.extent.height = height;
+    imageInfo.extent.width  = textureInfo.Dimensions.x;
+    imageInfo.extent.height = textureInfo.Dimensions.y;
     imageInfo.extent.depth  = 1;
     imageInfo.mipLevels     = 1;
     imageInfo.arrayLayers   = 1;
-    imageInfo.format        = VK_FORMAT_R8G8B8A8_SRGB;
+    imageInfo.format        = textureInfo.Format;
     imageInfo.tiling        = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.initialLayout = initialLayout;
     imageInfo.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
@@ -252,4 +273,34 @@ VkAccessFlags TextureVK::layoutToAccessMask(VkImageLayout layout)
             LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
             return 0u;
 	}
+}
+
+VkImageLayout TextureVK::convertLayoutFlag(TEXTURE_LAYOUT layout)
+{
+    switch (layout) {
+        case TEXTURE_LAYOUT::UNDEFINED:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+        case TEXTURE_LAYOUT::SHADER_READ_ONLY:
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        case TEXTURE_LAYOUT::RENDER_TARGET:
+            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        case TEXTURE_LAYOUT::DEPTH_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        case TEXTURE_LAYOUT::PRESENT:
+            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        default:
+            LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+	}
+}
+
+TextureInfoVK TextureVK::convertTextureInfo(const TextureInfo& textureInfo)
+{
+    TextureInfoVK textureInfoVK = {};
+    textureInfoVK.Dimensions    = textureInfo.Dimensions;
+    textureInfoVK.Layout        = convertLayoutFlag(textureInfo.InitialLayout);
+    textureInfoVK.Format        = convertFormatToVK(textureInfo.Format);
+    textureInfoVK.pInitialData  = textureInfo.pInitialData;
+
+    return textureInfoVK;
 }
