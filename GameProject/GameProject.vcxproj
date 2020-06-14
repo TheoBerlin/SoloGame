@@ -132,9 +132,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\vendor\DirectXTK\DDSTextureLoader.cpp" />
-    <ClCompile Include="..\vendor\DirectXTK\Keyboard.cpp" />
-    <ClCompile Include="..\vendor\DirectXTK\Mouse.cpp" />
-    <ClCompile Include="..\vendor\DirectXTK\pch.cpp" />
     <ClCompile Include="..\vendor\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="Engine\Audio\AudioCore.cpp" />
     <ClCompile Include="Engine\Audio\SoundHandler.cpp" />
@@ -226,10 +223,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\DirectXTK\DDSTextureLoader.h" />
-    <ClInclude Include="..\vendor\DirectXTK\Keyboard.h" />
-    <ClInclude Include="..\vendor\DirectXTK\Mouse.h" />
-    <ClInclude Include="..\vendor\DirectXTK\pch.h" />
-    <ClInclude Include="..\vendor\DirectXTK\PlatformHelpers.h" />
     <ClInclude Include="..\vendor\DirectXTK\WICTextureLoader.h" />
     <ClInclude Include="..\vendor\stb\stb_image.h" />
     <ClInclude Include="..\vendor\vma\vk_mem_alloc.h" />
