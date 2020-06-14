@@ -84,7 +84,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/vendor</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine\EnginePCH.hpp</PrecompiledHeaderFile>
@@ -117,7 +117,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/vendor</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine\EnginePCH.hpp</PrecompiledHeaderFile>
@@ -131,11 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\DirectXTK\DDSTextureLoader.cpp" />
-    <ClCompile Include="..\include\DirectXTK\Keyboard.cpp" />
-    <ClCompile Include="..\include\DirectXTK\Mouse.cpp" />
-    <ClCompile Include="..\include\DirectXTK\pch.cpp" />
-    <ClCompile Include="..\include\DirectXTK\WICTextureLoader.cpp" />
+    <ClCompile Include="..\vendor\DirectXTK\DDSTextureLoader.cpp" />
+    <ClCompile Include="..\vendor\DirectXTK\Keyboard.cpp" />
+    <ClCompile Include="..\vendor\DirectXTK\Mouse.cpp" />
+    <ClCompile Include="..\vendor\DirectXTK\pch.cpp" />
+    <ClCompile Include="..\vendor\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="Engine\Audio\AudioCore.cpp" />
     <ClCompile Include="Engine\Audio\SoundHandler.cpp" />
     <ClCompile Include="Engine\Audio\SoundPlayer.cpp" />
@@ -225,14 +225,14 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\DirectXTK\DDSTextureLoader.h" />
-    <ClInclude Include="..\include\DirectXTK\Keyboard.h" />
-    <ClInclude Include="..\include\DirectXTK\Mouse.h" />
-    <ClInclude Include="..\include\DirectXTK\pch.h" />
-    <ClInclude Include="..\include\DirectXTK\PlatformHelpers.h" />
-    <ClInclude Include="..\include\DirectXTK\WICTextureLoader.h" />
-    <ClInclude Include="..\include\stb\stb_image.h" />
-    <ClInclude Include="..\include\vma\vk_mem_alloc.h" />
+    <ClInclude Include="..\vendor\DirectXTK\DDSTextureLoader.h" />
+    <ClInclude Include="..\vendor\DirectXTK\Keyboard.h" />
+    <ClInclude Include="..\vendor\DirectXTK\Mouse.h" />
+    <ClInclude Include="..\vendor\DirectXTK\pch.h" />
+    <ClInclude Include="..\vendor\DirectXTK\PlatformHelpers.h" />
+    <ClInclude Include="..\vendor\DirectXTK\WICTextureLoader.h" />
+    <ClInclude Include="..\vendor\stb\stb_image.h" />
+    <ClInclude Include="..\vendor\vma\vk_mem_alloc.h" />
     <ClInclude Include="Engine\Audio\AudioCore.hpp" />
     <ClInclude Include="Engine\Audio\SoundHandler.hpp" />
     <ClInclude Include="Engine\Audio\SoundPlayer.hpp" />
