@@ -111,6 +111,13 @@ ISemaphore* DeviceVK::createSemaphore()
     return SemaphoreVK::create(this);
 }
 
+std::string DeviceVK::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
+{
+    // TODO: Implement ShaderVK::getFilePostfix
+    //return ShaderVK::getFilePostfix(shaderType) + ".glsl";
+    return ".glsl";
+}
+
 bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout)
 {
     std::vector<VkFence> fences((size_t)fenceCount);

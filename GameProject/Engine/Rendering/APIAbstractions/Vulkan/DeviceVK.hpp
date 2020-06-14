@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
 
@@ -70,7 +71,7 @@ public:
 
     ISampler* createSampler(const SamplerInfo& samplerInfo) override final      { return nullptr; }
 
-    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final { return ""; }
+    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final;
 
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final       { return nullptr; }
 
