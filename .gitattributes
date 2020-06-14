@@ -12,4 +12,4 @@
 *.sln text eol=CRLF
 
 # Exclude vendored files from language statistics
-include/* linguist-vendored
+vendor/* linguist-vendored
