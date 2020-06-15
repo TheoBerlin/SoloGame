@@ -116,11 +116,6 @@ SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
     return SamplerDX11::create(samplerInfo, m_pDevice);
 }
 
-std::string DeviceDX11::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
-{
-    return ShaderDX11::getFilePostfix(shaderType) + ".hlsl";
-}
-
 RasterizerStateDX11* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
 {
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);

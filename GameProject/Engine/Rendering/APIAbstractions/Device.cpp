@@ -93,8 +93,7 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
 {
     // Create full path to shader file
     // Base shaders folder + relative path and name of shader + postfix and file extension
-    std::string shaderPath = std::string(SHADERS_FOLDER_PATH) + filePath + getShaderPostfixAndExtension(shaderType);
-
+    std::string shaderPath = std::string(SHADERS_FOLDER_PATH) + filePath + Shader::getTypePostfix(shaderType) + getShaderFileExtension();
     Shader* pShader = nullptr;
 
     do {

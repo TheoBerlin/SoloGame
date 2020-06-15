@@ -50,7 +50,7 @@ ShaderHandler::ShaderHandler(Device* pDevice)
 
 std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& shaderName)
 {
-    std::string fullShaderName = shaderName + m_pDevice->getShaderPostfixAndExtension(SHADER_TYPE::VERTEX_SHADER);
+    std::string fullShaderName = shaderName + Shader::getTypePostfix(SHADER_TYPE::VERTEX_SHADER) + m_pDevice->getShaderFileExtension();
     auto shaderItr = m_VertexStageCache.find(fullShaderName);
     if (shaderItr != m_VertexStageCache.end()) {
         std::weak_ptr<VertexStage>& shaderPtr = shaderItr->second;
@@ -86,7 +86,7 @@ std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName,
         return nullptr;
     }
 
-    std::string fullShaderName = shaderName + m_pDevice->getShaderPostfixAndExtension(shaderType);
+    std::string fullShaderName = shaderName + Shader::getTypePostfix(shaderType) + m_pDevice->getShaderFileExtension();
     auto shaderItr = m_ShaderCache.find(fullShaderName);
     if (shaderItr != m_ShaderCache.end()) {
         std::weak_ptr<Shader>& shaderPtr = shaderItr->second;

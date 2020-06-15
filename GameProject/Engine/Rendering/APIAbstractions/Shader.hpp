@@ -19,6 +19,9 @@ DEFINE_BITMASK_OPERATIONS(SHADER_TYPE)
 class Shader
 {
 public:
+    static std::string getTypePostfix(SHADER_TYPE shaderType);
+
+public:
     Shader(SHADER_TYPE shaderType);
     virtual ~Shader() = 0 {};
 

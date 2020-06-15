@@ -5,6 +5,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
 #define NOMINMAX
@@ -111,13 +112,6 @@ ISemaphore* DeviceVK::createSemaphore()
     return SemaphoreVK::create(this);
 }
 
-std::string DeviceVK::getShaderPostfixAndExtension(SHADER_TYPE shaderType)
-{
-    // TODO: Implement ShaderVK::getFilePostfix
-    //return ShaderVK::getFilePostfix(shaderType) + ".glsl";
-    return ".glsl";
-}
-
 bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout)
 {
     std::vector<VkFence> fences((size_t)fenceCount);
@@ -143,6 +137,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
             LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
     }
+}
+
+Shader* DeviceVK::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
+{
+    return ShaderVK::compileShader(filePath, shaderType, this);
 }
 
 bool DeviceVK::executeCommandBuffer(VkQueue queue, ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)

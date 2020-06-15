@@ -63,7 +63,7 @@ public:
 
     SamplerDX11* createSampler(const SamplerInfo& samplerInfo) override final;
 
-    std::string getShaderPostfixAndExtension(SHADER_TYPE shaderType) override final;
+    std::string getShaderFileExtension() override final { return ".hlsl"; }
 
     // Rasterizer
     RasterizerStateDX11* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
