@@ -151,7 +151,7 @@ bool UIRenderer::createDescriptorSetLayouts()
     }
 
     m_pDescriptorSetLayoutCommon->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    if (!m_pDescriptorSetLayoutCommon->finalize()) {
+    if (!m_pDescriptorSetLayoutCommon->finalize(m_pDevice)) {
         return false;
     }
 
@@ -162,7 +162,7 @@ bool UIRenderer::createDescriptorSetLayouts()
 
     m_pDescriptorSetLayoutPanel->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayoutPanel->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    return m_pDescriptorSetLayoutPanel->finalize();
+    return m_pDescriptorSetLayoutPanel->finalize(m_pDevice);
 }
 
 bool UIRenderer::createCommonDescriptorSet()
@@ -172,7 +172,7 @@ bool UIRenderer::createCommonDescriptorSet()
         return false;
     }
 
-    m_pDescriptorSetCommon->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
+    m_pDescriptorSetCommon->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
     return true;
 }
 
@@ -337,8 +337,8 @@ void UIRenderer::onPanelAdded(Entity entity)
         return;
     }
 
-    panelRenderResources.pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, panelRenderResources.pBuffer);
-    panelRenderResources.pDescriptorSet->writeSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, panel.texture);
+    panelRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, panelRenderResources.pBuffer);
+    panelRenderResources.pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, panel.texture);
 
     m_PanelRenderResources.push_back(panelRenderResources, entity);
 }

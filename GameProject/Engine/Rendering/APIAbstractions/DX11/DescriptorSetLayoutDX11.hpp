@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Engine/Rendering/APIAbstractions/DescriptorPool.hpp>
 #include <Engine/Rendering/APIAbstractions/DescriptorSetLayout.hpp>
 
 #include <unordered_map>
@@ -21,7 +20,7 @@ public:
     void addBindingSampledTexture(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
     void addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
 
-    bool finalize() override final;
+    bool finalize(Device* pDevice) override final;
 
     DescriptorCounts getDescriptorCounts() const override final;
 

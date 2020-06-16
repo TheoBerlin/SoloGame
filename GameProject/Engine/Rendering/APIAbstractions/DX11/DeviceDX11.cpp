@@ -131,11 +131,9 @@ BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInf
     return BlendStateDX11::create(blendStateInfo, m_pDevice);
 }
 
-DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorCounts& poolSize)
+DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorPoolInfo& poolInfo)
 {
-    DescriptorPoolDX11* pNewDescriptorPool = DBG_NEW DescriptorPoolDX11();
-    pNewDescriptorPool->init(poolSize);
-    return pNewDescriptorPool;
+    return DBG_NEW DescriptorPoolDX11(poolInfo);
 }
 
 ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)

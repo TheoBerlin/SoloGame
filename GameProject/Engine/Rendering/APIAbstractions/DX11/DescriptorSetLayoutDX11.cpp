@@ -21,7 +21,7 @@ void DescriptorSetLayoutDX11::addBindingSampler(SHADER_BINDING binding, SHADER_T
     m_SamplerSlots.push_back({bindingU, shaderStages});
 }
 
-bool DescriptorSetLayoutDX11::finalize()
+bool DescriptorSetLayoutDX11::finalize(Device* pDevice)
 {
     m_UniformBufferSlots.shrink_to_fit();
     m_SampledTextureSlots.shrink_to_fit();

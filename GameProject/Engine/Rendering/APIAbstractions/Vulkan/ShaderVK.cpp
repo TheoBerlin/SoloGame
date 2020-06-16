@@ -34,6 +34,16 @@ ShaderVK* ShaderVK::compileShader(const std::string& filePath, SHADER_TYPE shade
     return DBG_NEW ShaderVK(shaderModule, shaderType, pDevice);
 }
 
+VkShaderStageFlags ShaderVK::convertShaderFlags(SHADER_TYPE shaderFlags)
+{
+    return
+        HAS_FLAG(shaderFlags, SHADER_TYPE::VERTEX_SHADER)   * VK_SHADER_STAGE_VERTEX_BIT |
+        HAS_FLAG(shaderFlags, SHADER_TYPE::HULL_SHADER)     * VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT |
+        HAS_FLAG(shaderFlags, SHADER_TYPE::DOMAIN_SHADER)   * VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT |
+        HAS_FLAG(shaderFlags, SHADER_TYPE::GEOMETRY_SHADER) * VK_SHADER_STAGE_GEOMETRY_BIT |
+        HAS_FLAG(shaderFlags, SHADER_TYPE::FRAGMENT_SHADER) * VK_SHADER_STAGE_FRAGMENT_BIT;
+}
+
 ShaderVK::ShaderVK(VkShaderModule shaderModule, SHADER_TYPE shaderType, DeviceVK* pDevice)
     :Shader(shaderType),
     m_ShaderModule(shaderModule),

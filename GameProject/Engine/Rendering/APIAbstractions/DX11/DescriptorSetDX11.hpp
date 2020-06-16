@@ -24,9 +24,9 @@ public:
     DescriptorSetDX11(const DescriptorSetLayoutDX11* pDescriptorSetLayout, DescriptorPool* pDescriptorPool);
     ~DescriptorSetDX11() = default;
 
-    void writeUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer) override final;
-    void writeSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture) override final;
-    void writeSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler) override final;
+    void updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer) override final;
+    void updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture) override final;
+    void updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler) override final;
 
     void bind(ID3D11DeviceContext* pContext);
 

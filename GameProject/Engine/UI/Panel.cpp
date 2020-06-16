@@ -186,7 +186,7 @@ bool UIHandler::createDescriptorSetLayout()
     m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    return m_pDescriptorSetLayout->finalize();
+    return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
 bool UIHandler::createPipeline()
@@ -401,9 +401,9 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
             return false;
         }
 
-        pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, pPerAttachmentBuffer);
-        pDescriptorSet->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
-        pDescriptorSet->writeSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get());
+        pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, pPerAttachmentBuffer);
+        pDescriptorSet->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
+        pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get());
 
         renderResources.push_back({pDescriptorSet, pPerAttachmentBuffer});
     }
