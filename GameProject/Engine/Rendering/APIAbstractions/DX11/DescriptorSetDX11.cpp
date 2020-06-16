@@ -11,7 +11,7 @@ DescriptorSetDX11::DescriptorSetDX11(const DescriptorSetLayoutDX11* pDescriptorS
     m_pLayout(pDescriptorSetLayout)
 {}
 
-void DescriptorSetDX11::writeUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer)
+void DescriptorSetDX11::updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer)
 {
     BufferDX11* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer);
     Binding<ID3D11Buffer> bufferBinding = {
@@ -23,7 +23,7 @@ void DescriptorSetDX11::writeUniformBufferDescriptor(SHADER_BINDING binding, IBu
     m_BufferBindings.push_back(bufferBinding);
 }
 
-void DescriptorSetDX11::writeSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture)
+void DescriptorSetDX11::updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture)
 {
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
     Binding<ID3D11ShaderResourceView> textureBinding = {
@@ -35,7 +35,7 @@ void DescriptorSetDX11::writeSampledTextureDescriptor(SHADER_BINDING binding, Te
     m_SampledTextureBindings.push_back(textureBinding);
 }
 
-void DescriptorSetDX11::writeSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler)
+void DescriptorSetDX11::updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler)
 {
     SamplerDX11* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler);
     Binding<ID3D11SamplerState> samplerBinding = {

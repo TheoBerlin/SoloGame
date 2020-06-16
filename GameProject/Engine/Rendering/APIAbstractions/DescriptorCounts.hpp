@@ -23,6 +23,9 @@ public:
 
     std::string toString() const;
 
+    // Gets the amount of unique descriptor types, i.e. the amount of descriptor types whose counts aren't 0
+    uint32_t getDescriptorTypeCount() const;
+
     uint32_t m_UniformBuffers;
     uint32_t m_SampledTextures;
     uint32_t m_Samplers;

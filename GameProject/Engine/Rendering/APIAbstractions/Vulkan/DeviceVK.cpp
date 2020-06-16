@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
@@ -120,6 +121,11 @@ bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAl
     }
 
     return vkWaitForFences(m_Device, fenceCount, fences.data(), (VkBool32)waitAll, timeout) == VK_SUCCESS;
+}
+
+DescriptorPool* DeviceVK::createDescriptorPool(const DescriptorPoolInfo& poolInfo)
+{
+    return DescriptorPoolVK::create(poolInfo, this);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)

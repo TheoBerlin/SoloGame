@@ -13,6 +13,8 @@ class ShaderVK : public Shader
 public:
     static ShaderVK* compileShader(const std::string& filePath, SHADER_TYPE shaderType, DeviceVK* pDevice);
 
+    static VkShaderStageFlags convertShaderFlags(SHADER_TYPE shaderFlags);
+
 public:
     ShaderVK(VkShaderModule shaderModule, SHADER_TYPE shaderType, DeviceVK* pDevice);
     ~ShaderVK();

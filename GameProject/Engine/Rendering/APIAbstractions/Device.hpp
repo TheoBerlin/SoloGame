@@ -133,7 +133,7 @@ public:
 protected:
     friend DescriptorPoolHandler;
 
-    virtual DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) = 0;
+    virtual DescriptorPool* createDescriptorPool(const DescriptorPoolInfo& poolInfo) = 0;
 
 protected:
     DescriptorPoolHandler m_DescriptorPoolHandler;

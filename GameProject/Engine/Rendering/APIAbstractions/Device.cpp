@@ -54,7 +54,11 @@ bool Device::init(const DescriptorCounts& descriptorCounts)
         return false;
     }
 
-    m_DescriptorPoolHandler.init(descriptorCounts, this);
+    DescriptorPoolInfo descriptorPoolInfo = {};
+    descriptorPoolInfo.DescriptorCounts         = descriptorCounts;
+    descriptorPoolInfo.MaxSetAllocations        = 25u;
+    descriptorPoolInfo.FreeableDescriptorSets   = true;
+    m_DescriptorPoolHandler.init(descriptorPoolInfo, this);
 
     m_pShaderHandler = DBG_NEW ShaderHandler(this);
     return m_pShaderHandler;

@@ -27,7 +27,8 @@ public:
 
     bool convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage);
 
-    inline VkImage getImage() { return m_Image; }
+    inline VkImage getImage()           { return m_Image; }
+    inline VkImageView getImageView()   { return m_ImageView; }
 
 private:
     static bool setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, DeviceVK* pDevice);

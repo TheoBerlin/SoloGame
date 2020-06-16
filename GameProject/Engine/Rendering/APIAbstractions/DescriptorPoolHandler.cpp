@@ -12,11 +12,11 @@ DescriptorPoolHandler::~DescriptorPoolHandler()
     }
 }
 
-void DescriptorPoolHandler::init(const DescriptorCounts& poolSizes, Device* pDevice)
+void DescriptorPoolHandler::init(const DescriptorPoolInfo& poolInfos, Device* pDevice)
 {
-    m_PoolSizes = poolSizes;
+    m_PoolInfos = poolInfos;
 
-    m_DescriptorPools.push_back(pDevice->createDescriptorPool(poolSizes));
+    m_DescriptorPools.push_back(pDevice->createDescriptorPool(poolInfos));
 }
 
 DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSetLayout* pLayout, Device* pDevice)
@@ -29,6 +29,7 @@ DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSet
             pDescriptorSet = pDescriptorPool->allocateDescriptorSet(pLayout);
 
             if (pDescriptorSet) {
+                pDescriptorPool->allocatedDescriptorSet(descriptorsToAllocate);
                 return pDescriptorSet;
             }
         }
@@ -36,13 +37,13 @@ DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSet
 
     // No descriptor pool was able to allocate the descriptor set, create a new pool
     // The new pool needs to be at least large enough to fit the new descriptor set
-    DescriptorCounts newPoolSize = m_PoolSizes;
-    newPoolSize.ceil(descriptorsToAllocate);
+    DescriptorPoolInfo newPoolInfo = m_PoolInfos;
+    newPoolInfo.DescriptorCounts.ceil(descriptorsToAllocate);
 
-    DescriptorCounts newRecommendedPoolSize = m_PoolSizes * (uint32_t)m_DescriptorPools.size() + descriptorsToAllocate;
+    DescriptorCounts newRecommendedPoolSize = m_PoolInfos.DescriptorCounts * (uint32_t)m_DescriptorPools.size() + descriptorsToAllocate;
     LOG_INFO("Pool size exceeded, new recommended pool size: %s", newRecommendedPoolSize.toString().c_str());
 
-    m_DescriptorPools.push_back(pDevice->createDescriptorPool(newPoolSize));
+    m_DescriptorPools.push_back(pDevice->createDescriptorPool(newPoolInfo));
 
     // Last attempt to allocate descriptor set
     pDescriptorSet = m_DescriptorPools.back()->allocateDescriptorSet(pLayout);

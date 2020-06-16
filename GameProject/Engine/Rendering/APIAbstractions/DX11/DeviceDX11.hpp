@@ -78,7 +78,7 @@ public:
     ID3D11DeviceContext* getContext()   { return m_pContext; }
 
 protected:
-    DescriptorPoolDX11* createDescriptorPool(const DescriptorCounts& poolSize) override final;
+    DescriptorPoolDX11* createDescriptorPool(const DescriptorPoolInfo& poolInfo) override final;
 
 private:
     ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;

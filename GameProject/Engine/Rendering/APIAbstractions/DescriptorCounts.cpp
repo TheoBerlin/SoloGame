@@ -18,9 +18,10 @@ DescriptorCounts& DescriptorCounts::operator+=(const DescriptorCounts& other)
 
 DescriptorCounts& DescriptorCounts::operator-=(const DescriptorCounts& other)
 {
-    m_UniformBuffers    -= other.m_UniformBuffers;
-    m_SampledTextures   -= other.m_SampledTextures;
-    m_Samplers          -= other.m_Samplers;
+    // Avoid underflow
+    m_UniformBuffers    = (uint32_t)std::max(0, (int)m_UniformBuffers - (int)other.m_UniformBuffers);
+    m_SampledTextures   = (uint32_t)std::max(0, (int)m_SampledTextures - (int)other.m_SampledTextures);
+    m_Samplers          = (uint32_t)std::max(0, (int)m_Samplers - (int)other.m_Samplers);
     return *this;
 }
 
@@ -60,4 +61,12 @@ std::string DescriptorCounts::toString() const
         "Uniform Buffers: "     + std::to_string(m_UniformBuffers) + ", " +
         "Sampled Textures: "    + std::to_string(m_SampledTextures) + ", " +
         "Samplers: "            + std::to_string(m_Samplers);
+}
+
+uint32_t DescriptorCounts::getDescriptorTypeCount() const
+{
+    return
+        m_UniformBuffers    != 0u +
+        m_SampledTextures   != 0u +
+        m_Samplers          != 0u;
 }

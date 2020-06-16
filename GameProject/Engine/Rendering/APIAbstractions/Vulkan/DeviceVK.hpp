@@ -84,7 +84,7 @@ public:
     VkDevice getDevice()                { return m_Device; }
 
 protected:
-    DescriptorPool* createDescriptorPool(const DescriptorCounts& poolSize) override final { return nullptr; }
+    DescriptorPool* createDescriptorPool(const DescriptorPoolInfo& poolInfo) override final;
 
 private:
     friend DeviceCreatorVK;

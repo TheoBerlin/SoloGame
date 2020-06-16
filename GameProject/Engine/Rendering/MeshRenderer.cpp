@@ -246,7 +246,7 @@ bool MeshRenderer::createDescriptorSetLayouts()
     m_pDescriptorSetLayoutCommon->addBindingUniformBuffer(SHADER_BINDING::PER_FRAME, SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayoutCommon->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
 
-    if (!m_pDescriptorSetLayoutCommon->finalize()) {
+    if (!m_pDescriptorSetLayoutCommon->finalize(m_pDevice)) {
         return false;
     }
 
@@ -255,7 +255,7 @@ bool MeshRenderer::createDescriptorSetLayouts()
 
     m_pDescriptorSetLayoutModel->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER);
 
-    if (!m_pDescriptorSetLayoutModel->finalize()) {
+    if (!m_pDescriptorSetLayoutModel->finalize(m_pDevice)) {
         return false;
     }
 
@@ -265,7 +265,7 @@ bool MeshRenderer::createDescriptorSetLayouts()
     m_pDescriptorSetLayoutMesh->addBindingUniformBuffer(SHADER_BINDING::MATERIAL_CONSTANTS, SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayoutMesh->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
 
-    return m_pDescriptorSetLayoutMesh->finalize();
+    return m_pDescriptorSetLayoutMesh->finalize(m_pDevice);
 }
 
 bool MeshRenderer::createCommonDescriptorSet()
@@ -275,8 +275,8 @@ bool MeshRenderer::createCommonDescriptorSet()
         return false;
     }
 
-    m_pDescriptorSetCommon->writeUniformBufferDescriptor(SHADER_BINDING::PER_FRAME, m_pPointLightBuffer);
-    m_pDescriptorSetCommon->writeSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
+    m_pDescriptorSetCommon->updateUniformBufferDescriptor(SHADER_BINDING::PER_FRAME, m_pPointLightBuffer);
+    m_pDescriptorSetCommon->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
     return true;
 }
 
@@ -430,7 +430,7 @@ void MeshRenderer::onMeshAdded(Entity entity)
 
     // Per-model descriptor set
     modelRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutModel);
-    modelRenderResources.pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, modelRenderResources.pWVPBuffer);
+    modelRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, modelRenderResources.pWVPBuffer);
 
     // Per-mesh resources
     for (const Mesh& mesh : pModel->Meshes) {
@@ -449,8 +449,8 @@ void MeshRenderer::onMeshAdded(Entity entity)
 
         // Create per-mesh descriptor set
         meshRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutMesh);
-        meshRenderResources.pDescriptorSet->writeUniformBufferDescriptor(SHADER_BINDING::MATERIAL_CONSTANTS, meshRenderResources.pMaterialBuffer);
-        meshRenderResources.pDescriptorSet->writeSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, material.textures[0].get());
+        meshRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::MATERIAL_CONSTANTS, meshRenderResources.pMaterialBuffer);
+        meshRenderResources.pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, material.textures[0].get());
 
         modelRenderResources.MeshRenderResources.push_back(meshRenderResources);
     }
