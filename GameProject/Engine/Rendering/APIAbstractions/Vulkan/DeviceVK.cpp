@@ -9,6 +9,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
 #define NOMINMAX
@@ -118,6 +119,21 @@ FenceVK* DeviceVK::createFence(bool createSignaled)
 ISemaphore* DeviceVK::createSemaphore()
 {
     return SemaphoreVK::create(this);
+}
+
+BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources)
+{
+    return BufferVK::create(bufferInfo, this, pStagingResources);
+}
+
+Texture* DeviceVK::createTextureFromFile(const std::string& filePath)
+{
+    return TextureVK::createFromFile(filePath, this);
+}
+
+Texture* DeviceVK::createTexture(const TextureInfo& textureInfo)
+{
+    return TextureVK::create(textureInfo, this);
 }
 
 ISampler* DeviceVK::createSampler(const SamplerInfo& samplerInfo)
