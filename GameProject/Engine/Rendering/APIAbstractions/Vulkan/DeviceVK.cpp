@@ -6,6 +6,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
@@ -109,6 +110,11 @@ ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint3
 IDescriptorSetLayout* DeviceVK::createDescriptorSetLayout()
 {
     return DBG_NEW DescriptorSetLayoutVK();
+}
+
+IPipelineLayout* DeviceVK::createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts)
+{
+    return PipelineLayoutVK::create(descriptorSetLayouts, this);
 }
 
 FenceVK* DeviceVK::createFence(bool createSignaled)

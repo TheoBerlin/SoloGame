@@ -47,7 +47,7 @@ public:
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     PipelineDX11* createPipeline(const PipelineInfo& pipelineInfo) override final;
-    PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) override final { return DBG_NEW PipelineLayoutDX11(); }
+    PipelineLayoutDX11* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) override final { return DBG_NEW PipelineLayoutDX11(); }
 
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
     void unmap(IBuffer* pBuffer) override final;
