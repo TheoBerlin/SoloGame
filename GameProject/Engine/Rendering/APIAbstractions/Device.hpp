@@ -91,7 +91,7 @@ public:
     virtual IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) = 0;
     virtual IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) = 0;
 
-    virtual IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayout) = 0;
+    virtual IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) = 0;
     virtual IPipeline* createPipeline(const PipelineInfo& pipelineInfo) = 0;
 
     virtual void map(IBuffer* pBuffer, void** ppMappedMemory) = 0;

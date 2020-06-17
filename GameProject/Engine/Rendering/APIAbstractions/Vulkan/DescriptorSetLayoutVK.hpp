@@ -24,6 +24,7 @@ public:
     void addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
 
     DescriptorCounts getDescriptorCounts() const override final;
+    inline VkDescriptorSetLayout getDescriptorSetLayout() const { return m_DescriptorSetLayout; }
 
 private:
     void addBinding(uint32_t binding, VkDescriptorType descriptorType, SHADER_TYPE shaderStages);
