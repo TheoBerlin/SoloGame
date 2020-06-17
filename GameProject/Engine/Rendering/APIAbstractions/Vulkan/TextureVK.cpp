@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandListVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/FenceVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
@@ -91,11 +92,10 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
     }
 
     PooledResource<ICommandPool> commandPoolTemp = pDevice->acquireTempCommandPoolGraphics();
-    // TODO: Implement CommandPoolVK
-    //CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
+    CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
     ICommandList* pCommandList = nullptr;
 
-    if (!commandPoolTemp->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
+    if (!pCommandPoolVK->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
         LOG_WARNING("Failed to create temporary command list during texture creation");
         return false;
     }
@@ -124,7 +124,7 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
         return false;
     }
 
-    if (!pCommandList->end()) {
+    if (!pCommandListVK->end()) {
         return false;
     }
 

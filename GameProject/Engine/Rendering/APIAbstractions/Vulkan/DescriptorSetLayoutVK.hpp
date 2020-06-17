@@ -23,6 +23,8 @@ public:
     void addBindingSampledTexture(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
     void addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
 
+    DescriptorCounts getDescriptorCounts() const override final;
+
 private:
     void addBinding(uint32_t binding, VkDescriptorType descriptorType, SHADER_TYPE shaderStages);
 

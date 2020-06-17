@@ -192,6 +192,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\SamplerVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\ShaderVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.cpp" />
@@ -306,6 +307,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\SamplerVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\ShaderVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\TextureVK.hpp" />

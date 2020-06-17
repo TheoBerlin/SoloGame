@@ -17,7 +17,7 @@ SamplerDX11* SamplerDX11::create(const SamplerInfo& samplerInfo, ID3D11Device* p
     samplerDesc.ComparisonFunc = convertComparisonFunc(samplerInfo.ComparisonFunc);
 
     if (samplerDesc.AddressU == D3D11_TEXTURE_ADDRESS_BORDER || samplerDesc.AddressV == D3D11_TEXTURE_ADDRESS_BORDER || samplerDesc.AddressW == D3D11_TEXTURE_ADDRESS_BORDER) {
-        std::memcpy(samplerDesc.BorderColor, samplerInfo.pBorderColor, sizeof(float) * 4u);
+        convertBorderColor(samplerInfo.BorderColor, samplerDesc.BorderColor);
     }
 
     samplerDesc.MinLOD = (FLOAT)samplerInfo.MinLOD;
@@ -129,4 +129,21 @@ D3D11_COMPARISON_FUNC SamplerDX11::convertComparisonFunc(COMPARISON_FUNC compari
             LOG_WARNING("Erroneous comparison function: %d", (int)comparisonFunc);
             return D3D11_COMPARISON_ALWAYS;
     }
+}
+
+void SamplerDX11::convertBorderColor(BORDER_COLOR borderColor, FLOAT* pColor)
+{
+    float color = 0.0f;
+    float alpha = 1.0f;
+
+    if (borderColor == BORDER_COLOR::WHITE_OPAQUE) {
+        color = 1.0f;
+    } else if (borderColor == BORDER_COLOR::BLACK_TRANSPARENT) {
+        alpha = 0.5f;
+    }
+
+    pColor[0] = color;
+    pColor[1] = color;
+    pColor[2] = color;
+    pColor[3] = alpha;
 }

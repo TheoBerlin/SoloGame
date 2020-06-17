@@ -42,6 +42,7 @@ private:
     static void setFilterMode(D3D11_SAMPLER_DESC& samplerDesc, const SamplerInfo& samplerInfo);
     static D3D11_TEXTURE_ADDRESS_MODE convertAddressMode(ADDRESS_MODE addressMode);
     static D3D11_COMPARISON_FUNC convertComparisonFunc(COMPARISON_FUNC comparisonFunc);
+    static void convertBorderColor(BORDER_COLOR borderColor, FLOAT* pColor);
 
 private:
     ID3D11SamplerState* m_pSamplerState;
