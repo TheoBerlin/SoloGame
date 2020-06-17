@@ -49,7 +49,7 @@ public:
 
     ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 
-    IDescriptorSetLayout* createDescriptorSetLayout() override final { return nullptr; }
+    IDescriptorSetLayout* createDescriptorSetLayout() override final;
 
     IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final  { return nullptr; }
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final      { return nullptr; }
@@ -69,7 +69,7 @@ public:
     Texture* createTextureFromFile(const std::string& filePath) override final  { return nullptr; }
     Texture* createTexture(const TextureInfo& textureInfo) override final       { return nullptr; }
 
-    ISampler* createSampler(const SamplerInfo& samplerInfo) override final      { return nullptr; }
+    ISampler* createSampler(const SamplerInfo& samplerInfo) override final;
 
     std::string getShaderFileExtension() override final { return ".spv"; }
 

@@ -39,7 +39,23 @@ void DescriptorSetLayoutVK::addBindingSampledTexture(SHADER_BINDING binding, SHA
 
 void DescriptorSetLayoutVK::addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages)
 {
-    addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, shaderStages);
+    addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_SAMPLER, shaderStages);
+}
+
+DescriptorCounts DescriptorSetLayoutVK::getDescriptorCounts() const
+{
+    DescriptorCounts descriptorCounts = {};
+    for (const VkDescriptorSetLayoutBinding& binding : m_Bindings) {
+        if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+            descriptorCounts.m_UniformBuffers += 1u;
+        } else if (binding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) {
+            descriptorCounts.m_SampledTextures += 1u;
+        } else if (binding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER) {
+            descriptorCounts.m_Samplers += 1u;
+        }
+    }
+
+    return descriptorCounts;
 }
 
 void DescriptorSetLayoutVK::addBinding(uint32_t binding, VkDescriptorType descriptorType, SHADER_TYPE shaderStages)

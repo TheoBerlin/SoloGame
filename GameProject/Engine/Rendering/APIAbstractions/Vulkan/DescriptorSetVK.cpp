@@ -3,7 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
-//#include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 
 DescriptorSetVK::DescriptorSetVK(VkDescriptorSet descriptorSet, DescriptorPoolVK* pDescriptorPool, const DescriptorSetLayoutVK* pLayout, DeviceVK* pDevice)
@@ -33,8 +33,7 @@ void DescriptorSetVK::updateSampledTextureDescriptor(SHADER_BINDING binding, Tex
 void DescriptorSetVK::updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler)
 {
     VkDescriptorImageInfo imageInfo = {};
-    // TODO: Implement SamplerVK
-    //imageInfo.sampler       = reinterpret_cast<SamplerVK*>(pSampler)->getSampler();
+    imageInfo.sampler = reinterpret_cast<SamplerVK*>(pSampler)->getSampler();
 
     updateDescriptor(binding, &imageInfo, nullptr);
 }

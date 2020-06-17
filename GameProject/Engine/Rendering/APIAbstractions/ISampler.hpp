@@ -16,6 +16,12 @@ enum class ADDRESS_MODE {
     CLAMP_TO_BORDER
 };
 
+enum class BORDER_COLOR {
+    WHITE_OPAQUE,
+    BLACK_OPAQUE,
+    BLACK_TRANSPARENT
+};
+
 struct SamplerInfo {
     FILTER FilterMin;
     FILTER FilterMag;
@@ -28,7 +34,7 @@ struct SamplerInfo {
     float MipLODBias;
     bool CompareEnabled;
     COMPARISON_FUNC ComparisonFunc;
-    float* pBorderColor;
+    BORDER_COLOR BorderColor;
     float MinLOD;
     float MaxLOD;
 };
