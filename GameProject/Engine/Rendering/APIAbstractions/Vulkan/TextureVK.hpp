@@ -15,7 +15,7 @@ struct TextureInfoVK {
     InitialData* pInitialData;  // Optional
 };
 
-class TextureVK : Texture
+class TextureVK : public Texture
 {
 public:
     static TextureVK* createFromFile(const std::string& filePath, DeviceVK* pDevice);

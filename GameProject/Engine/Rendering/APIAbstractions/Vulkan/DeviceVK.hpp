@@ -64,10 +64,10 @@ public:
     ISemaphore* createSemaphore() override final;
 
     // Shader resources
-    BufferVK* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final { return nullptr; }
+    BufferVK* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final;
 
-    Texture* createTextureFromFile(const std::string& filePath) override final  { return nullptr; }
-    Texture* createTexture(const TextureInfo& textureInfo) override final       { return nullptr; }
+    Texture* createTextureFromFile(const std::string& filePath) override final;
+    Texture* createTexture(const TextureInfo& textureInfo) override final;
 
     ISampler* createSampler(const SamplerInfo& samplerInfo) override final;
 
