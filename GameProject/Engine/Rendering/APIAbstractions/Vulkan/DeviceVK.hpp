@@ -75,8 +75,6 @@ public:
 
     IRasterizerState* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final       { return nullptr; }
 
-    BlendState* createBlendState(const BlendStateInfo& blendStateInfo) override final                       { return nullptr; }
-
     bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final;
 
     VmaAllocator getVulkanAllocator()   { return m_Allocator; }

@@ -27,7 +27,10 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
     if (!createDepthStencilState(pipelineInfoDX.DepthStencilState, pipelineInfo.DepthStencilStateInfo, pDevice->getDevice())) {
         return nullptr;
     }
-    pipelineInfoDX.pBlendState = pDevice->createBlendState(pipelineInfo.BlendStateInfo);
+
+    if (!createBlendState(pipelineInfoDX.BlendState, pipelineInfo.BlendStateInfo, pDevice->getDevice())) {
+        return nullptr;
+    }
 
     return DBG_NEW PipelineDX11(pipelineInfoDX);
 }
@@ -68,7 +71,7 @@ PipelineDX11::~PipelineDX11()
 {
     delete m_PipelineInfo.pRasterizerState;
     SAFERELEASE(m_PipelineInfo.DepthStencilState.pDepthStencilState)
-    delete m_PipelineInfo.pBlendState;
+    SAFERELEASE(m_PipelineInfo.BlendState.pBlendState)
 }
 
 void PipelineDX11::bind(ID3D11DeviceContext* pContext)
@@ -86,7 +89,6 @@ void PipelineDX11::bind(ID3D11DeviceContext* pContext)
     pContext->RSSetState(m_PipelineInfo.pRasterizerState->getRasterizerState());
     pContext->RSSetViewports((UINT)m_PipelineInfo.Viewports.size(), (const D3D11_VIEWPORT*)m_PipelineInfo.Viewports.data());
 
-    BlendStateDX11* pBlendState                 = m_PipelineInfo.pBlendState;
     pContext->OMSetDepthStencilState(m_PipelineInfo.DepthStencilState.pDepthStencilState, m_PipelineInfo.DepthStencilState.StencilReference);
-    pContext->OMSetBlendState(pBlendState->getBlendState(), pBlendState->getBlendConstants(), D3D11_COLOR_WRITE_ENABLE_ALL);
+    pContext->OMSetBlendState(m_PipelineInfo.BlendState.pBlendState, m_PipelineInfo.BlendState.pBlendConstants, D3D11_COLOR_WRITE_ENABLE_ALL);
 }

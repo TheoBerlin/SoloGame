@@ -18,7 +18,7 @@ struct PipelineInfoDX11 {
     std::vector<Viewport> Viewports;
     RasterizerStateDX11* pRasterizerState;
     DepthStencilStateDX11 DepthStencilState;
-    BlendStateDX11* pBlendState;
+    BlendStateDX11 BlendState;
 };
 
 class DeviceDX11;
