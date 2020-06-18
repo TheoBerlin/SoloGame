@@ -116,11 +116,6 @@ SamplerDX11* DeviceDX11::createSampler(const SamplerInfo& samplerInfo)
     return SamplerDX11::create(samplerInfo, m_pDevice);
 }
 
-RasterizerStateDX11* DeviceDX11::createRasterizerState(const RasterizerStateInfo& rasterizerInfo)
-{
-    return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
-}
-
 DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorPoolInfo& poolInfo)
 {
     return DBG_NEW DescriptorPoolDX11(poolInfo);

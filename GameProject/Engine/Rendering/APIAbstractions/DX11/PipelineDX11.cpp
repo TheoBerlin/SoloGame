@@ -22,8 +22,12 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
 
     pipelineInfoDX.Shaders.shrink_to_fit();
 
-    pipelineInfoDX.Viewports            = pipelineInfo.Viewports;
-    pipelineInfoDX.pRasterizerState     = pDevice->createRasterizerState(pipelineInfo.RasterizerStateInfo);
+    pipelineInfoDX.Viewports        = pipelineInfo.Viewports;
+
+    if (!createRasterizerState(pipelineInfoDX.RasterizerState, pipelineInfo.RasterizerStateInfo, pDevice->getDevice())) {
+        return nullptr;
+    }
+
     if (!createDepthStencilState(pipelineInfoDX.DepthStencilState, pipelineInfo.DepthStencilStateInfo, pDevice->getDevice())) {
         return nullptr;
     }
@@ -69,7 +73,7 @@ PipelineDX11::PipelineDX11(const PipelineInfoDX11& pipelineInfo)
 
 PipelineDX11::~PipelineDX11()
 {
-    delete m_PipelineInfo.pRasterizerState;
+    SAFERELEASE(m_PipelineInfo.RasterizerState.pRasterizerState)
     SAFERELEASE(m_PipelineInfo.DepthStencilState.pDepthStencilState)
     SAFERELEASE(m_PipelineInfo.BlendState.pBlendState)
 }
@@ -86,7 +90,7 @@ void PipelineDX11::bind(ID3D11DeviceContext* pContext)
     pContext->IASetInputLayout(pInputLayout->getInputLayout());
     pContext->IASetPrimitiveTopology(m_PipelineInfo.PrimitiveTopology);
 
-    pContext->RSSetState(m_PipelineInfo.pRasterizerState->getRasterizerState());
+    pContext->RSSetState(m_PipelineInfo.RasterizerState.pRasterizerState);
     pContext->RSSetViewports((UINT)m_PipelineInfo.Viewports.size(), (const D3D11_VIEWPORT*)m_PipelineInfo.Viewports.data());
 
     pContext->OMSetDepthStencilState(m_PipelineInfo.DepthStencilState.pDepthStencilState, m_PipelineInfo.DepthStencilState.StencilReference);

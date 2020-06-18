@@ -16,7 +16,7 @@ struct PipelineInfoDX11 {
     std::shared_ptr<VertexStage> VertexStage;
     std::vector<std::shared_ptr<Shader>> Shaders;
     std::vector<Viewport> Viewports;
-    RasterizerStateDX11* pRasterizerState;
+    RasterizerStateDX11 RasterizerState;
     DepthStencilStateDX11 DepthStencilState;
     BlendStateDX11 BlendState;
 };

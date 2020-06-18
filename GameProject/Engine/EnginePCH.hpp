@@ -16,7 +16,7 @@
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/ICommandList.hpp>
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/RasterizerState.hpp>
 #include <Engine/Rendering/APIAbstractions/ISampler.hpp>
 #include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
 #include <Engine/Rendering/APIAbstractions/PipelineLayout.hpp>
