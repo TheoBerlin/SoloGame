@@ -31,9 +31,3 @@ struct DepthStencilInfo {
     StencilOpInfo BackFace;
     uint32_t Reference;
 };
-
-class IDepthStencilState
-{
-public:
-    virtual ~IDepthStencilState() = 0 {};
-};

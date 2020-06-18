@@ -120,7 +120,6 @@ public:
 
     // Output merger
     virtual BlendState* createBlendState(const BlendStateInfo& blendStateInfo) = 0;
-    virtual IDepthStencilState* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) = 0;
 
     // waitAll: Wait for every fence or just one. timeout: Nanoseconds
     virtual bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) = 0;

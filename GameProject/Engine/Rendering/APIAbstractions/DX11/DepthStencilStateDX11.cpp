@@ -5,8 +5,11 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-DepthStencilStateDX11* DepthStencilStateDX11::create(const DepthStencilInfo& depthStencilInfo, ID3D11Device* pDevice)
+bool createDepthStencilState(DepthStencilStateDX11& depthStencilState, const DepthStencilInfo& depthStencilInfo, ID3D11Device* pDevice)
 {
+    depthStencilState = {};
+    depthStencilState.StencilReference = (UINT)depthStencilInfo.Reference;
+
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
     depthStencilDesc.DepthEnable        = (BOOL)depthStencilInfo.DepthTestEnabled;
     depthStencilDesc.DepthWriteMask     = depthStencilInfo.DepthWriteEnabled ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -20,27 +23,16 @@ DepthStencilStateDX11* DepthStencilStateDX11::create(const DepthStencilInfo& dep
         depthStencilDesc.StencilWriteMask   = 0xFF;
     }
 
-    ID3D11DepthStencilState* pDepthStencilState = nullptr;
-    HRESULT hr = pDevice->CreateDepthStencilState(&depthStencilDesc, &pDepthStencilState);
+    HRESULT hr = pDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState.pDepthStencilState);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
-        return nullptr;
+        return false;
     }
 
-    return DBG_NEW DepthStencilStateDX11(pDepthStencilState, (UINT)depthStencilInfo.Reference);
+    return true;
 }
 
-DepthStencilStateDX11::DepthStencilStateDX11(ID3D11DepthStencilState* pDepthStencilState, UINT stencilReference)
-    :m_pDepthStencilState(pDepthStencilState),
-    m_StencilReference(stencilReference)
-{}
-
-DepthStencilStateDX11::~DepthStencilStateDX11()
-{
-    SAFERELEASE(m_pDepthStencilState)
-}
-
-D3D11_DEPTH_STENCILOP_DESC DepthStencilStateDX11::convertStencilOpInfo(const StencilOpInfo& stencilOpInfo)
+D3D11_DEPTH_STENCILOP_DESC convertStencilOpInfo(const StencilOpInfo& stencilOpInfo)
 {
     D3D11_DEPTH_STENCILOP_DESC stencilOpDesc = {};
     stencilOpDesc.StencilFailOp = convertStencilOp(stencilOpInfo.StencilFailOp);
@@ -51,7 +43,7 @@ D3D11_DEPTH_STENCILOP_DESC DepthStencilStateDX11::convertStencilOpInfo(const Ste
     return stencilOpDesc;
 }
 
-D3D11_STENCIL_OP DepthStencilStateDX11::convertStencilOp(STENCIL_OP stencilOp)
+D3D11_STENCIL_OP convertStencilOp(STENCIL_OP stencilOp)
 {
     switch (stencilOp) {
         case STENCIL_OP::KEEP:

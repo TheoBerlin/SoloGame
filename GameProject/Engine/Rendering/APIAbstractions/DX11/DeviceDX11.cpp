@@ -121,11 +121,6 @@ RasterizerStateDX11* DeviceDX11::createRasterizerState(const RasterizerStateInfo
     return RasterizerStateDX11::create(rasterizerInfo, m_pDevice);
 }
 
-DepthStencilStateDX11* DeviceDX11::createDepthStencilState(const DepthStencilInfo& depthStencilInfo)
-{
-    return DepthStencilStateDX11::create(depthStencilInfo, m_pDevice);
-}
-
 BlendStateDX11* DeviceDX11::createBlendState(const BlendStateInfo& blendStateInfo)
 {
     return BlendStateDX11::create(blendStateInfo, m_pDevice);

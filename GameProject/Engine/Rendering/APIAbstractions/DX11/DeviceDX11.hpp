@@ -70,7 +70,6 @@ public:
 
     // Output merger
     BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
-    DepthStencilStateDX11* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final;
 
     bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final { return true; }
 
