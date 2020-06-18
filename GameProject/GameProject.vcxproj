@@ -155,7 +155,6 @@
     <ClCompile Include="Engine\InputHandler.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsCore.cpp" />
     <ClCompile Include="Engine\Physics\Velocity.cpp" />
-    <ClCompile Include="Engine\Rendering\APIAbstractions\BlendState.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DescriptorCounts.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DescriptorPool.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\DescriptorPoolHandler.cpp" />
@@ -288,7 +287,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Device.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\DX11\DeviceDX11.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\InputLayout.hpp" />
-    <ClInclude Include="Engine\Rendering\APIAbstractions\IRasterizerState.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\RasterizerState.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\ISampler.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\GeneralResources.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Pipeline.hpp" />

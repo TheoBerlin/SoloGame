@@ -3,7 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
 #include <Engine/Rendering/APIAbstractions/DepthStencilState.hpp>
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
-#include <Engine/Rendering/APIAbstractions/IRasterizerState.hpp>
+#include <Engine/Rendering/APIAbstractions/RasterizerState.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 

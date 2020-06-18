@@ -7,11 +7,14 @@
 #include <algorithm>
 #include <vector>
 
-BlendStateDX11* BlendStateDX11::create(const BlendStateInfo& blendStateInfo, ID3D11Device* pDevice)
+bool createBlendState(BlendStateDX11& blendState, const BlendStateInfo& blendStateInfo, ID3D11Device* pDevice)
 {
     if (blendStateInfo.RenderTargetBlendInfos.size() > 8) {
         LOG_ERROR("DirectX 11 does not support more than 8 simultaneous render targets, attempted nr: %d", blendStateInfo.RenderTargetBlendInfos.size());
     }
+
+    blendState = {};
+    std::memcpy(blendState.pBlendConstants, blendStateInfo.pBlendConstants, sizeof(FLOAT) * 4u);
 
     size_t blendInfosCount = std::min(blendStateInfo.RenderTargetBlendInfos.size(), size_t(8u));
 
@@ -35,28 +38,17 @@ BlendStateDX11* BlendStateDX11::create(const BlendStateInfo& blendStateInfo, ID3
         rtvBlendDesc.RenderTargetWriteMask  = (UINT8)rtvBlendInfo.ColorWriteMask;
     }
 
-    ID3D11BlendState* pBlendState = nullptr;
-    HRESULT hr = pDevice->CreateBlendState(&blendDesc, &pBlendState);
+    HRESULT hr = pDevice->CreateBlendState(&blendDesc, &blendState.pBlendState);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create blend state: %s", hresultToString(hr).c_str());
-        SAFERELEASE(pBlendState)
-        return nullptr;
+        SAFERELEASE(blendState.pBlendState)
+        return false;
     }
 
-    return DBG_NEW BlendStateDX11(pBlendState, blendStateInfo.pBlendConstants);
+    return true;
 }
 
-BlendStateDX11::BlendStateDX11(ID3D11BlendState* pBlendState, const float pBlendConstants[4])
-    :BlendState(pBlendConstants),
-    m_pBlendState(pBlendState)
-{}
-
-BlendStateDX11::~BlendStateDX11()
-{
-    SAFERELEASE(m_pBlendState)
-}
-
-D3D11_BLEND BlendStateDX11::convertBlendFactor(BLEND_FACTOR blendFactor)
+D3D11_BLEND convertBlendFactor(BLEND_FACTOR blendFactor)
 {
     switch (blendFactor) {
         case BLEND_FACTOR::ZERO:
@@ -101,7 +93,7 @@ D3D11_BLEND BlendStateDX11::convertBlendFactor(BLEND_FACTOR blendFactor)
     }
 }
 
-D3D11_BLEND_OP BlendStateDX11::convertBlendOp(BLEND_OP blendOp)
+D3D11_BLEND_OP convertBlendOp(BLEND_OP blendOp)
 {
     switch (blendOp) {
         case BLEND_OP::ADD:

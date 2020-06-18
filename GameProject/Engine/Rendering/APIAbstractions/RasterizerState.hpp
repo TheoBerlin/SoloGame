@@ -26,9 +26,3 @@ struct RasterizerStateInfo {
     float DepthBiasSlopeFactor;
     float LineWidth;
 };
-
-class IRasterizerState
-{
-public:
-    virtual ~IRasterizerState() = 0 {};
-};

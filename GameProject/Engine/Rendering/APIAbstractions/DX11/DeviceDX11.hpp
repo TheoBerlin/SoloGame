@@ -65,13 +65,6 @@ public:
 
     std::string getShaderFileExtension() override final { return ".hlsl"; }
 
-    // Rasterizer
-    RasterizerStateDX11* createRasterizerState(const RasterizerStateInfo& rasterizerInfo) override final;
-
-    // Output merger
-    BlendStateDX11* createBlendState(const BlendStateInfo& blendStateInfo) override final;
-    DepthStencilStateDX11* createDepthStencilState(const DepthStencilInfo& depthStencilInfo) override final;
-
     bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final { return true; }
 
     ID3D11Device* getDevice()           { return m_pDevice; }

@@ -57,15 +57,3 @@ struct BlendStateInfo {
     bool IndependentBlendEnabled;
     float pBlendConstants[4];
 };
-
-class BlendState
-{
-public:
-    BlendState(const float pBlendConstants[4]);
-    virtual ~BlendState() = 0 {};
-
-    const float* getBlendConstants() { return m_pBlendConstants; }
-
-private:
-    float m_pBlendConstants[4];
-};
