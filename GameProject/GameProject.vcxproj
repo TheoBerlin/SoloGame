@@ -194,6 +194,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\PipelineLayoutVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\RenderPassVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\SamplerVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\ShaderVK.cpp" />
@@ -312,6 +313,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\PipelineLayoutVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\RenderPassVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\SamplerVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\SemaphoreVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\ShaderVK.hpp" />

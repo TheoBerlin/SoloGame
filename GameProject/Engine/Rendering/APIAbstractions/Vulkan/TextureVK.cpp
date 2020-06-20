@@ -275,30 +275,11 @@ VkAccessFlags TextureVK::layoutToAccessMask(VkImageLayout layout)
 	}
 }
 
-VkImageLayout TextureVK::convertLayoutFlag(TEXTURE_LAYOUT layout)
-{
-    switch (layout) {
-        case TEXTURE_LAYOUT::UNDEFINED:
-            return VK_IMAGE_LAYOUT_UNDEFINED;
-        case TEXTURE_LAYOUT::SHADER_READ_ONLY:
-            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        case TEXTURE_LAYOUT::RENDER_TARGET:
-            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        case TEXTURE_LAYOUT::DEPTH_ATTACHMENT:
-            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-        case TEXTURE_LAYOUT::PRESENT:
-            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        default:
-            LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
-            return VK_IMAGE_LAYOUT_UNDEFINED;
-	}
-}
-
 TextureInfoVK TextureVK::convertTextureInfo(const TextureInfo& textureInfo)
 {
     TextureInfoVK textureInfoVK = {};
     textureInfoVK.Dimensions    = textureInfo.Dimensions;
-    textureInfoVK.Layout        = convertLayoutFlag(textureInfo.InitialLayout);
+    textureInfoVK.Layout        = convertImageLayoutFlag(textureInfo.InitialLayout);
     textureInfoVK.Format        = convertFormatToVK(textureInfo.Format);
     textureInfoVK.pInitialData  = textureInfo.pInitialData;
 

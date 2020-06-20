@@ -78,3 +78,44 @@ VkCompareOp convertCompareOp(COMPARISON_FUNC comparisonFunc)
             return VK_COMPARE_OP_LESS;
     }
 }
+
+VkImageLayout convertImageLayoutFlag(TEXTURE_LAYOUT layout)
+{
+    switch (layout) {
+        case TEXTURE_LAYOUT::UNDEFINED:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+        case TEXTURE_LAYOUT::SHADER_READ_ONLY:
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        case TEXTURE_LAYOUT::RENDER_TARGET:
+            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        case TEXTURE_LAYOUT::DEPTH_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+        case TEXTURE_LAYOUT::PRESENT:
+            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        default:
+            LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+	}
+}
+
+VkAccessFlags convertAccessFlags(RESOURCE_ACCESS accessFlags)
+{
+    return
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::INDIRECT_COMMAND_READ) * VK_ACCESS_INDIRECT_COMMAND_READ_BIT                     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::INDEX_READ) * VK_ACCESS_INDEX_READ_BIT                                           |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::VERTEX_ATTRIBUTE_READ) * VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT                     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::UNIFORM_READ) * VK_ACCESS_UNIFORM_READ_BIT                                       |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::INPUT_ATTACHMENT_READ) * VK_ACCESS_INPUT_ATTACHMENT_READ_BIT                     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::SHADER_READ) * VK_ACCESS_SHADER_READ_BIT                                         |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::SHADER_WRITE) * VK_ACCESS_SHADER_WRITE_BIT                                       |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::COLOR_ATTACHMENT_READ) * VK_ACCESS_COLOR_ATTACHMENT_READ_BIT                     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE) * VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT                   |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::DEPTH_STENCIL_ATTACHMENT_READ) * VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::DEPTH_STENCIL_ATTACHMENT_WRITE) * VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT   |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::TRANSFER_READ) * VK_ACCESS_TRANSFER_READ_BIT                                     |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::TRANSFER_WRITE) * VK_ACCESS_TRANSFER_WRITE_BIT                                   |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::HOST_READ) * VK_ACCESS_HOST_READ_BIT                                             |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::HOST_WRITE) * VK_ACCESS_HOST_WRITE_BIT                                           |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::MEMORY_READ) * VK_ACCESS_MEMORY_READ_BIT                                         |
+        HAS_FLAG(accessFlags, RESOURCE_ACCESS::MEMORY_WRITE) * VK_ACCESS_MEMORY_WRITE_BIT;
+}

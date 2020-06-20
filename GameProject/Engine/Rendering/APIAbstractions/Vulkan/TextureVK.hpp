@@ -38,7 +38,6 @@ private:
     static VkImageView createImageView(VkImage image, VkFormat format, VkDevice device);
     static bool convertTextureLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage);
     static VkAccessFlags layoutToAccessMask(VkImageLayout layout);
-    static VkImageLayout convertLayoutFlag(TEXTURE_LAYOUT layout);
     static TextureInfoVK convertTextureInfo(const TextureInfo& textureInfo);
 
 private:

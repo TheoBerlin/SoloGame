@@ -7,6 +7,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
@@ -110,6 +111,11 @@ ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint3
 IDescriptorSetLayout* DeviceVK::createDescriptorSetLayout()
 {
     return DBG_NEW DescriptorSetLayoutVK();
+}
+
+IRenderPass* DeviceVK::createRenderPass(const RenderPassInfo& renderPassInfo)
+{
+    return RenderPassVK::create(renderPassInfo, this);
 }
 
 IPipelineLayout* DeviceVK::createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts)

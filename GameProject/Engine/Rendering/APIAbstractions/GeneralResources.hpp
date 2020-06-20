@@ -84,10 +84,7 @@ enum class RESOURCE_ACCESS : uint32_t {
     HOST_READ                           = TRANSFER_WRITE << 1,
     HOST_WRITE                          = HOST_READ << 1,
     MEMORY_READ                         = HOST_WRITE << 1,
-    MEMORY_WRITE                        = MEMORY_READ << 1,
-    TRANSFORM_FEEDBACK_WRITE            = MEMORY_WRITE << 1,
-    TRANSFORM_FEEDBACK_COUNTER_READ     = TRANSFORM_FEEDBACK_WRITE << 1,
-    TRANSFORM_FEEDBACK_COUNTER_WRITE    = TRANSFORM_FEEDBACK_COUNTER_READ << 1
+    MEMORY_WRITE                        = MEMORY_READ << 1
 };
 
 DEFINE_BITMASK_OPERATIONS(RESOURCE_ACCESS)
