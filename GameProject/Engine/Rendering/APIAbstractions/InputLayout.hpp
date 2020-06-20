@@ -26,10 +26,10 @@ enum class VERTEX_INPUT_RATE {
 struct InputVertexAttribute {
     std::string SemanticName;
     RESOURCE_FORMAT Format;
-    VERTEX_INPUT_RATE InputRate;
 };
 
 struct InputLayoutInfo {
     std::vector<InputVertexAttribute> VertexInputAttributes;
+    VERTEX_INPUT_RATE InputRate;
     uint32_t Binding;
 };

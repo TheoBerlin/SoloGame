@@ -10,22 +10,20 @@ ShaderHandler::ShaderHandler(Device* pDevice)
 {
     // Create and map all input layout infos
     InputLayoutInfo inputLayoutInfo = {};
-    inputLayoutInfo.Binding = 0;
+    inputLayoutInfo.Binding     = 0u;
+    inputLayoutInfo.InputRate   = VERTEX_INPUT_RATE::PER_VERTEX;
     inputLayoutInfo.VertexInputAttributes = {
         {
             "POSITION",
-            RESOURCE_FORMAT::R32G32B32_FLOAT,
-            VERTEX_INPUT_RATE::PER_VERTEX
+            RESOURCE_FORMAT::R32G32B32_FLOAT
         },
         {
             "NORMAL",
-            RESOURCE_FORMAT::R32G32B32_FLOAT,
-            VERTEX_INPUT_RATE::PER_VERTEX
+            RESOURCE_FORMAT::R32G32B32_FLOAT
         },
         {
             "TEXCOORD",
-            RESOURCE_FORMAT::R32G32_FLOAT,
-            VERTEX_INPUT_RATE::PER_VERTEX
+            RESOURCE_FORMAT::R32G32_FLOAT
         }
     };
 
@@ -35,13 +33,11 @@ ShaderHandler::ShaderHandler(Device* pDevice)
     inputLayoutInfo.VertexInputAttributes = {
         {
             "POSITION",
-            RESOURCE_FORMAT::R32G32_FLOAT,
-            VERTEX_INPUT_RATE::PER_VERTEX
+            RESOURCE_FORMAT::R32G32_FLOAT
         },
         {
             "TEXCOORD",
-            RESOURCE_FORMAT::R32G32_FLOAT,
-            VERTEX_INPUT_RATE::PER_VERTEX
+            RESOURCE_FORMAT::R32G32_FLOAT
         }
     };
 
