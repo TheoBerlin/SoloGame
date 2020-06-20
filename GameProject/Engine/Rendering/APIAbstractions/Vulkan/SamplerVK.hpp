@@ -21,7 +21,6 @@ private:
     static VkFilter convertFilter(FILTER filter);
     static VkSamplerMipmapMode convertMipMapFilter(FILTER filter);
     static VkSamplerAddressMode convertAddressMode(ADDRESS_MODE addressMode);
-    static VkCompareOp convertCompareOp(COMPARISON_FUNC comparisonFunc);
     static VkBorderColor convertBorderColor(BORDER_COLOR borderColor);
 
 private:
