@@ -10,6 +10,8 @@ bool createInputLayout(InputLayoutDX11& inputLayout, const InputLayoutInfo* pInp
 {
     inputLayout = {};
 
+    D3D11_INPUT_CLASSIFICATION inputRate = pInputLayoutInfo->InputRate == VERTEX_INPUT_RATE::PER_VERTEX ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
+
     std::vector<D3D11_INPUT_ELEMENT_DESC> attributeDescs(pInputLayoutInfo->VertexInputAttributes.size());
     UINT attributeOffset = 0u;
 
@@ -22,7 +24,7 @@ bool createInputLayout(InputLayoutDX11& inputLayout, const InputLayoutInfo* pInp
         attributeDesc.Format                = convertFormatToDX(attributeInfo.Format);
         attributeDesc.InputSlot             = (UINT)pInputLayoutInfo->Binding;
         attributeDesc.AlignedByteOffset     = attributeOffset;
-        attributeDesc.InputSlotClass        = attributeInfo.InputRate == VERTEX_INPUT_RATE::PER_VERTEX ? D3D11_INPUT_PER_VERTEX_DATA : D3D11_INPUT_PER_INSTANCE_DATA;
+        attributeDesc.InputSlotClass        = inputRate;
         attributeDesc.InstanceDataStepRate  = 0u;
 
         attributeOffset += (UINT)getFormatSize(attributeInfo.Format);
