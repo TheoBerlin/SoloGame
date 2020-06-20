@@ -185,6 +185,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DepthStencilStateVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorPoolVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorSetLayoutVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorSetVK.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DepthStencilStateVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorPoolVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorSetLayoutVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DescriptorSetVK.hpp" />

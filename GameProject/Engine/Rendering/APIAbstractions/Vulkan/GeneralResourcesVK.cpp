@@ -55,3 +55,26 @@ VkFormat convertFormatToVK(RESOURCE_FORMAT textureFormat)
             return VK_FORMAT_UNDEFINED;
     }
 }
+
+VkCompareOp convertCompareOp(COMPARISON_FUNC comparisonFunc)
+{
+    switch (comparisonFunc) {
+        case COMPARISON_FUNC::NEVER:
+            return VK_COMPARE_OP_NEVER;
+        case COMPARISON_FUNC::LESS:
+            return VK_COMPARE_OP_LESS;
+        case COMPARISON_FUNC::LESS_OR_EQUAL:
+            return VK_COMPARE_OP_LESS_OR_EQUAL;
+        case COMPARISON_FUNC::EQUAL:
+            return VK_COMPARE_OP_EQUAL;
+        case COMPARISON_FUNC::EQUAL_OR_GREATER:
+            return VK_COMPARE_OP_GREATER_OR_EQUAL;
+        case COMPARISON_FUNC::GREATER:
+            return VK_COMPARE_OP_GREATER;
+        case COMPARISON_FUNC::ALWAYS:
+            return VK_COMPARE_OP_ALWAYS;
+        default:
+            LOG_WARNING("Erroneous comparison func: %d", (uint32_t)comparisonFunc);
+            return VK_COMPARE_OP_LESS;
+    }
+}
