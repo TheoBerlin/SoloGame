@@ -192,6 +192,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\FramebufferVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\PipelineLayoutVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\RenderPassVK.cpp" />
@@ -311,6 +312,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceCreatorVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\DeviceVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\FenceVK.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\FramebufferVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\GeneralResourcesVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\PipelineLayoutVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\RenderPassVK.hpp" />
