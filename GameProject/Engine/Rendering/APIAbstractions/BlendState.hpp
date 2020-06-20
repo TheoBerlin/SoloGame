@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/Utils/EnumClass.hpp>
+
 #include <stdint.h>
 #include <vector>
 
@@ -40,6 +42,8 @@ enum class COLOR_WRITE_MASK : uint8_t {
     ALPHA       = BLUE << 1,
     ENABLE_ALL  = RED + GREEN + BLUE + ALPHA
 };
+
+DEFINE_BITMASK_OPERATIONS(COLOR_WRITE_MASK)
 
 struct BlendRenderTargetInfo {
     bool BlendEnabled;
