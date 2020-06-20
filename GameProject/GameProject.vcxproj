@@ -181,6 +181,7 @@
     <ClCompile Include="Engine\Rendering\APIAbstractions\DX11\TextureDX11.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\GeneralResources.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Shader.cpp" />
+    <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\BlendStateVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.cpp" />
     <ClCompile Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.cpp" />
@@ -297,6 +298,7 @@
     <ClInclude Include="Engine\Rendering\APIAbstractions\Shader.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Texture.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Viewport.hpp" />
+    <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\BlendStateVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\BufferVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandListVK.hpp" />
     <ClInclude Include="Engine\Rendering\APIAbstractions\Vulkan\CommandPoolVK.hpp" />
