@@ -36,7 +36,7 @@ enum class PIPELINE_BIND_POINT {
 };
 
 struct AttachmentReference {
-    std::optional<size_t> AttachmentIndex; // No value in case the attachment is not used
+    std::optional<uint32_t> AttachmentIndex; // No value in case the attachment is not used
     TEXTURE_LAYOUT Layout;
 };
 

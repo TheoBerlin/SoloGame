@@ -52,7 +52,7 @@ public:
     IDescriptorSetLayout* createDescriptorSetLayout() override final;
 
     IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final  { return nullptr; }
-    IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final      { return nullptr; }
+    IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) override final;
     IPipeline* createPipeline(const PipelineInfo& pipelineInfo) override final { return nullptr; }
