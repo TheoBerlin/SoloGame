@@ -191,7 +191,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
     }
 }
 
-Shader* DeviceVK::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
+Shader* DeviceVK::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo)
 {
     return ShaderVK::compileShader(filePath, shaderType, this);
 }

@@ -48,42 +48,19 @@ ShaderHandler::ShaderHandler(Device* pDevice)
     m_InputLayoutInfos["UI"] = inputLayoutInfo;
 }
 
-std::shared_ptr<VertexStage> ShaderHandler::loadVertexStage(const std::string& shaderName)
-{
-    std::string fullShaderName = shaderName + Shader::getTypePostfix(SHADER_TYPE::VERTEX_SHADER) + m_pDevice->getShaderFileExtension();
-    auto shaderItr = m_VertexStageCache.find(fullShaderName);
-    if (shaderItr != m_VertexStageCache.end()) {
-        std::weak_ptr<VertexStage>& shaderPtr = shaderItr->second;
-
-        if (shaderPtr.expired()) {
-            // The shader used to exist but has been deleted
-            m_VertexStageCache.erase(shaderItr);
-        } else {
-            return shaderPtr.lock();
-        }
-    }
-
-    // The vertex stage is not in the cache, compile it with the corresponding input layout info
-    auto inputLayoutItr = m_InputLayoutInfos.find(shaderName);
-    if (inputLayoutItr == m_InputLayoutInfos.end()) {
-        LOG_ERROR("Could not find input layout info for shader: %s", shaderName.c_str());
-        return nullptr;
-    }
-
-    InputLayout* pInputLayout = nullptr;
-    Shader* pShader = m_pDevice->createShader(SHADER_TYPE::VERTEX_SHADER, shaderName, &inputLayoutItr->second, &pInputLayout);
-
-    std::shared_ptr<VertexStage> vertexStage(DBG_NEW VertexStage(pInputLayout, pShader));
-    m_VertexStageCache[fullShaderName] = vertexStage;
-
-    return vertexStage;
-}
-
 std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName, SHADER_TYPE shaderType)
 {
+    InputLayoutInfo* pInputLayoutInfo = nullptr;
+
     if (HAS_FLAG(shaderType, SHADER_TYPE::VERTEX_SHADER)) {
-        LOG_WARNING("Vertex shaders must be loaded using loadVertexStage, not loadShader: %s", shaderName.c_str());
-        return nullptr;
+        // The vertex stage is not in the cache, compile it with the corresponding input layout info
+        auto inputLayoutItr = m_InputLayoutInfos.find(shaderName);
+        if (inputLayoutItr == m_InputLayoutInfos.end()) {
+            LOG_ERROR("Could not find input layout info for shader: %s", shaderName.c_str());
+            return nullptr;
+        }
+
+        pInputLayoutInfo = &inputLayoutItr->second;
     }
 
     std::string fullShaderName = shaderName + Shader::getTypePostfix(shaderType) + m_pDevice->getShaderFileExtension();
@@ -100,7 +77,7 @@ std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName,
     }
 
     // The shader is not in the cache, compile it
-    std::shared_ptr<Shader> shader(m_pDevice->createShader(shaderType, shaderName));
+    std::shared_ptr<Shader> shader(m_pDevice->createShader(shaderType, shaderName, pInputLayoutInfo));
     m_ShaderCache[fullShaderName] = shader;
 
     return shader;

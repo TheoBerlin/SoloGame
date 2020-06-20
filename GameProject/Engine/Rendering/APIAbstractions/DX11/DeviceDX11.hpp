@@ -74,7 +74,7 @@ protected:
     DescriptorPoolDX11* createDescriptorPool(const DescriptorPoolInfo& poolInfo) override final;
 
 private:
-    ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) override final;
+    ShaderDX11* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo) override final;
     bool executeCommandList(ICommandList* pCommandList);
 
 private:

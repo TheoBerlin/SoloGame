@@ -13,7 +13,6 @@
 
 struct PipelineInfoDX11 {
     D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology;
-    std::shared_ptr<VertexStage> VertexStage;
     std::vector<std::shared_ptr<Shader>> Shaders;
     std::vector<Viewport> Viewports;
     RasterizerStateDX11 RasterizerState;
@@ -36,7 +35,7 @@ public:
 
     void bind(ID3D11DeviceContext* pContext);
 
-    UINT getVertexSize() const { return (UINT)m_PipelineInfo.VertexStage.get()->getInputLayout()->getVertexSize(); }
+    UINT getVertexSize() const { return m_pInputLayout->VertexSize; }
 
 private:
     PipelineInfoDX11 m_PipelineInfo;
@@ -47,4 +46,6 @@ private:
     ID3D11DomainShader* m_pDomainShader;
     ID3D11GeometryShader* m_pGeometryShader;
     ID3D11PixelShader* m_pFragmentShader;
+
+    InputLayoutDX11* m_pInputLayout;
 };

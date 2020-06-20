@@ -13,11 +13,12 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
     ShaderHandler* pShaderHandler = pDevice->getShaderHandler();
     pipelineInfoDX.Shaders.reserve(pipelineInfo.ShaderInfos.size());
     for (const ShaderInfo& shaderInfo : pipelineInfo.ShaderInfos) {
-        if (shaderInfo.ShaderType == SHADER_TYPE::VERTEX_SHADER) {
-            pipelineInfoDX.VertexStage = pShaderHandler->loadVertexStage(shaderInfo.ShaderName);
-        } else {
-            pipelineInfoDX.Shaders.push_back(pShaderHandler->loadShader(shaderInfo.ShaderName, shaderInfo.ShaderType));
+        std::shared_ptr<Shader> shader = pShaderHandler->loadShader(shaderInfo.ShaderName, shaderInfo.ShaderType);
+        if (!shader) {
+            return nullptr;
         }
+
+        pipelineInfoDX.Shaders.push_back(shader);
     }
 
     pipelineInfoDX.Shaders.shrink_to_fit();
@@ -45,16 +46,17 @@ PipelineDX11::PipelineDX11(const PipelineInfoDX11& pipelineInfo)
     m_pHullShader(nullptr),
     m_pDomainShader(nullptr),
     m_pGeometryShader(nullptr),
-    m_pFragmentShader(nullptr)
+    m_pFragmentShader(nullptr),
+    m_pInputLayout(nullptr)
 {
-    if (pipelineInfo.VertexStage) {
-        m_pVertexShader = reinterpret_cast<ShaderDX11*>(pipelineInfo.VertexStage->getVertexShader())->getVertexShader();
-    }
-
     for (std::shared_ptr<Shader>& shader : m_PipelineInfo.Shaders) {
         ShaderDX11* pShader = reinterpret_cast<ShaderDX11*>(shader.get());
 
         switch (pShader->getShaderType()) {
+            case SHADER_TYPE::VERTEX_SHADER:
+                m_pVertexShader = pShader->getVertexShader();
+                m_pInputLayout  = pShader->getInputLayout();
+                break;
             case SHADER_TYPE::HULL_SHADER:
                 m_pHullShader = pShader->getHullShader();
                 break;
@@ -86,8 +88,7 @@ void PipelineDX11::bind(ID3D11DeviceContext* pContext)
     pContext->GSSetShader(m_pGeometryShader, nullptr, 0);
     pContext->PSSetShader(m_pFragmentShader, nullptr, 0);
 
-    InputLayoutDX11* pInputLayout = reinterpret_cast<InputLayoutDX11*>(m_PipelineInfo.VertexStage->getInputLayout());
-    pContext->IASetInputLayout(pInputLayout->getInputLayout());
+    pContext->IASetInputLayout(m_pInputLayout->pInputLayout);
     pContext->IASetPrimitiveTopology(m_PipelineInfo.PrimitiveTopology);
 
     pContext->RSSetState(m_PipelineInfo.RasterizerState.pRasterizerState);

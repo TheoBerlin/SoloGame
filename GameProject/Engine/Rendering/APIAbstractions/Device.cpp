@@ -93,7 +93,7 @@ IBuffer* Device::createIndexBuffer(const unsigned* pIndices, size_t indexCount)
     return createBuffer(bufferInfo);
 }
 
-Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
+Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo)
 {
     // Create full path to shader file
     // Base shaders folder + relative path and name of shader + postfix and file extension
@@ -101,7 +101,7 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
     Shader* pShader = nullptr;
 
     do {
-        pShader = compileShader(shaderType, shaderPath, pInputLayoutInfo, ppInputLayout);
+        pShader = compileShader(shaderType, shaderPath, pInputLayoutInfo);
 
         if (!pShader) {
             LOG_ERROR("Failed to compile [%s]", shaderPath.c_str());
@@ -109,10 +109,6 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
             std::getchar();
         }
     } while (!pShader);
-
-    if (ppInputLayout && !*ppInputLayout) {
-        LOG_ERROR("Failed to create input layout, shader: %s", filePath.c_str());
-    }
 
     return pShader;
 }

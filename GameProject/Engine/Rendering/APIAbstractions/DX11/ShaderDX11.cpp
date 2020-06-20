@@ -6,8 +6,13 @@
 
 #include <d3dcompiler.h>
 
-ShaderDX11* ShaderDX11::createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
+ShaderDX11* ShaderDX11::createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice, const InputLayoutInfo* pInputLayoutInfo)
 {
+    InputLayoutDX11 inputLayout = {};
+    if (!createInputLayout(inputLayout, pInputLayoutInfo, pCompiledCode, pDevice)) {
+        return nullptr;
+    }
+
     ID3D11VertexShader* pVertexShader = nullptr;
     HRESULT hr = pDevice->CreateVertexShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pVertexShader);
     if (FAILED(hr)) {
@@ -16,7 +21,7 @@ ShaderDX11* ShaderDX11::createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCo
         return nullptr;
     }
 
-    return DBG_NEW ShaderDX11(shaderType, pVertexShader, nullptr, nullptr, nullptr, nullptr);
+    return DBG_NEW ShaderDX11(shaderType, pVertexShader, nullptr, nullptr, nullptr, nullptr, &inputLayout);
 }
 
 ShaderDX11* ShaderDX11::createHullShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice)
@@ -110,13 +115,14 @@ std::string ShaderDX11::getTargetVersion(SHADER_TYPE shaderType)
 }
 
 ShaderDX11::ShaderDX11(SHADER_TYPE shaderType, ID3D11VertexShader* m_pVertexShader, ID3D11HullShader* m_pHullShader,
-        ID3D11DomainShader* m_pDomainShader, ID3D11GeometryShader* m_pGeometryShader, ID3D11PixelShader* m_pFragmentShader)
+        ID3D11DomainShader* m_pDomainShader, ID3D11GeometryShader* m_pGeometryShader, ID3D11PixelShader* m_pFragmentShader, InputLayoutDX11* pInputLayout)
     :Shader(shaderType),
     m_pVertexShader(m_pVertexShader),
     m_pHullShader(m_pHullShader),
     m_pDomainShader(m_pDomainShader),
     m_pGeometryShader(m_pGeometryShader),
-    m_pFragmentShader(m_pFragmentShader)
+    m_pFragmentShader(m_pFragmentShader),
+    m_InputLayout(pInputLayout ? *pInputLayout : InputLayoutDX11())
 {}
 
 ShaderDX11::~ShaderDX11()
@@ -126,6 +132,7 @@ ShaderDX11::~ShaderDX11()
     SAFERELEASE(m_pDomainShader)
     SAFERELEASE(m_pGeometryShader)
     SAFERELEASE(m_pFragmentShader)
+    SAFERELEASE(m_InputLayout.pInputLayout)
 }
 
 ID3DBlob* ShaderDX11::compileShader(LPCWSTR fileName, LPCSTR targetVer)
