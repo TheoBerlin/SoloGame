@@ -5,6 +5,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/CommandPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorPoolVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetLayoutVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/FramebufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
@@ -111,6 +112,11 @@ ICommandPool* DeviceVK::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint3
 IDescriptorSetLayout* DeviceVK::createDescriptorSetLayout()
 {
     return DBG_NEW DescriptorSetLayoutVK();
+}
+
+IFramebuffer* DeviceVK::createFramebuffer(const FramebufferInfo& framebufferInfo)
+{
+    return FramebufferVK::create(framebufferInfo, this);
 }
 
 IRenderPass* DeviceVK::createRenderPass(const RenderPassInfo& renderPassInfo)

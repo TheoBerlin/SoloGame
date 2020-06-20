@@ -22,7 +22,7 @@ public:
 private:
     std::vector<ID3D11RenderTargetView*> m_RenderTargets;
     ID3D11DepthStencilView* m_pDepthStencil;
-    // Vulkan framebuffers specify all textures in a single array. But when clearing a depth-stencil texture in DX11, we need to know which of those
-    // textures is the depth-stencil texture. Hence the index.
+    // Vulkan framebuffers specify all textures (including the depth/stencil texture) in a single array.
+    // But when clearing a depth-stencil texture in DX11, we need to know which of the textures is the depth-stencil texture. Hence the index.
     size_t m_DepthStencilIdx;
 };
