@@ -33,15 +33,3 @@ struct InputLayoutInfo {
     std::vector<InputVertexAttribute> VertexInputAttributes;
     uint32_t Binding;
 };
-
-class InputLayout
-{
-public:
-    InputLayout(uint32_t vertexSize) : m_VertexSize(vertexSize) {};
-    virtual ~InputLayout() = 0 {};
-
-    inline uint32_t getVertexSize() const { return m_VertexSize; }
-
-private:
-    uint32_t m_VertexSize;
-};

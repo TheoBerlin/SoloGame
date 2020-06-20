@@ -112,7 +112,7 @@ public:
     virtual ISampler* createSampler(const SamplerInfo& samplerInfo) = 0;
 
     // Shader's file path excludes the base path to the shaders folder
-    Shader* createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo = nullptr, InputLayout** ppInputLayout = nullptr);
+    Shader* createShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo);
     virtual std::string getShaderFileExtension() = 0;
 
     // waitAll: Wait for every fence or just one. timeout: Nanoseconds
@@ -135,7 +135,7 @@ protected:
     Texture* m_pDepthTexture;
 
 private:
-    virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout) = 0;
+    virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo) = 0;
 
     struct TempCommandPoolInfo {
         uint32_t queueFamilyIndex;

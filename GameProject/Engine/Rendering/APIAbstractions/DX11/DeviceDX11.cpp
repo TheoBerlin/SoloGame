@@ -121,7 +121,7 @@ DescriptorPoolDX11* DeviceDX11::createDescriptorPool(const DescriptorPoolInfo& p
     return DBG_NEW DescriptorPoolDX11(poolInfo);
 }
 
-ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo, InputLayout** ppInputLayout)
+ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo)
 {
     std::wstring filePathW(filePath.begin(), filePath.end());
     std::string targetVer = ShaderDX11::getTargetVersion(shaderType);
@@ -131,13 +131,9 @@ ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string&
         return nullptr;
     }
 
-    if (shaderType == SHADER_TYPE::VERTEX_SHADER && pInputLayoutInfo) {
-        *ppInputLayout = InputLayoutDX11::create(pInputLayoutInfo, pCompiledCode, m_pDevice);
-    }
-
     switch (shaderType) {
         case SHADER_TYPE::VERTEX_SHADER:
-            return ShaderDX11::createVertexShader(shaderType, pCompiledCode, filePath, m_pDevice);
+            return ShaderDX11::createVertexShader(shaderType, pCompiledCode, filePath, m_pDevice, pInputLayoutInfo);
         case SHADER_TYPE::HULL_SHADER:
             return ShaderDX11::createHullShader(shaderType, pCompiledCode, filePath, m_pDevice);
         case SHADER_TYPE::DOMAIN_SHADER:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 
 #define NOMINMAX
@@ -11,7 +12,7 @@ class ShaderDX11 : public Shader
 public:
     static ID3DBlob* compileShader(LPCWSTR fileName, LPCSTR targetVer);
 
-    static ShaderDX11* createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice);
+    static ShaderDX11* createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice, const InputLayoutInfo* pInputLayoutInfo);
     static ShaderDX11* createHullShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice);
     static ShaderDX11* createDomainShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice);
     static ShaderDX11* createGeometryShader(SHADER_TYPE shaderType, ID3DBlob* pCompiledCode, const std::string& filePath, ID3D11Device* pDevice);
@@ -22,7 +23,7 @@ public:
 
 public:
     ShaderDX11(SHADER_TYPE shaderType, ID3D11VertexShader* m_pVertexShader, ID3D11HullShader* m_pHullShader,
-        ID3D11DomainShader* m_pDomainShader, ID3D11GeometryShader* m_pGeometryShader, ID3D11PixelShader* m_pFragmentShader);
+        ID3D11DomainShader* m_pDomainShader, ID3D11GeometryShader* m_pGeometryShader, ID3D11PixelShader* m_pFragmentShader, InputLayoutDX11* pInputLayout = nullptr);
     ~ShaderDX11();
 
     inline ID3D11VertexShader* getVertexShader()        { return m_pVertexShader; }
@@ -31,10 +32,14 @@ public:
     inline ID3D11GeometryShader* getGeometryShader()    { return m_pGeometryShader; }
     inline ID3D11PixelShader* getFragmentShader()       { return m_pFragmentShader; }
 
+    inline InputLayoutDX11* getInputLayout() { return &m_InputLayout; }
+
 private:
     ID3D11VertexShader*     m_pVertexShader;
     ID3D11HullShader*       m_pHullShader;
     ID3D11DomainShader*     m_pDomainShader;
     ID3D11GeometryShader*   m_pGeometryShader;
     ID3D11PixelShader*      m_pFragmentShader;
+
+    InputLayoutDX11 m_InputLayout;
 };
