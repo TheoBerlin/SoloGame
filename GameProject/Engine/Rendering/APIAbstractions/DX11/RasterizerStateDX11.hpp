@@ -5,8 +5,4 @@
 #define NOMINMAX
 #include <d3d11.h>
 
-struct RasterizerStateDX11 {
-    ID3D11RasterizerState* pRasterizerState;
-};
-
-bool createRasterizerState(RasterizerStateDX11& rasterizerState, const RasterizerStateInfo& rasterizerInfo, ID3D11Device* pDevice);
+bool createRasterizerState(ID3D11RasterizerState** ppRasterizerState, const RasterizerStateInfo& rasterizerInfo, ID3D11Device* pDevice);

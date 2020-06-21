@@ -16,6 +16,8 @@ public:
 
     std::shared_ptr<Shader> loadShader(const std::string& shaderPath, SHADER_TYPE shaderType);
 
+    const InputLayoutInfo& getInputLayoutInfo(const std::string& shaderName) const;
+
 private:
     // Mapping of vertex shader names to their input layout infos
     std::unordered_map<std::string, InputLayoutInfo> m_InputLayoutInfos;

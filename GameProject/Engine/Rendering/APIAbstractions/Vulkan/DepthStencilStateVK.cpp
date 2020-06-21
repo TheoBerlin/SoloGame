@@ -2,7 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 
-bool createDepthStencilState(VkPipelineDepthStencilStateCreateInfo& depthStencilState, const DepthStencilInfo& depthStencilInfo)
+bool convertDepthStencilStateInfo(VkPipelineDepthStencilStateCreateInfo& depthStencilState, const DepthStencilInfo& depthStencilInfo)
 {
     depthStencilState = {};
     depthStencilState.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;

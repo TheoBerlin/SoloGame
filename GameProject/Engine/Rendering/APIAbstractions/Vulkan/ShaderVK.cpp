@@ -44,6 +44,25 @@ VkShaderStageFlags ShaderVK::convertShaderFlags(SHADER_TYPE shaderFlags)
         HAS_FLAG(shaderFlags, SHADER_TYPE::FRAGMENT_SHADER) * VK_SHADER_STAGE_FRAGMENT_BIT;
 }
 
+VkShaderStageFlagBits ShaderVK::convertShaderFlagBits(SHADER_TYPE shaderFlags)
+{
+    switch (shaderFlags) {
+        case SHADER_TYPE::VERTEX_SHADER:
+            return VK_SHADER_STAGE_VERTEX_BIT;
+        case SHADER_TYPE::HULL_SHADER:
+            return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        case SHADER_TYPE::DOMAIN_SHADER:
+            return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        case SHADER_TYPE::GEOMETRY_SHADER:
+            return VK_SHADER_STAGE_GEOMETRY_BIT;
+        case SHADER_TYPE::FRAGMENT_SHADER:
+            return VK_SHADER_STAGE_FRAGMENT_BIT;
+        default:
+            LOG_WARNING("Erroneous shader flag bits: %d", (uint32_t)shaderFlags);
+            return VK_SHADER_STAGE_VERTEX_BIT;
+    }
+}
+
 ShaderVK::ShaderVK(VkShaderModule shaderModule, SHADER_TYPE shaderType, DeviceVK* pDevice)
     :Shader(shaderType),
     m_ShaderModule(shaderModule),

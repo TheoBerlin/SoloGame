@@ -78,3 +78,8 @@ std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName,
 
     return shader;
 }
+
+const InputLayoutInfo& ShaderHandler::getInputLayoutInfo(const std::string& shaderName) const
+{
+    return m_InputLayoutInfos.find(shaderName)->second;
+}
