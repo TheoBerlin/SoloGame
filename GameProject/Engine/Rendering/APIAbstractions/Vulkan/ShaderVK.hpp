@@ -14,12 +14,13 @@ public:
     static ShaderVK* compileShader(const std::string& filePath, SHADER_TYPE shaderType, DeviceVK* pDevice);
 
     static VkShaderStageFlags convertShaderFlags(SHADER_TYPE shaderFlags);
+    static VkShaderStageFlagBits convertShaderFlagBits(SHADER_TYPE shaderFlags);
 
 public:
     ShaderVK(VkShaderModule shaderModule, SHADER_TYPE shaderType, DeviceVK* pDevice);
     ~ShaderVK();
 
-    inline VkShaderModule getShaderModule() { return m_ShaderModule; }
+    inline VkShaderModule getShaderModule() const { return m_ShaderModule; }
 
 private:
     VkShaderModule m_ShaderModule;

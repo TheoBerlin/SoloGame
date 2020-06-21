@@ -9,7 +9,7 @@
 #include <system_error>
 #include <winerror.h>
 
-#define SAFERELEASE(pCOMObject) if (pCOMObject) { pCOMObject->Release(); }
+#define SAFERELEASE(pCOMObject) if (pCOMObject) { (pCOMObject)->Release(); }
 
 inline std::string hresultToString(HRESULT hr)
 {

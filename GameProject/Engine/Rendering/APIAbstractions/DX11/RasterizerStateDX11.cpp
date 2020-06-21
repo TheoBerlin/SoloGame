@@ -4,10 +4,8 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-bool createRasterizerState(RasterizerStateDX11& rasterizerState, const RasterizerStateInfo& rasterizerInfo, ID3D11Device* pDevice)
+bool createRasterizerState(ID3D11RasterizerState** ppRasterizerState, const RasterizerStateInfo& rasterizerInfo, ID3D11Device* pDevice)
 {
-    rasterizerState = {};
-
     D3D11_RASTERIZER_DESC rsDesc = {};
     rsDesc.FillMode = rasterizerInfo.PolygonMode == POLYGON_MODE::FILL ? D3D11_FILL_SOLID : D3D11_FILL_WIREFRAME;
 
@@ -35,10 +33,10 @@ bool createRasterizerState(RasterizerStateDX11& rasterizerState, const Rasterize
     rsDesc.AntialiasedLineEnable    = false;
     rsDesc.MultisampleEnable        = false;
 
-    HRESULT hr = pDevice->CreateRasterizerState(&rsDesc, &rasterizerState.pRasterizerState);
+    HRESULT hr = pDevice->CreateRasterizerState(&rsDesc, ppRasterizerState);
     if (FAILED(hr)) {
         LOG_ERROR("Failed to create rasterizer state");
-        SAFERELEASE(rasterizerState.pRasterizerState)
+        SAFERELEASE(*ppRasterizerState)
         return false;
     }
 
