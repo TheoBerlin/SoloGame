@@ -65,6 +65,7 @@ public:
 
     // Shader resources
     BufferVK* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) override final;
+    BufferVK* createStagingBuffer(const void* pData, VkDeviceSize size);
 
     Texture* createTextureFromFile(const std::string& filePath) override final;
     Texture* createTexture(const TextureInfo& textureInfo) override final;

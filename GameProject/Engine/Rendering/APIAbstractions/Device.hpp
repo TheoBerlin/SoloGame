@@ -101,7 +101,8 @@ public:
     virtual ISemaphore* createSemaphore() = 0;
 
     // Shader resources
-    // pStagingResources is only needed if the buffer has initial data and is not CPU-writable
+    // pStagingResources can be used if the buffer has initial data and is not CPU-writable.
+    // If the staging resources are needed but none are specified, temporary ones are created.
     virtual IBuffer* createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources = nullptr) = 0;
     IBuffer* createVertexBuffer(const void* pVertices, size_t vertexSize, size_t vertexCount);
     IBuffer* createIndexBuffer(const unsigned* pIndices, size_t indexCount);

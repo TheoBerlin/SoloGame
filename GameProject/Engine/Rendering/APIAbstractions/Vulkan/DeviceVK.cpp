@@ -141,7 +141,43 @@ ISemaphore* DeviceVK::createSemaphore()
 
 BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources)
 {
+    if (bufferInfo.pData && !HAS_FLAG(bufferInfo.CPUAccess, BUFFER_DATA_ACCESS::WRITE) && !pStagingResources) {
+        // Staging resources are needed but none are specified, create temporary ones
+        ICommandList* pTempCommandList = nullptr;
+
+        PooledResource<ICommandPool> tempCommandPool = acquireTempCommandPoolGraphics();
+        if (!tempCommandPool->allocateCommandLists(&pTempCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
+            LOG_WARNING("Failed to create temporary command list");
+            return nullptr;
+        }
+
+        StagingResources tempStagingResources = {};
+        tempStagingResources.pCommandList   = pTempCommandList;
+        tempStagingResources.pStagingBuffer = createStagingBuffer(bufferInfo.pData, bufferInfo.ByteSize);
+
+        BufferVK* pBuffer = BufferVK::create(bufferInfo, this, &tempStagingResources);
+
+        delete tempStagingResources.pStagingBuffer;
+        delete pTempCommandList;
+        tempCommandPool.release();
+
+        return pBuffer;
+    }
+
     return BufferVK::create(bufferInfo, this, pStagingResources);
+}
+
+BufferVK* DeviceVK::createStagingBuffer(const void* pData, VkDeviceSize size)
+{
+    BufferInfo bufferInfo = {};
+    bufferInfo.ByteSize     = size;
+    bufferInfo.pData        = pData;
+    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
+    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::NONE;
+    bufferInfo.Usage        = BUFFER_USAGE::STAGING_BUFFER;
+    bufferInfo.SharingMode  = SHARING_MODE::EXCLUSIVE;
+
+    return BufferVK::create(bufferInfo, this, nullptr);
 }
 
 Texture* DeviceVK::createTextureFromFile(const std::string& filePath)

@@ -25,7 +25,8 @@ protected:
     friend ResourcePool<ResourceType>;
     PooledResource(ResourceType* pResource, size_t poolIdx, ResourcePool<ResourceType>* pResourcePool)
         :m_pResource(pResource),
-        m_PoolIndex(poolIdx)
+        m_PoolIndex(poolIdx),
+        m_pResourcePool(pResourcePool)
     {}
 
 private:
