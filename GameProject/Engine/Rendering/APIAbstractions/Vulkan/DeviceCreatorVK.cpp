@@ -345,7 +345,7 @@ bool DeviceCreatorVK::initAllocator()
     allocatorInfo.device            = m_Device;
     allocatorInfo.instance          = m_Instance;
 
-    if (!vmaCreateAllocator(&allocatorInfo, &m_Allocator) != VK_SUCCESS) {
+    if (vmaCreateAllocator(&allocatorInfo, &m_Allocator) != VK_SUCCESS) {
         LOG_ERROR("Failed to create vulkan memory allocator");
         return false;
     }

@@ -12,15 +12,28 @@ DescriptorPoolVK* DescriptorPoolVK::create(const DescriptorPoolInfo& poolInfo, D
     poolCreateInfo.maxSets          = poolInfo.MaxSetAllocations;
     poolCreateInfo.poolSizeCount    = poolInfo.DescriptorCounts.getDescriptorTypeCount();
 
-    std::vector<VkDescriptorPoolSize> descriptorCounts(poolCreateInfo.poolSizeCount);
-    descriptorCounts[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorCounts[0].descriptorCount = poolInfo.DescriptorCounts.m_UniformBuffers;
+    std::vector<VkDescriptorPoolSize> descriptorCounts;
+    descriptorCounts.reserve((size_t)poolCreateInfo.poolSizeCount);
+    if (poolInfo.DescriptorCounts.m_UniformBuffers) {
+        VkDescriptorPoolSize uniformPool = {};
+        uniformPool.type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uniformPool.descriptorCount = poolInfo.DescriptorCounts.m_UniformBuffers;
+        descriptorCounts.push_back(uniformPool);
+    }
 
-    descriptorCounts[1].type            = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-    descriptorCounts[1].descriptorCount = poolInfo.DescriptorCounts.m_SampledTextures;
+    if (poolInfo.DescriptorCounts.m_SampledTextures) {
+        VkDescriptorPoolSize sampledTexturesPool = {};
+        sampledTexturesPool.type            = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        sampledTexturesPool.descriptorCount = poolInfo.DescriptorCounts.m_SampledTextures;
+        descriptorCounts.push_back(sampledTexturesPool);
+    }
 
-    descriptorCounts[2].type            = VK_DESCRIPTOR_TYPE_SAMPLER;
-    descriptorCounts[2].descriptorCount = poolInfo.DescriptorCounts.m_Samplers;
+    if (poolInfo.DescriptorCounts.m_Samplers) {
+        VkDescriptorPoolSize samplersPool = {};
+        samplersPool.type            = VK_DESCRIPTOR_TYPE_SAMPLER;
+        samplersPool.descriptorCount = poolInfo.DescriptorCounts.m_Samplers;
+        descriptorCounts.push_back(samplersPool);
+    }
 
     poolCreateInfo.pPoolSizes = descriptorCounts.data();
 
