@@ -178,7 +178,8 @@ bool DeviceCreatorVK::pickPhysicalDevice()
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
         deviceRating += VK_VERSION_MAJOR(deviceProperties.apiVersion) * 100u + VK_VERSION_MINOR(deviceProperties.apiVersion) * 10u;
-        deviceRating += uint32_t(deviceFeatures.geometryShader) * 100u;
+        deviceRating += uint32_t(deviceFeatures.geometryShader)     * 100u;
+        deviceRating += uint32_t(deviceFeatures.samplerAnisotropy)  * 100u;
         deviceRating += (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) * 1000u;
 
         if (!verifyRequiredDeviceExtensionsSupported(device)) {
@@ -310,6 +311,7 @@ bool DeviceCreatorVK::initLogicalDevice()
     }
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
+    deviceFeatures.samplerAnisotropy    = VK_TRUE;
 
     VkDeviceCreateInfo deviceInfo = {};
     deviceInfo.sType                    = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
