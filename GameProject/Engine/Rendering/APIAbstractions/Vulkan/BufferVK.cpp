@@ -30,7 +30,7 @@ BufferVK* BufferVK::create(const BufferInfo& bufferInfo, DeviceVK* pDevice, Stag
         return nullptr;
     }
 
-    BufferVK* pBuffer = DBG_NEW BufferVK(buffer, allocation, pDevice);
+    std::unique_ptr<BufferVK> pBuffer(DBG_NEW BufferVK(buffer, allocation, pDevice));
 
     if (bufferInfo.pData) {
         if (bufferInfo.CPUAccess == BUFFER_DATA_ACCESS::WRITE) {
@@ -41,18 +41,19 @@ BufferVK* BufferVK::create(const BufferInfo& bufferInfo, DeviceVK* pDevice, Stag
             // Write data to a staging buffer, then copy the data to the target buffer
             if (!pStagingResources) {
                 LOG_WARNING("pStagingResources cannot be nullptr; it is needed since the buffer has initial data and is not CPU-writable");
-                return pBuffer;
-            }
-
-            if (!pBuffer->mapCopyUnmap(bufferInfo.pData, (VkDeviceSize)bufferInfo.ByteSize)) {
                 return nullptr;
             }
 
-            pStagingResources->pCommandList->copyBuffer(pStagingResources->pStagingBuffer, pBuffer, bufferInfo.ByteSize);
+            BufferVK* pStagingBuffer = reinterpret_cast<BufferVK*>(pStagingResources->pStagingBuffer);
+            if (!pStagingBuffer->mapCopyUnmap(bufferInfo.pData, (VkDeviceSize)bufferInfo.ByteSize)) {
+                return nullptr;
+            }
+
+            pStagingResources->pCommandList->copyBuffer(pStagingResources->pStagingBuffer, pBuffer.get(), bufferInfo.ByteSize);
         }
     }
 
-    return pBuffer;
+    return pBuffer.release();
 }
 
 BufferVK::BufferVK(VkBuffer buffer, VmaAllocation allocation, DeviceVK* pDevice)
