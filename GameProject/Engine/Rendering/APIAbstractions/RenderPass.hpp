@@ -43,7 +43,7 @@ struct AttachmentReference {
 struct SubpassInfo {
     PIPELINE_BIND_POINT PipelineBindPoint;
     std::vector<AttachmentReference> ColorAttachments;
-    AttachmentReference DepthStencilAttachment;
+    AttachmentReference* pDepthStencilAttachment;
 };
 
 #define SUBPASS_EXTERNAL UINT32_MAX

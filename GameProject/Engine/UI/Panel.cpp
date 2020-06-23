@@ -141,8 +141,6 @@ void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, Di
 
 bool UIHandler::createRenderPass()
 {
-    RenderPassInfo renderPassInfo   = {};
-
     // Render pass attachments
     AttachmentInfo panelTextureAttachment   = {};
     panelTextureAttachment.Format           = g_PanelTextureFormat;
@@ -153,24 +151,25 @@ bool UIHandler::createRenderPass()
     panelTextureAttachment.FinalLayout      = TEXTURE_LAYOUT::SHADER_READ_ONLY;
 
     // Subpass
-    SubpassInfo subpass = {};
     AttachmentReference panelTextureRef = {};
     panelTextureRef.AttachmentIndex     = 0u;
     panelTextureRef.Layout              = TEXTURE_LAYOUT::RENDER_TARGET;
 
+    SubpassInfo subpass = {};
     subpass.ColorAttachments    = { panelTextureRef };
     subpass.PipelineBindPoint   = PIPELINE_BIND_POINT::GRAPHICS;
 
     // Subpass dependency
     SubpassDependency subpassDependency = {};
     subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
-    subpassDependency.DstSubpass        = 0;
+    subpassDependency.DstSubpass        = 0u;
     subpassDependency.SrcStage          = PIPELINE_STAGE::BOTTOM_OF_PIPE;
     subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::SHADER_READ;
+    subpassDependency.SrcAccessMask     = (RESOURCE_ACCESS)(0);
     subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
     subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
 
+    RenderPassInfo renderPassInfo   = {};
     renderPassInfo.AttachmentInfos  = { panelTextureAttachment };
     renderPassInfo.Subpasses        = { subpass };
     renderPassInfo.Dependencies     = { subpassDependency };

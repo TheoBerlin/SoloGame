@@ -314,7 +314,7 @@ bool MeshRenderer::createRenderPass()
     depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
 
     subpass.ColorAttachments        = { backbufferRef };
-    subpass.DepthStencilAttachment  = { depthStencilRef };
+    subpass.pDepthStencilAttachment = &depthStencilRef;
     subpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
 
     // Subpass dependency
