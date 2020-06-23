@@ -2,7 +2,7 @@
 
 VkPipelineStageFlags convertPipelineStageFlags(PIPELINE_STAGE pipelineStageFlags)
 {
-    return
+    return (int)pipelineStageFlags == 0 ? 0 :
         HAS_FLAG(pipelineStageFlags, PIPELINE_STAGE::TOP_OF_PIPE) * VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT |
         HAS_FLAG(pipelineStageFlags, PIPELINE_STAGE::DRAW_INDIRECT) * VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT |
         HAS_FLAG(pipelineStageFlags, PIPELINE_STAGE::VERTEX_INPUT) * VK_PIPELINE_STAGE_VERTEX_INPUT_BIT |

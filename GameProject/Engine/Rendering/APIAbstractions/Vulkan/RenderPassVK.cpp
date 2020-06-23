@@ -13,8 +13,14 @@ RenderPassVK* RenderPassVK::create(const RenderPassInfo& renderPassInfo, DeviceV
 
     std::vector<VkSubpassDescription> subpassDescriptions;
     subpassDescriptions.reserve(renderPassInfo.Subpasses.size());
+
+    // Each subpass has a vector of attachment references
+    std::vector<std::vector<VkAttachmentReference>> attachmentReferencesColor;
+    attachmentReferencesColor.resize(renderPassInfo.Subpasses.size());
+
+    size_t subpassIdx = 0u;
     for (const SubpassInfo& subpassInfo : renderPassInfo.Subpasses) {
-        subpassDescriptions.push_back(convertSubpassInfo(subpassInfo));
+        subpassDescriptions.push_back(convertSubpassInfo(subpassInfo, attachmentReferencesColor[subpassIdx++]));
     }
 
     std::vector<VkSubpassDependency> subpassDependencies;
@@ -66,21 +72,23 @@ VkAttachmentDescription RenderPassVK::convertAttachmentInfo(const AttachmentInfo
     return attachmentDesc;
 }
 
-VkSubpassDescription RenderPassVK::convertSubpassInfo(const SubpassInfo& subpassInfo)
+VkSubpassDescription RenderPassVK::convertSubpassInfo(const SubpassInfo& subpassInfo, std::vector<VkAttachmentReference>& attachmentReferencesColor)
 {
-    std::vector<VkAttachmentReference> attachmentReferencesColor;
     attachmentReferencesColor.reserve(subpassInfo.ColorAttachments.size());
     for (const AttachmentReference& attachmentReference : subpassInfo.ColorAttachments) {
         attachmentReferencesColor.push_back(convertAttachmentReference(attachmentReference));
     }
 
-    VkAttachmentReference attachmentReferenceDepth = convertAttachmentReference(subpassInfo.DepthStencilAttachment);
+    VkAttachmentReference attachmentReferenceDepth = {};
+    if (subpassInfo.pDepthStencilAttachment) {
+        attachmentReferenceDepth = convertAttachmentReference(*subpassInfo.pDepthStencilAttachment);
+    }
 
     VkSubpassDescription subpassDesc = {};
     subpassDesc.pipelineBindPoint       = subpassInfo.PipelineBindPoint == PIPELINE_BIND_POINT::GRAPHICS ? VK_PIPELINE_BIND_POINT_GRAPHICS : VK_PIPELINE_BIND_POINT_COMPUTE;
     subpassDesc.colorAttachmentCount    = (uint32_t)attachmentReferencesColor.size();
     subpassDesc.pColorAttachments       = attachmentReferencesColor.data();
-    subpassDesc.pDepthStencilAttachment = &attachmentReferenceDepth;
+    subpassDesc.pDepthStencilAttachment = subpassInfo.pDepthStencilAttachment ? &attachmentReferenceDepth : nullptr;
 
     return subpassDesc;
 }
