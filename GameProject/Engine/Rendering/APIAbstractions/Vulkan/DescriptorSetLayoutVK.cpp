@@ -8,13 +8,12 @@ bool DescriptorSetLayoutVK::finalize(Device* pDevice)
     m_pDevice = reinterpret_cast<DeviceVK*>(pDevice);
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = (uint32_t)m_Bindings.size();
     layoutInfo.pBindings    = m_Bindings.data();
 
     VkDevice device = reinterpret_cast<DeviceVK*>(pDevice)->getDevice();
-    VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
         LOG_ERROR("Failed to create descriptor set layout");
         return false;
     }
