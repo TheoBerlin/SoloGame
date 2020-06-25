@@ -18,12 +18,13 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     shaderStages.reserve(shaders.size());
 
     VkPipelineVertexInputStateCreateInfo inputLayout = {};
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
     ShaderHandler* pShaderHandler = pDevice->getShaderHandler();
     for (const ShaderInfo& shaderInfo : pipelineInfo.ShaderInfos) {
         if (shaderInfo.ShaderType == SHADER_TYPE::VERTEX_SHADER) {
             const InputLayoutInfo& inputLayoutInfo = pShaderHandler->getInputLayoutInfo(shaderInfo.ShaderName);
-            if (!convertInputLayoutInfo(inputLayout, inputLayoutInfo)) {
+            if (!convertInputLayoutInfo(inputLayout, attributeDescriptions, inputLayoutInfo)) {
                 return nullptr;
             }
         }
@@ -37,7 +38,10 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     inputAssemblyState.topology   = convertPrimitiveTopology(pipelineInfo.PrimitiveTopology);
 
     VkPipelineViewportStateCreateInfo viewportState = {};
-    viewportState.sType  = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1u;
+    viewportState.pViewports    = pipelineInfo.Viewports.empty() ? nullptr : (VkViewport*)pipelineInfo.Viewports.data();
+    viewportState.scissorCount  = 1u;
 
     VkPipelineRasterizationStateCreateInfo rasterizerInfo = {};
     if (!convertRasterizerStateInfo(rasterizerInfo, pipelineInfo.RasterizerStateInfo)) {
@@ -64,7 +68,7 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     std::vector<VkDynamicState> dynamicStates;
     dynamicStates.reserve(pipelineInfo.DynamicStates.size());
     for (PIPELINE_DYNAMIC_STATE dynamicState : pipelineInfo.DynamicStates) {
-        dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+        dynamicStates.push_back(dynamicState == PIPELINE_DYNAMIC_STATE::VIEWPORT ? VK_DYNAMIC_STATE_VIEWPORT : VK_DYNAMIC_STATE_SCISSOR);
     }
 
     VkPipelineDynamicStateCreateInfo dynamicStatesInfo = {};

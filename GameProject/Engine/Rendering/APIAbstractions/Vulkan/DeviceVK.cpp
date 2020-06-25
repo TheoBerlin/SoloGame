@@ -8,6 +8,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/FramebufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/PipelineVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
@@ -127,6 +128,11 @@ IRenderPass* DeviceVK::createRenderPass(const RenderPassInfo& renderPassInfo)
 IPipelineLayout* DeviceVK::createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts)
 {
     return PipelineLayoutVK::create(descriptorSetLayouts, this);
+}
+
+IPipeline* DeviceVK::createPipeline(const PipelineInfo& pipelineInfo)
+{
+    return PipelineVK::create(pipelineInfo, this);
 }
 
 FenceVK* DeviceVK::createFence(bool createSignaled)

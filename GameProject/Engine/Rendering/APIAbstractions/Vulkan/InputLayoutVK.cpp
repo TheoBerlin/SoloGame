@@ -3,12 +3,11 @@
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 
-bool convertInputLayoutInfo(VkPipelineVertexInputStateCreateInfo& inputLayoutInfoVK, const InputLayoutInfo& inputLayoutInfo)
+bool convertInputLayoutInfo(VkPipelineVertexInputStateCreateInfo& inputLayoutInfoVK, std::vector<VkVertexInputAttributeDescription>& attributeDescs, const InputLayoutInfo& inputLayoutInfo)
 {
     uint32_t vertexOffset   = 0u;
     uint32_t location       = 0u;
 
-    std::vector<VkVertexInputAttributeDescription> attributeDescs;
     attributeDescs.reserve(inputLayoutInfo.VertexInputAttributes.size());
     for (const InputVertexAttribute& vertexAttribute : inputLayoutInfo.VertexInputAttributes) {
         vertexOffset += (uint32_t)getFormatSize(vertexAttribute.Format);

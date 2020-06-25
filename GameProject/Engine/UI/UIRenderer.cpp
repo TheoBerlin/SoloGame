@@ -271,10 +271,11 @@ bool UIRenderer::createPipeline()
     pipelineInfo.Viewports = { viewport };
 
     pipelineInfo.RasterizerStateInfo = {};
-    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
-    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::NONE;
-    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+    pipelineInfo.RasterizerStateInfo.PolygonMode            = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode               = CULL_MODE::NONE;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation   = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable        = false;
+    pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
     pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
@@ -300,6 +301,7 @@ bool UIRenderer::createPipeline()
         blendConstant = 1.0f;
     }
 
+    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::SCISSOR };
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;
     pipelineInfo.Subpass        = 0u;
