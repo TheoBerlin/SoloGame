@@ -183,8 +183,7 @@ bool UIHandler::createDescriptorSetLayout()
     // Create a single layout, even if some descriptors are per-panel and per-texture attachment
     m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
     m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingCombinedTextureSampler(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
     return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
@@ -402,8 +401,7 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
         }
 
         pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, pPerAttachmentBuffer);
-        pDescriptorSet->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
-        pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get());
+        pDescriptorSet->updateCombinedTextureSamplerDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get(), m_pAniSampler);
 
         renderResources.push_back({pDescriptorSet, pPerAttachmentBuffer});
     }

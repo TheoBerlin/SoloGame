@@ -17,8 +17,7 @@ public:
     ~DescriptorSetLayoutDX11() = default;
 
     void addBindingUniformBuffer(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
-    void addBindingSampledTexture(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
-    void addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
+    void addBindingCombinedTextureSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) override final;
 
     bool finalize(Device* pDevice) override final;
 
@@ -28,8 +27,7 @@ public:
 
 private:
     std::vector<BindingSlot> m_UniformBufferSlots;
-    std::vector<BindingSlot> m_SampledTextureSlots;
-    std::vector<BindingSlot> m_SamplerSlots;
+    std::vector<BindingSlot> m_CombinedTextureSamplerSlots;
 
     // Maps binding slots to the shader stages they belong to
     std::unordered_map<uint32_t, SHADER_TYPE> m_BindingShaderMap;

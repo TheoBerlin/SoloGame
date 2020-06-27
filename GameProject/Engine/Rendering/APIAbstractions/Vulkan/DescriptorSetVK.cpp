@@ -21,19 +21,12 @@ void DescriptorSetVK::updateUniformBufferDescriptor(SHADER_BINDING binding, IBuf
     updateDescriptor(binding, nullptr, &bufferInfo);
 }
 
-void DescriptorSetVK::updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture)
+void DescriptorSetVK::updateCombinedTextureSamplerDescriptor(SHADER_BINDING binding, Texture* pTexture, ISampler* pSampler)
 {
     VkDescriptorImageInfo imageInfo = {};
+    imageInfo.sampler       = reinterpret_cast<SamplerVK*>(pSampler)->getSampler();
     imageInfo.imageView     = reinterpret_cast<TextureVK*>(pTexture)->getImageView();
     imageInfo.imageLayout   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-    updateDescriptor(binding, &imageInfo, nullptr);
-}
-
-void DescriptorSetVK::updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler)
-{
-    VkDescriptorImageInfo imageInfo = {};
-    imageInfo.sampler = reinterpret_cast<SamplerVK*>(pSampler)->getSampler();
 
     updateDescriptor(binding, &imageInfo, nullptr);
 }

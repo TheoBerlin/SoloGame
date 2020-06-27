@@ -14,8 +14,8 @@ DescriptorSetDX11::DescriptorSetDX11(const DescriptorSetLayoutDX11* pDescriptorS
 void DescriptorSetDX11::updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer)
 {
     BufferDX11* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer);
-    Binding<ID3D11Buffer> bufferBinding = {
-        .pResource      = pBufferDX->getBuffer(),
+    Binding<ID3D11Buffer*> bufferBinding = {
+        .Resource       = pBufferDX->getBuffer(),
         .Binding        = (UINT)binding,
         .ShaderStages   = m_pLayout->getBindingShaderStages((uint32_t)binding)
     };
@@ -23,59 +23,56 @@ void DescriptorSetDX11::updateUniformBufferDescriptor(SHADER_BINDING binding, IB
     m_BufferBindings.push_back(bufferBinding);
 }
 
-void DescriptorSetDX11::updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture)
+void DescriptorSetDX11::updateCombinedTextureSamplerDescriptor(SHADER_BINDING binding, Texture* pTexture, ISampler* pSampler)
 {
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
-    Binding<ID3D11ShaderResourceView> textureBinding = {
-        .pResource      = pTextureDX->getSRV(),
-        .Binding        = (UINT)binding,
-        .ShaderStages   = m_pLayout->getBindingShaderStages((uint32_t)binding)
-    };
-
-    m_SampledTextureBindings.push_back(textureBinding);
-}
-
-void DescriptorSetDX11::updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler)
-{
     SamplerDX11* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler);
-    Binding<ID3D11SamplerState> samplerBinding = {
-        .pResource      = pSamplerDX->getSamplerState(),
+
+    Binding<std::pair<ID3D11ShaderResourceView*, ID3D11SamplerState*>> combinedTextureSamplerBinding = {
+        .Resource       = { pTextureDX->getSRV(), pSamplerDX->getSamplerState() },
         .Binding        = (UINT)binding,
         .ShaderStages   = m_pLayout->getBindingShaderStages((uint32_t)binding)
     };
 
-    m_SamplerBindings.push_back(samplerBinding);
+    m_CombinedTextureSamplerBindings.push_back(combinedTextureSamplerBinding);
 }
 
 void DescriptorSetDX11::bind(ID3D11DeviceContext* pContext)
 {
-    for (const Binding<ID3D11Buffer>& bufferBinding : m_BufferBindings) {
+    for (const Binding<ID3D11Buffer*>& bufferBinding : m_BufferBindings) {
         ACTION_PER_CONTAINED_SHADER(bufferBinding.ShaderStages,
-            pContext->VSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.pResource),
-            pContext->HSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.pResource),
-            pContext->DSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.pResource),
-            pContext->GSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.pResource),
-            pContext->PSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.pResource)
+            pContext->VSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.Resource),
+            pContext->HSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.Resource),
+            pContext->DSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.Resource),
+            pContext->GSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.Resource),
+            pContext->PSSetConstantBuffers(bufferBinding.Binding, 1, &bufferBinding.Resource)
         )
     }
 
-    for (const Binding<ID3D11ShaderResourceView>& textureBinding : m_SampledTextureBindings) {
-        ACTION_PER_CONTAINED_SHADER(textureBinding.ShaderStages,
-            pContext->VSSetShaderResources(textureBinding.Binding, 1, &textureBinding.pResource),
-            pContext->HSSetShaderResources(textureBinding.Binding, 1, &textureBinding.pResource),
-            pContext->DSSetShaderResources(textureBinding.Binding, 1, &textureBinding.pResource),
-            pContext->GSSetShaderResources(textureBinding.Binding, 1, &textureBinding.pResource),
-            pContext->PSSetShaderResources(textureBinding.Binding, 1, &textureBinding.pResource)
-        )
-    }
+    for (const Binding<std::pair<ID3D11ShaderResourceView*, ID3D11SamplerState*>>& combinedTextureSamplerBinding : m_CombinedTextureSamplerBindings) {
+        if (HAS_FLAG(combinedTextureSamplerBinding.ShaderStages, SHADER_TYPE::VERTEX_SHADER)) {
+            pContext->VSSetShaderResources(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.first);
+            pContext->VSSetSamplers(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.second);
+        }
 
-    for (const Binding<ID3D11SamplerState>& samplerBinding : m_SamplerBindings) {
-        ACTION_PER_CONTAINED_SHADER(samplerBinding.ShaderStages,
-            pContext->VSSetSamplers(samplerBinding.Binding, 1, &samplerBinding.pResource),
-            pContext->HSSetSamplers(samplerBinding.Binding, 1, &samplerBinding.pResource),
-            pContext->DSSetSamplers(samplerBinding.Binding, 1, &samplerBinding.pResource),
-            pContext->GSSetSamplers(samplerBinding.Binding, 1, &samplerBinding.pResource),
-            pContext->PSSetSamplers(samplerBinding.Binding, 1, &samplerBinding.pResource)
-        )
+        if (HAS_FLAG(combinedTextureSamplerBinding.ShaderStages, SHADER_TYPE::HULL_SHADER)) {
+            pContext->HSSetShaderResources(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.first);
+            pContext->HSSetSamplers(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.second);
+        }
+
+        if (HAS_FLAG(combinedTextureSamplerBinding.ShaderStages, SHADER_TYPE::DOMAIN_SHADER)) {
+            pContext->DSSetShaderResources(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.first);
+            pContext->DSSetSamplers(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.second);
+        }
+
+        if (HAS_FLAG(combinedTextureSamplerBinding.ShaderStages, SHADER_TYPE::GEOMETRY_SHADER)) {
+            pContext->GSSetShaderResources(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.first);
+            pContext->GSSetSamplers(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.second);
+        }
+
+        if (HAS_FLAG(combinedTextureSamplerBinding.ShaderStages, SHADER_TYPE::FRAGMENT_SHADER)) {
+            pContext->PSSetShaderResources(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.first);
+            pContext->PSSetSamplers(combinedTextureSamplerBinding.Binding, 1, &combinedTextureSamplerBinding.Resource.second);
+        }
     }
 }

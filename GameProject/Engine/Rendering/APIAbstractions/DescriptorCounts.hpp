@@ -27,6 +27,5 @@ public:
     uint32_t getDescriptorTypeCount() const;
 
     uint32_t m_UniformBuffers;
-    uint32_t m_SampledTextures;
-    uint32_t m_Samplers;
+    uint32_t m_CombinedTextureSamplers;
 };

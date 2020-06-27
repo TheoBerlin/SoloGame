@@ -15,8 +15,7 @@ public:
     virtual ~DescriptorSet();
 
     virtual void updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer) = 0;
-    virtual void updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture) = 0;
-    virtual void updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler) = 0;
+    virtual void updateCombinedTextureSamplerDescriptor(SHADER_BINDING binding, Texture* pTexture, ISampler* pSampler) = 0;
 
     const IDescriptorSetLayout* getLayout() const { return m_pLayout; }
 

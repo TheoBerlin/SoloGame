@@ -21,18 +21,11 @@ DescriptorPoolVK* DescriptorPoolVK::create(const DescriptorPoolInfo& poolInfo, D
         descriptorCounts.push_back(uniformPool);
     }
 
-    if (poolInfo.DescriptorCounts.m_SampledTextures) {
+    if (poolInfo.DescriptorCounts.m_CombinedTextureSamplers) {
         VkDescriptorPoolSize sampledTexturesPool = {};
         sampledTexturesPool.type            = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        sampledTexturesPool.descriptorCount = poolInfo.DescriptorCounts.m_SampledTextures;
+        sampledTexturesPool.descriptorCount = poolInfo.DescriptorCounts.m_CombinedTextureSamplers;
         descriptorCounts.push_back(sampledTexturesPool);
-    }
-
-    if (poolInfo.DescriptorCounts.m_Samplers) {
-        VkDescriptorPoolSize samplersPool = {};
-        samplersPool.type            = VK_DESCRIPTOR_TYPE_SAMPLER;
-        samplersPool.descriptorCount = poolInfo.DescriptorCounts.m_Samplers;
-        descriptorCounts.push_back(samplersPool);
     }
 
     poolCreateInfo.pPoolSizes = descriptorCounts.data();

@@ -1,8 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(binding = 4) uniform texture2D u_UITexture;
-layout(binding = 1) uniform sampler u_Sampler;
+layout(binding = 4) uniform sampler2D u_UITexture;
 
 layout (binding = 2) uniform PerObject {
     vec2 Position, Size;

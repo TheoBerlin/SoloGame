@@ -13,7 +13,7 @@ class TextureDX11;
 
 template <typename Resource>
 struct Binding {
-    Resource* pResource;
+    Resource Resource;
     UINT Binding;
     SHADER_TYPE ShaderStages;
 };
@@ -25,15 +25,13 @@ public:
     ~DescriptorSetDX11() = default;
 
     void updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer) override final;
-    void updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture) override final;
-    void updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler) override final;
+    void updateCombinedTextureSamplerDescriptor(SHADER_BINDING binding, Texture* pTexture, ISampler* pSampler) override final;
 
     void bind(ID3D11DeviceContext* pContext);
 
 private:
-    std::vector<Binding<ID3D11Buffer>> m_BufferBindings;
-    std::vector<Binding<ID3D11ShaderResourceView>> m_SampledTextureBindings;
-    std::vector<Binding<ID3D11SamplerState>> m_SamplerBindings;
+    std::vector<Binding<ID3D11Buffer*>> m_BufferBindings;
+    std::vector<Binding<std::pair<ID3D11ShaderResourceView*, ID3D11SamplerState*>>> m_CombinedTextureSamplerBindings;
 
     // Contains information on which shaders the bindings belong to
     const DescriptorSetLayoutDX11* m_pLayout;
