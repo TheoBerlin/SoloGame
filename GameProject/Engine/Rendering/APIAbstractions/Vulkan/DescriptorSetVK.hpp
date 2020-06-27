@@ -15,8 +15,7 @@ public:
     ~DescriptorSetVK() = default;
 
     void updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer) override final;
-    void updateSampledTextureDescriptor(SHADER_BINDING binding, Texture* pTexture) override final;
-    void updateSamplerDescriptor(SHADER_BINDING binding, ISampler* pSampler) override final;
+    void updateCombinedTextureSamplerDescriptor(SHADER_BINDING binding, Texture* pTexture, ISampler* pSampler) override final;
 
     inline VkDescriptorSet getDescriptorSet() const { return m_DescriptorSet; }
 

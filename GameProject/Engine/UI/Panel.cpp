@@ -183,8 +183,7 @@ bool UIHandler::createDescriptorSetLayout()
     // Create a single layout, even if some descriptors are per-panel and per-texture attachment
     m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
     m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayout->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingCombinedTextureSampler(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
     return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
@@ -204,10 +203,11 @@ bool UIHandler::createPipeline()
     pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP;
 
     pipelineInfo.RasterizerStateInfo = {};
-    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
-    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::NONE;
-    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+    pipelineInfo.RasterizerStateInfo.PolygonMode            = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode               = CULL_MODE::NONE;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation   = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable        = false;
+    pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
     pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
@@ -233,7 +233,7 @@ bool UIHandler::createPipeline()
         blendConstant = 1.0f;
     }
 
-    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::VIEWPORT };
+    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::VIEWPORT, PIPELINE_DYNAMIC_STATE::SCISSOR };
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;
     pipelineInfo.Subpass        = 0u;
@@ -401,8 +401,7 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
         }
 
         pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, pPerAttachmentBuffer);
-        pDescriptorSet->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
-        pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get());
+        pDescriptorSet->updateCombinedTextureSamplerDescriptor(SHADER_BINDING::TEXTURE_ONE, attachment.texture.get(), m_pAniSampler);
 
         renderResources.push_back({pDescriptorSet, pPerAttachmentBuffer});
     }

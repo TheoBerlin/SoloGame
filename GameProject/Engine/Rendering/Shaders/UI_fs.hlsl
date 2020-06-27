@@ -1,5 +1,5 @@
 Texture2D uiTexture : register(t4);
-SamplerState sampAni : register(s1);
+SamplerState sampAni : register(s4);
 
 cbuffer perObject : register(b2)
 {

@@ -23,7 +23,7 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
 
     pipelineInfoDX.Shaders.shrink_to_fit();
 
-    pipelineInfoDX.Viewports        = pipelineInfo.Viewports;
+    pipelineInfoDX.Viewports = pipelineInfo.Viewports;
 
     if (!createRasterizerState(&pipelineInfoDX.pRasterizerState, pipelineInfo.RasterizerStateInfo, pDevice->getDevice())) {
         return nullptr;

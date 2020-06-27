@@ -12,9 +12,7 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     m_pRenderTarget(pDevice->getBackBuffer()),
     m_pDepthStencil(pDevice->getDepthStencil()),
     m_pQuad(nullptr),
-    m_pDescriptorSetLayoutCommon(nullptr),
-    m_pDescriptorSetLayoutPanel(nullptr),
-    m_pDescriptorSetCommon(nullptr),
+    m_pDescriptorSetLayout(nullptr),
     m_pAniSampler(nullptr),
     m_pRenderPass(nullptr),
     m_pFramebuffer(nullptr),
@@ -39,9 +37,7 @@ UIRenderer::~UIRenderer()
 
     delete m_pCommandList;
     delete m_pCommandPool;
-    delete m_pDescriptorSetCommon;
-    delete m_pDescriptorSetLayoutCommon;
-    delete m_pDescriptorSetLayoutPanel;
+    delete m_pDescriptorSetLayout;
     delete m_pRenderPass;
     delete m_pFramebuffer;
     delete m_pPipelineLayout;
@@ -70,10 +66,6 @@ bool UIRenderer::init()
     m_pAniSampler   = pShaderResourceHandler->getAniSampler();
 
     if (!createDescriptorSetLayouts()) {
-        return false;
-    }
-
-    if (!createCommonDescriptorSet()) {
         return false;
     }
 
@@ -127,8 +119,6 @@ void UIRenderer::recordCommands()
     m_pCommandList->bindPipeline(m_pPipeline);
     m_pCommandList->bindVertexBuffer(0, m_pQuad);
 
-    m_pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
-
     for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
         m_pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
         m_pCommandList->draw(4);
@@ -145,35 +135,14 @@ void UIRenderer::executeCommands()
 
 bool UIRenderer::createDescriptorSetLayouts()
 {
-    m_pDescriptorSetLayoutCommon = m_pDevice->createDescriptorSetLayout();
-    if (!m_pDescriptorSetLayoutCommon) {
+    m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
+    if (!m_pDescriptorSetLayout) {
         return false;
     }
 
-    m_pDescriptorSetLayoutCommon->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    if (!m_pDescriptorSetLayoutCommon->finalize(m_pDevice)) {
-        return false;
-    }
-
-    m_pDescriptorSetLayoutPanel = m_pDevice->createDescriptorSetLayout();
-    if (!m_pDescriptorSetLayoutPanel) {
-        return false;
-    }
-
-    m_pDescriptorSetLayoutPanel->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayoutPanel->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
-    return m_pDescriptorSetLayoutPanel->finalize(m_pDevice);
-}
-
-bool UIRenderer::createCommonDescriptorSet()
-{
-    m_pDescriptorSetCommon = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutCommon);
-    if (!m_pDescriptorSetCommon) {
-        return false;
-    }
-
-    m_pDescriptorSetCommon->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
-    return true;
+    m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayout->addBindingCombinedTextureSampler(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
 bool UIRenderer::createRenderPass()
@@ -246,7 +215,7 @@ bool UIRenderer::createFramebuffer()
 
 bool UIRenderer::createPipeline()
 {
-    m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayoutCommon, m_pDescriptorSetLayoutPanel });
+    m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayout });
     if (!m_pPipelineLayout) {
         return false;
     }
@@ -271,10 +240,11 @@ bool UIRenderer::createPipeline()
     pipelineInfo.Viewports = { viewport };
 
     pipelineInfo.RasterizerStateInfo = {};
-    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
-    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::NONE;
-    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+    pipelineInfo.RasterizerStateInfo.PolygonMode            = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode               = CULL_MODE::NONE;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation   = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable        = false;
+    pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
     pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
@@ -300,6 +270,7 @@ bool UIRenderer::createPipeline()
         blendConstant = 1.0f;
     }
 
+    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::SCISSOR };
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;
     pipelineInfo.Subpass        = 0u;
@@ -332,13 +303,13 @@ void UIRenderer::onPanelAdded(Entity entity)
     }
 
     // Create descriptor set
-    panelRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutPanel);
+    panelRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayout);
     if (!panelRenderResources.pDescriptorSet) {
         return;
     }
 
     panelRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, panelRenderResources.pBuffer);
-    panelRenderResources.pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, panel.texture);
+    panelRenderResources.pDescriptorSet->updateCombinedTextureSamplerDescriptor(SHADER_BINDING::TEXTURE_ONE, panel.texture, m_pAniSampler);
 
     m_PanelRenderResources.push_back(panelRenderResources, entity);
 }

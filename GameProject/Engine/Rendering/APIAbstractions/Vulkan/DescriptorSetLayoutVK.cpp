@@ -8,13 +8,12 @@ bool DescriptorSetLayoutVK::finalize(Device* pDevice)
     m_pDevice = reinterpret_cast<DeviceVK*>(pDevice);
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = (uint32_t)m_Bindings.size();
     layoutInfo.pBindings    = m_Bindings.data();
 
     VkDevice device = reinterpret_cast<DeviceVK*>(pDevice)->getDevice();
-    VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &layout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
         LOG_ERROR("Failed to create descriptor set layout");
         return false;
     }
@@ -32,14 +31,9 @@ void DescriptorSetLayoutVK::addBindingUniformBuffer(SHADER_BINDING binding, SHAD
     addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, shaderStages);
 }
 
-void DescriptorSetLayoutVK::addBindingSampledTexture(SHADER_BINDING binding, SHADER_TYPE shaderStages)
+void DescriptorSetLayoutVK::addBindingCombinedTextureSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages)
 {
-    addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, shaderStages);
-}
-
-void DescriptorSetLayoutVK::addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages)
-{
-    addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_SAMPLER, shaderStages);
+    addBinding((uint32_t)binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, shaderStages);
 }
 
 DescriptorCounts DescriptorSetLayoutVK::getDescriptorCounts() const
@@ -48,10 +42,8 @@ DescriptorCounts DescriptorSetLayoutVK::getDescriptorCounts() const
     for (const VkDescriptorSetLayoutBinding& binding : m_Bindings) {
         if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
             descriptorCounts.m_UniformBuffers += 1u;
-        } else if (binding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) {
-            descriptorCounts.m_SampledTextures += 1u;
-        } else if (binding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER) {
-            descriptorCounts.m_Samplers += 1u;
+        } else if (binding.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+            descriptorCounts.m_CombinedTextureSamplers += 1u;
         }
     }
 

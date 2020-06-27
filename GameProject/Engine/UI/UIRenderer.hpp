@@ -26,7 +26,6 @@ public:
 
 private:
     bool createDescriptorSetLayouts();
-    bool createCommonDescriptorSet();
     bool createRenderPass();
     bool createFramebuffer();
     bool createPipeline();
@@ -52,9 +51,7 @@ private:
     IRenderPass* m_pRenderPass;
     IFramebuffer* m_pFramebuffer;
 
-    IDescriptorSetLayout* m_pDescriptorSetLayoutCommon; // Common for all panels: Sampler
-    IDescriptorSetLayout* m_pDescriptorSetLayoutPanel;  // Per panel: Buffer containing transform and highlight settings, texture
-    DescriptorSet* m_pDescriptorSetCommon;
+    IDescriptorSetLayout* m_pDescriptorSetLayout;
 
     Viewport m_Viewport;
 

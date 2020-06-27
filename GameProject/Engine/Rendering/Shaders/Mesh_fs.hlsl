@@ -1,5 +1,5 @@
 Texture2D diffuseTX : register(t4);
-SamplerState sampAni : register(s1);
+SamplerState sampAni : register(s4);
 
 cbuffer material : register(b3) {
     float4 Ks;

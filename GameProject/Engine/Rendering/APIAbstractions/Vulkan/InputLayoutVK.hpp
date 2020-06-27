@@ -4,4 +4,4 @@
 
 #include <vulkan/vulkan.h>
 
-bool convertInputLayoutInfo(VkPipelineVertexInputStateCreateInfo& inputLayoutInfoVK, const InputLayoutInfo& inputLayoutInfo);
+bool convertInputLayoutInfo(VkPipelineVertexInputStateCreateInfo& inputLayoutInfoVK, std::vector<VkVertexInputAttributeDescription>& attributeDescs, const InputLayoutInfo& inputLayoutInfo);

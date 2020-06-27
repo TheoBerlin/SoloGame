@@ -14,8 +14,7 @@ public:
     virtual bool finalize(Device* pDevice) = 0;
 
     virtual void addBindingUniformBuffer(SHADER_BINDING binding, SHADER_TYPE shaderStages) = 0;
-    virtual void addBindingSampledTexture(SHADER_BINDING binding, SHADER_TYPE shaderStages) = 0;
-    virtual void addBindingSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) = 0;
+    virtual void addBindingCombinedTextureSampler(SHADER_BINDING binding, SHADER_TYPE shaderStages) = 0;
 
     // How many descriptors of each type are involved in the layout
     virtual DescriptorCounts getDescriptorCounts() const = 0;

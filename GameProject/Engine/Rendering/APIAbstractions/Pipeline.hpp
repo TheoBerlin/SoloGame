@@ -16,7 +16,8 @@ struct ShaderInfo {
 };
 
 enum class PIPELINE_DYNAMIC_STATE {
-    VIEWPORT
+    VIEWPORT,
+    SCISSOR
 };
 
 class IPipelineLayout;

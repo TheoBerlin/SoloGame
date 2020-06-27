@@ -244,7 +244,6 @@ bool MeshRenderer::createDescriptorSetLayouts()
     m_pDescriptorSetLayoutCommon = m_pDevice->createDescriptorSetLayout();
 
     m_pDescriptorSetLayoutCommon->addBindingUniformBuffer(SHADER_BINDING::PER_FRAME, SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayoutCommon->addBindingSampler(SHADER_BINDING::SAMPLER_ONE, SHADER_TYPE::FRAGMENT_SHADER);
 
     if (!m_pDescriptorSetLayoutCommon->finalize(m_pDevice)) {
         return false;
@@ -263,7 +262,7 @@ bool MeshRenderer::createDescriptorSetLayouts()
     m_pDescriptorSetLayoutMesh = m_pDevice->createDescriptorSetLayout();
 
     m_pDescriptorSetLayoutMesh->addBindingUniformBuffer(SHADER_BINDING::MATERIAL_CONSTANTS, SHADER_TYPE::FRAGMENT_SHADER);
-    m_pDescriptorSetLayoutMesh->addBindingSampledTexture(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
+    m_pDescriptorSetLayoutMesh->addBindingCombinedTextureSampler(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
 
     return m_pDescriptorSetLayoutMesh->finalize(m_pDevice);
 }
@@ -276,7 +275,6 @@ bool MeshRenderer::createCommonDescriptorSet()
     }
 
     m_pDescriptorSetCommon->updateUniformBufferDescriptor(SHADER_BINDING::PER_FRAME, m_pPointLightBuffer);
-    m_pDescriptorSetCommon->updateSamplerDescriptor(SHADER_BINDING::SAMPLER_ONE, m_pAniSampler);
     return true;
 }
 
@@ -373,10 +371,11 @@ bool MeshRenderer::createPipeline()
     pipelineInfo.Viewports = { viewport };
 
     pipelineInfo.RasterizerStateInfo = {};
-    pipelineInfo.RasterizerStateInfo.PolygonMode          = POLYGON_MODE::FILL;
-    pipelineInfo.RasterizerStateInfo.CullMode             = CULL_MODE::BACK;
-    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation = FRONT_FACE_ORIENTATION::CLOCKWISE;
-    pipelineInfo.RasterizerStateInfo.DepthBiasEnable      = false;
+    pipelineInfo.RasterizerStateInfo.PolygonMode            = POLYGON_MODE::FILL;
+    pipelineInfo.RasterizerStateInfo.CullMode               = CULL_MODE::BACK;
+    pipelineInfo.RasterizerStateInfo.FrontFaceOrientation   = FRONT_FACE_ORIENTATION::CLOCKWISE;
+    pipelineInfo.RasterizerStateInfo.DepthBiasEnable        = false;
+    pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
     pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
@@ -400,6 +399,7 @@ bool MeshRenderer::createPipeline()
         blendConstant = 1.0f;
     }
 
+    pipelineInfo.DynamicStates  = { PIPELINE_DYNAMIC_STATE::SCISSOR };
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;
     pipelineInfo.Subpass        = 0u;
@@ -450,7 +450,7 @@ void MeshRenderer::onMeshAdded(Entity entity)
         // Create per-mesh descriptor set
         meshRenderResources.pDescriptorSet = m_pDevice->allocateDescriptorSet(m_pDescriptorSetLayoutMesh);
         meshRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::MATERIAL_CONSTANTS, meshRenderResources.pMaterialBuffer);
-        meshRenderResources.pDescriptorSet->updateSampledTextureDescriptor(SHADER_BINDING::TEXTURE_ONE, material.textures[0].get());
+        meshRenderResources.pDescriptorSet->updateCombinedTextureSamplerDescriptor(SHADER_BINDING::TEXTURE_ONE, material.textures[0].get(), m_pAniSampler);
 
         modelRenderResources.MeshRenderResources.push_back(meshRenderResources);
     }
