@@ -132,7 +132,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     Material& material = pModel->Materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
-    material.textures.push_back(m_pTextureCache->loadTexture("./Game/Assets/Models/Cube.png"));
+    material.textures.push_back(m_pTextureCache->loadTexture("./assets/Models/Cube.png"));
 
     return pModel;
 }

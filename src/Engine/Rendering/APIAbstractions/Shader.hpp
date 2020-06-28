@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#define SHADERS_FOLDER_PATH "Engine/Rendering/Shaders/"
+#define SHADERS_FOLDER_PATH "assets/Engine/Shaders/"
 
 enum class SHADER_TYPE : uint32_t {
     VERTEX_SHADER   = 1,
