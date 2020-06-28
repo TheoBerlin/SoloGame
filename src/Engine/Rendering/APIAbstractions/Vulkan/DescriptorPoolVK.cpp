@@ -52,8 +52,16 @@ DescriptorPoolVK::~DescriptorPoolVK()
 
 DescriptorSetVK* DescriptorPoolVK::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
 {
+    VkDescriptorSetLayout layout = reinterpret_cast<const DescriptorSetLayoutVK*>(pDescriptorSetLayout)->getDescriptorSetLayout();
+
+    VkDescriptorSetAllocateInfo allocationInfo = {};
+    allocationInfo.sType                = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocationInfo.descriptorPool       = m_DescriptorPool;
+    allocationInfo.descriptorSetCount   = 1u;
+    allocationInfo.pSetLayouts          = &layout;
+
     VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
-    if (vkAllocateDescriptorSets(m_pDevice->getDevice(), nullptr, &descriptorSet) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(m_pDevice->getDevice(), &allocationInfo, &descriptorSet) != VK_SUCCESS) {
         LOG_ERROR("Failed to allocate descriptor set");
         return nullptr;
     }

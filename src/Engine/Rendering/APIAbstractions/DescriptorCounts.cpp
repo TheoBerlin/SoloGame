@@ -58,6 +58,6 @@ std::string DescriptorCounts::toString() const
 uint32_t DescriptorCounts::getDescriptorTypeCount() const
 {
     return
-        m_UniformBuffers            != 0u +
-        m_CombinedTextureSamplers   != 0u;
+        (m_UniformBuffers            != 0u) +
+        (m_CombinedTextureSamplers   != 0u);
 }
