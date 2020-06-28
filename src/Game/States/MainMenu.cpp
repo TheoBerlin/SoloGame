@@ -33,8 +33,8 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
 
     // Attach background and text textures to the panel
     std::array<std::shared_ptr<Texture>, 2> panelTextures = {
-        pTextureCache->loadTexture("./Game/Assets/Models/Cube.png"),
-        pTextRenderer->renderText("Play", "Game/Assets/Fonts/arial/arial.ttf", 50)
+        pTextureCache->loadTexture("./assets/Models/Cube.png"),
+        pTextRenderer->renderText("Play", "assets/Fonts/arial/arial.ttf", 50)
     };
 
     TextureAttachmentInfo txAttachmentInfos[2];
@@ -50,7 +50,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
 
     // Create test sound
     Entity soundEntity = m_pECS->createEntity();
-    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
+    const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
 
     SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
     if (pSoundHandler->createSound(soundEntity, soundFile)) {

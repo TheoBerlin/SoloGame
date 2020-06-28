@@ -41,13 +41,13 @@ GameSession::GameSession(MainMenu* pMainMenu)
         {-3.0f, -6.0f, -42.0f},
     };
 
-    std::string soundPath = "./Game/Assets/Sounds/CakedInReverb1.wav";
+    std::string soundPath = "./assets/Sounds/CakedInReverb1.wav";
     createCube({1.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
 
-    soundPath = "./Game/Assets/Sounds/MetalTrolly3.wav";
+    soundPath = "./assets/Sounds/MetalTrolly3.wav";
     createCube({2.0f, 0.0f, 0.0f}, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
 
-    soundPath = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
+    soundPath = "./assets/Sounds/muscle-car-daniel_simon.mp3";
     for (const DirectX::XMFLOAT3& sectionPoint : sectionPoints) {
         createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
     }
@@ -73,7 +73,7 @@ void GameSession::startMusic(SoundHandler* pSoundHandler)
     const float musicVolume = 0.3f;
 
     Entity music = m_pECS->createEntity();
-    if (pSoundHandler->createSound(music, "./Game/Assets/Sounds/30306__erh__tension.wav")) {
+    if (pSoundHandler->createSound(music, "./assets/Sounds/30306__erh__tension.wav")) {
         pSoundHandler->loopSound(music);
         pSoundHandler->playSound(music);
         pSoundHandler->setVolume(music, musicVolume);
@@ -85,7 +85,7 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::strin
     Entity cube = m_pECS->createEntity();
     pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
     pTransformHandler->createWorldMatrix(cube);
-    pModelLoader->loadModel(cube, "./Game/Assets/Models/Cube.dae");
+    pModelLoader->loadModel(cube, "./assets/Models/Cube.dae");
 
     // Attach sound to the cube
     if (pSoundHandler->createSound(cube, soundPath)) {
@@ -97,7 +97,7 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::strin
 void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
     LightHandler* pLightHandler = static_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
-    const std::string soundFile = "./Game/Assets/Sounds/muscle-car-daniel_simon.mp3";
+    const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
 
     for (unsigned i = 0; i < 1u; i++) {
         Entity lightID = m_pECS->createEntity();
