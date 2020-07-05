@@ -1,7 +1,7 @@
 import os, sys
 
 # Assuming that the script is being called from the project's root folder
-shadersFolder = "GameProject\\Engine\\Rendering\\Shaders\\"
+shadersFolder = "assets\\Engine\\Shaders\\"
 
 def findGLSLCPath():
     driveLetters    = ['C', 'D']
