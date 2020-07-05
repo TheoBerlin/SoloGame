@@ -307,7 +307,7 @@ bool MeshRenderer::createRenderPass()
     depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
     depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
     depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
-    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     // Subpass
     SubpassInfo subpass = {};
@@ -317,7 +317,7 @@ bool MeshRenderer::createRenderPass()
 
     AttachmentReference depthStencilRef = {};
     depthStencilRef.AttachmentIndex     = 1;
-    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     subpass.ColorAttachments        = { backbufferRef };
     subpass.pDepthStencilAttachment = &depthStencilRef;

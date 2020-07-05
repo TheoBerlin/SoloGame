@@ -248,10 +248,10 @@ void UIHandler::createPanelTexture(UIPanel& panel)
 
     // Create underlying texture
     TextureInfo textureInfo = {};
-    textureInfo.Dimensions      = { uint32_t(panel.size.x * backbufferDims.x), uint32_t(panel.size.y * backbufferDims.y) };
-    textureInfo.Format          = g_PanelTextureFormat;
-    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
-    textureInfo.LayoutFlags     = TEXTURE_LAYOUT::SHADER_READ_ONLY | TEXTURE_LAYOUT::RENDER_TARGET;
+    textureInfo.Dimensions  = { uint32_t(panel.size.x * backbufferDims.x), uint32_t(panel.size.y * backbufferDims.y) };
+    textureInfo.Usage       = TEXTURE_USAGE::SAMPLED | TEXTURE_USAGE::RENDER_TARGET;
+    textureInfo.Layout      = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    textureInfo.Format      = g_PanelTextureFormat;
 
     panel.texture = m_pDevice->createTexture(textureInfo);
 }

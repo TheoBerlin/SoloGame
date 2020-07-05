@@ -29,7 +29,8 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
 
     TextureInfo textureInfo = {};
     textureInfo.Dimensions      = { (uint32_t)width, (uint32_t)height };
-    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    textureInfo.Usage           = TEXTURE_USAGE::SAMPLED | TEXTURE_USAGE::TRANSFER_DST;
+    textureInfo.Layout          = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_SRGB;
     textureInfo.pInitialData    = &initialData;
 
@@ -211,7 +212,7 @@ bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const Tex
     imageInfo.format        = textureInfo.Format;
     imageInfo.tiling        = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    imageInfo.usage         = textureInfo.Usage;
     imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -314,13 +315,31 @@ VkAccessFlags TextureVK::layoutToAccessMask(VkImageLayout layout)
 	}
 }
 
+VkImageAspectFlags TextureVK::layoutToAspectMask(VkImageLayout layout)
+{
+    return layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL || layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ?
+        VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+}
+
+VkImageUsageFlags TextureVK::convertUsageMask(TEXTURE_USAGE usage)
+{
+    return
+        HAS_FLAG(usage, TEXTURE_USAGE::TRANSFER_SRC)    * VK_IMAGE_USAGE_TRANSFER_SRC_BIT       |
+        HAS_FLAG(usage, TEXTURE_USAGE::TRANSFER_DST)    * VK_IMAGE_USAGE_TRANSFER_DST_BIT       |
+        HAS_FLAG(usage, TEXTURE_USAGE::SAMPLED)         * VK_IMAGE_USAGE_SAMPLED_BIT            |
+        HAS_FLAG(usage, TEXTURE_USAGE::STORAGE)         * VK_IMAGE_USAGE_STORAGE_BIT            |
+        HAS_FLAG(usage, TEXTURE_USAGE::RENDER_TARGET)   * VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT   |
+        HAS_FLAG(usage, TEXTURE_USAGE::DEPTH_STENCIL)   * VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+}
+
 TextureInfoVK TextureVK::convertTextureInfo(const TextureInfo& textureInfo)
 {
     TextureInfoVK textureInfoVK = {};
     textureInfoVK.Dimensions    = textureInfo.Dimensions;
-    textureInfoVK.Layout        = convertImageLayoutFlag(textureInfo.InitialLayout);
+    textureInfoVK.Layout        = convertImageLayoutFlag(textureInfo.Layout);
+    textureInfoVK.Usage         = convertUsageMask(textureInfo.Usage) | ((textureInfo.pInitialData != nullptr) * VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     textureInfoVK.Format        = convertFormatToVK(textureInfo.Format);
-    textureInfoVK.AspectMask    = textureInfoVK.Layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+    textureInfoVK.AspectMask    = layoutToAspectMask(textureInfoVK.Layout);
     textureInfoVK.pInitialData  = textureInfo.pInitialData;
 
     return textureInfoVK;

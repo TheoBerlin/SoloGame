@@ -11,6 +11,7 @@ class DeviceVK;
 struct TextureInfoVK {
     glm::uvec2 Dimensions;
     VkImageLayout Layout;
+    VkImageUsageFlags Usage;
     VkFormat Format;
     VkImageAspectFlags AspectMask;
     InitialData* pInitialData;  // Optional
@@ -49,6 +50,8 @@ private:
     static VkImageView createImageView(VkImage image, const TextureInfoVK& textureInfo, VkDevice device);
     static bool convertTextureLayout(const TextureLayoutConversionInfo& conversionInfo);
     static VkAccessFlags layoutToAccessMask(VkImageLayout layout);
+    static VkImageAspectFlags layoutToAspectMask(VkImageLayout layout);
+    static VkImageUsageFlags convertUsageMask(TEXTURE_USAGE usage);
     static TextureInfoVK convertTextureInfo(const TextureInfo& textureInfo);
 
 private:

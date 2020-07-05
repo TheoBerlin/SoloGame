@@ -450,10 +450,11 @@ bool DeviceCreatorVK::initBackbuffersAndDepthTextures(DeviceVK* pDevice)
 {
     RESOURCE_FORMAT backbufferFormat = convertFormatFromVK(m_SwapchainFormat.format);
 
-    TextureInfo depthTextureInfo     = {};
-    depthTextureInfo.Dimensions      = m_SwapchainResolution;
-    depthTextureInfo.Format          = RESOURCE_FORMAT::D32_FLOAT;
-    depthTextureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    TextureInfo depthTextureInfo    = {};
+    depthTextureInfo.Dimensions     = m_SwapchainResolution;
+    depthTextureInfo.Format         = RESOURCE_FORMAT::D32_FLOAT;
+    depthTextureInfo.Layout         = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+    depthTextureInfo.Usage          = TEXTURE_USAGE::DEPTH_STENCIL;
 
     for (uint32_t backbufferIdx = 0u; backbufferIdx < MAX_FRAMES_IN_FLIGHT; backbufferIdx += 1u) {
         m_ppBackbuffers[backbufferIdx] = DBG_NEW TextureVK(m_SwapchainResolution, backbufferFormat, pDevice,
