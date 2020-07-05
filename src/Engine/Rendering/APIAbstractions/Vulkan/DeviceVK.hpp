@@ -10,6 +10,7 @@
 #include <vma/vk_mem_alloc.h>
 
 class DeviceCreatorVK;
+class SwapchainVK;
 
 struct Queues {
     VkQueue Graphics;
@@ -19,17 +20,11 @@ struct Queues {
 };
 
 struct DeviceInfoVK {
-    Texture* pBackBuffer;
-    Texture* pDepthTexture;
     VkInstance Instance;
     VkPhysicalDevice PhysicalDevice;
     VkDevice Device;
     VmaAllocator Allocator;
     VkSurfaceKHR Surface;
-    VkSwapchainKHR Swapchain;
-    std::vector<VkImage> SwapchainImages;
-    std::vector<VkImageView> SwapchainImageViews;
-    VkSurfaceFormatKHR SwapchainFormat;
     VkDebugUtilsMessengerEXT DebugMessenger;
     QueueFamilyIndices QueueFamilyIndices;
     Queues QueueHandles;
@@ -44,8 +39,6 @@ public:
     bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
     bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
     bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
-
-    void presentBackBuffer() override final {};
 
     ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 
@@ -78,6 +71,7 @@ public:
 
     VmaAllocator getVulkanAllocator()   { return m_Allocator; }
     VkDevice getDevice()                { return m_Device; }
+    const Queues& getQueues() const     { return m_QueueHandles; }
 
 protected:
     DescriptorPool* createDescriptorPool(const DescriptorPoolInfo& poolInfo) override final;
@@ -94,14 +88,8 @@ private:
     VkInstance m_Instance;
     VkPhysicalDevice m_PhysicalDevice;
     VkDevice m_Device;
-    VmaAllocator m_Allocator;
-
     VkSurfaceKHR m_Surface;
-    VkSwapchainKHR m_Swapchain;
-    std::vector<VkImage> m_SwapchainImages;
-    std::vector<VkImageView> m_SwapchainImageViews;
-
-    VkSurfaceFormatKHR m_SwapchainFormat;
+    VmaAllocator m_Allocator;
 
     VkDebugUtilsMessengerEXT m_DebugMessenger;
 

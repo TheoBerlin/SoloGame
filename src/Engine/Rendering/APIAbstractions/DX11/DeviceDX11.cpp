@@ -7,25 +7,26 @@
 #include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RenderPassDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/SwapchainDX11.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 DeviceDX11::DeviceDX11(const DeviceInfoDX11& deviceInfo)
-    :Device({}, deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
+    :Device({}),
     m_pDevice(deviceInfo.pDevice),
-    m_pSwapChain(deviceInfo.pSwapChain),
     m_pContext(deviceInfo.pImmediateContext),
     m_pDepthStencilState(deviceInfo.pDepthStencilState)
 {}
 
 DeviceDX11::~DeviceDX11()
 {
-    SAFERELEASE(m_pDevice)
-    SAFERELEASE(m_pSwapChain)
+    delete m_pSwapchain;
+
     SAFERELEASE(m_pContext)
     SAFERELEASE(m_pDepthStencilState)
+    SAFERELEASE(m_pDevice)
 }
 
 bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
@@ -41,14 +42,6 @@ bool DeviceDX11::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence,
 bool DeviceDX11::computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
 {
     return executeCommandList(pCommandList);
-}
-
-void DeviceDX11::presentBackBuffer()
-{
-    HRESULT hr = m_pSwapChain->Present(0, 0);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to present swap-chain buffer: %s", hresultToString(hr).c_str());
-    }
 }
 
 ICommandPool* DeviceDX11::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)

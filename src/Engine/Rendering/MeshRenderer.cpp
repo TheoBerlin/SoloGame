@@ -23,11 +23,14 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice)
     m_pDescriptorSetLayoutMesh(nullptr),
     m_pDescriptorSetCommon(nullptr),
     m_pAniSampler(nullptr),
-    m_pFramebuffer(nullptr),
     m_pRenderPass(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        m_pFramebuffers[framebufferIdx] = nullptr;
+    }
+
     CameraComponents camSub;
     PointLightComponents pointLightSub;
 
@@ -49,6 +52,10 @@ MeshRenderer::~MeshRenderer()
         onMeshRemoved(entity);
     }
 
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        delete m_pFramebuffers[framebufferIdx];
+    }
+
     delete m_pPointLightBuffer;
     delete m_pCommandList;
     delete m_pCommandPool;
@@ -56,7 +63,6 @@ MeshRenderer::~MeshRenderer()
     delete m_pDescriptorSetLayoutCommon;
     delete m_pDescriptorSetLayoutModel;
     delete m_pDescriptorSetLayoutMesh;
-    delete m_pFramebuffer;
     delete m_pRenderPass;
     delete m_pPipelineLayout;
     delete m_pPipeline;
@@ -104,7 +110,7 @@ bool MeshRenderer::init()
         return false;
     }
 
-    if (!createFramebuffer()) {
+    if (!createFramebuffers()) {
         return false;
     }
 
@@ -162,14 +168,16 @@ void MeshRenderer::updateBuffers()
 
 void MeshRenderer::recordCommands()
 {
+    const uint32_t frameIndex = m_pDevice->getFrameIndex();
+
     CommandListBeginInfo beginInfo = {};
     beginInfo.pRenderPass   = m_pRenderPass;
     beginInfo.Subpass       = 0u;
-    beginInfo.pFramebuffer  = m_pFramebuffer;
+    beginInfo.pFramebuffer  = m_pFramebuffers[frameIndex];
     m_pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
     RenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
+    renderPassBeginInfo.pFramebuffer        = m_pFramebuffers[frameIndex];
     renderPassBeginInfo.ClearColors         = { {0.0f, 0.0f, 0.0f, 0.0f} };
     renderPassBeginInfo.ClearDepthStencilValue.Depth = 1.0f;
 
@@ -283,7 +291,7 @@ bool MeshRenderer::createRenderPass()
     RenderPassInfo renderPassInfo   = {};
 
     // Render pass attachments
-    Texture* pBackbuffer = m_pDevice->getBackBuffer();
+    Texture* pBackbuffer = m_pDevice->getBackbuffer(0u);
     AttachmentInfo backBufferAttachment   = {};
     backBufferAttachment.Format           = pBackbuffer->getFormat();
     backBufferAttachment.Samples          = 1u;
@@ -292,7 +300,7 @@ bool MeshRenderer::createRenderPass()
     backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
     backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::RENDER_TARGET;
 
-    Texture* pDepthStencil = m_pDevice->getDepthStencil();
+    Texture* pDepthStencil = m_pDevice->getDepthStencil(0u);
     AttachmentInfo depthStencilAttachment = {};
     depthStencilAttachment.Format           = pDepthStencil->getFormat();
     depthStencilAttachment.Samples          = 1u;
@@ -333,15 +341,22 @@ bool MeshRenderer::createRenderPass()
     return m_pRenderPass;
 }
 
-bool MeshRenderer::createFramebuffer()
+bool MeshRenderer::createFramebuffers()
 {
     FramebufferInfo framebufferInfo = {};
-    framebufferInfo.Attachments = { m_pDevice->getBackBuffer(), m_pDevice->getDepthStencil() };
-    framebufferInfo.Dimensions  = m_pDevice->getBackBuffer()->getDimensions();
     framebufferInfo.pRenderPass = m_pRenderPass;
+    framebufferInfo.Dimensions  = m_pDevice->getBackbuffer(0u)->getDimensions();
 
-    m_pFramebuffer = m_pDevice->createFramebuffer(framebufferInfo);
-    return m_pFramebuffer;
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        framebufferInfo.Attachments = { m_pDevice->getBackbuffer(framebufferIdx), m_pDevice->getDepthStencil(framebufferIdx) };
+        m_pFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
+
+        if (!m_pFramebuffers[framebufferIdx]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool MeshRenderer::createPipeline()
@@ -359,7 +374,7 @@ bool MeshRenderer::createPipeline()
 
     pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_LIST;
 
-    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+    const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
     Viewport viewport = {};
     viewport.TopLeftX = 0;

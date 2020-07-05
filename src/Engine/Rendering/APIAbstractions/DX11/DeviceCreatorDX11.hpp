@@ -5,6 +5,8 @@
 #define NOMINMAX
 #include <d3d11.h>
 
+class TextureDX11;
+
 class DeviceCreatorDX11 : public IDeviceCreator
 {
 public:
@@ -12,6 +14,7 @@ public:
     ~DeviceCreatorDX11() = default;
 
     Device* createDevice(const SwapchainInfo& swapChainInfo, const Window* pWindow) override final;
+    Swapchain* createSwapchain(Device* pDevice) override final;
 
 private:
     bool initDeviceAndSwapChain(const SwapchainInfo& swapChainInfo, const Window* pWindow);
@@ -25,6 +28,6 @@ private:
     IDXGISwapChain* m_pSwapChain;
     ID3D11DepthStencilState* m_pDepthStencilState;
 
-    Texture* m_pBackBuffer;
-    Texture* m_pDepthTexture;
+    Texture* m_pBackbuffer;
+    Texture* m_ppDepthTextures[MAX_FRAMES_IN_FLIGHT];
 };

@@ -1,5 +1,8 @@
 #include "DeviceCreatorVK.hpp"
 
+#include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/SwapchainVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 #include <Engine/Utils/Debug.hpp>
 
@@ -60,15 +63,21 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
     deviceInfo.Device               = m_Device;
     deviceInfo.Allocator            = m_Allocator;
     deviceInfo.Surface              = m_Surface;
-    deviceInfo.Swapchain            = m_Swapchain;
-    deviceInfo.SwapchainImages      = m_SwapchainImages;
-    deviceInfo.SwapchainImageViews  = m_SwapchainImageViews;
-    deviceInfo.SwapchainFormat      = m_SwapchainFormat;
     deviceInfo.DebugMessenger       = m_DebugMessenger;
     deviceInfo.QueueFamilyIndices   = m_QueueFamilyIndices;
     deviceInfo.QueueHandles         = m_Queues;
 
     return DBG_NEW DeviceVK(deviceInfo);
+}
+
+Swapchain* DeviceCreatorVK::createSwapchain(Device* pDevice)
+{
+    DeviceVK* pDeviceVK = reinterpret_cast<DeviceVK*>(pDevice);
+    if (!initBackbuffersAndDepthTextures(pDeviceVK)) {
+        return nullptr;
+    }
+
+    return DBG_NEW SwapchainVK(m_Swapchain, m_ppBackbuffers, m_ppDepthTextures, pDeviceVK);
 }
 
 bool DeviceCreatorVK::initInstance(const Window* pWindow, bool debugMode)
@@ -362,12 +371,14 @@ bool DeviceCreatorVK::initSwapchain(const Window* pWindow)
         return false;
     }
 
-    uint32_t backbufferCount = std::max(3u, supportDetails.SurfaceCapabilities.minImageCount + 1u);
+    uint32_t backbufferCount = std::max(MAX_FRAMES_IN_FLIGHT, supportDetails.SurfaceCapabilities.minImageCount + 1u);
     if (supportDetails.SurfaceCapabilities.maxImageCount != 0) {
-        backbufferCount = std::min(backbufferCount, supportDetails.SurfaceCapabilities.maxImageCount);
+        backbufferCount = std::min(MAX_FRAMES_IN_FLIGHT, supportDetails.SurfaceCapabilities.maxImageCount);
     }
 
     chooseSwapchainFormat(supportDetails.Formats);
+    VkExtent2D swapchainExtent = chooseSwapchainExtent(supportDetails.SurfaceCapabilities, pWindow);
+    m_SwapchainResolution = { swapchainExtent.width, swapchainExtent.height };
 
     VkSwapchainCreateInfoKHR swapchainInfo = {};
     swapchainInfo.sType             = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -375,7 +386,7 @@ bool DeviceCreatorVK::initSwapchain(const Window* pWindow)
     swapchainInfo.minImageCount     = backbufferCount;
     swapchainInfo.imageFormat       = m_SwapchainFormat.format;
     swapchainInfo.imageColorSpace   = m_SwapchainFormat.colorSpace;
-    swapchainInfo.imageExtent       = chooseSwapchainExtent(supportDetails.SurfaceCapabilities, pWindow);
+    swapchainInfo.imageExtent       = swapchainExtent;
     swapchainInfo.imageArrayLayers  = 1u;
     swapchainInfo.imageUsage        = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     swapchainInfo.imageSharingMode  = VK_SHARING_MODE_EXCLUSIVE;
@@ -428,6 +439,28 @@ bool DeviceCreatorVK::initSwapchainImageViews()
         imageViewInfo.image = m_SwapchainImages[imageIdx];
         if (vkCreateImageView(m_Device, &imageViewInfo, nullptr, &m_SwapchainImageViews[imageIdx]) != VK_SUCCESS) {
             LOG_ERROR("Failed to create swapchain image view");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool DeviceCreatorVK::initBackbuffersAndDepthTextures(DeviceVK* pDevice)
+{
+    RESOURCE_FORMAT backbufferFormat = convertFormatFromVK(m_SwapchainFormat.format);
+
+    TextureInfo depthTextureInfo     = {};
+    depthTextureInfo.Dimensions      = m_SwapchainResolution;
+    depthTextureInfo.Format          = RESOURCE_FORMAT::D32_FLOAT;
+    depthTextureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+
+    for (uint32_t backbufferIdx = 0u; backbufferIdx < MAX_FRAMES_IN_FLIGHT; backbufferIdx += 1u) {
+        m_ppBackbuffers[backbufferIdx] = DBG_NEW TextureVK(m_SwapchainResolution, backbufferFormat, pDevice,
+            m_SwapchainImages[backbufferIdx], m_SwapchainImageViews[backbufferIdx], VK_NULL_HANDLE);
+
+        m_ppDepthTextures[backbufferIdx] = TextureVK::create(depthTextureInfo, pDevice);
+        if (!m_ppDepthTextures[backbufferIdx]) {
             return false;
         }
     }

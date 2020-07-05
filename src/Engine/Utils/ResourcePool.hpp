@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Engine/Utils/Logger.hpp>
+
 #include <functional>
 #include <mutex>
 
@@ -73,6 +75,7 @@ public:
         m_AllBusyCondition.wait(lock, [this](){ return !m_FreeIndices.empty(); });
 
         PooledResource<ResourceType> resource(m_Resources[m_FreeIndices.back()], m_FreeIndices.back(), this);
+        LOG_INFO("Acquired: %d", m_FreeIndices.back());
         m_FreeIndices.pop_back();
         lock.unlock();
 
@@ -83,7 +86,9 @@ protected:
     friend PooledResource<ResourceType>;
     void release(size_t resourceIndex)
     {
+        LOG_INFO("Ooga booga");
         std::scoped_lock<std::mutex> lock(m_VectorsLock);
+        LOG_INFO("Released: %d", resourceIndex);
 
         m_FreeIndices.push_back(resourceIndex);
         if (m_FreeIndices.size() == 1) {

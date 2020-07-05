@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/DeviceCreator.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceCreatorDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/Swapchain.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceCreatorVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
@@ -13,46 +14,52 @@
 
 Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow)
 {
-    IDeviceCreator* pDeviceCreator = nullptr;
+    std::unique_ptr<IDeviceCreator> pDeviceCreator(nullptr);
 
     switch (API) {
         case RENDERING_API::DIRECTX11:
-            pDeviceCreator = DBG_NEW DeviceCreatorDX11();
+            pDeviceCreator.reset(DBG_NEW DeviceCreatorDX11());
             break;
         case RENDERING_API::VULKAN:
-            pDeviceCreator = DBG_NEW DeviceCreatorVK();
+            pDeviceCreator.reset(DBG_NEW DeviceCreatorVK());
             break;
         default:
             LOG_ERROR("Erroneous API: %d", (int)API);
-            delete pDeviceCreator;
             return nullptr;
     }
 
-    Device* pDevice = pDeviceCreator->createDevice(swapchainInfo, pWindow);
-    delete pDeviceCreator;
+    std::unique_ptr<Device> pDevice(pDeviceCreator->createDevice(swapchainInfo, pWindow));
 
-    return pDevice;
+    // Temporary command pools are required for swapchain creation
+    if (!pDevice->initTempCommandPools()) {
+        return nullptr;
+    }
+
+    Swapchain* pSwapchain = pDeviceCreator->createSwapchain(pDevice.get());
+    if (!pSwapchain) {
+        return nullptr;
+    }
+
+    pDevice->setSwapchain(pSwapchain);
+
+    return pDevice.release();
 }
 
-Device::Device(QueueFamilyIndices queueFamilyIndices, Texture* pBackBuffer, Texture* pDepthTexture)
+Device::Device(QueueFamilyIndices queueFamilyIndices)
     :m_QueueFamilyIndices(queueFamilyIndices),
-    m_pBackBuffer(pBackBuffer),
-    m_pDepthTexture(pDepthTexture),
-    m_pShaderHandler(nullptr)
+    m_pSwapchain(nullptr),
+    m_pShaderHandler(nullptr),
+    m_FrameIndex(0u)
 {}
 
 Device::~Device()
 {
-    delete m_pBackBuffer;
-    delete m_pDepthTexture;
     delete m_pShaderHandler;
 }
 
 bool Device::init(const DescriptorCounts& descriptorCounts)
 {
-    if (!initTempCommandPools()) {
-        return false;
-    }
+
 
     DescriptorPoolInfo descriptorPoolInfo = {};
     descriptorPoolInfo.DescriptorCounts         = descriptorCounts;
@@ -61,7 +68,14 @@ bool Device::init(const DescriptorCounts& descriptorCounts)
     m_DescriptorPoolHandler.init(descriptorPoolInfo, this);
 
     m_pShaderHandler = DBG_NEW ShaderHandler(this);
+
     return m_pShaderHandler;
+}
+
+void Device::presentBackbuffer(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount)
+{
+    m_FrameIndex = (m_FrameIndex + 1u) % MAX_FRAMES_IN_FLIGHT;
+    m_pSwapchain->present(ppWaitSemaphores, waitSemaphoreCount);
 }
 
 DescriptorSet* Device::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)

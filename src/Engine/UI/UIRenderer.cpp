@@ -9,16 +9,17 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     :Renderer(pECS, pDevice),
     m_pCommandPool(nullptr),
     m_pCommandList(nullptr),
-    m_pRenderTarget(pDevice->getBackBuffer()),
-    m_pDepthStencil(pDevice->getDepthStencil()),
     m_pQuad(nullptr),
     m_pDescriptorSetLayout(nullptr),
     m_pAniSampler(nullptr),
     m_pRenderPass(nullptr),
-    m_pFramebuffer(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        m_pFramebuffers[framebufferIdx] = nullptr;
+    }
+
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
         {{{R, tid_UIPanel}}, &m_Panels, [this](Entity entity){ onPanelAdded(entity); }, [this](Entity entity){ onPanelRemoved(entity); }}
@@ -35,11 +36,14 @@ UIRenderer::~UIRenderer()
         onPanelRemoved(entity);
     }
 
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        delete m_pFramebuffers[framebufferIdx];
+    }
+
     delete m_pCommandList;
     delete m_pCommandPool;
     delete m_pDescriptorSetLayout;
     delete m_pRenderPass;
-    delete m_pFramebuffer;
     delete m_pPipelineLayout;
     delete m_pPipeline;
 }
@@ -73,7 +77,7 @@ bool UIRenderer::init()
         return false;
     }
 
-    if (!createFramebuffer()) {
+    if (!createFramebuffers()) {
         return false;
     }
 
@@ -101,14 +105,16 @@ void UIRenderer::updateBuffers()
 
 void UIRenderer::recordCommands()
 {
+    const uint32_t frameIndex = m_pDevice->getFrameIndex();
+
     CommandListBeginInfo beginInfo = {};
     beginInfo.pRenderPass   = m_pRenderPass;
     beginInfo.Subpass       = 0u;
-    beginInfo.pFramebuffer  = m_pFramebuffer;
+    beginInfo.pFramebuffer  = m_pFramebuffers[frameIndex];
     m_pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
     RenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.pFramebuffer        = m_pFramebuffer;
+    renderPassBeginInfo.pFramebuffer        = m_pFramebuffers[frameIndex];
     m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
     if (m_Panels.size() == 0) {
@@ -150,7 +156,7 @@ bool UIRenderer::createRenderPass()
     RenderPassInfo renderPassInfo   = {};
 
     // Render pass attachments
-    Texture* pBackbuffer = m_pDevice->getBackBuffer();
+    Texture* pBackbuffer = m_pDevice->getBackbuffer(0u);
     AttachmentInfo backBufferAttachment   = {};
     backBufferAttachment.Format           = pBackbuffer->getFormat();
     backBufferAttachment.Samples          = 1u;
@@ -159,7 +165,7 @@ bool UIRenderer::createRenderPass()
     backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::RENDER_TARGET;
     backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::PRESENT;
 
-    Texture* pDepthStencil = m_pDevice->getDepthStencil();
+    Texture* pDepthStencil = m_pDevice->getDepthStencil(0u);
     AttachmentInfo depthStencilAttachment   = {};
     depthStencilAttachment.Format           = pDepthStencil->getFormat();
     depthStencilAttachment.Samples          = 1u;
@@ -200,17 +206,22 @@ bool UIRenderer::createRenderPass()
     return m_pRenderPass;
 }
 
-bool UIRenderer::createFramebuffer()
+bool UIRenderer::createFramebuffers()
 {
-    Texture* pBackbuffer = m_pDevice->getBackBuffer();
-
     FramebufferInfo framebufferInfo = {};
     framebufferInfo.pRenderPass     = m_pRenderPass;
-    framebufferInfo.Attachments     = { m_pDevice->getBackBuffer(), m_pDevice->getDepthStencil() };
-    framebufferInfo.Dimensions      = pBackbuffer->getDimensions();
+    framebufferInfo.Dimensions      = m_pDevice->getBackbuffer(0u)->getDimensions();
 
-    m_pFramebuffer = m_pDevice->createFramebuffer(framebufferInfo);
-    return m_pFramebuffer;
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        framebufferInfo.Attachments = { m_pDevice->getBackbuffer(framebufferIdx), m_pDevice->getDepthStencil(framebufferIdx) };
+        m_pFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
+
+        if (!m_pFramebuffers[framebufferIdx]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool UIRenderer::createPipeline()
@@ -228,7 +239,7 @@ bool UIRenderer::createPipeline()
 
     pipelineInfo.PrimitiveTopology = PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP;
 
-    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+    const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
     Viewport viewport = {};
     viewport.TopLeftX = 0;
