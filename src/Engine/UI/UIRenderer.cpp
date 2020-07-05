@@ -171,8 +171,8 @@ bool UIRenderer::createRenderPass()
     depthStencilAttachment.Samples          = 1u;
     depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
     depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
-    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     // Subpass
     SubpassInfo subpass = {};
@@ -182,7 +182,7 @@ bool UIRenderer::createRenderPass()
 
     AttachmentReference depthStencilRef = {};
     depthStencilRef.AttachmentIndex     = 1;
-    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     subpass.ColorAttachments        = { backbufferRef };
     subpass.pDepthStencilAttachment = &depthStencilRef;
@@ -193,8 +193,8 @@ bool UIRenderer::createRenderPass()
     subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
     subpassDependency.DstSubpass        = 0;
     subpassDependency.SrcStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    subpassDependency.DstStage          = PIPELINE_STAGE::FRAGMENT_SHADER;
-    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.SrcAccessMask     = { };
     subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
     subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
 
