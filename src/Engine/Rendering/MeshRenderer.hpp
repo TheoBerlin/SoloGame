@@ -64,7 +64,7 @@ private:
     bool createDescriptorSetLayouts();
     bool createCommonDescriptorSet();
     bool createRenderPass();
-    bool createFramebuffer();
+    bool createFramebuffers();
     bool createPipeline();
 
     void onMeshAdded(Entity entity);
@@ -97,7 +97,7 @@ private:
 
     ISampler* m_pAniSampler;
 
-    IFramebuffer* m_pFramebuffer;
+    IFramebuffer* m_pFramebuffers[MAX_FRAMES_IN_FLIGHT];
     IRenderPass* m_pRenderPass;
     IPipeline* m_pPipeline;
     IPipelineLayout* m_pPipelineLayout;

@@ -27,7 +27,7 @@ public:
 private:
     bool createDescriptorSetLayouts();
     bool createRenderPass();
-    bool createFramebuffer();
+    bool createFramebuffers();
     bool createPipeline();
 
     void onPanelAdded(Entity entity);
@@ -45,11 +45,9 @@ private:
     // Vertex buffer
     IBuffer* m_pQuad;
 
-    Texture* m_pRenderTarget;
-    Texture* m_pDepthStencil;
     ISampler* m_pAniSampler;
     IRenderPass* m_pRenderPass;
-    IFramebuffer* m_pFramebuffer;
+    IFramebuffer* m_pFramebuffers[MAX_FRAMES_IN_FLIGHT];
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

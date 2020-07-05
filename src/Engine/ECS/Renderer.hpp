@@ -5,8 +5,8 @@
 #include <Engine/ECS/ComponentSubscriptionRequest.hpp>
 
 class ComponentHandler;
-class ECSCore;
 class Device;
+class ECSCore;
 class Renderer;
 
 struct RendererRegistration {

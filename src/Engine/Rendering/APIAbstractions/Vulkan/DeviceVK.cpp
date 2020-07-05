@@ -13,6 +13,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/SamplerVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/ShaderVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/SwapchainVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
@@ -22,15 +23,12 @@
 #include <vulkan/vulkan_win32.h>
 
 DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
-    :Device(deviceInfo.QueueFamilyIndices, deviceInfo.pBackBuffer, deviceInfo.pDepthTexture),
+    :Device(deviceInfo.QueueFamilyIndices),
     m_Instance(deviceInfo.Instance),
     m_PhysicalDevice(deviceInfo.PhysicalDevice),
     m_Device(deviceInfo.Device),
-    m_Allocator(deviceInfo.Allocator),
     m_Surface(deviceInfo.Surface),
-    m_SwapchainImages(deviceInfo.SwapchainImages),
-    m_SwapchainImageViews(deviceInfo.SwapchainImageViews),
-    m_SwapchainFormat(deviceInfo.SwapchainFormat),
+    m_Allocator(deviceInfo.Allocator),
     m_DebugMessenger(deviceInfo.DebugMessenger),
     m_QueueHandles(deviceInfo.QueueHandles)
 {}
@@ -46,12 +44,9 @@ DeviceVK::~DeviceVK()
         }
     #endif
 
-    for (VkImageView imageView : m_SwapchainImageViews) {
-        vkDestroyImageView(m_Device, imageView, nullptr);
-    }
+    delete m_pSwapchain;
 
     vmaDestroyAllocator(m_Allocator);
-    vkDestroySwapchainKHR(m_Device, m_Swapchain, nullptr);
     vkDestroyDevice(m_Device, nullptr);
     vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
     vkDestroyInstance(m_Instance, nullptr);

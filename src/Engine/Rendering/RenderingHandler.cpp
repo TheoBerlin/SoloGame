@@ -32,7 +32,7 @@ void RenderingHandler::render()
     recordCommandBuffers();
     executeCommandBuffers();
 
-    m_pDevice->presentBackBuffer();
+    m_pDevice->presentBackbuffer(nullptr, 0u);
 }
 
 void RenderingHandler::updateBuffers()

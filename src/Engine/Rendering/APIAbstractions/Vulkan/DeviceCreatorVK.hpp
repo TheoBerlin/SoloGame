@@ -16,6 +16,7 @@ public:
     ~DeviceCreatorVK() = default;
 
     Device* createDevice(const SwapchainInfo& swapChainInfo, const Window* pWindow) override final;
+    Swapchain* createSwapchain(Device* pDevice) override final;
 
 private:
     bool initInstance(const Window* pWindow, bool debugMode);
@@ -28,6 +29,7 @@ private:
     bool initAllocator();
     bool initSwapchain(const Window* pWindow);
     bool initSwapchainImageViews();
+    bool initBackbuffersAndDepthTextures(DeviceVK* pDevice);
 
     bool verifyRequiredExtensionsSupported(const std::vector<std::string>& extensionNames);
     bool verifyRequiredDeviceExtensionsSupported(VkPhysicalDevice physicalDevice);
@@ -42,6 +44,10 @@ private:
     VkPhysicalDevice m_PhysicalDevice;
     VkDevice m_Device;
     VmaAllocator m_Allocator;
+
+    glm::uvec2 m_SwapchainResolution;
+    Texture* m_ppBackbuffers[MAX_FRAMES_IN_FLIGHT];
+    Texture* m_ppDepthTextures[MAX_FRAMES_IN_FLIGHT];
 
     VkSurfaceKHR m_Surface;
     VkSwapchainKHR m_Swapchain;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BlendStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/BufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
@@ -12,18 +13,16 @@
 #include <Engine/Rendering/APIAbstractions/DX11/SemaphoreDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/ShaderDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
-#include <Engine/Rendering/APIAbstractions/Device.hpp>
 #include <Engine/Utils/Debug.hpp>
 
 #define NOMINMAX
 #include <d3d11.h>
 
+class SwapchainDX11;
+
 struct DeviceInfoDX11 {
-    Texture* pBackBuffer;
-    Texture* pDepthTexture;
     ID3D11Device* pDevice;
     ID3D11DeviceContext* pImmediateContext;
-    IDXGISwapChain* pSwapChain;
     ID3D11DepthStencilState* pDepthStencilState;
 };
 
@@ -36,8 +35,6 @@ public:
     bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
     bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
     bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
-
-    void presentBackBuffer() override final;
 
     ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 
@@ -82,7 +79,6 @@ private:
     // Immediate context
     ID3D11DeviceContext* m_pContext;
 
-    IDXGISwapChain* m_pSwapChain;
     ID3D11DepthStencilState* m_pDepthStencilState;
 
     const FLOAT m_pClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};

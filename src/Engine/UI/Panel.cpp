@@ -244,7 +244,7 @@ bool UIHandler::createPipeline()
 
 void UIHandler::createPanelTexture(UIPanel& panel)
 {
-    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+    const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
     // Create underlying texture
     TextureInfo textureInfo = {};
@@ -270,7 +270,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
         const glm::uvec2& txDimensions = texture->getDimensions();
 
         const DirectX::XMFLOAT2& panelSize = panel.size;
-        const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+        const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
         attachment.size = {(float)txDimensions.x / ((float)backbufferDims.x * panelSize.x), (float)txDimensions.y / ((float)backbufferDims.y * panelSize.y)};
     } else if (attachmentInfo.sizeSetting == TX_SIZE_EXPLICIT) {
@@ -331,7 +331,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     m_pCommandList->bindPipeline(m_pPipeline);
 
-    const glm::uvec2& backbufferDims = m_pDevice->getBackBuffer()->getDimensions();
+    const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
     Viewport viewport = {};
     viewport.TopLeftX    = 0;
@@ -413,7 +413,7 @@ IFramebuffer* UIHandler::createFramebuffer(UIPanel& panel)
 {
     FramebufferInfo framebufferInfo = {};
     framebufferInfo.pRenderPass     = m_pRenderPass;
-    framebufferInfo.Dimensions      = {(uint32_t)panel.size.x, (uint32_t)panel.size.y};
+    framebufferInfo.Dimensions      = { (uint32_t)panel.size.x, (uint32_t)panel.size.y };
     framebufferInfo.Attachments     = { panel.texture };
 
     return m_pDevice->createFramebuffer(framebufferInfo);

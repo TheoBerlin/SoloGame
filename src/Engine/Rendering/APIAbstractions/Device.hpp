@@ -2,12 +2,14 @@
 
 #include <Engine/Rendering/APIAbstractions/DescriptorPoolHandler.hpp>
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
+#include <Engine/Rendering/APIAbstractions/Swapchain.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/ResourcePool.hpp>
 
 #define NOMINMAX
 #include <DirectXMath.h>
 
+#include <array>
 #include <string>
 
 class BlendState;
@@ -69,7 +71,7 @@ public:
     static Device* create(RENDERING_API API, const SwapchainInfo& swapchainInfo, const Window* pWindow);
 
 public:
-    Device(QueueFamilyIndices queueFamilyIndices, Texture* pBackBuffer, Texture* pDepthTexture);
+    Device(QueueFamilyIndices queueFamilyIndices);
     virtual ~Device();
 
     bool init(const DescriptorCounts& descriptorCounts);
@@ -78,12 +80,12 @@ public:
     virtual bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
     virtual bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
 
-    virtual void presentBackBuffer() = 0;
+    void presentBackbuffer(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount);
 
     virtual ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) = 0;
-    PooledResource<ICommandPool> acquireTempCommandPoolGraphics()  {return m_CommandPoolsTempGraphics.acquire(); }
-    PooledResource<ICommandPool> acquireTempCommandPoolTransfer()  {return m_CommandPoolsTempTransfer.acquire(); }
-    PooledResource<ICommandPool> acquireTempCommandPoolCompute()   {return m_CommandPoolsTempCompute.acquire(); }
+    PooledResource<ICommandPool> acquireTempCommandPoolGraphics()  { return m_CommandPoolsTempGraphics.acquire(); }
+    PooledResource<ICommandPool> acquireTempCommandPoolTransfer()  { return m_CommandPoolsTempTransfer.acquire(); }
+    PooledResource<ICommandPool> acquireTempCommandPoolCompute()   { return m_CommandPoolsTempCompute.acquire(); }
 
     virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
@@ -119,10 +121,11 @@ public:
     // waitAll: Wait for every fence or just one. timeout: Nanoseconds
     virtual bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) = 0;
 
-    Texture* getBackBuffer()            { return m_pBackBuffer; }
-    Texture* getDepthStencil()          { return m_pDepthTexture; }
-    ShaderHandler* getShaderHandler()   { return m_pShaderHandler; }
+    Texture* getBackbuffer(uint32_t frameIndex)             { return m_pSwapchain->getBackbuffer(frameIndex); }
+    Texture* getDepthStencil(uint32_t frameIndex)           { return m_pSwapchain->getDepthTexture(frameIndex); }
+    ShaderHandler* getShaderHandler()                       { return m_pShaderHandler; }
     const QueueFamilyIndices& getQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+    inline uint32_t getFrameIndex() const { return m_FrameIndex; }
 
 protected:
     friend DescriptorPoolHandler;
@@ -130,10 +133,10 @@ protected:
     virtual DescriptorPool* createDescriptorPool(const DescriptorPoolInfo& poolInfo) = 0;
 
 protected:
-    DescriptorPoolHandler m_DescriptorPoolHandler;
+    Swapchain* m_pSwapchain;
+    uint32_t m_FrameIndex;
 
-    Texture* m_pBackBuffer;
-    Texture* m_pDepthTexture;
+    DescriptorPoolHandler m_DescriptorPoolHandler;
 
 private:
     virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo) = 0;
@@ -145,6 +148,8 @@ private:
 
     bool initTempCommandPools();
     bool initTempCommandPool(std::vector<ICommandPool*>& commandPools, TempCommandPoolInfo& commandPoolInfo);
+
+    inline void setSwapchain(Swapchain* pSwapchain) { m_pSwapchain = pSwapchain; }
 
 private:
     ShaderHandler* m_pShaderHandler;

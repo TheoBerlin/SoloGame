@@ -43,30 +43,63 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
 TextureVK* TextureVK::create(const TextureInfo& textureInfo, DeviceVK* pDevice)
 {
     TextureInfoVK textureInfoVK = convertTextureInfo(textureInfo);
-    VkImageLayout initialLayout = textureInfo.pInitialData ? VK_IMAGE_LAYOUT_UNDEFINED : textureInfoVK.Layout;
 
     VkImage image = VK_NULL_HANDLE;
     VmaAllocation allocation = {};
-    if (!createImage(image, allocation, textureInfoVK, initialLayout, pDevice)) {
+    if (!createImage(image, allocation, textureInfoVK, pDevice)) {
         return nullptr;
     }
 
     VkDevice device = pDevice->getDevice();
-    VkImageView imageView = createImageView(image, textureInfoVK.Format, device);
+    VkImageView imageView = createImageView(image, textureInfoVK, device);
     if (imageView == VK_NULL_HANDLE) {
         return nullptr;
     }
 
     std::unique_ptr<TextureVK> pTexture(DBG_NEW TextureVK(textureInfo.Dimensions, textureInfo.Format, pDevice, image, imageView, allocation));
 
-    if (textureInfoVK.pInitialData && !setInitialData(pTexture.get(), textureInfoVK, pDevice)) {
+    // Create temporary command list for layout conversion, and optionally staging buffer copy
+    PooledResource<ICommandPool> commandPoolTemp = pDevice->acquireTempCommandPoolGraphics();
+    CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
+
+    ICommandList* pCommandList = nullptr;
+    if (!pCommandPoolVK->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
+        LOG_WARNING("Failed to create temporary command list during texture creation");
+        return nullptr;
+    }
+
+    CommandListVK* pCommandListVK = reinterpret_cast<CommandListVK*>(pCommandList);
+    if (!pCommandListVK->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, nullptr)) {
+        return nullptr;
+    }
+
+    if (!textureInfoVK.pInitialData) {
+        TextureLayoutConversionInfo conversionInfo = {
+            .CommandBuffer  = pCommandListVK->getCommandBuffer(),
+            .Image          = image,
+            .AspectMask     = textureInfoVK.AspectMask,
+            .SrcLayout      = VK_IMAGE_LAYOUT_UNDEFINED,
+            .DstLayout      = textureInfoVK.Layout,
+            .SrcStage       = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            .DstStage       = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+        };
+
+        if (!convertTextureLayout(conversionInfo)) {
+            LOG_WARNING("Failed to convert image to its desired layout");
+            return nullptr;
+        }
+    } else if (!setInitialData(pTexture.get(), textureInfoVK, pCommandListVK, pDevice)) {
+        return nullptr;
+    }
+
+    if (!submitTempCommandList(pCommandListVK, commandPoolTemp, pDevice)) {
         return nullptr;
     }
 
     return pTexture.release();
 }
 
-TextureVK::TextureVK(const glm::uvec2 dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation)
+TextureVK::TextureVK(const glm::uvec2& dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation)
     :Texture(dimensions, format),
     m_pDevice(pDevice),
     m_Image(image),
@@ -83,7 +116,7 @@ TextureVK::~TextureVK()
     vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
 }
 
-bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, DeviceVK* pDevice)
+bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, CommandListVK* pCommandList, DeviceVK* pDevice)
 {
     std::unique_ptr<BufferVK> pStagingBuffer(createStagingBuffer(textureInfo, pDevice));
     if (!pStagingBuffer) {
@@ -91,64 +124,33 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
         return false;
     }
 
-    PooledResource<ICommandPool> commandPoolTemp = pDevice->acquireTempCommandPoolGraphics();
-    CommandPoolVK* pCommandPoolVK = reinterpret_cast<CommandPoolVK*>(commandPoolTemp.get());
-    ICommandList* pCommandList = nullptr;
+    TextureLayoutConversionInfo conversionInfo = {
+        .CommandBuffer  = pCommandList->getCommandBuffer(),
+        .Image          = pTexture->getImage(),
+        .AspectMask     = textureInfo.AspectMask,
+        .SrcLayout      = VK_IMAGE_LAYOUT_UNDEFINED,
+        .DstLayout      = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .SrcStage       = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        .DstStage       = VK_PIPELINE_STAGE_TRANSFER_BIT
+    };
 
-    if (!pCommandPoolVK->allocateCommandLists(&pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY)) {
-        LOG_WARNING("Failed to create temporary command list during texture creation");
-        return false;
-    }
-
-    CommandListVK* pCommandListVK = reinterpret_cast<CommandListVK*>(pCommandList);
-    if (!pCommandListVK->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, nullptr)) {
-        return false;
-    }
-
-    VkCommandBuffer commandBuffer = pCommandListVK->getCommandBuffer();
-    if (!convertTextureLayout(commandBuffer, pTexture->getImage(),
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT)
-    ) {
+    if (!convertTextureLayout(conversionInfo)) {
         LOG_WARNING("Failed to convert image for a transfer from staging buffer");
         return false;
     }
 
-    pCommandListVK->copyBufferToTexture(pStagingBuffer.get(), pTexture, textureInfo.Dimensions.x, textureInfo.Dimensions.y);
+    pCommandList->copyBufferToTexture(pStagingBuffer.get(), pTexture, textureInfo.Dimensions.x, textureInfo.Dimensions.y);
 
-    if (!convertTextureLayout(commandBuffer, pTexture->getImage(),
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
-    ) {
-        LOG_WARNING("Failed to convert image for shader reading");
+    conversionInfo.SrcLayout    = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    conversionInfo.DstLayout    = textureInfo.Layout;
+    conversionInfo.SrcStage     = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    conversionInfo.DstStage     = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+    if (!convertTextureLayout(conversionInfo)) {
+        LOG_WARNING("Failed to convert image to its desired layout");
         return false;
     }
 
-    if (!pCommandListVK->end()) {
-        return false;
-    }
-
-    commandPoolTemp.release();
-
-    FenceVK* pFence = pDevice->createFence(false);
-    if (!pFence) {
-        return false;
-    }
-
-    SemaphoreSubmitInfo semaphoreInfo = {};
-    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, semaphoreInfo)) {
-        return false;
-    }
-
-    // Have a separate thread delete the temporary command list and fence when the commands have finished
-    std::function<void()> commandsFinishedFnc = [pFence, pCommandList, pDevice]() {
-        IFence* pIFence = pFence;
-        pDevice->waitForFences(&pIFence, 1u, false, 0u);
-        delete pFence;
-        delete pCommandList;
-    };
-
-    std::thread destructorThread(commandsFinishedFnc);
     return true;
 }
 
@@ -165,7 +167,38 @@ BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, Devic
     return pDevice->createBuffer(bufferInfo, nullptr);
 }
 
-bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, VkImageLayout initialLayout, DeviceVK* pDevice)
+bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, DeviceVK* pDevice)
+{
+    if (!pCommandList->end()) {
+        return false;
+    }
+
+    FenceVK* pFence = pDevice->createFence(false);
+    if (!pFence) {
+        return false;
+    }
+
+    SemaphoreSubmitInfo semaphoreInfo = {};
+    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, semaphoreInfo)) {
+        return false;
+    }
+
+    // Have a separate thread delete the temporary command list and fence when the commands have finished
+    std::function<void()> commandsFinishedFnc = [pFence, pCommandList, tempCommandPool, pDevice]() mutable {
+        IFence* pIFence = pFence;
+        pDevice->waitForFences(&pIFence, 1u, false, 0u);
+        delete pFence;
+        delete pCommandList;
+        tempCommandPool.release();
+    };
+
+    std::thread destructorThread(commandsFinishedFnc);
+    destructorThread.detach();
+
+    return true;
+}
+
+bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, DeviceVK* pDevice)
 {
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -177,7 +210,7 @@ bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const Tex
     imageInfo.arrayLayers   = 1;
     imageInfo.format        = textureInfo.Format;
     imageInfo.tiling        = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = initialLayout;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage         = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
@@ -197,17 +230,22 @@ bool TextureVK::createImage(VkImage& image, VmaAllocation& allocation, const Tex
         return false;
     }
 
+    if (vmaBindImageMemory(allocator, allocation, image) != VK_SUCCESS) {
+        LOG_WARNING("Failed to bind memory for image");
+        return false;
+    }
+
     return true;
 }
 
-VkImageView TextureVK::createImageView(VkImage image, VkFormat format, VkDevice device)
+VkImageView TextureVK::createImageView(VkImage image, const TextureInfoVK& textureInfo, VkDevice device)
 {
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType      = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image      = image;
     viewInfo.viewType   = VK_IMAGE_VIEW_TYPE_2D;
-    viewInfo.format     = format;
-    viewInfo.subresourceRange.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.format     = textureInfo.Format;
+    viewInfo.subresourceRange.aspectMask        = textureInfo.AspectMask;
     viewInfo.subresourceRange.baseMipLevel      = 0;
     viewInfo.subresourceRange.levelCount        = 1;
     viewInfo.subresourceRange.baseArrayLayer    = 0;
@@ -222,25 +260,25 @@ VkImageView TextureVK::createImageView(VkImage image, VkFormat format, VkDevice 
     return imageView;
 }
 
-bool TextureVK::convertTextureLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout srcLayout, VkImageLayout dstLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage)
+bool TextureVK::convertTextureLayout(const TextureLayoutConversionInfo& conversionInfo)
 {
     VkImageMemoryBarrier barrierInfo = {};
     barrierInfo.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrierInfo.srcAccessMask       = layoutToAccessMask(srcLayout);
-    barrierInfo.dstAccessMask       = layoutToAccessMask(dstLayout);
-    barrierInfo.oldLayout           = srcLayout;
-    barrierInfo.newLayout           = dstLayout;
+    barrierInfo.srcAccessMask       = layoutToAccessMask(conversionInfo.SrcLayout);
+    barrierInfo.dstAccessMask       = layoutToAccessMask(conversionInfo.DstLayout);
+    barrierInfo.oldLayout           = conversionInfo.SrcLayout;
+    barrierInfo.newLayout           = conversionInfo.DstLayout;
     barrierInfo.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrierInfo.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrierInfo.image               = image;
-    barrierInfo.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrierInfo.image               = conversionInfo.Image;
+    barrierInfo.subresourceRange.aspectMask     = conversionInfo.AspectMask;
     barrierInfo.subresourceRange.baseMipLevel   = 0u;
     barrierInfo.subresourceRange.levelCount     = 1u;
     barrierInfo.subresourceRange.baseArrayLayer = 0u;
     barrierInfo.subresourceRange.layerCount     = 1u;
 
     vkCmdPipelineBarrier(
-        commandBuffer,
+        conversionInfo.CommandBuffer,
         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         0,
         0, nullptr,
@@ -262,6 +300,7 @@ VkAccessFlags TextureVK::layoutToAccessMask(VkImageLayout layout)
         case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
             return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+        case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
             return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
             return VK_ACCESS_TRANSFER_READ_BIT;
@@ -281,6 +320,7 @@ TextureInfoVK TextureVK::convertTextureInfo(const TextureInfo& textureInfo)
     textureInfoVK.Dimensions    = textureInfo.Dimensions;
     textureInfoVK.Layout        = convertImageLayoutFlag(textureInfo.InitialLayout);
     textureInfoVK.Format        = convertFormatToVK(textureInfo.Format);
+    textureInfoVK.AspectMask    = textureInfoVK.Layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
     textureInfoVK.pInitialData  = textureInfo.pInitialData;
 
     return textureInfoVK;

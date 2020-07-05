@@ -5,14 +5,23 @@
 #include <vulkan/vulkan.h>
 
 class BufferVK;
+class CommandListVK;
 class DeviceVK;
 
-// Mimics TextureInfo, but has converted API-specific flags
 struct TextureInfoVK {
     glm::uvec2 Dimensions;
     VkImageLayout Layout;
     VkFormat Format;
+    VkImageAspectFlags AspectMask;
     InitialData* pInitialData;  // Optional
+};
+
+struct TextureLayoutConversionInfo {
+    VkCommandBuffer CommandBuffer;
+    VkImage Image;
+    VkImageAspectFlags AspectMask;
+    VkImageLayout SrcLayout, DstLayout;
+    VkPipelineStageFlags SrcStage, DstStage;
 };
 
 class TextureVK : public Texture
@@ -22,7 +31,8 @@ public:
     static TextureVK* create(const TextureInfo& textureInfo, DeviceVK* pDevice);
 
 public:
-    TextureVK(const glm::uvec2 dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation);
+    // TODO: Pack parameter list into struct
+    TextureVK(const glm::uvec2& dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation);
     ~TextureVK();
 
     bool convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage);
@@ -31,12 +41,13 @@ public:
     inline VkImageView getImageView() const { return m_ImageView; }
 
 private:
-    static bool setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, DeviceVK* pDevice);
+    static bool setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, CommandListVK* pCommandList, DeviceVK* pDevice);
     static BufferVK* createStagingBuffer(const TextureInfoVK& textureInfo, DeviceVK* pDevice);
+    static bool submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, DeviceVK* pDevice);
     // Allocates memory for the image and creates image handle
-    static bool createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, VkImageLayout initialLayout, DeviceVK* pDevice);
-    static VkImageView createImageView(VkImage image, VkFormat format, VkDevice device);
-    static bool convertTextureLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage);
+    static bool createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, DeviceVK* pDevice);
+    static VkImageView createImageView(VkImage image, const TextureInfoVK& textureInfo, VkDevice device);
+    static bool convertTextureLayout(const TextureLayoutConversionInfo& conversionInfo);
     static VkAccessFlags layoutToAccessMask(VkImageLayout layout);
     static TextureInfoVK convertTextureInfo(const TextureInfo& textureInfo);
 

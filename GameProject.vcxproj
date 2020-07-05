@@ -131,6 +131,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.cpp" />
+    <ClCompile Include="src\Engine\Rendering\APIAbstractions\Swapchain.cpp" />
+    <ClCompile Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.cpp" />
     <ClCompile Include="vendor\DirectXTK\DDSTextureLoader.cpp" />
     <ClCompile Include="vendor\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="src\Engine\Audio\AudioCore.cpp" />
@@ -234,6 +237,9 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.hpp" />
+    <ClInclude Include="src\Engine\Rendering\APIAbstractions\Swapchain.hpp" />
+    <ClInclude Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.hpp" />
     <ClInclude Include="vendor\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="vendor\DirectXTK\WICTextureLoader.h" />
     <ClInclude Include="vendor\stb\stb_image.h" />

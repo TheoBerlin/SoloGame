@@ -33,9 +33,9 @@ VkPipelineStageFlags convertPipelineStageFlags(PIPELINE_STAGE pipelineStageFlags
         HAS_FLAG(pipelineStageFlags, PIPELINE_STAGE::ACCELERATION_STRUCTURE_BUILD_NV) * VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV;
 }
 
-VkFormat convertFormatToVK(RESOURCE_FORMAT textureFormat)
+VkFormat convertFormatToVK(RESOURCE_FORMAT format)
 {
-    switch (textureFormat) {
+    switch (format) {
         case RESOURCE_FORMAT::R32G32B32A32_FLOAT:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
         case RESOURCE_FORMAT::R32G32B32_FLOAT:
@@ -44,6 +44,8 @@ VkFormat convertFormatToVK(RESOURCE_FORMAT textureFormat)
             return VK_FORMAT_R32G32_SFLOAT;
         case RESOURCE_FORMAT::B8G8R8A8_UNORM:
             return VK_FORMAT_B8G8R8A8_UNORM;
+        case RESOURCE_FORMAT::B8G8R8A8_SRGB:
+            return VK_FORMAT_B8G8R8A8_SRGB;
         case RESOURCE_FORMAT::R8G8B8A8_UNORM:
             return VK_FORMAT_R8G8B8A8_UNORM;
         case RESOURCE_FORMAT::R8G8B8A8_SRGB:
@@ -53,6 +55,31 @@ VkFormat convertFormatToVK(RESOURCE_FORMAT textureFormat)
         default:
             LOG_ERROR("Unknown resource format");
             return VK_FORMAT_UNDEFINED;
+    }
+}
+
+RESOURCE_FORMAT convertFormatFromVK(VkFormat format)
+{
+    switch (format) {
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            return RESOURCE_FORMAT::R32G32B32A32_FLOAT;
+        case VK_FORMAT_R32G32B32_SFLOAT:
+            return RESOURCE_FORMAT::R32G32B32_FLOAT;
+        case VK_FORMAT_R32G32_SFLOAT:
+            return RESOURCE_FORMAT::R32G32_FLOAT;
+        case VK_FORMAT_B8G8R8A8_UNORM:
+            return RESOURCE_FORMAT::B8G8R8A8_UNORM;
+        case VK_FORMAT_B8G8R8A8_SRGB:
+            return RESOURCE_FORMAT::B8G8R8A8_SRGB;
+        case VK_FORMAT_R8G8B8A8_UNORM:
+            return RESOURCE_FORMAT::R8G8B8A8_UNORM;
+        case VK_FORMAT_R8G8B8A8_SRGB:
+            return RESOURCE_FORMAT::R8G8B8A8_SRGB;
+        case VK_FORMAT_D32_SFLOAT:
+            return RESOURCE_FORMAT::D32_FLOAT;
+        default:
+            LOG_ERROR("Unknown resource format");
+            return RESOURCE_FORMAT::R8G8B8A8_UNORM;
     }
 }
 
