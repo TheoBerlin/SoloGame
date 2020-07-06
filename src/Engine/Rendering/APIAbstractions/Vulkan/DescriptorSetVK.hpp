@@ -20,7 +20,7 @@ public:
     inline VkDescriptorSet getDescriptorSet() const { return m_DescriptorSet; }
 
 private:
-    void updateDescriptor(SHADER_BINDING binding, const VkDescriptorImageInfo* pImageInfo, const VkDescriptorBufferInfo* pBufferInfo);
+    void updateDescriptor(SHADER_BINDING binding, const VkDescriptorImageInfo* pImageInfo, const VkDescriptorBufferInfo* pBufferInfo, VkDescriptorType descriptorType);
 
 private:
     VkDescriptorSet m_DescriptorSet;
