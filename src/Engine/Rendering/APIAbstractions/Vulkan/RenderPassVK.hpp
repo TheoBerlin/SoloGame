@@ -19,7 +19,7 @@ public:
 
 private:
     static VkAttachmentDescription convertAttachmentInfo(const AttachmentInfo& attachmentInfo);
-    static VkSubpassDescription convertSubpassInfo(const SubpassInfo& subpassInfo, std::vector<VkAttachmentReference>& attachmentReferencesColor);
+    static VkSubpassDescription convertSubpassInfo(const SubpassInfo& subpassInfo, std::vector<VkAttachmentReference>& attachmentReferencesColor, VkAttachmentReference& attachmentReferenceDepth);
     static VkSubpassDependency convertSubpassDependency(const SubpassDependency& subpassDependency);
 
     static VkSampleCountFlagBits convertSampleCount(uint32_t sampleCount);

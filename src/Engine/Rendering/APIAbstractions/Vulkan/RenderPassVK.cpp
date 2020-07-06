@@ -14,13 +14,17 @@ RenderPassVK* RenderPassVK::create(const RenderPassInfo& renderPassInfo, DeviceV
     std::vector<VkSubpassDescription> subpassDescriptions;
     subpassDescriptions.reserve(renderPassInfo.Subpasses.size());
 
-    // Each subpass has a vector of attachment references
+    // Each subpass has a vector of color attachment references
     std::vector<std::vector<VkAttachmentReference>> attachmentReferencesColor;
     attachmentReferencesColor.resize(renderPassInfo.Subpasses.size());
 
+    // .. and potentially a depth attachment reference
+    std::vector<VkAttachmentReference> attachmentReferencesDepth(renderPassInfo.Subpasses.size());
+
     size_t subpassIdx = 0u;
     for (const SubpassInfo& subpassInfo : renderPassInfo.Subpasses) {
-        subpassDescriptions.push_back(convertSubpassInfo(subpassInfo, attachmentReferencesColor[subpassIdx++]));
+        subpassDescriptions.push_back(convertSubpassInfo(subpassInfo, attachmentReferencesColor[subpassIdx], attachmentReferencesDepth[subpassIdx]));
+        subpassIdx += 1u;
     }
 
     std::vector<VkSubpassDependency> subpassDependencies;
@@ -72,14 +76,13 @@ VkAttachmentDescription RenderPassVK::convertAttachmentInfo(const AttachmentInfo
     return attachmentDesc;
 }
 
-VkSubpassDescription RenderPassVK::convertSubpassInfo(const SubpassInfo& subpassInfo, std::vector<VkAttachmentReference>& attachmentReferencesColor)
+VkSubpassDescription RenderPassVK::convertSubpassInfo(const SubpassInfo& subpassInfo, std::vector<VkAttachmentReference>& attachmentReferencesColor, VkAttachmentReference& attachmentReferenceDepth)
 {
     attachmentReferencesColor.reserve(subpassInfo.ColorAttachments.size());
     for (const AttachmentReference& attachmentReference : subpassInfo.ColorAttachments) {
         attachmentReferencesColor.push_back(convertAttachmentReference(attachmentReference));
     }
 
-    VkAttachmentReference attachmentReferenceDepth = {};
     if (subpassInfo.pDepthStencilAttachment) {
         attachmentReferenceDepth = convertAttachmentReference(*subpassInfo.pDepthStencilAttachment);
     }

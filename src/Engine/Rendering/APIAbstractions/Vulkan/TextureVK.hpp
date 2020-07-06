@@ -11,6 +11,7 @@ class DeviceVK;
 struct TextureInfoVK {
     glm::uvec2 Dimensions;
     VkImageLayout Layout;
+    VkImageUsageFlags Usage;
     VkFormat Format;
     VkImageAspectFlags AspectMask;
     InitialData* pInitialData;  // Optional
@@ -41,14 +42,16 @@ public:
     inline VkImageView getImageView() const { return m_ImageView; }
 
 private:
-    static bool setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, CommandListVK* pCommandList, DeviceVK* pDevice);
-    static BufferVK* createStagingBuffer(const TextureInfoVK& textureInfo, DeviceVK* pDevice);
-    static bool submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, DeviceVK* pDevice);
+    static bool setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, BufferVK* pStagingBuffer, CommandListVK* pCommandList);
+    static BufferVK* createStagingBuffer(const TextureInfoVK& textureInfo, RESOURCE_FORMAT format, DeviceVK* pDevice);
+    static bool submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, BufferVK* pStagingBuffer, DeviceVK* pDevice);
     // Allocates memory for the image and creates image handle
     static bool createImage(VkImage& image, VmaAllocation& allocation, const TextureInfoVK& textureInfo, DeviceVK* pDevice);
     static VkImageView createImageView(VkImage image, const TextureInfoVK& textureInfo, VkDevice device);
     static bool convertTextureLayout(const TextureLayoutConversionInfo& conversionInfo);
     static VkAccessFlags layoutToAccessMask(VkImageLayout layout);
+    static VkImageAspectFlags layoutToAspectMask(VkImageLayout layout);
+    static VkImageUsageFlags convertUsageMask(TEXTURE_USAGE usage);
     static TextureInfoVK convertTextureInfo(const TextureInfo& textureInfo);
 
 private:

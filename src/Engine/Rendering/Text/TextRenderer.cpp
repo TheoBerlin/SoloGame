@@ -251,10 +251,10 @@ std::shared_ptr<Texture> TextRenderer::bytemapToTexture(const Bytemap& bytemap)
     initialData.RowSize = convertedBytemap.width * 4u * sizeof(uint8_t);
 
     TextureInfo textureInfo = {};
-    textureInfo.Dimensions      = {convertedBytemap.width, convertedBytemap.rows};
+    textureInfo.Dimensions      = { convertedBytemap.width, convertedBytemap.rows };
+    textureInfo.Usage           = TEXTURE_USAGE::SAMPLED;
+    textureInfo.Layout          = TEXTURE_LAYOUT::SHADER_READ_ONLY;
     textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_UNORM;
-    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
-    textureInfo.LayoutFlags     = textureInfo.InitialLayout;
     textureInfo.pInitialData    = &initialData;
 
     std::shared_ptr<Texture> glyphTexture(m_pDevice->createTexture(textureInfo));

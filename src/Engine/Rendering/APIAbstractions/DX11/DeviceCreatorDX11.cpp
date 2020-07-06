@@ -109,19 +109,18 @@ bool DeviceCreatorDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, cons
     pBackBuffer->Release();
 
     TextureInfoDX11 backbufferTextureInfo = {};
-    backbufferTextureInfo.Dimensions    = {(uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height};
+    backbufferTextureInfo.Dimensions    = { (uint32_t)backbufferDesc.Width, (uint32_t)backbufferDesc.Height };
     backbufferTextureInfo.Format        = convertFormatFromDX(backbufferDesc.Format);
-    backbufferTextureInfo.LayoutFlags   = TextureDX11::convertBindFlags(backbufferDesc.BindFlags);
     backbufferTextureInfo.pRTV          = pBackBufferRTV;
 
     m_pBackbuffer = DBG_NEW TextureDX11(backbufferTextureInfo);
 
     /* Depth stencil */
-    TextureInfo depthTextureInfo     = {};
-    depthTextureInfo.Dimensions      = {pWindow->getWidth(), pWindow->getHeight()};
-    depthTextureInfo.Format          = RESOURCE_FORMAT::D32_FLOAT;
-    depthTextureInfo.InitialLayout   = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
-    depthTextureInfo.LayoutFlags     = depthTextureInfo.InitialLayout;
+    TextureInfo depthTextureInfo    = {};
+    depthTextureInfo.Dimensions     = {pWindow->getWidth(), pWindow->getHeight()};
+    depthTextureInfo.Usage          = TEXTURE_USAGE::DEPTH_STENCIL;
+    depthTextureInfo.Layout         = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthTextureInfo.Format         = RESOURCE_FORMAT::D32_FLOAT;
 
     for (uint32_t depthTextureIdx = 0u; depthTextureIdx < MAX_FRAMES_IN_FLIGHT; depthTextureIdx += 1u) {
         TextureDX11* pDepthTexture = TextureDX11::create(depthTextureInfo, m_pDevice);

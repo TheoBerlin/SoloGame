@@ -78,8 +78,8 @@ private:
     IDDVector<ModelRenderResources> m_ModelRenderResources;
 
     Device* m_pDevice;
-    ICommandPool* m_pCommandPool;
-    ICommandList* m_pCommandList;
+    ICommandPool* m_ppCommandPools[MAX_FRAMES_IN_FLIGHT];
+    ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];
 
     ModelLoader* m_pModelLoader;
     TransformHandler* m_pTransformHandler;

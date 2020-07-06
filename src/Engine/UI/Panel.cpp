@@ -248,10 +248,10 @@ void UIHandler::createPanelTexture(UIPanel& panel)
 
     // Create underlying texture
     TextureInfo textureInfo = {};
-    textureInfo.Dimensions      = { uint32_t(panel.size.x * backbufferDims.x), uint32_t(panel.size.y * backbufferDims.y) };
-    textureInfo.Format          = g_PanelTextureFormat;
-    textureInfo.InitialLayout   = TEXTURE_LAYOUT::SHADER_READ_ONLY;
-    textureInfo.LayoutFlags     = TEXTURE_LAYOUT::SHADER_READ_ONLY | TEXTURE_LAYOUT::RENDER_TARGET;
+    textureInfo.Dimensions  = { uint32_t(panel.size.x * backbufferDims.x), uint32_t(panel.size.y * backbufferDims.y) };
+    textureInfo.Usage       = TEXTURE_USAGE::SAMPLED | TEXTURE_USAGE::RENDER_TARGET;
+    textureInfo.Layout      = TEXTURE_LAYOUT::SHADER_READ_ONLY;
+    textureInfo.Format      = g_PanelTextureFormat;
 
     panel.texture = m_pDevice->createTexture(textureInfo);
 }
@@ -312,7 +312,7 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
 void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel)
 {
     std::vector<AttachmentRenderResources> renderResources;
-    if (!createPanelRenderResources(renderResources, attachments, panel)) {
+    if (!createPanelRenderResources(renderResources, attachments)) {
         LOG_ERROR("Failed to render textures onto panel, could not create create render resources");
         return;
     }
@@ -362,7 +362,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     delete pFramebuffer;
 }
 
-bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments, UIPanel& panel)
+bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments)
 {
     renderResources.reserve(attachments.size());
 
@@ -411,9 +411,11 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
 
 IFramebuffer* UIHandler::createFramebuffer(UIPanel& panel)
 {
+    const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
+
     FramebufferInfo framebufferInfo = {};
     framebufferInfo.pRenderPass     = m_pRenderPass;
-    framebufferInfo.Dimensions      = { (uint32_t)panel.size.x, (uint32_t)panel.size.y };
+    framebufferInfo.Dimensions      = { uint32_t(panel.size.x * (float)backbufferDims.x), uint32_t(panel.size.y * (float)backbufferDims.y) };
     framebufferInfo.Attachments     = { panel.texture };
 
     return m_pDevice->createFramebuffer(framebufferInfo);

@@ -36,7 +36,6 @@ TextureDX11* TextureDX11::createFromFile(const std::string& filePath, ID3D11Devi
     TextureInfoDX11 textureInfoDX = {};
     textureInfoDX.Dimensions    = {(uint32_t)txDesc.Width, (uint32_t)txDesc.Height};
     textureInfoDX.Format        = convertFormatFromDX(txDesc.Format);
-    textureInfoDX.LayoutFlags   = convertBindFlags(txDesc.BindFlags);
     textureInfoDX.pSRV          = pSRV;
     textureInfoDX.pDSV          = nullptr;
     textureInfoDX.pRTV          = nullptr;
@@ -55,8 +54,8 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     txDesc.Format               = convertFormatToDX(textureInfo.Format);
     txDesc.SampleDesc.Count     = 1;
     txDesc.SampleDesc.Quality   = 0;
-    txDesc.Usage                = D3D11_USAGE_DEFAULT;
-    txDesc.BindFlags            = TextureDX11::convertLayoutFlags(textureInfo.LayoutFlags);
+    txDesc.Usage                = txDesc.BindFlags == D3D11_BIND_SHADER_RESOURCE ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DEFAULT;
+    txDesc.BindFlags            = TextureDX11::convertUsageMask(textureInfo.Usage);
     txDesc.CPUAccessFlags       = 0;
     txDesc.MiscFlags            = 0;
 
@@ -69,23 +68,23 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2D = nullptr;
     HRESULT hr = pDevice->CreateTexture2D(&txDesc, textureInfo.pInitialData ? &initialData : nullptr, texture2D.GetAddressOf());
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to create texture for UI panel: %s", hresultToString(hr).c_str());
+        LOG_WARNING("Failed to create texture2D: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
     ID3D11Texture2D* pTexture2D = texture2D.Get();
     ID3D11ShaderResourceView* pSRV = nullptr;
-    if (HAS_FLAG(textureInfo.LayoutFlags, TEXTURE_LAYOUT::SHADER_READ_ONLY)) {
+    if (txDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) {
         // Create shader resource view
         hr = pDevice->CreateShaderResourceView(pTexture2D, nullptr, &pSRV);
         if (FAILED(hr)) {
-            LOG_WARNING("Failed to create shader resource view for UI panel: %s", hresultToString(hr).c_str());
+            LOG_WARNING("Failed to create shader resource view: %s", hresultToString(hr).c_str());
             return nullptr;
         }
     }
 
     ID3D11RenderTargetView* pRTV = nullptr;
-    if (HAS_FLAG(textureInfo.LayoutFlags, TEXTURE_LAYOUT::RENDER_TARGET)) {
+    if (txDesc.BindFlags & D3D11_BIND_RENDER_TARGET) {
         // Create render target view
         hr = pDevice->CreateRenderTargetView(pTexture2D, nullptr, &pRTV);
         if (FAILED(hr)) {
@@ -95,7 +94,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     }
 
     ID3D11DepthStencilView* pDSV = nullptr;
-    if (HAS_FLAG(textureInfo.LayoutFlags, TEXTURE_LAYOUT::DEPTH_ATTACHMENT)) {
+    if (txDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL) {
         // Create render target view
         hr = pDevice->CreateDepthStencilView(pTexture2D, nullptr, &pDSV);
         if (FAILED(hr)) {
@@ -107,7 +106,6 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     TextureInfoDX11 textureInfoDX = {};
     textureInfoDX.Dimensions    = textureInfo.Dimensions;
     textureInfoDX.Format        = textureInfo.Format;
-    textureInfoDX.LayoutFlags   = textureInfo.LayoutFlags;
     textureInfoDX.pSRV          = pSRV;
     textureInfoDX.pDSV          = pDSV;
     textureInfoDX.pRTV          = pRTV;
@@ -121,8 +119,7 @@ TextureDX11::TextureDX11(const TextureInfoDX11& textureInfo)
     m_pSRV(textureInfo.pSRV),
     m_pDSV(textureInfo.pDSV),
     m_pRTV(textureInfo.pRTV),
-    m_pUAV(textureInfo.pUAV),
-    m_LayoutFlags(textureInfo.LayoutFlags)
+    m_pUAV(textureInfo.pUAV)
 {}
 
 TextureDX11::~TextureDX11()
@@ -131,53 +128,6 @@ TextureDX11::~TextureDX11()
     SAFERELEASE(m_pDSV)
     SAFERELEASE(m_pRTV)
     SAFERELEASE(m_pUAV)
-}
-
-void TextureDX11::convertTextureLayout(ID3D11DeviceContext* pContext, ID3D11Device* pDevice, TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout)
-{
-    if (HAS_FLAG(m_LayoutFlags, newLayout)) {
-        return;
-    }
-
-    // Create a new texture with the old and the new bind flags combined
-    m_LayoutFlags = oldLayout | newLayout;
-
-    // Get resource pointer
-    ID3D11Resource* pResource = getResource();
-
-    // Get old texture description and only change the bind flags
-    D3D11_TEXTURE2D_DESC txDesc = {};
-    reinterpret_cast<ID3D11Texture2D*>(pResource)->GetDesc(&txDesc);
-    txDesc.BindFlags = convertLayoutFlags(m_LayoutFlags);
-
-    ID3D11Texture2D* pNewTexture = nullptr;
-    HRESULT hr = pDevice->CreateTexture2D(&txDesc, nullptr, &pNewTexture);
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create new texture whilst converting texture layout: %s", hresultToString(hr).c_str());
-        return;
-    }
-
-    pContext->CopyResource(pResource, pNewTexture);
-
-    // Create new texture view, the type depends on the new layout flag
-    hr = S_OK;
-
-    switch (newLayout) {
-        case TEXTURE_LAYOUT::SHADER_READ_ONLY:
-            hr = pDevice->CreateShaderResourceView(pNewTexture, nullptr, &m_pSRV);
-            break;
-        case TEXTURE_LAYOUT::DEPTH_ATTACHMENT:
-            hr = pDevice->CreateDepthStencilView(pNewTexture, nullptr, &m_pDSV);
-            break;
-        case TEXTURE_LAYOUT::RENDER_TARGET:
-            hr = pDevice->CreateRenderTargetView(pNewTexture, nullptr, &m_pRTV);
-            break;
-        // TODO: UAV support
-    }
-
-    if (FAILED(hr)) {
-        LOG_WARNING("Failed to create new texture view after conversion, old and new layouts: %d -> %d", (int)oldLayout, (int)newLayout);
-    }
 }
 
 ID3D11Resource* TextureDX11::getResource()
@@ -215,10 +165,11 @@ TEXTURE_LAYOUT TextureDX11::convertBindFlags(UINT bindFlags)
     return layoutFlags;
 }
 
-UINT TextureDX11::convertLayoutFlags(TEXTURE_LAYOUT layoutFlags)
+UINT TextureDX11::convertUsageMask(TEXTURE_USAGE usage)
 {
     return
-        HAS_FLAG(layoutFlags, TEXTURE_LAYOUT::SHADER_READ_ONLY) * D3D11_BIND_SHADER_RESOURCE |
-        HAS_FLAG(layoutFlags, TEXTURE_LAYOUT::RENDER_TARGET)    * D3D11_BIND_RENDER_TARGET |
-        HAS_FLAG(layoutFlags, TEXTURE_LAYOUT::DEPTH_ATTACHMENT) * D3D11_BIND_DEPTH_STENCIL;
+        HAS_FLAG(usage, TEXTURE_USAGE::SAMPLED)        * D3D11_BIND_SHADER_RESOURCE    |
+        HAS_FLAG(usage, TEXTURE_USAGE::STORAGE)        * D3D11_BIND_UNORDERED_ACCESS   |
+        HAS_FLAG(usage, TEXTURE_USAGE::RENDER_TARGET)  * D3D11_BIND_RENDER_TARGET      |
+        HAS_FLAG(usage, TEXTURE_USAGE::DEPTH_STENCIL)  * D3D11_BIND_DEPTH_STENCIL;
 }

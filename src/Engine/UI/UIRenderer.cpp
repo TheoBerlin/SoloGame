@@ -5,10 +5,10 @@
 #include <Engine/UI/Panel.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
+#include <algorithm>
+
 UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     :Renderer(pECS, pDevice),
-    m_pCommandPool(nullptr),
-    m_pCommandList(nullptr),
     m_pQuad(nullptr),
     m_pDescriptorSetLayout(nullptr),
     m_pAniSampler(nullptr),
@@ -16,9 +16,9 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice)
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
-    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
-        m_pFramebuffers[framebufferIdx] = nullptr;
-    }
+    std::fill(m_ppFramebuffers, m_ppFramebuffers + MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill(m_ppCommandLists, m_ppCommandLists + MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill(m_ppCommandPools, m_ppCommandPools + MAX_FRAMES_IN_FLIGHT, nullptr);
 
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -36,12 +36,12 @@ UIRenderer::~UIRenderer()
         onPanelRemoved(entity);
     }
 
-    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
-        delete m_pFramebuffers[framebufferIdx];
+    for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
+        delete m_ppFramebuffers[frameIndex];
+        delete m_ppCommandLists[frameIndex];
+        delete m_ppCommandPools[frameIndex];
     }
 
-    delete m_pCommandList;
-    delete m_pCommandPool;
     delete m_pDescriptorSetLayout;
     delete m_pRenderPass;
     delete m_pPipelineLayout;
@@ -50,14 +50,16 @@ UIRenderer::~UIRenderer()
 
 bool UIRenderer::init()
 {
-    m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
-    if (!m_pCommandPool) {
-        return false;
-    }
+    for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
+        m_ppCommandPools[frameIndex] = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
+        if (!m_ppCommandPools[frameIndex]) {
+            return false;
+        }
 
-    m_pCommandPool->allocateCommandLists(&m_pCommandList, 1u, COMMAND_LIST_LEVEL::PRIMARY);
-    if (!m_pCommandList) {
-        return false;
+        m_ppCommandPools[frameIndex]->allocateCommandLists(&m_ppCommandLists[frameIndex], 1u, COMMAND_LIST_LEVEL::PRIMARY);
+        if (!m_ppCommandLists[frameIndex]) {
+            return false;
+        }
     }
 
     m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
@@ -106,37 +108,38 @@ void UIRenderer::updateBuffers()
 void UIRenderer::recordCommands()
 {
     const uint32_t frameIndex = m_pDevice->getFrameIndex();
+    ICommandList* pCommandList = m_ppCommandLists[frameIndex];
 
     CommandListBeginInfo beginInfo = {};
     beginInfo.pRenderPass   = m_pRenderPass;
     beginInfo.Subpass       = 0u;
-    beginInfo.pFramebuffer  = m_pFramebuffers[frameIndex];
-    m_pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+    beginInfo.pFramebuffer  = m_ppFramebuffers[frameIndex];
+    pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
     RenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.pFramebuffer        = m_pFramebuffers[frameIndex];
-    m_pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
+    renderPassBeginInfo.pFramebuffer        = m_ppFramebuffers[frameIndex];
+    pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
     if (m_Panels.size() == 0) {
-        m_pCommandList->end();
+        pCommandList->end();
         return;
     }
 
-    m_pCommandList->bindPipeline(m_pPipeline);
-    m_pCommandList->bindVertexBuffer(0, m_pQuad);
+    pCommandList->bindPipeline(m_pPipeline);
+    pCommandList->bindVertexBuffer(0, m_pQuad);
 
     for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
-        m_pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
-        m_pCommandList->draw(4);
+        pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
+        pCommandList->draw(4);
     }
 
-    m_pCommandList->end();
+    pCommandList->end();
 }
 
 void UIRenderer::executeCommands()
 {
     SemaphoreSubmitInfo semaphoreInfo = {};
-    m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
+    m_pDevice->graphicsQueueSubmit(m_ppCommandLists[m_pDevice->getFrameIndex()], nullptr, semaphoreInfo);
 }
 
 bool UIRenderer::createDescriptorSetLayouts()
@@ -171,8 +174,8 @@ bool UIRenderer::createRenderPass()
     depthStencilAttachment.Samples          = 1u;
     depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
     depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
-    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     // Subpass
     SubpassInfo subpass = {};
@@ -182,7 +185,7 @@ bool UIRenderer::createRenderPass()
 
     AttachmentReference depthStencilRef = {};
     depthStencilRef.AttachmentIndex     = 1;
-    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_ATTACHMENT;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
 
     subpass.ColorAttachments        = { backbufferRef };
     subpass.pDepthStencilAttachment = &depthStencilRef;
@@ -193,8 +196,8 @@ bool UIRenderer::createRenderPass()
     subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
     subpassDependency.DstSubpass        = 0;
     subpassDependency.SrcStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    subpassDependency.DstStage          = PIPELINE_STAGE::FRAGMENT_SHADER;
-    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.SrcAccessMask     = { };
     subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
     subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
 
@@ -214,9 +217,9 @@ bool UIRenderer::createFramebuffers()
 
     for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
         framebufferInfo.Attachments = { m_pDevice->getBackbuffer(framebufferIdx), m_pDevice->getDepthStencil(framebufferIdx) };
-        m_pFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
+        m_ppFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
 
-        if (!m_pFramebuffers[framebufferIdx]) {
+        if (!m_ppFramebuffers[framebufferIdx]) {
             return false;
         }
     }

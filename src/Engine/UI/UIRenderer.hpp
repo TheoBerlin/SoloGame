@@ -37,8 +37,8 @@ private:
     IDVector m_Panels;
     IDDVector<PanelRenderResources> m_PanelRenderResources;
 
-    ICommandPool* m_pCommandPool;
-    ICommandList* m_pCommandList;
+    ICommandPool* m_ppCommandPools[MAX_FRAMES_IN_FLIGHT];
+    ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];
 
     UIHandler* m_pUIHandler;
 
@@ -47,7 +47,7 @@ private:
 
     ISampler* m_pAniSampler;
     IRenderPass* m_pRenderPass;
-    IFramebuffer* m_pFramebuffers[MAX_FRAMES_IN_FLIGHT];
+    IFramebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

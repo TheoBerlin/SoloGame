@@ -119,12 +119,6 @@ void CommandListDX11::drawIndexed(size_t indexCount)
     m_pContext->DrawIndexed((UINT)indexCount, 0, 0);
 }
 
-void CommandListDX11::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage)
-{
-    TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
-    pTextureDX->convertTextureLayout(m_pContext, m_pDevice->getDevice(), oldLayout, newLayout);
-}
-
 void CommandListDX11::copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize)
 {
     BufferDX11* pSrcDX = reinterpret_cast<BufferDX11*>(pSrc);
