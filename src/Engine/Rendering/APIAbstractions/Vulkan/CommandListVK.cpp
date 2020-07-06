@@ -54,7 +54,7 @@ void CommandListVK::copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uin
     copyInfo.imageSubresource.aspectMask        = VK_IMAGE_ASPECT_COLOR_BIT;
     copyInfo.imageSubresource.mipLevel          = 0u;
     copyInfo.imageSubresource.baseArrayLayer    = 0u;
-    copyInfo.imageSubresource.layerCount        = 0u;
+    copyInfo.imageSubresource.layerCount        = 1u;
     copyInfo.imageOffset    = {0u, 0u, 0u};
     copyInfo.imageExtent    = {width, height, 1u};
 

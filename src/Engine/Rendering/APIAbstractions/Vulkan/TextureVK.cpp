@@ -31,7 +31,7 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
     textureInfo.Dimensions      = { (uint32_t)width, (uint32_t)height };
     textureInfo.Usage           = TEXTURE_USAGE::SAMPLED | TEXTURE_USAGE::TRANSFER_DST;
     textureInfo.Layout          = TEXTURE_LAYOUT::SHADER_READ_ONLY;
-    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_SRGB;
+    textureInfo.Format          = RESOURCE_FORMAT::R8G8B8A8_UNORM;
     textureInfo.pInitialData    = &initialData;
 
     TextureVK* pTexture = create(textureInfo, pDevice);
@@ -74,6 +74,7 @@ TextureVK* TextureVK::create(const TextureInfo& textureInfo, DeviceVK* pDevice)
         return nullptr;
     }
 
+    std::unique_ptr<BufferVK> pStagingBuffer(nullptr);
     if (!textureInfoVK.pInitialData) {
         TextureLayoutConversionInfo conversionInfo = {
             .CommandBuffer  = pCommandListVK->getCommandBuffer(),
@@ -89,14 +90,23 @@ TextureVK* TextureVK::create(const TextureInfo& textureInfo, DeviceVK* pDevice)
             LOG_WARNING("Failed to convert image to its desired layout");
             return nullptr;
         }
-    } else if (!setInitialData(pTexture.get(), textureInfoVK, pCommandListVK, pDevice)) {
+    } else {
+        pStagingBuffer.reset(createStagingBuffer(textureInfoVK, textureInfo.Format, pDevice));
+        if (!pStagingBuffer) {
+            LOG_WARNING("Failed to create staging buffer during texture creation");
+            return nullptr;
+        }
+
+        if (!setInitialData(pTexture.get(), textureInfoVK, pStagingBuffer.get(), pCommandListVK)) {
+           return nullptr;
+        }
+    }
+
+    if (!submitTempCommandList(pCommandListVK, commandPoolTemp, pStagingBuffer.get(), pDevice)) {
         return nullptr;
     }
 
-    if (!submitTempCommandList(pCommandListVK, commandPoolTemp, pDevice)) {
-        return nullptr;
-    }
-
+    pStagingBuffer.release();
     return pTexture.release();
 }
 
@@ -117,14 +127,8 @@ TextureVK::~TextureVK()
     vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
 }
 
-bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, CommandListVK* pCommandList, DeviceVK* pDevice)
+bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, BufferVK* pStagingBuffer, CommandListVK* pCommandList)
 {
-    std::unique_ptr<BufferVK> pStagingBuffer(createStagingBuffer(textureInfo, pDevice));
-    if (!pStagingBuffer) {
-        LOG_WARNING("Failed to create staging buffer during texture creation");
-        return false;
-    }
-
     TextureLayoutConversionInfo conversionInfo = {
         .CommandBuffer  = pCommandList->getCommandBuffer(),
         .Image          = pTexture->getImage(),
@@ -140,7 +144,7 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
         return false;
     }
 
-    pCommandList->copyBufferToTexture(pStagingBuffer.get(), pTexture, textureInfo.Dimensions.x, textureInfo.Dimensions.y);
+    pCommandList->copyBufferToTexture(pStagingBuffer, pTexture, textureInfo.Dimensions.x, textureInfo.Dimensions.y);
 
     conversionInfo.SrcLayout    = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     conversionInfo.DstLayout    = textureInfo.Layout;
@@ -155,11 +159,11 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
     return true;
 }
 
-BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, DeviceVK* pDevice)
+BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, RESOURCE_FORMAT format, DeviceVK* pDevice)
 {
     BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize = size_t(textureInfo.Dimensions.x * textureInfo.Dimensions.y);
-    bufferInfo.pData    = textureInfo.pInitialData->pData;
+    bufferInfo.ByteSize     = size_t(textureInfo.Dimensions.x * textureInfo.Dimensions.y) * getFormatSize(format);
+    bufferInfo.pData        = textureInfo.pInitialData->pData;
     bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
     bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
     bufferInfo.Usage        = BUFFER_USAGE::STAGING_BUFFER;
@@ -168,7 +172,7 @@ BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, Devic
     return pDevice->createBuffer(bufferInfo, nullptr);
 }
 
-bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, DeviceVK* pDevice)
+bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResource<ICommandPool>& tempCommandPool, BufferVK* pStagingBuffer, DeviceVK* pDevice)
 {
     if (!pCommandList->end()) {
         return false;
@@ -185,10 +189,11 @@ bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResourc
     }
 
     // Have a separate thread delete the temporary command list and fence when the commands have finished
-    std::function<void()> commandsFinishedFnc = [pFence, pCommandList, tempCommandPool, pDevice]() mutable {
+    std::function<void()> commandsFinishedFnc = [=]() mutable {
         IFence* pIFence = pFence;
-        pDevice->waitForFences(&pIFence, 1u, false, 0u);
+        pDevice->waitForFences(&pIFence, 1u, false, (uint64_t)std::pow(10u, 10u)); // Wait a maximum of 10 seconds
         delete pFence;
+        delete pStagingBuffer;
         delete pCommandList;
         tempCommandPool.release();
     };
