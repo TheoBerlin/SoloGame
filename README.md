@@ -3,7 +3,7 @@ In this repository is an engine and a game, both being made from scratch using C
 
 ## Highlights in the code
 Probably the best part of the code is the implementation of the Entity Component System (ECS) architecture. This resides in the
-[Engine/ECS folder](https://github.com/TheoBerlin/SoloGame/tree/master/GameProject/Engine/ECS).
+[Engine/ECS folder](https://github.com/TheoBerlin/SoloGame/tree/master/src/Engine/ECS).
 It's very much inspired by
 various discussions and videos, such as [this talk at GDC](https://www.youtube.com/watch?v=0_Byw9UMn9g).
 
@@ -20,7 +20,7 @@ that has to be done to prevent data races is to only update systems that do not 
 written to by another system.
 
 The updating of systems is done in
-[Engine/ECS/SystemUpdater.cpp](https://github.com/TheoBerlin/SoloGame/blob/master/GameProject/Engine/ECS/SystemUpdater.cpp).
+[Engine/ECS/SystemUpdater.cpp](https://github.com/TheoBerlin/SoloGame/blob/master/src/Engine/ECS/SystemUpdater.cpp).
 
 ## What will the final game look like?
 I'm trying to make something very small, to make sure the game is finished in time for my graduation in 2021.
