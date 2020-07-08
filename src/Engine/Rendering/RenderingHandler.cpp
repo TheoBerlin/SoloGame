@@ -28,11 +28,18 @@ bool RenderingHandler::init()
 
 void RenderingHandler::render()
 {
+    Swapchain* pSwapchain = m_pDevice->getSwapchain();
+    uint32_t& frameIndex = m_pDevice->getFrameIndex();
+    pSwapchain->acquireNextBackbuffer(frameIndex, SYNC_OPTION::FENCE);
+
+    IFence* pBackbufferReadyFence = pSwapchain->getFence();
+    m_pDevice->waitForFences(&pBackbufferReadyFence, 1u, false, UINT64_MAX);
+
     updateBuffers();
     recordCommandBuffers();
     executeCommandBuffers();
 
-    m_pDevice->presentBackbuffer(nullptr, 0u);
+    pSwapchain->present(nullptr, 0u);
 }
 
 void RenderingHandler::updateBuffers()

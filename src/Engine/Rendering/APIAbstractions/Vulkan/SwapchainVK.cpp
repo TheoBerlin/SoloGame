@@ -3,17 +3,61 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/SemaphoreVK.hpp>
 
-SwapchainVK::SwapchainVK(VkSwapchainKHR swapchain, const Texture* const * ppBackbuffers, const Texture* const * ppDepthTextures, DeviceVK* pDevice)
-    :Swapchain(ppDepthTextures),
-    m_Swapchain(swapchain),
-    m_pDevice(pDevice)
+SwapchainVK* SwapchainVK::create(const SwapchainInfoVK& swapchainInfo)
 {
-    std::memcpy(m_ppBackbuffers, ppBackbuffers, sizeof(TextureVK*) * MAX_FRAMES_IN_FLIGHT);
+    ISemaphore* ppSemaphores[MAX_FRAMES_IN_FLIGHT];
+    for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
+        ppSemaphores[frameIndex] = swapchainInfo.pDevice->createSemaphore();
+        if (!ppSemaphores[frameIndex]) {
+            return nullptr;
+        }
+    }
+
+    FenceVK* pFence = swapchainInfo.pDevice->createFence(true);
+    if (!pFence) {
+        return nullptr;
+    }
+
+    return DBG_NEW SwapchainVK(swapchainInfo, ppSemaphores, pFence);
+}
+
+SwapchainVK::SwapchainVK(const SwapchainInfoVK& swapchainInfo, const ISemaphore* const * ppSemaphores, IFence* pFence)
+    :Swapchain(swapchainInfo.ppDepthTextures, ppSemaphores, pFence),
+    m_Swapchain(swapchainInfo.Swapchain),
+    m_pDevice(swapchainInfo.pDevice)
+{
+    std::memcpy(m_ppBackbuffers, swapchainInfo.ppBackbuffers, sizeof(TextureVK*) * MAX_FRAMES_IN_FLIGHT);
 }
 
 SwapchainVK::~SwapchainVK()
 {
     vkDestroySwapchainKHR(m_pDevice->getDevice(), m_Swapchain, nullptr);
+}
+
+bool SwapchainVK::acquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
+{
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    VkFence fence = VK_NULL_HANDLE;
+
+    if (HAS_FLAG(syncOptions, SYNC_OPTION::FENCE)) {
+        FenceVK* pFence = reinterpret_cast<FenceVK*>(m_pFence);
+        if (!pFence->reset()) {
+            return false;
+        }
+
+        fence = pFence->getFence();
+    }
+
+    if (HAS_FLAG(syncOptions, SYNC_OPTION::SEMAPHORE)) {
+        semaphore = reinterpret_cast<SemaphoreVK*>(m_ppSemaphores[frameIndex])->getSemaphore();
+    }
+
+    if (vkAcquireNextImageKHR(m_pDevice->getDevice(), m_Swapchain, UINT64_MAX, semaphore, fence, &frameIndex) != VK_SUCCESS) {
+        LOG_WARNING("Failed to acquire next swapchain image");
+        return false;
+    }
+
+    return true;
 }
 
 void SwapchainVK::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount)

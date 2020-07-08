@@ -121,11 +121,12 @@ public:
     // waitAll: Wait for every fence or just one. timeout: Nanoseconds
     virtual bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) = 0;
 
+    Swapchain* getSwapchain()                               { return m_pSwapchain; }
     Texture* getBackbuffer(uint32_t frameIndex)             { return m_pSwapchain->getBackbuffer(frameIndex); }
     Texture* getDepthStencil(uint32_t frameIndex)           { return m_pSwapchain->getDepthTexture(frameIndex); }
     ShaderHandler* getShaderHandler()                       { return m_pShaderHandler; }
     const QueueFamilyIndices& getQueueFamilyIndices() const { return m_QueueFamilyIndices; }
-    inline uint32_t getFrameIndex() const { return m_FrameIndex; }
+    inline uint32_t& getFrameIndex()                        { return m_FrameIndex; }
 
 protected:
     friend DescriptorPoolHandler;

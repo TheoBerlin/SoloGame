@@ -24,6 +24,7 @@ public:
     bool end() override final;
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
+    void endRenderPass(IRenderPass* pRenderPass) override final;
     void bindPipeline(IPipeline* pPipeline) override final;
 
     // Shader resources

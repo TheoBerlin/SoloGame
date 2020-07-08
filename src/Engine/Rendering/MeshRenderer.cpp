@@ -192,7 +192,6 @@ void MeshRenderer::recordCommands()
     }
 
     pCommandList->bindPipeline(m_pPipeline);
-
     pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
@@ -222,6 +221,7 @@ void MeshRenderer::recordCommands()
         }
     }
 
+    pCommandList->endRenderPass(m_pRenderPass);
     pCommandList->end();
 }
 

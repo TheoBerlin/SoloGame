@@ -5,7 +5,7 @@
 SemaphoreVK* SemaphoreVK::create(DeviceVK* pDevice)
 {
     VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
     VkSemaphore semaphore = VK_NULL_HANDLE;
     if (vkCreateSemaphore(pDevice->getDevice(), &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {

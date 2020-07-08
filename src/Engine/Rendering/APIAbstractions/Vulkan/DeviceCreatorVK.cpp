@@ -77,7 +77,13 @@ Swapchain* DeviceCreatorVK::createSwapchain(Device* pDevice)
         return nullptr;
     }
 
-    return DBG_NEW SwapchainVK(m_Swapchain, m_ppBackbuffers, m_ppDepthTextures, pDeviceVK);
+    SwapchainInfoVK swapchainInfo = {};
+    swapchainInfo.Swapchain         = m_Swapchain;
+    swapchainInfo.ppBackbuffers     = m_ppBackbuffers;
+    swapchainInfo.ppDepthTextures   = m_ppDepthTextures;
+    swapchainInfo.pDevice           = pDeviceVK;
+
+    return SwapchainVK::create(swapchainInfo);
 }
 
 bool DeviceCreatorVK::initInstance(const Window* pWindow, bool debugMode)

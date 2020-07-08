@@ -349,6 +349,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         m_pCommandList->draw(4u);
     }
 
+    m_pCommandList->endRenderPass(m_pRenderPass);
     m_pCommandList->end();
     SemaphoreSubmitInfo semaphoreInfo = {};
     m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);

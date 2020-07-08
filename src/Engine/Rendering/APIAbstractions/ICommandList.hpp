@@ -42,6 +42,7 @@ public:
     virtual bool end() = 0;
 
     virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
+    virtual void endRenderPass(IRenderPass* pRenderPass) = 0;
     virtual void bindPipeline(IPipeline* pPipeline) = 0;
 
     // Shader resources

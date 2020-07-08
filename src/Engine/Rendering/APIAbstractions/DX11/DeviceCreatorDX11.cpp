@@ -26,7 +26,12 @@ Device* DeviceCreatorDX11::createDevice(const SwapchainInfo& swapChainInfo, cons
 
 Swapchain* DeviceCreatorDX11::createSwapchain(Device* pDevice)
 {
-    return DBG_NEW SwapchainDX11(m_pSwapChain, m_pBackbuffer, m_ppDepthTextures);
+    SwapchainInfoDX11 swapchainInfo = {};
+    swapchainInfo.pSwapchain        = m_pSwapChain;
+    swapchainInfo.pBackbuffer       = m_pBackbuffer;
+    swapchainInfo.ppDepthTextures   = m_ppDepthTextures;
+
+    return SwapchainDX11::create(swapchainInfo, reinterpret_cast<DeviceDX11*>(pDevice));
 }
 
 bool DeviceCreatorDX11::initDeviceAndSwapChain(const SwapchainInfo& swapChainInfo, const Window* pWindow)
