@@ -133,6 +133,7 @@ void UIRenderer::recordCommands()
         pCommandList->draw(4);
     }
 
+    pCommandList->endRenderPass(m_pRenderPass);
     pCommandList->end();
 }
 

@@ -75,6 +75,12 @@ void CommandListDX11::beginRenderPass(IRenderPass* pRenderPass, const RenderPass
     pRenderPassDX->begin(beginInfo, m_pContext);
 }
 
+void CommandListDX11::endRenderPass(IRenderPass* pRenderPass)
+{
+    // Unbind any render targets
+    m_pContext->OMSetRenderTargets(0u, nullptr, nullptr);
+}
+
 void CommandListDX11::bindPipeline(IPipeline* pPipeline)
 {
     PipelineDX11* pPipelineDX = reinterpret_cast<PipelineDX11*>(pPipeline);

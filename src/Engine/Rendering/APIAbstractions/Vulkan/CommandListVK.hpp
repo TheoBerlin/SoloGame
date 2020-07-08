@@ -12,9 +12,10 @@ public:
 
     bool begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo) override final;
     bool reset() override final;
-    inline bool end() override final { return vkEndCommandBuffer(m_CommandBuffer) == VK_SUCCESS; }
+    bool end() override final { return vkEndCommandBuffer(m_CommandBuffer) == VK_SUCCESS; }
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final {};
+    void endRenderPass(IRenderPass* pRenderPass) override final {};
     void bindPipeline(IPipeline* pPipeline) override final {};
 
     // Shader resources

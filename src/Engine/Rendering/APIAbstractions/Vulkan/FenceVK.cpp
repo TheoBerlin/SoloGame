@@ -6,7 +6,7 @@ FenceVK* FenceVK::create(bool createSignaled, DeviceVK* pDevice)
 {
     VkFenceCreateInfo fenceInfo = {};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = createSignaled ? VK_FENCE_CREATE_FLAG_BITS_MAX_ENUM : 0u;
+    fenceInfo.flags = createSignaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0u;
 
     VkFence fence = VK_NULL_HANDLE;
     if (vkCreateFence(pDevice->getDevice(), &fenceInfo, nullptr, &fence) != VK_SUCCESS) {
@@ -31,3 +31,13 @@ bool FenceVK::isSignaled()
 {
     return vkGetFenceStatus(m_pDevice->getDevice(), m_Fence) == VK_SUCCESS;
 };
+
+bool FenceVK::reset()
+{
+    if (vkResetFences(m_pDevice->getDevice(), 1u, &m_Fence) != VK_SUCCESS) {
+        LOG_WARNING("Failed to reset fence");
+        return false;
+    }
+
+    return true;
+}

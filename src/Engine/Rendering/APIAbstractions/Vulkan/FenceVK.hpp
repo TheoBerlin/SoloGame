@@ -15,6 +15,8 @@ public:
 
     bool isSignaled() override final;
 
+    bool reset();
+
     inline VkFence getFence() { return m_Fence; }
 
 private:
