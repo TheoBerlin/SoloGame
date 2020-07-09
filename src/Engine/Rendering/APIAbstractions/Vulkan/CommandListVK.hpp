@@ -16,23 +16,23 @@ public:
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
     void endRenderPass() override final;
-    void bindPipeline(IPipeline* pPipeline) override final {};
+    void bindPipeline(IPipeline* pPipeline) override final;
 
     // Shader resources
-    void bindDescriptorSet(DescriptorSet* pDescriptorSet) override final {};
+    void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout) override final;
 
-    void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final {};
-    void bindIndexBuffer(IBuffer* pBuffer) override final {};
+    void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final;
+    void bindIndexBuffer(IBuffer* pBuffer) override final;
 
     // Rasterizer
-    void bindViewport(const Viewport* pViewport) override final {};
+    void bindViewport(const Viewport* pViewport) override final;
 
-    void draw(size_t vertexCount) override final {};
-    void drawIndexed(size_t indexCount) override final {};
+    void draw(size_t vertexCount) override final;
+    void drawIndexed(size_t indexCount) override final;
 
-    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage) override final {};
+    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage) override final;
 
-    void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final {};
+    void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
     void copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height) override final;
 
     inline VkCommandBuffer getCommandBuffer() { return m_CommandBuffer; }

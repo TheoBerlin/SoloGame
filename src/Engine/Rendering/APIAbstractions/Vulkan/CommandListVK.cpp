@@ -1,7 +1,10 @@
 #include "CommandListVK.hpp"
 
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/PipelineVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 
@@ -54,6 +57,64 @@ void CommandListVK::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBe
 void CommandListVK::endRenderPass()
 {
     vkCmdEndRenderPass(m_CommandBuffer);
+}
+
+void CommandListVK::bindPipeline(IPipeline* pPipeline)
+{
+    VkPipeline pipeline = reinterpret_cast<PipelineVK*>(pPipeline)->getPipeline();
+    vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+}
+
+void CommandListVK::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout)
+{
+    VkDescriptorSet descriptorSet   = reinterpret_cast<DescriptorSetVK*>(pDescriptorSet)->getDescriptorSet();
+    VkPipelineLayout pipelineLayout = reinterpret_cast<PipelineLayoutVK*>(pPipelineLayout)->getPipelineLayout();
+
+    vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0u, 1u, &descriptorSet, 0u, nullptr);
+}
+
+void CommandListVK::bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer)
+{
+    VkBuffer buffer = reinterpret_cast<BufferVK*>(pBuffer)->getBuffer();
+    VkDeviceSize offset = 0u;
+    vkCmdBindVertexBuffers(m_CommandBuffer, firstBinding, 1u, &buffer, &offset);
+}
+
+void CommandListVK::bindIndexBuffer(IBuffer* pBuffer)
+{
+    VkBuffer indexBuffer = reinterpret_cast<BufferVK*>(pBuffer)->getBuffer();
+    vkCmdBindIndexBuffer(m_CommandBuffer, indexBuffer, 0u, VK_INDEX_TYPE_UINT32);
+}
+
+void CommandListVK::bindViewport(const Viewport* pViewport)
+{
+    vkCmdSetViewport(m_CommandBuffer, 0u, 1u, (VkViewport*)pViewport);
+}
+
+void CommandListVK::draw(size_t vertexCount)
+{
+    vkCmdDraw(m_CommandBuffer, (uint32_t)vertexCount, 1u, 0u, 0u);
+}
+
+void CommandListVK::drawIndexed(size_t indexCount)
+{
+    vkCmdDrawIndexed(m_CommandBuffer, (uint32_t)indexCount, 1u, 0u, 0u, 0u);
+}
+
+void CommandListVK::convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage)
+{
+    reinterpret_cast<TextureVK*>(pTexture)->convertTextureLayout(m_CommandBuffer, oldLayout, newLayout, srcStage, dstStage);
+}
+
+void CommandListVK::copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize)
+{
+    VkBuffer srcBuffer = reinterpret_cast<BufferVK*>(pSrc)->getBuffer();
+    VkBuffer dstBuffer = reinterpret_cast<BufferVK*>(pDst)->getBuffer();
+
+    VkBufferCopy copyInfo = {};
+    copyInfo.size = (VkDeviceSize)byteSize;
+
+    vkCmdCopyBuffer(m_CommandBuffer, srcBuffer, dstBuffer, 1u, &copyInfo);
 }
 
 void CommandListVK::copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height)

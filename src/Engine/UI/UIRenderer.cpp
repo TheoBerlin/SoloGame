@@ -130,7 +130,7 @@ void UIRenderer::recordCommands()
     pCommandList->bindVertexBuffer(0, m_pQuad);
 
     for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
-        pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet);
+        pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet, m_pPipelineLayout);
         pCommandList->draw(4);
     }
 

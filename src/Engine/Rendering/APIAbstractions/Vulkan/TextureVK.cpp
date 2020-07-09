@@ -127,6 +127,22 @@ TextureVK::~TextureVK()
     vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
 }
 
+bool TextureVK::convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT srcLayout, TEXTURE_LAYOUT dstLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage)
+{
+    VkImageLayout srcLayoutVK = convertImageLayoutFlag(srcLayout);
+
+    TextureLayoutConversionInfo conversionInfo = {};
+    conversionInfo.CommandBuffer    = commandBuffer;
+    conversionInfo.Image            = m_Image;
+    conversionInfo.AspectMask       = layoutToAspectMask(srcLayoutVK);
+    conversionInfo.SrcLayout        = convertImageLayoutFlag(srcLayout);
+    conversionInfo.DstLayout        = convertImageLayoutFlag(dstLayout);
+    conversionInfo.SrcStage         = convertPipelineStageFlags(srcStage);
+    conversionInfo.DstStage         = convertPipelineStageFlags(dstStage);
+
+    return convertTextureLayout(conversionInfo);
+}
+
 bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& textureInfo, BufferVK* pStagingBuffer, CommandListVK* pCommandList)
 {
     TextureLayoutConversionInfo conversionInfo = {
