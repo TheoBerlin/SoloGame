@@ -198,13 +198,13 @@ void MeshRenderer::recordCommands()
     }
 
     pCommandList->bindPipeline(m_pPipeline);
-    pCommandList->bindDescriptorSet(m_pDescriptorSetCommon);
+    pCommandList->bindDescriptorSet(m_pDescriptorSetCommon, m_pPipelineLayout);
 
     for (Entity renderableID : m_Renderables.getIDs()) {
         Model* pModel = m_pModelLoader->getModel(renderableID);
         const ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
 
-        pCommandList->bindDescriptorSet(modelRenderResources.pDescriptorSet);
+        pCommandList->bindDescriptorSet(modelRenderResources.pDescriptorSet, m_pPipelineLayout);
 
         size_t meshIdx = 0;
 
@@ -219,7 +219,7 @@ void MeshRenderer::recordCommands()
             pCommandList->bindVertexBuffer(0, mesh.pVertexBuffer);
             pCommandList->bindIndexBuffer(mesh.pIndexBuffer);
 
-            pCommandList->bindDescriptorSet(meshRenderResources.pDescriptorSet);
+            pCommandList->bindDescriptorSet(meshRenderResources.pDescriptorSet, m_pPipelineLayout);
 
             pCommandList->drawIndexed(mesh.indexCount);
 

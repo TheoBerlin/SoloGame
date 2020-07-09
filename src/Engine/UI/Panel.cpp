@@ -345,7 +345,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindVertexBuffer(0, m_pQuadVertices);
 
     for (AttachmentRenderResources& attachmentResources : renderResources) {
-        m_pCommandList->bindDescriptorSet(attachmentResources.pDescriptorSet);
+        m_pCommandList->bindDescriptorSet(attachmentResources.pDescriptorSet, m_pPipelineLayout);
         m_pCommandList->draw(4u);
     }
 

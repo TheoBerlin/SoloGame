@@ -152,17 +152,31 @@ BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources*
             return nullptr;
         }
 
+        CommandListVK* pCommandListVK = reinterpret_cast<CommandListVK*>(pTempCommandList);
+        if (!pCommandListVK->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, nullptr)) {
+            return nullptr;
+        }
+
         StagingResources tempStagingResources = {};
         tempStagingResources.pCommandList   = pTempCommandList;
         tempStagingResources.pStagingBuffer = createStagingBuffer(bufferInfo.pData, bufferInfo.ByteSize);
 
-        BufferVK* pBuffer = BufferVK::create(bufferInfo, this, &tempStagingResources);
+        std::unique_ptr<BufferVK> pBuffer(BufferVK::create(bufferInfo, this, &tempStagingResources));
 
-        delete tempStagingResources.pStagingBuffer;
-        delete pTempCommandList;
-        tempCommandPool.release();
+        if (!pCommandListVK->end()) {
+            return nullptr;
+        }
 
-        return pBuffer;
+        IFence* pFence = createFence(false);
+        std::thread deleterThread([=]() mutable {
+            waitForFences(&pFence, 1u, false, UINT64_MAX);
+            delete tempStagingResources.pStagingBuffer;
+            delete pTempCommandList;
+            tempCommandPool.release();
+        });
+        deleterThread.detach();
+
+        return pBuffer.release();
     }
 
     return BufferVK::create(bufferInfo, this, pStagingResources);

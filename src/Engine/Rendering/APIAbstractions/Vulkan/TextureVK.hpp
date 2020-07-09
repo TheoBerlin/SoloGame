@@ -36,7 +36,7 @@ public:
     TextureVK(const glm::uvec2& dimensions, RESOURCE_FORMAT format, DeviceVK* pDevice, VkImage image, VkImageView imageView, VmaAllocation allocation);
     ~TextureVK();
 
-    bool convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage);
+    bool convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT srcLayout, TEXTURE_LAYOUT dstLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage);
 
     inline VkImage getImage()               { return m_Image; }
     inline VkImageView getImageView() const { return m_ImageView; }

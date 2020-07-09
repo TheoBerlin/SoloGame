@@ -28,7 +28,7 @@ public:
     void bindPipeline(IPipeline* pPipeline) override final;
 
     // Shader resources
-    void bindDescriptorSet(DescriptorSet* pDescriptorSet) override final;
+    void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout) override final;
 
     void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;

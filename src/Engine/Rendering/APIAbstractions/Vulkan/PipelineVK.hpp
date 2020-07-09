@@ -15,6 +15,8 @@ public:
     PipelineVK(VkPipeline pipeline, std::vector<std::shared_ptr<Shader>>& shaders, DeviceVK* pDevice);
     ~PipelineVK();
 
+    inline VkPipeline getPipeline() { return m_Pipeline; }
+
 private:
     static VkPipelineShaderStageCreateInfo writeShaderStageInfo(const Shader* pShader);
     static VkPrimitiveTopology convertPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTopology);
