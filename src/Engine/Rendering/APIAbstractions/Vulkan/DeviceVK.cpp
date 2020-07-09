@@ -168,8 +168,15 @@ BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources*
         }
 
         IFence* pFence = createFence(false);
+
+        SemaphoreSubmitInfo semaphoreInfo = {};
+        if (!graphicsQueueSubmit(pCommandListVK, pFence, semaphoreInfo)) {
+            return nullptr;
+        }
+
         std::thread deleterThread([=]() mutable {
             waitForFences(&pFence, 1u, false, UINT64_MAX);
+            delete pFence;
             delete tempStagingResources.pStagingBuffer;
             delete pTempCommandList;
             tempCommandPool.release();
