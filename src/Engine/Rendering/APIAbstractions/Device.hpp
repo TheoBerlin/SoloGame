@@ -17,7 +17,7 @@ class IBuffer;
 class ICommandList;
 class IDepthStencilState;
 class IFence;
-class IFramebuffer;
+class Framebuffer;
 class InputLayout;
 class IPipeline;
 class IPipelineLayout;
@@ -90,7 +90,7 @@ public:
     virtual IDescriptorSetLayout* createDescriptorSetLayout() = 0;
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout);
 
-    virtual IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) = 0;
+    virtual Framebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) = 0;
     virtual IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) = 0;
 
     virtual IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) = 0;

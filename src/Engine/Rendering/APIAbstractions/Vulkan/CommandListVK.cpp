@@ -2,6 +2,7 @@
 
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 
 CommandListVK::CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool commandPool, DeviceVK* pDevice)
@@ -43,6 +44,16 @@ bool CommandListVK::reset()
     }
 
     return true;
+}
+
+void CommandListVK::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo)
+{
+    reinterpret_cast<RenderPassVK*>(pRenderPass)->begin(beginInfo, m_CommandBuffer);
+}
+
+void CommandListVK::endRenderPass()
+{
+    vkCmdEndRenderPass(m_CommandBuffer);
 }
 
 void CommandListVK::copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height)

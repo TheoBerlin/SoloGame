@@ -317,7 +317,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         return;
     }
 
-    IFramebuffer* pFramebuffer = createFramebuffer(panel);
+    Framebuffer* pFramebuffer = createFramebuffer(panel);
 
     CommandListBeginInfo beginInfo = {};
     beginInfo.pRenderPass   = m_pRenderPass;
@@ -349,7 +349,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
         m_pCommandList->draw(4u);
     }
 
-    m_pCommandList->endRenderPass(m_pRenderPass);
+    m_pCommandList->endRenderPass();
     m_pCommandList->end();
     SemaphoreSubmitInfo semaphoreInfo = {};
     m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
@@ -410,7 +410,7 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
     return true;
 }
 
-IFramebuffer* UIHandler::createFramebuffer(UIPanel& panel)
+Framebuffer* UIHandler::createFramebuffer(UIPanel& panel)
 {
     const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 

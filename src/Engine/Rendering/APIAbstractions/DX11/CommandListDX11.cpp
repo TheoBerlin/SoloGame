@@ -75,7 +75,7 @@ void CommandListDX11::beginRenderPass(IRenderPass* pRenderPass, const RenderPass
     pRenderPassDX->begin(beginInfo, m_pContext);
 }
 
-void CommandListDX11::endRenderPass(IRenderPass* pRenderPass)
+void CommandListDX11::endRenderPass()
 {
     // Unbind any render targets
     m_pContext->OMSetRenderTargets(0u, nullptr, nullptr);

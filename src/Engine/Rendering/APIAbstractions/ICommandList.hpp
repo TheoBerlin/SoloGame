@@ -20,7 +20,7 @@ struct Viewport;
 struct CommandListBeginInfo {
     IRenderPass* pRenderPass;
     uint32_t Subpass;
-    IFramebuffer* pFramebuffer; // Optional, but may improve performance if specified
+    Framebuffer* pFramebuffer; // Optional, but may improve performance if specified
 };
 
 enum class COMMAND_LIST_USAGE : uint32_t {
@@ -42,7 +42,7 @@ public:
     virtual bool end() = 0;
 
     virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
-    virtual void endRenderPass(IRenderPass* pRenderPass) = 0;
+    virtual void endRenderPass() = 0;
     virtual void bindPipeline(IPipeline* pPipeline) = 0;
 
     // Shader resources

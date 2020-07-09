@@ -177,12 +177,18 @@ void MeshRenderer::recordCommands()
     beginInfo.pRenderPass   = m_pRenderPass;
     beginInfo.Subpass       = 0u;
     beginInfo.pFramebuffer  = m_pFramebuffers[frameIndex];
-    pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+    pCommandList->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, &beginInfo);
+
+    std::array<ClearValue, 2> pClearValues;
+    std::fill(pClearValues[0].ClearColorValue.uint32, &pClearValues[0].ClearColorValue.uint32[3], 0u);
+    pClearValues[1].DepthStencilValue.Depth     = 1.0f;
+    pClearValues[1].DepthStencilValue.Stencil   = 0u;
 
     RenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.pFramebuffer        = m_pFramebuffers[frameIndex];
-    renderPassBeginInfo.ClearColors         = { {0.0f, 0.0f, 0.0f, 0.0f} };
-    renderPassBeginInfo.ClearDepthStencilValue.Depth = 1.0f;
+    renderPassBeginInfo.pClearValues        = pClearValues.data();
+    renderPassBeginInfo.ClearValueCount     = (uint32_t)pClearValues.size();
+    renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::PRIMARY;
 
     pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
@@ -221,7 +227,7 @@ void MeshRenderer::recordCommands()
         }
     }
 
-    pCommandList->endRenderPass(m_pRenderPass);
+    pCommandList->endRenderPass();
     pCommandList->end();
 }
 

@@ -54,7 +54,7 @@ IDescriptorSetLayout* DeviceDX11::createDescriptorSetLayout()
     return DBG_NEW DescriptorSetLayoutDX11();
 }
 
-IFramebuffer* DeviceDX11::createFramebuffer(const FramebufferInfo& framebufferInfo)
+Framebuffer* DeviceDX11::createFramebuffer(const FramebufferInfo& framebufferInfo)
 {
     return FramebufferDX11::create(framebufferInfo);
 }
