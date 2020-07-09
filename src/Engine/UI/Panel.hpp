@@ -101,7 +101,7 @@ private:
     void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
     void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
     bool createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments);
-    IFramebuffer* createFramebuffer(UIPanel& panel);
+    Framebuffer* createFramebuffer(UIPanel& panel);
 
 private:
     Device* m_pDevice;

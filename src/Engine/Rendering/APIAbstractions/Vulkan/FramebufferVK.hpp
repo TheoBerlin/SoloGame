@@ -6,14 +6,16 @@
 
 class DeviceVK;
 
-class FramebufferVK : public IFramebuffer
+class FramebufferVK : public Framebuffer
 {
 public:
     static FramebufferVK* create(const FramebufferInfo& framebufferInfo, DeviceVK* pDevice);
 
 public:
-    FramebufferVK(VkFramebuffer framebuffer, DeviceVK* pDevice);
+    FramebufferVK(VkFramebuffer framebuffer, const glm::uvec2& dimensions, DeviceVK* pDevice);
     ~FramebufferVK();
+
+    inline VkFramebuffer getFramebuffer() { return m_Framebuffer; }
 
 private:
     VkFramebuffer m_Framebuffer;

@@ -15,6 +15,8 @@ public:
     RenderPassVK(VkRenderPass renderPass, DeviceVK* pDevice);
     ~RenderPassVK();
 
+    void begin(const RenderPassBeginInfo& beginInfo, VkCommandBuffer commandBuffer);
+
     inline VkRenderPass getRenderPass() { return m_RenderPass; }
 
 private:

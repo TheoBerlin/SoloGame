@@ -64,17 +64,29 @@ struct RenderPassInfo {
     std::vector<SubpassDependency> Dependencies;
 };
 
-class IFramebuffer;
+class Framebuffer;
 
 struct ClearDepthStencilValue {
     float Depth;
     uint32_t Stencil;
 };
 
+struct ClearColorValue {
+    float       float32[4];
+    int32_t     int32[4];
+    uint32_t    uint32[4];
+};
+
+struct ClearValue {
+    ClearColorValue ClearColorValue;
+    ClearDepthStencilValue DepthStencilValue;
+};
+
 struct RenderPassBeginInfo {
-    IFramebuffer* pFramebuffer;
-    std::vector<glm::vec4> ClearColors;
-    ClearDepthStencilValue ClearDepthStencilValue;
+    Framebuffer* pFramebuffer;
+    ClearValue* pClearValues;
+    uint32_t ClearValueCount;
+    COMMAND_LIST_LEVEL RecordingListType; // The type of command list that will record the first subpass' commands
 };
 
 class IRenderPass

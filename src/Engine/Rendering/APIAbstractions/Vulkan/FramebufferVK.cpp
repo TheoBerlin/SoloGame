@@ -27,11 +27,12 @@ FramebufferVK* FramebufferVK::create(const FramebufferInfo& framebufferInfo, Dev
         return nullptr;
     }
 
-    return DBG_NEW FramebufferVK(framebuffer, pDevice);
+    return DBG_NEW FramebufferVK(framebuffer, framebufferInfo.Dimensions, pDevice);
 }
 
-FramebufferVK::FramebufferVK(VkFramebuffer framebuffer, DeviceVK* pDevice)
-    :m_Framebuffer(framebuffer),
+FramebufferVK::FramebufferVK(VkFramebuffer framebuffer, const glm::uvec2& dimensions, DeviceVK* pDevice)
+    :Framebuffer(dimensions),
+    m_Framebuffer(framebuffer),
     m_pDevice(pDevice)
 {}
 

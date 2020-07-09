@@ -1,6 +1,7 @@
 #include "RenderPassVK.hpp"
 
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/FramebufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/GeneralResourcesVK.hpp>
 
 RenderPassVK* RenderPassVK::create(const RenderPassInfo& renderPassInfo, DeviceVK* pDevice)
@@ -59,6 +60,31 @@ RenderPassVK::RenderPassVK(VkRenderPass renderPass, DeviceVK* pDevice)
 RenderPassVK::~RenderPassVK()
 {
     vkDestroyRenderPass(m_pDevice->getDevice(), m_RenderPass, nullptr);
+}
+
+void RenderPassVK::begin(const RenderPassBeginInfo& beginInfo, VkCommandBuffer commandBuffer)
+{
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    if (beginInfo.pFramebuffer) {
+        framebuffer = reinterpret_cast<FramebufferVK*>(beginInfo.pFramebuffer)->getFramebuffer();
+    }
+
+    const glm::uvec2 framebufferDimensions = beginInfo.pFramebuffer->getDimensions();
+
+    VkRect2D renderArea = {};
+    renderArea.extent = { framebufferDimensions.x, framebufferDimensions.y };
+
+    VkRenderPassBeginInfo beginInfoVK = {};
+    beginInfoVK.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    beginInfoVK.renderPass      = m_RenderPass;
+    beginInfoVK.framebuffer     = framebuffer;
+    beginInfoVK.renderArea      = renderArea;
+    beginInfoVK.pClearValues    = (VkClearValue*)beginInfo.pClearValues;
+    beginInfoVK.clearValueCount = beginInfo.ClearValueCount;
+
+    VkSubpassContents listType = beginInfo.RecordingListType == COMMAND_LIST_LEVEL::PRIMARY ? VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
+
+    vkCmdBeginRenderPass(commandBuffer, &beginInfoVK, listType);
 }
 
 VkAttachmentDescription RenderPassVK::convertAttachmentInfo(const AttachmentInfo& attachmentInfo)

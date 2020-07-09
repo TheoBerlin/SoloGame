@@ -47,7 +47,7 @@ private:
 
     ISampler* m_pAniSampler;
     IRenderPass* m_pRenderPass;
-    IFramebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
+    Framebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

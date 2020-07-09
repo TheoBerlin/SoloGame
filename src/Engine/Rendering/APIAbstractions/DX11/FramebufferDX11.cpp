@@ -6,7 +6,7 @@
 
 FramebufferDX11* FramebufferDX11::create(const FramebufferInfo& framebufferInfo)
 {
-    std::vector<ID3D11RenderTargetView*> renderTargets;
+    std::vector<RenderTargetInfo> renderTargets;
     // Separate the depth stencil from the render targets
     ID3D11DepthStencilView* pDSV = nullptr;
     size_t depthStencilIdx = 0;
@@ -21,7 +21,7 @@ FramebufferDX11* FramebufferDX11::create(const FramebufferInfo& framebufferInfo)
                 continue;
             }
 
-            renderTargets.push_back(pTextureDX->getRTV());
+            renderTargets.push_back({ pTextureDX->getRTV(), getFormatPrimitiveType(pTextureDX->getFormat()) });
         } else {
             if (pDSV) {
                 LOG_WARNING("Multiple depth stencils in framebuffer info");
@@ -33,11 +33,12 @@ FramebufferDX11* FramebufferDX11::create(const FramebufferInfo& framebufferInfo)
         }
     }
 
-    return DBG_NEW FramebufferDX11(renderTargets, pDSV, depthStencilIdx);
+    return DBG_NEW FramebufferDX11(renderTargets, pDSV, depthStencilIdx, framebufferInfo.Dimensions);
 }
 
-FramebufferDX11::FramebufferDX11(const std::vector<ID3D11RenderTargetView*>& renderTargets, ID3D11DepthStencilView* pDepthStencil, size_t depthStencilIdx)
-    :m_RenderTargets(renderTargets),
+FramebufferDX11::FramebufferDX11(const std::vector<RenderTargetInfo>& renderTargets, ID3D11DepthStencilView* pDepthStencil, size_t depthStencilIdx, const glm::uvec2& dimensions)
+    :Framebuffer(dimensions),
+    m_RenderTargets(renderTargets),
     m_pDepthStencil(pDepthStencil),
     m_DepthStencilIdx(depthStencilIdx)
 {}

@@ -14,8 +14,8 @@ public:
     bool reset() override final;
     bool end() override final { return vkEndCommandBuffer(m_CommandBuffer) == VK_SUCCESS; }
 
-    void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final {};
-    void endRenderPass(IRenderPass* pRenderPass) override final {};
+    void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
+    void endRenderPass() override final;
     void bindPipeline(IPipeline* pPipeline) override final {};
 
     // Shader resources

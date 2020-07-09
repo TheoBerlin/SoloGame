@@ -16,6 +16,12 @@ enum class RESOURCE_FORMAT {
     D32_FLOAT
 };
 
+enum class FORMAT_PRIMITIVE_TYPE {
+    INTEGER,
+    UNSIGNED_INTEGER,
+    FLOAT
+};
+
 enum class COMPARISON_FUNC {
     NEVER,
     LESS,
@@ -25,9 +31,6 @@ enum class COMPARISON_FUNC {
     GREATER,
     ALWAYS
 };
-
-// Returns size of a format in bytes
-size_t getFormatSize(RESOURCE_FORMAT format);
 
 enum class PIPELINE_STAGE : uint32_t {
     TOP_OF_PIPE                     = 1,
@@ -96,3 +99,7 @@ enum class SHARING_MODE {
     EXCLUSIVE   = 0,
     CONCURRENT  = 1
 };
+
+// Returns size of a format in bytes
+size_t getFormatSize(RESOURCE_FORMAT format);
+FORMAT_PRIMITIVE_TYPE getFormatPrimitiveType(RESOURCE_FORMAT format);

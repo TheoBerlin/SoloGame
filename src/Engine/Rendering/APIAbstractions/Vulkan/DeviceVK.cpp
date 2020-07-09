@@ -110,7 +110,7 @@ IDescriptorSetLayout* DeviceVK::createDescriptorSetLayout()
     return DBG_NEW DescriptorSetLayoutVK();
 }
 
-IFramebuffer* DeviceVK::createFramebuffer(const FramebufferInfo& framebufferInfo)
+Framebuffer* DeviceVK::createFramebuffer(const FramebufferInfo& framebufferInfo)
 {
     return FramebufferVK::create(framebufferInfo, this);
 }

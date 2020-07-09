@@ -29,26 +29,43 @@ void RenderPassDX11::begin(const RenderPassBeginInfo& beginInfo, ID3D11DeviceCon
     FramebufferDX11* pFramebuffer = reinterpret_cast<FramebufferDX11*>(beginInfo.pFramebuffer);
     FLOAT pClearColor[4];
 
-    std::vector<ID3D11RenderTargetView*>& renderTargets = pFramebuffer->getRenderTargets();
+    std::vector<RenderTargetInfo>& renderTargetInfos = pFramebuffer->getRenderTargets();
     size_t depthStencilIdx = pFramebuffer->getDepthStencilIdx();
     bool clearDepthStencil = false;
 
     for (size_t clearIndex : m_ClearIndices) {
-        if (clearIndex == depthStencilIdx) {
-            clearDepthStencil = true;
-            continue;
+        const ClearValue& clearValue = beginInfo.pClearValues[clearIndex];
+
+        if (clearIndex != depthStencilIdx) {
+            switch (renderTargetInfos[clearIndex].FormatType) {
+                case FORMAT_PRIMITIVE_TYPE::INTEGER:
+                    pClearColor[0] = (float)clearValue.ClearColorValue.int32[0] / 255.0f;
+                    pClearColor[1] = (float)clearValue.ClearColorValue.int32[1] / 255.0f;
+                    pClearColor[2] = (float)clearValue.ClearColorValue.int32[2] / 255.0f;
+                    pClearColor[3] = (float)clearValue.ClearColorValue.int32[3] / 255.0f;
+                    break;
+                case FORMAT_PRIMITIVE_TYPE::UNSIGNED_INTEGER:
+                    pClearColor[0] = (float)clearValue.ClearColorValue.uint32[0] / 255.0f;
+                    pClearColor[1] = (float)clearValue.ClearColorValue.uint32[1] / 255.0f;
+                    pClearColor[2] = (float)clearValue.ClearColorValue.uint32[2] / 255.0f;
+                    pClearColor[3] = (float)clearValue.ClearColorValue.uint32[3] / 255.0f;
+                    break;
+                case FORMAT_PRIMITIVE_TYPE::FLOAT:
+                    std::memcpy(pClearColor, clearValue.ClearColorValue.float32, sizeof(float) * 4u);
+                    break;
+            }
+
+            pContext->ClearRenderTargetView(renderTargetInfos[clearIndex].pRTV, pClearColor);
+        } else {
+            pContext->ClearDepthStencilView(pFramebuffer->getDepthStencil(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearValue.DepthStencilValue.Depth, clearValue.DepthStencilValue.Stencil);
         }
-
-        std::memcpy(pClearColor, &beginInfo.ClearColors[clearIndex], sizeof(float) * 4);
-
-        pContext->ClearRenderTargetView(renderTargets[clearIndex], pClearColor);
     }
 
-    if (clearDepthStencil) {
-        float depthClearValue = beginInfo.ClearDepthStencilValue.Depth;
-        uint32_t stencilClearValue = beginInfo.ClearDepthStencilValue.Stencil;
-        pContext->ClearDepthStencilView(pFramebuffer->getDepthStencil(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depthClearValue, stencilClearValue);
+    std::vector<ID3D11RenderTargetView*> renderTargetViews;
+    renderTargetViews.reserve(renderTargetInfos.size());
+    for (const RenderTargetInfo& renderTargetInfo : renderTargetInfos) {
+        renderTargetViews.push_back(renderTargetInfo.pRTV);
     }
 
-    pContext->OMSetRenderTargets((UINT)renderTargets.size(), renderTargets.data(), pFramebuffer->getDepthStencil());
+    pContext->OMSetRenderTargets((UINT)renderTargetViews.size(), renderTargetViews.data(), pFramebuffer->getDepthStencil());
 }

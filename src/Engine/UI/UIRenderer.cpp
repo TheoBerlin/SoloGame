@@ -114,10 +114,11 @@ void UIRenderer::recordCommands()
     beginInfo.pRenderPass   = m_pRenderPass;
     beginInfo.Subpass       = 0u;
     beginInfo.pFramebuffer  = m_ppFramebuffers[frameIndex];
-    pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
+    pCommandList->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, &beginInfo);
 
     RenderPassBeginInfo renderPassBeginInfo = {};
     renderPassBeginInfo.pFramebuffer        = m_ppFramebuffers[frameIndex];
+    renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::PRIMARY;
     pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 
     if (m_Panels.size() == 0) {
@@ -133,7 +134,7 @@ void UIRenderer::recordCommands()
         pCommandList->draw(4);
     }
 
-    pCommandList->endRenderPass(m_pRenderPass);
+    pCommandList->endRenderPass();
     pCommandList->end();
 }
 

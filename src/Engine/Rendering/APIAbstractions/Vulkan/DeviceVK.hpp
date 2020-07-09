@@ -44,7 +44,7 @@ public:
 
     IDescriptorSetLayout* createDescriptorSetLayout() override final;
 
-    IFramebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final;
+    Framebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final;
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) override final;
