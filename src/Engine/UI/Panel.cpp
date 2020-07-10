@@ -351,16 +351,26 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     m_pCommandList->endRenderPass();
     m_pCommandList->end();
+
+    IFence* pFence = m_pDevice->createFence(false);
+
     SemaphoreSubmitInfo semaphoreInfo = {};
-    m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
+    m_pDevice->graphicsQueueSubmit(m_pCommandList, pFence, semaphoreInfo);
 
-    // Delete render resources
-    for (AttachmentRenderResources& attachmentResources : renderResources) {
-        delete attachmentResources.pDescriptorSet;
-        delete attachmentResources.pAttachmentBuffer;
-    }
+    // Delete render resources when rendering has finished
+    std::thread deleterThread = std::thread([renderResources, pFramebuffer, pFence, this]() mutable {
+        m_pDevice->waitForFences(&pFence, 1u, false, UINT64_MAX);
 
-    delete pFramebuffer;
+        for (AttachmentRenderResources& attachmentResources : renderResources) {
+            delete attachmentResources.pDescriptorSet;
+            delete attachmentResources.pAttachmentBuffer;
+        }
+
+        delete pFramebuffer;
+        delete pFence;
+    });
+
+    deleterThread.detach();
 }
 
 bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments)
