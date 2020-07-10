@@ -1,5 +1,5 @@
-# Default line-ending is automatic (git decides)
-* text=auto
+# Default line-ending is LF
+* text=LF
 
 # Line endings in header and source files are LF
 *.c text eol=LF
@@ -8,8 +8,8 @@
 *.hpp text eol=LF
 
 # Line endings in .sln and .vcxproj are CRLF
-*.vcxproj text eol=CRLF
-*.sln text eol=CRLF
+*.vcxproj text eol=LF
+*.sln text eol=LF
 
 # Exclude vendored files from language statistics
 vendor/* linguist-vendored
