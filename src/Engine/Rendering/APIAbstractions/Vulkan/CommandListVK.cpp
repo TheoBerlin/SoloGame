@@ -91,6 +91,11 @@ void CommandListVK::bindViewport(const Viewport* pViewport)
     vkCmdSetViewport(m_CommandBuffer, 0u, 1u, (VkViewport*)pViewport);
 }
 
+void CommandListVK::bindScissor(const Rectangle2D& scissorRectangle)
+{
+    vkCmdSetScissor(m_CommandBuffer, 0u, 1u, (VkRect2D*)&scissorRectangle);
+}
+
 void CommandListVK::draw(size_t vertexCount)
 {
     vkCmdDraw(m_CommandBuffer, (uint32_t)vertexCount, 1u, 0u, 0u);

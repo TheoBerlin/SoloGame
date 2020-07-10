@@ -342,6 +342,10 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     viewport.MaxDepth    = 1.0f;
     m_pCommandList->bindViewport(&viewport);
 
+    Rectangle2D scissorRectangle = {};
+    scissorRectangle.Extent = backbufferDims;
+    m_pCommandList->bindScissor(scissorRectangle);
+
     m_pCommandList->bindVertexBuffer(0, m_pQuadVertices);
 
     for (AttachmentRenderResources& attachmentResources : renderResources) {
@@ -351,16 +355,26 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
 
     m_pCommandList->endRenderPass();
     m_pCommandList->end();
+
+    IFence* pFence = m_pDevice->createFence(false);
+
     SemaphoreSubmitInfo semaphoreInfo = {};
-    m_pDevice->graphicsQueueSubmit(m_pCommandList, nullptr, semaphoreInfo);
+    m_pDevice->graphicsQueueSubmit(m_pCommandList, pFence, semaphoreInfo);
 
-    // Delete render resources
-    for (AttachmentRenderResources& attachmentResources : renderResources) {
-        delete attachmentResources.pDescriptorSet;
-        delete attachmentResources.pAttachmentBuffer;
-    }
+    // Delete render resources when rendering has finished
+    std::thread deleterThread = std::thread([renderResources, pFramebuffer, pFence, this]() mutable {
+        m_pDevice->waitForFences(&pFence, 1u, false, UINT64_MAX);
 
-    delete pFramebuffer;
+        for (AttachmentRenderResources& attachmentResources : renderResources) {
+            delete attachmentResources.pDescriptorSet;
+            delete attachmentResources.pAttachmentBuffer;
+        }
+
+        delete pFramebuffer;
+        delete pFence;
+    });
+
+    deleterThread.detach();
 }
 
 bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments)

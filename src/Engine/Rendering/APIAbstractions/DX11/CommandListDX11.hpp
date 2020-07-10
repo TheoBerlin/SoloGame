@@ -35,6 +35,7 @@ public:
 
     // Rasterizer
     void bindViewport(const Viewport* pViewport) override final;
+    void bindScissor(const Rectangle2D& scissorRectangle) override final;
 
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;

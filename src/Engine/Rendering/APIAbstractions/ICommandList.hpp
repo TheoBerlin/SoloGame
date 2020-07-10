@@ -53,6 +53,7 @@ public:
 
     // Rasterizer
     virtual void bindViewport(const Viewport* pViewport) = 0;
+    virtual void bindScissor(const Rectangle2D& scissorRectangle) = 0;
 
     virtual void draw(size_t vertexCount) = 0;
     virtual void drawIndexed(size_t indexCount) = 0;

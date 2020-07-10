@@ -205,7 +205,7 @@ bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResourc
     }
 
     // Have a separate thread delete the temporary command list and fence when the commands have finished
-    std::function<void()> commandsFinishedFnc = [=]() mutable {
+    std::function<void()> commandsFinishedFnc = [pFence, pDevice, pStagingBuffer, pCommandList, tempCommandPool]() mutable {
         IFence* pIFence = pFence;
         pDevice->waitForFences(&pIFence, 1u, false, (uint64_t)std::pow(10u, 10u)); // Wait a maximum of 10 seconds
         delete pFence;

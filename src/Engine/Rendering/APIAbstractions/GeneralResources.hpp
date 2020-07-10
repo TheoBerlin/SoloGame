@@ -3,6 +3,8 @@
 #include <Engine/Utils/EnumClass.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+#include <glm/glm.hpp>
+
 #define MAX_FRAMES_IN_FLIGHT 3u
 
 enum class RESOURCE_FORMAT {
@@ -98,6 +100,11 @@ DEFINE_BITMASK_OPERATIONS(RESOURCE_ACCESS)
 enum class SHARING_MODE {
     EXCLUSIVE   = 0,
     CONCURRENT  = 1
+};
+
+struct Rectangle2D {
+    glm::ivec2 Offset;
+    glm::uvec2 Extent;
 };
 
 // Returns size of a format in bytes

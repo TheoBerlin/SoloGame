@@ -27,6 +27,7 @@ struct PipelineInfo {
     std::vector<ShaderInfo> ShaderInfos;
     PRIMITIVE_TOPOLOGY PrimitiveTopology;
     std::vector<Viewport> Viewports;
+    std::vector<Rectangle2D> ScissorRectangles;
     RasterizerStateInfo RasterizerStateInfo;
     DepthStencilInfo DepthStencilStateInfo;
     BlendStateInfo BlendStateInfo;

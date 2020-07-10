@@ -174,7 +174,7 @@ BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources*
             return nullptr;
         }
 
-        std::thread deleterThread([=]() mutable {
+        std::thread deleterThread([pFence, tempStagingResources, pTempCommandList, tempCommandPool, this]() mutable {
             waitForFences(&pFence, 1u, false, UINT64_MAX);
             delete pFence;
             delete tempStagingResources.pStagingBuffer;
