@@ -42,6 +42,7 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     viewportState.viewportCount = 1u;
     viewportState.pViewports    = pipelineInfo.Viewports.empty() ? nullptr : (VkViewport*)pipelineInfo.Viewports.data();
     viewportState.scissorCount  = 1u;
+    viewportState.pScissors     = pipelineInfo.ScissorRectangles.empty() ? nullptr : (VkRect2D*)pipelineInfo.ScissorRectangles.data();
 
     VkPipelineRasterizationStateCreateInfo rasterizerInfo = {};
     if (!convertRasterizerStateInfo(rasterizerInfo, pipelineInfo.RasterizerStateInfo)) {

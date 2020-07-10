@@ -5,6 +5,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/RasterizerStateDX11.hpp>
@@ -113,6 +114,12 @@ void CommandListDX11::bindIndexBuffer(IBuffer* pBuffer)
 void CommandListDX11::bindViewport(const Viewport* pViewport)
 {
     m_pContext->RSSetViewports(1u, (const D3D11_VIEWPORT*)pViewport);
+}
+
+void CommandListDX11::bindScissor(const Rectangle2D& scissorRectangle)
+{
+    D3D11_RECT rectDX = convertRectangle(scissorRectangle);
+    m_pContext->RSSetScissorRects(1u, &rectDX);
 }
 
 void CommandListDX11::draw(size_t vertexCount)

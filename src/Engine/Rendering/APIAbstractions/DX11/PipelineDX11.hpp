@@ -15,6 +15,7 @@ struct PipelineInfoDX11 {
     D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology;
     std::vector<std::shared_ptr<Shader>> Shaders;
     std::vector<Viewport> Viewports;
+    std::vector<D3D11_RECT> ScissorRectangles;
     ID3D11RasterizerState* pRasterizerState;
     DepthStencilStateDX11 DepthStencilState;
     BlendStateDX11 BlendState;

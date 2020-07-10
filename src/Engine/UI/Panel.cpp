@@ -342,6 +342,10 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     viewport.MaxDepth    = 1.0f;
     m_pCommandList->bindViewport(&viewport);
 
+    Rectangle2D scissorRectangle = {};
+    scissorRectangle.Extent = backbufferDims;
+    m_pCommandList->bindScissor(scissorRectangle);
+
     m_pCommandList->bindVertexBuffer(0, m_pQuadVertices);
 
     for (AttachmentRenderResources& attachmentResources : renderResources) {

@@ -73,3 +73,14 @@ D3D11_COMPARISON_FUNC convertComparisonFunc(COMPARISON_FUNC comparisonFunc)
             return D3D11_COMPARISON_ALWAYS;
     }
 }
+
+D3D11_RECT convertRectangle(const Rectangle2D& rectangle)
+{
+    D3D11_RECT rectDX = {};
+    rectDX.left     = (LONG)rectangle.Offset.x;
+    rectDX.top      = (LONG)rectangle.Offset.y;
+    rectDX.right    = LONG(rectangle.Offset.x + rectangle.Extent.x);
+    rectDX.bottom   = LONG(rectangle.Offset.y + rectangle.Extent.y);
+
+    return rectDX;
+}

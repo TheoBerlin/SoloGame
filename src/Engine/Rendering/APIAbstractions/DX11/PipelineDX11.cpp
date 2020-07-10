@@ -1,6 +1,7 @@
 #include "PipelineDX11.hpp"
 
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 
@@ -24,6 +25,11 @@ PipelineDX11* PipelineDX11::create(const PipelineInfo& pipelineInfo, DeviceDX11*
     pipelineInfoDX.Shaders.shrink_to_fit();
 
     pipelineInfoDX.Viewports = pipelineInfo.Viewports;
+
+    pipelineInfoDX.ScissorRectangles.reserve(pipelineInfo.ScissorRectangles.size());
+    for (const Rectangle2D& scissorRectangle : pipelineInfo.ScissorRectangles) {
+        pipelineInfoDX.ScissorRectangles.push_back(convertRectangle(scissorRectangle));
+    }
 
     if (!createRasterizerState(&pipelineInfoDX.pRasterizerState, pipelineInfo.RasterizerStateInfo, pDevice->getDevice())) {
         return nullptr;
@@ -93,6 +99,7 @@ void PipelineDX11::bind(ID3D11DeviceContext* pContext)
 
     pContext->RSSetState(m_PipelineInfo.pRasterizerState);
     pContext->RSSetViewports((UINT)m_PipelineInfo.Viewports.size(), (const D3D11_VIEWPORT*)m_PipelineInfo.Viewports.data());
+    pContext->RSSetScissorRects((UINT)m_PipelineInfo.ScissorRectangles.size(), m_PipelineInfo.ScissorRectangles.data());
 
     pContext->OMSetDepthStencilState(m_PipelineInfo.DepthStencilState.pDepthStencilState, m_PipelineInfo.DepthStencilState.StencilReference);
     pContext->OMSetBlendState(m_PipelineInfo.BlendState.pBlendState, m_PipelineInfo.BlendState.pBlendConstants, D3D11_COLOR_WRITE_ENABLE_ALL);
