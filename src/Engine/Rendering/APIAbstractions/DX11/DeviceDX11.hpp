@@ -32,9 +32,9 @@ public:
     DeviceDX11(const DeviceInfoDX11& deviceInfo);
     ~DeviceDX11();
 
-    bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
-    bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
-    bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) override final;
+    bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) override final;
+    bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) override final;
+    bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) override final;
 
     ICommandPool* createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex) override final;
 

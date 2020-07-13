@@ -7,4 +7,6 @@ public:
     ~FenceDX11() = default;
 
     bool isSignaled() override final { return true; }
+
+    bool reset() override final { return true; }
 };

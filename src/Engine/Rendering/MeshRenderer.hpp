@@ -31,14 +31,14 @@ struct ModelRenderResources {
 class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, Device* pDevice);
+    MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
     ~MeshRenderer();
 
     bool init() override final;
 
     void updateBuffers() override final;
     void recordCommands() override final;
-    void executeCommands() override final;
+    void executeCommands(ICommandList* pPrimaryCommandList) override final;
 
 private:
     struct PointLightBuffer {
@@ -63,8 +63,6 @@ private:
     bool createBuffers();
     bool createDescriptorSetLayouts();
     bool createCommonDescriptorSet();
-    bool createRenderPass();
-    bool createFramebuffers();
     bool createPipeline();
 
     void onMeshAdded(Entity entity);
@@ -97,8 +95,6 @@ private:
 
     ISampler* m_pAniSampler;
 
-    Framebuffer* m_pFramebuffers[MAX_FRAMES_IN_FLIGHT];
-    IRenderPass* m_pRenderPass;
     IPipeline* m_pPipeline;
     IPipelineLayout* m_pPipelineLayout;
 };

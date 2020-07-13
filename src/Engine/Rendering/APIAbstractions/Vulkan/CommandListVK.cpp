@@ -3,6 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/BufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
+#include <Engine/Rendering/APIAbstractions/Vulkan/FramebufferVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/PipelineLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/PipelineVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/RenderPassVK.hpp>
@@ -49,9 +50,23 @@ bool CommandListVK::reset()
     return true;
 }
 
+void CommandListVK::executeSecondaryCommandList(ICommandList* pSecondaryCommandList)
+{
+    VkCommandBuffer secondaryBuffer = reinterpret_cast<CommandListVK*>(pSecondaryCommandList)->getCommandBuffer();
+    vkCmdExecuteCommands(m_CommandBuffer, 1u, &secondaryBuffer);
+}
+
 void CommandListVK::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo)
 {
     reinterpret_cast<RenderPassVK*>(pRenderPass)->begin(beginInfo, m_CommandBuffer);
+}
+
+void CommandListVK::nextSubpass(COMMAND_LIST_LEVEL subpassCommandListLevel)
+{
+    VkSubpassContents subpassContents = subpassCommandListLevel == COMMAND_LIST_LEVEL::PRIMARY ?
+        VK_SUBPASS_CONTENTS_INLINE : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
+
+    vkCmdNextSubpass(m_CommandBuffer, subpassContents);
 }
 
 void CommandListVK::endRenderPass()
@@ -154,13 +169,13 @@ VkCommandBufferUsageFlags CommandListVK::convertUsageFlags(COMMAND_LIST_USAGE us
 VkCommandBufferInheritanceInfo CommandListVK::convertBeginInfo(CommandListBeginInfo* pBeginInfo)
 {
     VkCommandBufferInheritanceInfo inheritanceInfo = {};
-    inheritanceInfo.sType       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
     if (pBeginInfo->pRenderPass)  {
-        inheritanceInfo.renderPass = VK_NULL_HANDLE; // TODO: Implement RenderPassVK
+        inheritanceInfo.renderPass = reinterpret_cast<RenderPassVK*>(pBeginInfo->pRenderPass)->getRenderPass();
     }
-    inheritanceInfo.subpass     = pBeginInfo->Subpass;
+    inheritanceInfo.subpass = pBeginInfo->Subpass;
     if (pBeginInfo->pFramebuffer) {
-        inheritanceInfo.framebuffer = VK_NULL_HANDLE; // TODO: Implement FramebufferVK
+        inheritanceInfo.framebuffer = reinterpret_cast<FramebufferVK*>(pBeginInfo->pFramebuffer)->getFramebuffer();
     }
 
     return inheritanceInfo;

@@ -5,14 +5,15 @@
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
+#include <Engine/Rendering/RenderingHandler.hpp>
 #include <Engine/Rendering/ShaderBindings.hpp>
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Transform.hpp>
 
 #include <algorithm>
 
-MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice)
-    :Renderer(pECS, pDevice),
+MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
+    :Renderer(pECS, pDevice, pRenderingHandler),
     m_pDevice(pDevice),
     m_pModelLoader(nullptr),
     m_pTransformHandler(nullptr),
@@ -23,13 +24,11 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice)
     m_pDescriptorSetLayoutMesh(nullptr),
     m_pDescriptorSetCommon(nullptr),
     m_pAniSampler(nullptr),
-    m_pRenderPass(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
     std::fill(m_ppCommandPools, m_ppCommandPools + MAX_FRAMES_IN_FLIGHT, nullptr);
     std::fill(m_ppCommandLists, m_ppCommandLists + MAX_FRAMES_IN_FLIGHT, nullptr);
-    std::fill(m_pFramebuffers, m_pFramebuffers + MAX_FRAMES_IN_FLIGHT, nullptr);
 
     CameraComponents camSub;
     PointLightComponents pointLightSub;
@@ -53,7 +52,6 @@ MeshRenderer::~MeshRenderer()
     }
 
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
-        delete m_pFramebuffers[frameIndex];
         delete m_ppCommandLists[frameIndex];
         delete m_ppCommandPools[frameIndex];
     }
@@ -63,7 +61,6 @@ MeshRenderer::~MeshRenderer()
     delete m_pDescriptorSetLayoutCommon;
     delete m_pDescriptorSetLayoutModel;
     delete m_pDescriptorSetLayoutMesh;
-    delete m_pRenderPass;
     delete m_pPipelineLayout;
     delete m_pPipeline;
 }
@@ -76,7 +73,7 @@ bool MeshRenderer::init()
             return false;
         }
 
-        m_ppCommandPools[frameIndex]->allocateCommandLists(&m_ppCommandLists[frameIndex], 1u, COMMAND_LIST_LEVEL::PRIMARY);
+        m_ppCommandPools[frameIndex]->allocateCommandLists(&m_ppCommandLists[frameIndex], 1u, COMMAND_LIST_LEVEL::SECONDARY);
         if (!m_ppCommandLists[frameIndex]) {
             return false;
         }
@@ -105,14 +102,6 @@ bool MeshRenderer::init()
     }
 
     if (!createCommonDescriptorSet()) {
-        return false;
-    }
-
-    if (!createRenderPass()) {
-        return false;
-    }
-
-    if (!createFramebuffers()) {
         return false;
     }
 
@@ -174,25 +163,12 @@ void MeshRenderer::recordCommands()
     ICommandList* pCommandList = m_ppCommandLists[frameIndex];
 
     CommandListBeginInfo beginInfo = {};
-    beginInfo.pRenderPass   = m_pRenderPass;
+    beginInfo.pRenderPass   = m_pRenderingHandler->getRenderPass();
     beginInfo.Subpass       = 0u;
-    beginInfo.pFramebuffer  = m_pFramebuffers[frameIndex];
-    pCommandList->begin(COMMAND_LIST_USAGE::ONE_TIME_SUBMIT, &beginInfo);
+    beginInfo.pFramebuffer  = m_pRenderingHandler->getCurrentFramebufferBackDepth();
+    pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
-    std::array<ClearValue, 2> pClearValues;
-    std::fill(pClearValues[0].ClearColorValue.uint32, &pClearValues[0].ClearColorValue.uint32[3], 0u);
-    pClearValues[1].DepthStencilValue.Depth     = 1.0f;
-    pClearValues[1].DepthStencilValue.Stencil   = 0u;
-
-    RenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.pFramebuffer        = m_pFramebuffers[frameIndex];
-    renderPassBeginInfo.pClearValues        = pClearValues.data();
-    renderPassBeginInfo.ClearValueCount     = (uint32_t)pClearValues.size();
-    renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::PRIMARY;
-
-    pCommandList->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
-
-    if (m_Renderables.size() == 0 || m_Camera.size() == 0) {
+    if (m_Renderables.empty() || m_Camera.empty()) {
         pCommandList->end();
         return;
     }
@@ -207,7 +183,6 @@ void MeshRenderer::recordCommands()
         pCommandList->bindDescriptorSet(modelRenderResources.pDescriptorSet, m_pPipelineLayout);
 
         size_t meshIdx = 0;
-
         for (const Mesh& mesh : pModel->Meshes) {
             if (pModel->Materials[mesh.materialIndex].textures.empty()) {
                 // Will not render the mesh if it does not have a texture
@@ -227,14 +202,12 @@ void MeshRenderer::recordCommands()
         }
     }
 
-    pCommandList->endRenderPass();
     pCommandList->end();
 }
 
-void MeshRenderer::executeCommands()
+void MeshRenderer::executeCommands(ICommandList* pPrimaryCommandList)
 {
-    SemaphoreSubmitInfo semaphoreInfo = {};
-    m_pDevice->graphicsQueueSubmit(m_ppCommandLists[m_pDevice->getFrameIndex()], nullptr, semaphoreInfo);
+    pPrimaryCommandList->executeSecondaryCommandList(m_ppCommandLists[m_pDevice->getFrameIndex()]);
 }
 
 bool MeshRenderer::createBuffers()
@@ -292,79 +265,6 @@ bool MeshRenderer::createCommonDescriptorSet()
     }
 
     m_pDescriptorSetCommon->updateUniformBufferDescriptor(SHADER_BINDING::PER_FRAME, m_pPointLightBuffer);
-    return true;
-}
-
-bool MeshRenderer::createRenderPass()
-{
-    RenderPassInfo renderPassInfo   = {};
-
-    // Render pass attachments
-    Texture* pBackbuffer = m_pDevice->getBackbuffer(0u);
-    AttachmentInfo backBufferAttachment   = {};
-    backBufferAttachment.Format           = pBackbuffer->getFormat();
-    backBufferAttachment.Samples          = 1u;
-    backBufferAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
-    backBufferAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
-    backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::RENDER_TARGET;
-
-    Texture* pDepthStencil = m_pDevice->getDepthStencil(0u);
-    AttachmentInfo depthStencilAttachment = {};
-    depthStencilAttachment.Format           = pDepthStencil->getFormat();
-    depthStencilAttachment.Samples          = 1u;
-    depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
-    depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
-    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
-
-    // Subpass
-    SubpassInfo subpass = {};
-    AttachmentReference backbufferRef   = {};
-    backbufferRef.AttachmentIndex       = 0;
-    backbufferRef.Layout                = TEXTURE_LAYOUT::RENDER_TARGET;
-
-    AttachmentReference depthStencilRef = {};
-    depthStencilRef.AttachmentIndex     = 1;
-    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
-
-    subpass.ColorAttachments        = { backbufferRef };
-    subpass.pDepthStencilAttachment = &depthStencilRef;
-    subpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
-
-    // Subpass dependency
-    SubpassDependency subpassDependency = {};
-    subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
-    subpassDependency.DstSubpass        = 0;
-    subpassDependency.SrcStage          = PIPELINE_STAGE::BOTTOM_OF_PIPE;
-    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    subpassDependency.SrcAccessMask     = RESOURCE_ACCESS::MEMORY_READ;
-    subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
-    subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
-
-    renderPassInfo.AttachmentInfos  = { backBufferAttachment, depthStencilAttachment };
-    renderPassInfo.Subpasses        = { subpass };
-    renderPassInfo.Dependencies     = { subpassDependency };
-
-    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
-    return m_pRenderPass;
-}
-
-bool MeshRenderer::createFramebuffers()
-{
-    FramebufferInfo framebufferInfo = {};
-    framebufferInfo.pRenderPass = m_pRenderPass;
-    framebufferInfo.Dimensions  = m_pDevice->getBackbuffer(0u)->getDimensions();
-
-    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
-        framebufferInfo.Attachments = { m_pDevice->getBackbuffer(framebufferIdx), m_pDevice->getDepthStencil(framebufferIdx) };
-        m_pFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
-
-        if (!m_pFramebuffers[framebufferIdx]) {
-            return false;
-        }
-    }
-
     return true;
 }
 
@@ -428,7 +328,7 @@ bool MeshRenderer::createPipeline()
     }
 
     pipelineInfo.pLayout        = m_pPipelineLayout;
-    pipelineInfo.pRenderPass    = m_pRenderPass;
+    pipelineInfo.pRenderPass    = m_pRenderingHandler->getRenderPass();
     pipelineInfo.Subpass        = 0u;
 
     m_pPipeline = m_pDevice->createPipeline(pipelineInfo);

@@ -15,19 +15,17 @@ struct PanelRenderResources {
 class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, Device* pDevice);
+    UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
     ~UIRenderer();
 
     bool init() override final;
 
     void updateBuffers() override final;
     void recordCommands() override final;
-    void executeCommands() override final;
+    void executeCommands(ICommandList* pPrimaryCommandList) override final;
 
 private:
     bool createDescriptorSetLayouts();
-    bool createRenderPass();
-    bool createFramebuffers();
     bool createPipeline();
 
     void onPanelAdded(Entity entity);
@@ -46,8 +44,6 @@ private:
     IBuffer* m_pQuad;
 
     ISampler* m_pAniSampler;
-    IRenderPass* m_pRenderPass;
-    Framebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

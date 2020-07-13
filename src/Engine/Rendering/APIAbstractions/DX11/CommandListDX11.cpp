@@ -5,6 +5,7 @@
 #include <Engine/Rendering/APIAbstractions/DX11/DepthStencilStateDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
+#include <Engine/Rendering/APIAbstractions/DX11/FramebufferDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/GeneralResourcesDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/InputLayoutDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/PipelineDX11.hpp>
@@ -49,6 +50,21 @@ bool CommandListDX11::begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo*
 {
     SAFERELEASE(m_pCommandList)
     m_pCommandList = nullptr;
+    if (pBeginInfo) {
+        // Bind render targets
+        FramebufferDX11* pFramebufferDX = reinterpret_cast<FramebufferDX11*>(pBeginInfo->pFramebuffer);
+        const std::vector<RenderTargetInfo>& renderTargetInfos = pFramebufferDX->getRenderTargets();
+
+        std::vector<ID3D11RenderTargetView*> renderTargets;
+        renderTargets.reserve(renderTargetInfos.size());
+
+        for (const RenderTargetInfo& renderTargetInfo : renderTargetInfos) {
+            renderTargets.push_back(renderTargetInfo.pRTV);
+        }
+
+        m_pContext->OMSetRenderTargets((UINT)renderTargets.size(), renderTargets.data(), pFramebufferDX->getDepthStencil());
+    }
+
     return true;
 }
 
@@ -68,6 +84,12 @@ bool CommandListDX11::end()
     }
 
     return true;
+}
+
+void CommandListDX11::executeSecondaryCommandList(ICommandList* pSecondaryCommandList)
+{
+    ID3D11CommandList* pSecondaryCmdListDX = reinterpret_cast<CommandListDX11*>(pSecondaryCommandList)->getCommandList();
+    m_pContext->ExecuteCommandList(pSecondaryCmdListDX, FALSE);
 }
 
 void CommandListDX11::beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo)
