@@ -52,9 +52,9 @@ DeviceVK::~DeviceVK()
     vkDestroyInstance(m_Instance, nullptr);
 }
 
-bool DeviceVK::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
+bool DeviceVK::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
-    if (!executeCommandBuffer(m_QueueHandles.Graphics, pCommandList, pFence, semaphoreSubmitInfo)) {
+    if (!executeCommandBuffer(m_QueueHandles.Graphics, pCommandList, pFence, pSemaphoreInfo)) {
         LOG_WARNING("Failed to submit to graphics queue");
         return false;
     }
@@ -62,9 +62,9 @@ bool DeviceVK::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, S
     return true;
 }
 
-bool DeviceVK::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
+bool DeviceVK::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
-    if (!executeCommandBuffer(m_QueueHandles.Transfer, pCommandList, pFence, semaphoreSubmitInfo)) {
+    if (!executeCommandBuffer(m_QueueHandles.Transfer, pCommandList, pFence, pSemaphoreInfo)) {
         LOG_WARNING("Failed to submit to transfer queue");
         return false;
     }
@@ -72,9 +72,9 @@ bool DeviceVK::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, S
     return true;
 }
 
-bool DeviceVK::computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
+bool DeviceVK::computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
-    if (!executeCommandBuffer(m_QueueHandles.Compute, pCommandList, pFence, semaphoreSubmitInfo)) {
+    if (!executeCommandBuffer(m_QueueHandles.Compute, pCommandList, pFence, pSemaphoreInfo)) {
         LOG_WARNING("Failed to submit to compute queue");
         return false;
     }
@@ -169,8 +169,7 @@ BufferVK* DeviceVK::createBuffer(const BufferInfo& bufferInfo, StagingResources*
 
         IFence* pFence = createFence(false);
 
-        SemaphoreSubmitInfo semaphoreInfo = {};
-        if (!graphicsQueueSubmit(pCommandListVK, pFence, semaphoreInfo)) {
+        if (!graphicsQueueSubmit(pCommandListVK, pFence, nullptr)) {
             return nullptr;
         }
 
@@ -254,21 +253,21 @@ Shader* DeviceVK::compileShader(SHADER_TYPE shaderType, const std::string& fileP
     return ShaderVK::compileShader(filePath, shaderType, this);
 }
 
-bool DeviceVK::executeCommandBuffer(VkQueue queue, ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo)
+bool DeviceVK::executeCommandBuffer(VkQueue queue, ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
     VkCommandBuffer commandBuffer = reinterpret_cast<CommandListVK*>(pCommandList)->getCommandBuffer();
     VkFence fence = pFence ? reinterpret_cast<FenceVK*>(pFence)->getFence() : VK_NULL_HANDLE;
 
-    std::vector<VkSemaphore> waitSemaphores((size_t)semaphoreSubmitInfo.waitSemaphoreCount);
-    std::vector<VkPipelineStageFlags> waitPipelineStages((size_t)semaphoreSubmitInfo.waitSemaphoreCount);
-    for (uint32_t semaphoreIdx = 0u; semaphoreIdx < semaphoreSubmitInfo.waitSemaphoreCount; semaphoreIdx++) {
-        waitSemaphores[semaphoreIdx]        = reinterpret_cast<SemaphoreVK*>(semaphoreSubmitInfo.ppWaitSemaphores[semaphoreIdx])->getSemaphore();
-        waitPipelineStages[semaphoreIdx]    = convertPipelineStageFlags(semaphoreSubmitInfo.pWaitStageFlags[semaphoreIdx]);
+    std::vector<VkSemaphore> waitSemaphores(size_t(pSemaphoreInfo ? pSemaphoreInfo->WaitSemaphoreCount : 0u));
+    std::vector<VkPipelineStageFlags> waitPipelineStages(waitSemaphores.size());
+    for (size_t semaphoreIdx = 0u; semaphoreIdx < waitSemaphores.size(); semaphoreIdx++) {
+        waitSemaphores[semaphoreIdx]        = reinterpret_cast<SemaphoreVK*>(pSemaphoreInfo->ppWaitSemaphores[semaphoreIdx])->getSemaphore();
+        waitPipelineStages[semaphoreIdx]    = convertPipelineStageFlags(pSemaphoreInfo->pWaitStageFlags[semaphoreIdx]);
     }
 
-    std::vector<VkSemaphore> signalSemaphores((size_t)semaphoreSubmitInfo.signalSemaphoreCount);
-    for (uint32_t semaphoreIdx = 0u; semaphoreIdx < semaphoreSubmitInfo.signalSemaphoreCount; semaphoreIdx++) {
-        signalSemaphores[semaphoreIdx] = reinterpret_cast<SemaphoreVK*>(semaphoreSubmitInfo.ppSignalSemaphores[semaphoreIdx])->getSemaphore();
+    std::vector<VkSemaphore> signalSemaphores(size_t(pSemaphoreInfo ? pSemaphoreInfo->SignalSemaphoreCount : 0u));
+    for (uint32_t semaphoreIdx = 0u; semaphoreIdx < signalSemaphores.size(); semaphoreIdx++) {
+        signalSemaphores[semaphoreIdx] = reinterpret_cast<SemaphoreVK*>(pSemaphoreInfo->ppSignalSemaphores[semaphoreIdx])->getSemaphore();
     }
 
     VkSubmitInfo submitInfo = {};
@@ -276,10 +275,10 @@ bool DeviceVK::executeCommandBuffer(VkQueue queue, ICommandList* pCommandList, I
     submitInfo.commandBufferCount   = 1u;
     submitInfo.pCommandBuffers      = &commandBuffer;
     submitInfo.pWaitSemaphores      = waitSemaphores.data();
-    submitInfo.waitSemaphoreCount   = semaphoreSubmitInfo.waitSemaphoreCount;
+    submitInfo.waitSemaphoreCount   = (uint32_t)waitSemaphores.size();
     submitInfo.pWaitDstStageMask    = waitPipelineStages.data();
     submitInfo.pSignalSemaphores    = signalSemaphores.data();
-    submitInfo.signalSemaphoreCount = semaphoreSubmitInfo.signalSemaphoreCount;
+    submitInfo.signalSemaphoreCount = (uint32_t)signalSemaphores.size();
 
     return vkQueueSubmit(queue, 1u, &submitInfo, fence) == VK_SUCCESS;
 }

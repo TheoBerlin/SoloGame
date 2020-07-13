@@ -59,10 +59,10 @@ struct QueueFamilyIndices {
 
 struct SemaphoreSubmitInfo {
     ISemaphore** ppWaitSemaphores;
-    uint32_t waitSemaphoreCount;
+    uint32_t WaitSemaphoreCount;
     PIPELINE_STAGE* pWaitStageFlags;
     ISemaphore** ppSignalSemaphores;
-    uint32_t signalSemaphoreCount;
+    uint32_t SignalSemaphoreCount;
 };
 
 class Device
@@ -76,9 +76,9 @@ public:
 
     bool init(const DescriptorCounts& descriptorCounts);
 
-    virtual bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
-    virtual bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
-    virtual bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, SemaphoreSubmitInfo& semaphoreSubmitInfo) = 0;
+    virtual bool graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) = 0;
+    virtual bool transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) = 0;
+    virtual bool computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo) = 0;
 
     void presentBackbuffer(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount);
 

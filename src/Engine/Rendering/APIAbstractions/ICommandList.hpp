@@ -41,7 +41,10 @@ public:
     virtual bool reset() = 0;
     virtual bool end() = 0;
 
+    virtual void executeSecondaryCommandList(ICommandList* pSecondaryCommandList) = 0;
+
     virtual void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) = 0;
+    virtual void nextSubpass(COMMAND_LIST_LEVEL subpassCommandListLevel) = 0;
     virtual void endRenderPass() = 0;
     virtual void bindPipeline(IPipeline* pPipeline) = 0;
 

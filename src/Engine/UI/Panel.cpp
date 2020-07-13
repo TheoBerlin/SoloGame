@@ -357,9 +357,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->end();
 
     IFence* pFence = m_pDevice->createFence(false);
-
-    SemaphoreSubmitInfo semaphoreInfo = {};
-    m_pDevice->graphicsQueueSubmit(m_pCommandList, pFence, semaphoreInfo);
+    m_pDevice->graphicsQueueSubmit(m_pCommandList, pFence, nullptr);
 
     // Delete render resources when rendering has finished
     std::thread deleterThread = std::thread([renderResources, pFramebuffer, pFence, this]() mutable {

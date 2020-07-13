@@ -199,8 +199,7 @@ bool TextureVK::submitTempCommandList(CommandListVK* pCommandList, PooledResourc
         return false;
     }
 
-    SemaphoreSubmitInfo semaphoreInfo = {};
-    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, semaphoreInfo)) {
+    if (!pDevice->graphicsQueueSubmit(pCommandList, pFence, nullptr)) {
         return false;
     }
 

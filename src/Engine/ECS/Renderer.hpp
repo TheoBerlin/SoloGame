@@ -8,6 +8,7 @@ class ComponentHandler;
 class Device;
 class ECSCore;
 class Renderer;
+class RenderingHandler;
 
 struct RendererRegistration {
     ComponentSubscriberRegistration SubscriberRegistration;
@@ -17,14 +18,14 @@ struct RendererRegistration {
 class Renderer
 {
 public:
-    Renderer(ECSCore* pECS, Device* pDevice);
+    Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
     ~Renderer();
 
     virtual bool init() = 0;
 
     virtual void updateBuffers() = 0;
     virtual void recordCommands() = 0;
-    virtual void executeCommands() = 0;
+    virtual void executeCommands(ICommandList* pPrimaryCommandList) = 0;
 
     void setComponentSubscriptionID(size_t ID) { m_ComponentSubscriptionID = ID; }
 
@@ -34,6 +35,7 @@ protected:
 
 protected:
     Device* m_pDevice;
+    RenderingHandler* m_pRenderingHandler;
 
 private:
     ECSCore* m_pECS;
