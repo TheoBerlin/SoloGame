@@ -147,7 +147,7 @@ bool BufferVK::mapCopyUnmap(const void* pData, VkDeviceSize size)
     VkDevice device = m_pDevice->getDevice();
     void* pMappedData = nullptr;
 
-    if (vkMapMemory(device, allocationInfo.deviceMemory, 0u, size, 0, &pMappedData) != VK_SUCCESS) {
+    if (vkMapMemory(device, allocationInfo.deviceMemory, allocationInfo.offset, size, 0, &pMappedData) != VK_SUCCESS) {
         LOG_WARNING("Failed to map buffer memory");
         return false;
     }

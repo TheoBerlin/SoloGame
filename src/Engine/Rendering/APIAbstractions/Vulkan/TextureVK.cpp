@@ -22,7 +22,6 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
         return nullptr;
     }
 
-    // Let TextureVK::create handle the rest of the creation steps
     InitialData initialData = {};
     initialData.pData   = pPixelData;
     initialData.RowSize = 4u * (uint32_t)width;
