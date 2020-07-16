@@ -13,11 +13,13 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRender
     m_pQuad(nullptr),
     m_pDescriptorSetLayout(nullptr),
     m_pAniSampler(nullptr),
+    m_pRenderPass(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
     std::fill(m_ppCommandLists, m_ppCommandLists + MAX_FRAMES_IN_FLIGHT, nullptr);
     std::fill(m_ppCommandPools, m_ppCommandPools + MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill(m_ppFramebuffers, m_ppFramebuffers + MAX_FRAMES_IN_FLIGHT, nullptr);
 
     RendererRegistration rendererReg = {};
     rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -38,9 +40,11 @@ UIRenderer::~UIRenderer()
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
         delete m_ppCommandLists[frameIndex];
         delete m_ppCommandPools[frameIndex];
+        delete m_ppFramebuffers[frameIndex];
     }
 
     delete m_pDescriptorSetLayout;
+    delete m_pRenderPass;
     delete m_pPipelineLayout;
     delete m_pPipeline;
 }
@@ -72,6 +76,14 @@ bool UIRenderer::init()
         return false;
     }
 
+    if (!createRenderPass()) {
+        return false;
+    }
+
+    if (!createFramebuffers()) {
+        return false;
+    }
+
     return createPipeline();
 }
 
@@ -100,9 +112,9 @@ void UIRenderer::recordCommands()
     ICommandList* pCommandList = m_ppCommandLists[frameIndex];
 
     CommandListBeginInfo beginInfo = {};
-    beginInfo.pRenderPass   = m_pRenderingHandler->getRenderPass();
-    beginInfo.Subpass       = 1u;
-    beginInfo.pFramebuffer  = m_pRenderingHandler->getCurrentFramebufferBackDepth();
+    beginInfo.pRenderPass   = m_pRenderPass;
+    beginInfo.Subpass       = 0u;
+    beginInfo.pFramebuffer  = m_ppFramebuffers[frameIndex];
     pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
     if (!m_Panels.empty()) {
@@ -133,6 +145,79 @@ bool UIRenderer::createDescriptorSetLayouts()
     m_pDescriptorSetLayout->addBindingUniformBuffer(SHADER_BINDING::PER_OBJECT, SHADER_TYPE::VERTEX_SHADER | SHADER_TYPE::FRAGMENT_SHADER);
     m_pDescriptorSetLayout->addBindingCombinedTextureSampler(SHADER_BINDING::TEXTURE_ONE, SHADER_TYPE::FRAGMENT_SHADER);
     return m_pDescriptorSetLayout->finalize(m_pDevice);
+}
+
+bool UIRenderer::createRenderPass()
+{
+    RenderPassInfo renderPassInfo   = {};
+
+    // Render pass attachments
+    Texture* pBackbuffer = m_pDevice->getBackbuffer(0u);
+    AttachmentInfo backBufferAttachment   = {};
+    backBufferAttachment.Format           = pBackbuffer->getFormat();
+    backBufferAttachment.Samples          = 1u;
+    backBufferAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
+    backBufferAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::RENDER_TARGET;
+    backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::PRESENT;
+
+    Texture* pDepthStencil = m_pDevice->getDepthStencil(0u);
+    AttachmentInfo depthStencilAttachment   = {};
+    depthStencilAttachment.Format           = pDepthStencil->getFormat();
+    depthStencilAttachment.Samples          = 1u;
+    depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::LOAD;
+    depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
+    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+
+    // Subpass
+    SubpassInfo subpass = {};
+    AttachmentReference backbufferRef   = {};
+    backbufferRef.AttachmentIndex       = 0;
+    backbufferRef.Layout                = TEXTURE_LAYOUT::RENDER_TARGET;
+
+    AttachmentReference depthStencilRef = {};
+    depthStencilRef.AttachmentIndex     = 1;
+    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
+
+    subpass.ColorAttachments        = { backbufferRef };
+    subpass.pDepthStencilAttachment = &depthStencilRef;
+    subpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
+
+    // Subpass dependency
+    SubpassDependency subpassDependency = {};
+    subpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
+    subpassDependency.DstSubpass        = 0;
+    subpassDependency.SrcStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
+    subpassDependency.SrcAccessMask     = { };
+    subpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
+    subpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
+
+    renderPassInfo.AttachmentInfos  = { backBufferAttachment, depthStencilAttachment };
+    renderPassInfo.Subpasses        = { subpass };
+    renderPassInfo.Dependencies     = { subpassDependency };
+
+    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
+    return m_pRenderPass;
+}
+
+bool UIRenderer::createFramebuffers()
+{
+    FramebufferInfo framebufferInfo = {};
+    framebufferInfo.pRenderPass     = m_pRenderPass;
+    framebufferInfo.Dimensions      = m_pDevice->getBackbuffer(0u)->getDimensions();
+
+    for (uint32_t framebufferIdx = 0u; framebufferIdx < MAX_FRAMES_IN_FLIGHT; framebufferIdx += 1u) {
+        framebufferInfo.Attachments = { m_pDevice->getBackbuffer(framebufferIdx), m_pDevice->getDepthStencil(framebufferIdx) };
+        m_ppFramebuffers[framebufferIdx] = m_pDevice->createFramebuffer(framebufferInfo);
+
+        if (!m_ppFramebuffers[framebufferIdx]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool UIRenderer::createPipeline()
@@ -197,8 +282,8 @@ bool UIRenderer::createPipeline()
     }
 
     pipelineInfo.pLayout        = m_pPipelineLayout;
-    pipelineInfo.pRenderPass    = m_pRenderingHandler->getRenderPass();
-    pipelineInfo.Subpass        = 1u;
+    pipelineInfo.pRenderPass    = m_pRenderPass;
+    pipelineInfo.Subpass        = 0u;
 
     m_pPipeline = m_pDevice->createPipeline(pipelineInfo);
     return m_pPipeline;

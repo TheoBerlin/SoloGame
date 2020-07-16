@@ -34,32 +34,6 @@ SwapchainVK::~SwapchainVK()
     vkDestroySwapchainKHR(m_pDevice->getDevice(), m_Swapchain, nullptr);
 }
 
-bool SwapchainVK::acquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
-{
-    VkSemaphore semaphore = VK_NULL_HANDLE;
-    VkFence fence = VK_NULL_HANDLE;
-
-    if (HAS_FLAG(syncOptions, SYNC_OPTION::FENCE)) {
-        FenceVK* pFence = reinterpret_cast<FenceVK*>(m_pFence);
-        if (!pFence->reset()) {
-            return false;
-        }
-
-        fence = pFence->getFence();
-    }
-
-    if (HAS_FLAG(syncOptions, SYNC_OPTION::SEMAPHORE)) {
-        semaphore = reinterpret_cast<SemaphoreVK*>(m_ppSemaphores[frameIndex])->getSemaphore();
-    }
-
-    if (vkAcquireNextImageKHR(m_pDevice->getDevice(), m_Swapchain, UINT64_MAX, semaphore, fence, &frameIndex) != VK_SUCCESS) {
-        LOG_WARNING("Failed to acquire next swapchain image");
-        return false;
-    }
-
-    return true;
-}
-
 void SwapchainVK::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount)
 {
     if (waitSemaphoreCount > (uint32_t)m_WaitSemaphores.size()) {
@@ -85,4 +59,30 @@ void SwapchainVK::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreC
     if (vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS) {
         LOG_WARNING("Failed to present swapchain image");
     }
+}
+
+bool SwapchainVK::dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
+{
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    VkFence fence = VK_NULL_HANDLE;
+
+    if (HAS_FLAG(syncOptions, SYNC_OPTION::FENCE)) {
+        FenceVK* pFence = reinterpret_cast<FenceVK*>(m_pFence);
+        if (!pFence->reset()) {
+            return false;
+        }
+
+        fence = pFence->getFence();
+    }
+
+    if (HAS_FLAG(syncOptions, SYNC_OPTION::SEMAPHORE)) {
+        semaphore = reinterpret_cast<SemaphoreVK*>(m_ppSemaphores[frameIndex])->getSemaphore();
+    }
+
+    if (vkAcquireNextImageKHR(m_pDevice->getDevice(), m_Swapchain, UINT64_MAX, semaphore, fence, &frameIndex) != VK_SUCCESS) {
+        LOG_WARNING("Failed to acquire next swapchain image");
+        return false;
+    }
+
+    return true;
 }

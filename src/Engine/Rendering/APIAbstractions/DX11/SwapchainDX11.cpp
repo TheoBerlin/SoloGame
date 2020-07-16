@@ -32,16 +32,16 @@ SwapchainDX11::~SwapchainDX11()
     delete m_pBackbuffer;
 }
 
-bool SwapchainDX11::acquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
-{
-    frameIndex = (frameIndex + 1u) % MAX_FRAMES_IN_FLIGHT;
-    return true;
-}
-
 void SwapchainDX11::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount)
 {
     HRESULT hr = m_pSwapchain->Present(0, 0);
     if (FAILED(hr)) {
         LOG_WARNING("Failed to present swapchain buffer: %s", hresultToString(hr).c_str());
     }
+}
+
+bool SwapchainDX11::dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
+{
+    frameIndex = (frameIndex + 1u) % MAX_FRAMES_IN_FLIGHT;
+    return true;
 }
