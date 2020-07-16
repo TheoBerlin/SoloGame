@@ -40,6 +40,9 @@ public:
     void recordCommands() override final;
     void executeCommands(ICommandList* pPrimaryCommandList) override final;
 
+    inline IRenderPass* getRenderPass()                     { return m_pRenderPass; }
+    inline Framebuffer* getFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
+
 private:
     struct PointLightBuffer {
         DirectX::XMFLOAT3 Position;
@@ -63,6 +66,8 @@ private:
     bool createBuffers();
     bool createDescriptorSetLayouts();
     bool createCommonDescriptorSet();
+    bool createRenderPass();
+    bool createFramebuffers();
     bool createPipeline();
 
     void onMeshAdded(Entity entity);
@@ -95,6 +100,8 @@ private:
 
     ISampler* m_pAniSampler;
 
+    Framebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
+    IRenderPass* m_pRenderPass;
     IPipeline* m_pPipeline;
     IPipelineLayout* m_pPipelineLayout;
 };

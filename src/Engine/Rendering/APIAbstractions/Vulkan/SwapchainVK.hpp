@@ -25,10 +25,12 @@ public:
     SwapchainVK(const SwapchainInfoVK& swapchainInfo, const ISemaphore* const * ppSemaphores, IFence* pFence);
     ~SwapchainVK();
 
-    bool acquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions) override final;
     void present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount) override final;
 
     Texture* getBackbuffer(uint32_t frameIndex) override final { return m_ppBackbuffers[frameIndex]; }
+
+private:
+    bool dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions) override final;
 
 private:
     VkSwapchainKHR m_Swapchain;

@@ -24,10 +24,12 @@ public:
     SwapchainDX11(const SwapchainInfoDX11& swapchainInfo, const ISemaphore* const * ppSemaphores, IFence* pFence);
     ~SwapchainDX11();
 
-    bool acquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions) override final;
     void present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount) override final;
 
     Texture* getBackbuffer(uint32_t frameIndex) override final { return m_pBackbuffer; }
+
+private:
+    bool dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions) override final;
 
 private:
     IDXGISwapChain* m_pSwapchain;

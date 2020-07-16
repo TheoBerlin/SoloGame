@@ -24,8 +24,13 @@ public:
     void recordCommands() override final;
     void executeCommands(ICommandList* pPrimaryCommandList) override final;
 
+    inline IRenderPass* getRenderPass()                     { return m_pRenderPass; }
+    inline Framebuffer* getFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
+
 private:
     bool createDescriptorSetLayouts();
+    bool createRenderPass();
+    bool createFramebuffers();
     bool createPipeline();
 
     void onPanelAdded(Entity entity);
@@ -35,15 +40,16 @@ private:
     IDVector m_Panels;
     IDDVector<PanelRenderResources> m_PanelRenderResources;
 
+    UIHandler* m_pUIHandler;
+
     ICommandPool* m_ppCommandPools[MAX_FRAMES_IN_FLIGHT];
     ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];
 
-    UIHandler* m_pUIHandler;
-
-    // Vertex buffer
     IBuffer* m_pQuad;
-
     ISampler* m_pAniSampler;
+
+    IRenderPass* m_pRenderPass;
+    Framebuffer* m_ppFramebuffers[MAX_FRAMES_IN_FLIGHT];
 
     IDescriptorSetLayout* m_pDescriptorSetLayout;
 

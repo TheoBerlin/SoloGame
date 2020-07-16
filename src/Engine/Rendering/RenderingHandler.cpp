@@ -11,12 +11,10 @@ RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice)
     m_pDevice(pDevice),
     m_MeshRenderer(pECS, pDevice, this),
     m_UIRenderer(pECS, pDevice, this),
-    m_pRenderPass(nullptr),
     m_pPrimaryBufferFence(nullptr)
 {
     std::fill(&m_ppCommandPools[0u], &m_ppCommandPools[MAX_FRAMES_IN_FLIGHT], nullptr);
     std::fill(&m_ppCommandLists[0u], &m_ppCommandLists[MAX_FRAMES_IN_FLIGHT], nullptr);
-    std::fill(&m_ppFramebuffersBackDepth[0u], &m_ppFramebuffersBackDepth[MAX_FRAMES_IN_FLIGHT], nullptr);
     std::fill(&m_ppRenderingSemaphores[0u], &m_ppRenderingSemaphores[MAX_FRAMES_IN_FLIGHT], nullptr);
 }
 
@@ -25,12 +23,10 @@ RenderingHandler::~RenderingHandler()
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
         delete m_ppCommandPools[frameIndex];
         delete m_ppCommandLists[frameIndex];
-        delete m_ppFramebuffersBackDepth[frameIndex];
         delete m_ppRenderingSemaphores[frameIndex];
     }
 
     delete m_pPrimaryBufferFence;
-    delete m_pRenderPass;
 }
 
 bool RenderingHandler::init()
@@ -57,15 +53,7 @@ bool RenderingHandler::init()
         }
     }
 
-    if (!createRenderPass()) {
-        return false;
-    }
-
-    if (!createFramebuffers()) {
-        return false;
-    }
-
-    m_pPrimaryBufferFence = m_pDevice->createFence(false);
+    m_pPrimaryBufferFence = m_pDevice->createFence(true);
     return m_pPrimaryBufferFence;
 }
 
@@ -74,100 +62,10 @@ void RenderingHandler::render()
     beginFrame();
 
     updateBuffers();
-    recordCommandBuffers();
-    executeCommandBuffers();
+    recordSecondaryCommandBuffers();
+    recordPrimaryCommandBuffer();
 
     endFrame();
-}
-
-bool RenderingHandler::createRenderPass()
-{
-    RenderPassInfo renderPassInfo   = {};
-
-    // Render pass attachments
-    Texture* pBackbuffer = m_pDevice->getBackbuffer(0u);
-    AttachmentInfo backBufferAttachment   = {};
-    backBufferAttachment.Format           = pBackbuffer->getFormat();
-    backBufferAttachment.Samples          = 1u;
-    backBufferAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
-    backBufferAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    backBufferAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
-    backBufferAttachment.FinalLayout      = TEXTURE_LAYOUT::PRESENT;
-
-    Texture* pDepthStencil = m_pDevice->getDepthStencil(0u);
-    AttachmentInfo depthStencilAttachment = {};
-    depthStencilAttachment.Format           = pDepthStencil->getFormat();
-    depthStencilAttachment.Samples          = 1u;
-    depthStencilAttachment.LoadOp           = ATTACHMENT_LOAD_OP::CLEAR;
-    depthStencilAttachment.StoreOp          = ATTACHMENT_STORE_OP::STORE;
-    depthStencilAttachment.InitialLayout    = TEXTURE_LAYOUT::UNDEFINED;
-    depthStencilAttachment.FinalLayout      = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
-
-    // Mesh subpass
-    SubpassInfo meshSubpass = {};
-    AttachmentReference backbufferRef   = {};
-    backbufferRef.AttachmentIndex       = 0;
-    backbufferRef.Layout                = TEXTURE_LAYOUT::RENDER_TARGET;
-
-    AttachmentReference depthStencilRef = {};
-    depthStencilRef.AttachmentIndex     = 1;
-    depthStencilRef.Layout              = TEXTURE_LAYOUT::DEPTH_STENCIL_ATTACHMENT;
-
-    meshSubpass.ColorAttachments        = { backbufferRef };
-    meshSubpass.pDepthStencilAttachment = &depthStencilRef;
-    meshSubpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
-
-    // Mesh subpass dependency
-    SubpassDependency meshSubpassDependency = {};
-    meshSubpassDependency.SrcSubpass        = SUBPASS_EXTERNAL;
-    meshSubpassDependency.DstSubpass        = 0;
-    meshSubpassDependency.SrcStage          = PIPELINE_STAGE::BOTTOM_OF_PIPE;
-    meshSubpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    meshSubpassDependency.SrcAccessMask     = RESOURCE_ACCESS::MEMORY_READ;
-    meshSubpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
-    meshSubpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
-
-    // UI subpass
-    SubpassInfo UISubpass = {};
-    UISubpass.ColorAttachments        = { backbufferRef };
-    UISubpass.pDepthStencilAttachment = &depthStencilRef;
-    UISubpass.PipelineBindPoint       = PIPELINE_BIND_POINT::GRAPHICS;
-
-    // UI subpass dependency
-    SubpassDependency UISubpassDependency = {};
-    UISubpassDependency.SrcSubpass        = 0u;
-    UISubpassDependency.DstSubpass        = 1u;
-    UISubpassDependency.SrcStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    UISubpassDependency.DstStage          = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
-    UISubpassDependency.SrcAccessMask     = { };
-    UISubpassDependency.DstAccessMask     = RESOURCE_ACCESS::COLOR_ATTACHMENT_READ | RESOURCE_ACCESS::COLOR_ATTACHMENT_WRITE;
-    UISubpassDependency.DependencyFlags   = DEPENDENCY_FLAG::BY_REGION;
-
-    renderPassInfo.AttachmentInfos  = { backBufferAttachment, depthStencilAttachment };
-    renderPassInfo.Subpasses        = { meshSubpass, UISubpass };
-    renderPassInfo.Dependencies     = { meshSubpassDependency, UISubpassDependency };
-
-    m_pRenderPass = m_pDevice->createRenderPass(renderPassInfo);
-    return m_pRenderPass;
-}
-
-bool RenderingHandler::createFramebuffers()
-{
-    FramebufferInfo framebufferInfoBackDepth = {};
-    framebufferInfoBackDepth.pRenderPass     = m_pRenderPass;
-    framebufferInfoBackDepth.Dimensions      = m_pDevice->getBackbuffer(0u)->getDimensions();
-    framebufferInfoBackDepth.Attachments.resize(2u);
-
-    for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
-        framebufferInfoBackDepth.Attachments[0u] = m_pDevice->getBackbuffer(frameIndex);
-        framebufferInfoBackDepth.Attachments[1u] = m_pDevice->getDepthStencil(frameIndex);
-        m_ppFramebuffersBackDepth[frameIndex] = m_pDevice->createFramebuffer(framebufferInfoBackDepth);
-        if (!m_ppFramebuffersBackDepth[frameIndex]) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 void RenderingHandler::beginFrame()
@@ -180,32 +78,19 @@ void RenderingHandler::beginFrame()
     m_pPrimaryBufferFence->reset();
 
     m_ppCommandLists[frameIndex]->begin({}, nullptr);
-
-    // Begin render pass
-    std::array<ClearValue, 2> pClearValues;
-    std::fill(pClearValues[0].ClearColorValue.uint32, &pClearValues[0].ClearColorValue.uint32[3], 0u);
-    pClearValues[1].DepthStencilValue.Depth     = 1.0f;
-    pClearValues[1].DepthStencilValue.Stencil   = 0u;
-
-    RenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.pFramebuffer        = m_ppFramebuffersBackDepth[frameIndex];
-    renderPassBeginInfo.pClearValues        = pClearValues.data();
-    renderPassBeginInfo.ClearValueCount     = (uint32_t)pClearValues.size();
-    renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::SECONDARY;
-    m_ppCommandLists[frameIndex]->beginRenderPass(m_pRenderPass, renderPassBeginInfo);
 }
 
 void RenderingHandler::endFrame()
 {
     const uint32_t frameIndex = m_pDevice->getFrameIndex();
-    m_ppCommandLists[frameIndex]->endRenderPass();
-    m_ppCommandLists[frameIndex]->end();
+    ISemaphore* pBackbufferReadySemaphore = m_pDevice->getSwapchain()->getCurrentSemaphore();
 
-    ISemaphore* pBackbufferReadySemaphore = m_pDevice->getSwapchain()->getSemaphore(frameIndex);
+    PIPELINE_STAGE waitStage = PIPELINE_STAGE::COLOR_ATTACHMENT_OUTPUT;
 
     SemaphoreSubmitInfo semaphoreInfo = {};
     semaphoreInfo.ppWaitSemaphores      = &pBackbufferReadySemaphore;
     semaphoreInfo.WaitSemaphoreCount    = 1u;
+    semaphoreInfo.pWaitStageFlags       = &waitStage;
     semaphoreInfo.ppSignalSemaphores    = &m_ppRenderingSemaphores[frameIndex];
     semaphoreInfo.SignalSemaphoreCount  = 1u;
     m_pDevice->graphicsQueueSubmit(m_ppCommandLists[frameIndex], m_pPrimaryBufferFence, &semaphoreInfo);
@@ -227,7 +112,7 @@ void RenderingHandler::updateBuffers()
     }
 }
 
-void RenderingHandler::recordCommandBuffers()
+void RenderingHandler::recordSecondaryCommandBuffers()
 {
     std::vector<std::thread> threads;
     threads.reserve(m_Renderers.size());
@@ -241,11 +126,35 @@ void RenderingHandler::recordCommandBuffers()
     }
 }
 
-void RenderingHandler::executeCommandBuffers()
+void RenderingHandler::recordPrimaryCommandBuffer()
 {
-    ICommandList* pPrimaryCommandList = m_ppCommandLists[m_pDevice->getFrameIndex()];
+    const uint32_t frameIndex = m_pDevice->getFrameIndex();
+    ICommandList* pPrimaryCommandList = m_ppCommandLists[frameIndex];
+
+    // Begin mesh render pass
+    std::array<ClearValue, 2> pClearValues;
+    std::fill(pClearValues[0].ClearColorValue.uint32, &pClearValues[0].ClearColorValue.uint32[3], 0u);
+    pClearValues[1].DepthStencilValue.Depth     = 1.0f;
+    pClearValues[1].DepthStencilValue.Stencil   = 0u;
+
+    RenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.pFramebuffer        = m_MeshRenderer.getFramebuffer(frameIndex);
+    renderPassBeginInfo.pClearValues        = pClearValues.data();
+    renderPassBeginInfo.ClearValueCount     = (uint32_t)pClearValues.size();
+    renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::SECONDARY;
+    m_ppCommandLists[frameIndex]->beginRenderPass(m_MeshRenderer.getRenderPass(), renderPassBeginInfo);
 
     m_MeshRenderer.executeCommands(pPrimaryCommandList);
-    pPrimaryCommandList->nextSubpass(COMMAND_LIST_LEVEL::SECONDARY);
+
+    pPrimaryCommandList->endRenderPass();
+
+    // Begin UI render pass
+    renderPassBeginInfo.pFramebuffer    = m_UIRenderer.getFramebuffer(frameIndex);
+    renderPassBeginInfo.ClearValueCount = 0u;
+    m_ppCommandLists[frameIndex]->beginRenderPass(m_UIRenderer.getRenderPass(), renderPassBeginInfo);
+
     m_UIRenderer.executeCommands(pPrimaryCommandList);
+
+    m_ppCommandLists[frameIndex]->endRenderPass();
+    m_ppCommandLists[frameIndex]->end();
 }
