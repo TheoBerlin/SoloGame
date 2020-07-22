@@ -7,8 +7,17 @@
 BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
     :m_pBuffer(nullptr)
 {
+    // The size of DirectX 11 constant buffers needs to be a multiple of 16
+    UINT byteSize = (UINT)bufferInfo.ByteSize;
+    if (bufferInfo.Usage == BUFFER_USAGE::UNIFORM_BUFFER) {
+        UINT remainder = byteSize % 16u;
+        if (remainder != 0u) {
+            byteSize += 16u - remainder;
+        }
+    }
+
     D3D11_BUFFER_DESC bufferDesc = {};
-    bufferDesc.ByteWidth = (UINT)bufferInfo.ByteSize;
+    bufferDesc.ByteWidth = byteSize;
 
     // Figure out which usage flag to use
     if (bufferInfo.Usage == BUFFER_USAGE::STAGING_BUFFER) {

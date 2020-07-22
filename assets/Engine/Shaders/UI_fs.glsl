@@ -9,13 +9,12 @@ layout (binding = 2) uniform PerObject {
     float HighlightFactor;
 } g_PerObject;
 
-layout (location = 0) in vec4 in_Position;
-layout (location = 1) in vec2 in_TXCoords;
+layout (location = 0) in vec2 in_TXCoords;
 
 layout (location = 0) out vec4 out_Color;
 
 void main()
 {
     vec4 txColor    = texture(u_UITexture, in_TXCoords);
-    out_Color       = min(txColor + g_PerObject.HighlightFactor * txColor * g_PerObject.Highlight, vec4(1.0));
+    out_Color       = clamp(txColor + g_PerObject.HighlightFactor * txColor * g_PerObject.Highlight, 0.0, 1.0);
 }

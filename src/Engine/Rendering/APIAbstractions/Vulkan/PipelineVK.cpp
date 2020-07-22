@@ -17,14 +17,12 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     shaderStages.reserve(shaders.size());
 
-    VkPipelineVertexInputStateCreateInfo inputLayout = {};
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-
+    InputLayoutInfoVK inputLayoutInfoVK = {};
     ShaderHandler* pShaderHandler = pDevice->getShaderHandler();
     for (const ShaderInfo& shaderInfo : pipelineInfo.ShaderInfos) {
         if (shaderInfo.ShaderType == SHADER_TYPE::VERTEX_SHADER) {
             const InputLayoutInfo& inputLayoutInfo = pShaderHandler->getInputLayoutInfo(shaderInfo.ShaderName);
-            if (!convertInputLayoutInfo(inputLayout, attributeDescriptions, inputLayoutInfo)) {
+            if (!convertInputLayoutInfo(inputLayoutInfoVK, inputLayoutInfo)) {
                 return nullptr;
             }
         }
@@ -81,7 +79,7 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     pipelineInfoVK.sType                = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfoVK.stageCount           = (uint32_t)pipelineInfo.ShaderInfos.size();
     pipelineInfoVK.pStages              = shaderStages.data();
-    pipelineInfoVK.pVertexInputState    = &inputLayout;
+    pipelineInfoVK.pVertexInputState    = &inputLayoutInfoVK.VertexInputState;
     pipelineInfoVK.pInputAssemblyState  = &inputAssemblyState;
     pipelineInfoVK.pViewportState       = &viewportState;
     pipelineInfoVK.pRasterizationState  = &rasterizerInfo;

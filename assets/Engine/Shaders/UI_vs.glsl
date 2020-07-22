@@ -10,8 +10,7 @@ layout (binding = 2) uniform PerObject {
 layout (location = 0) in vec2 in_Position;
 layout (location = 1) in vec2 in_TXCoords;
 
-layout (location = 0) out vec4 out_Position;
-layout (location = 1) out vec2 out_TXCoords;
+layout (location = 0) out vec2 out_TXCoords;
 
 void main()
 {
@@ -20,6 +19,7 @@ void main()
     // v_in.pos * size * 2
     // Translate the quad by translating whilst converting positions in [0,1] to [-1,1]:
     // + position * 2.0 - 1:
-    out_Position = vec4(in_Position * g_PerObject.Size + g_PerObject.Position * 2.0 - 1.0, 0.0, 1.0);
-    out_TXCoords = in_TXCoords;
+    gl_Position     = vec4(in_Position * g_PerObject.Size * 2.0 + g_PerObject.Position * 2.0 - 1.0, 0.0, 1.0);
+    gl_Position.y   = -gl_Position.y;
+    out_TXCoords    = in_TXCoords;
 }

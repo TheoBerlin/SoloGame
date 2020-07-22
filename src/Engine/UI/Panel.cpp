@@ -210,9 +210,8 @@ bool UIHandler::createPipeline()
     pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
-    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
+    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = false;
     pipelineInfo.DepthStencilStateInfo.DepthWriteEnabled    = true;
-    pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
     pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
 
     pipelineInfo.BlendStateInfo = {};
@@ -343,7 +342,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     m_pCommandList->bindViewport(&viewport);
 
     Rectangle2D scissorRectangle = {};
-    scissorRectangle.Extent = backbufferDims;
+    scissorRectangle.Extent = { viewport.Width, viewport.Height };
     m_pCommandList->bindScissor(scissorRectangle);
 
     m_pCommandList->bindVertexBuffer(0, m_pQuadVertices);
@@ -388,11 +387,7 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
     BufferData bufferData = {};
 
     BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize =
-        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
-        sizeof(DirectX::XMFLOAT4) +     // Highlight color
-        sizeof(float) +                 // Highlight factor
-        sizeof(DirectX::XMFLOAT3);      // Padding
+    bufferInfo.ByteSize = sizeof(BufferData);
     bufferInfo.GPUAccess = BUFFER_DATA_ACCESS::READ;
     bufferInfo.CPUAccess = BUFFER_DATA_ACCESS::WRITE;
     bufferInfo.Usage = BUFFER_USAGE::UNIFORM_BUFFER;

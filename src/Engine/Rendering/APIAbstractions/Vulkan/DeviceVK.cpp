@@ -87,7 +87,7 @@ void DeviceVK::map(IBuffer* pBuffer, void** ppMappedMemory)
     BufferVK* pBufferVK = reinterpret_cast<BufferVK*>(pBuffer);
     VmaAllocationInfo allocationInfo = pBufferVK->getAllocationInfo();
 
-    if (vkMapMemory(m_Device, allocationInfo.deviceMemory, 0u, VK_WHOLE_SIZE, 0, ppMappedMemory) != VK_SUCCESS) {
+    if (vkMapMemory(m_Device, allocationInfo.deviceMemory, allocationInfo.offset, VK_WHOLE_SIZE, 0, ppMappedMemory) != VK_SUCCESS) {
         LOG_WARNING("Failed to map buffer memory");
     }
 }
