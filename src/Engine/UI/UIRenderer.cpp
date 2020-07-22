@@ -258,14 +258,12 @@ bool UIRenderer::createPipeline()
     pipelineInfo.RasterizerStateInfo.LineWidth              = 1.0f;
 
     pipelineInfo.DepthStencilStateInfo = {};
-    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = true;
+    pipelineInfo.DepthStencilStateInfo.DepthTestEnabled     = false;
     pipelineInfo.DepthStencilStateInfo.DepthWriteEnabled    = true;
-    pipelineInfo.DepthStencilStateInfo.DepthComparisonFunc  = COMPARISON_FUNC::LESS;
     pipelineInfo.DepthStencilStateInfo.StencilTestEnabled   = false;
 
-
     BlendRenderTargetInfo rtvBlendInfo = {};
-    rtvBlendInfo.BlendEnabled           = true;
+    rtvBlendInfo.BlendEnabled           = false;
     rtvBlendInfo.SrcColorBlendFactor    = BLEND_FACTOR::ONE;
     rtvBlendInfo.DstColorBlendFactor    = BLEND_FACTOR::ONE_MINUS_SRC_ALPHA;
     rtvBlendInfo.ColorBlendOp           = BLEND_OP::ADD;
@@ -297,12 +295,10 @@ void UIRenderer::onPanelAdded(Entity entity)
 
     // Create panel buffer
     BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize = sizeof(
-        DirectX::XMFLOAT2) * 2 +    // Position and size
-        sizeof(DirectX::XMFLOAT4) + // Highlight color
-        sizeof(float) +             // Highlight factor
-        sizeof(DirectX::XMFLOAT3    // Padding
-    );
+    bufferInfo.ByteSize =
+        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
+        sizeof(DirectX::XMFLOAT4) +     // Highlight color
+        sizeof(float);                  // Highlight factor
     bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
     bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
     bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;

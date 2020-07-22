@@ -605,7 +605,7 @@ bool DeviceCreatorVK::querySwapchainSupport(VkPhysicalDevice physicalDevice, Swa
 void DeviceCreatorVK::chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
     for (const VkSurfaceFormatKHR& format : availableFormats) {
-        if (format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_SRGB) {
+        if (format.colorSpace != VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_UNORM) {
             m_SwapchainFormat = format;
             return;
         }

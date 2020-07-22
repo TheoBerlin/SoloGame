@@ -50,8 +50,8 @@ struct UIPanel {
     DirectX::XMFLOAT2 position, size;
     /*  Highlights are applied with the equation: finalColor = txColor + highlightFactor * (highlight * txColor)
         A negative highlight factor will make the panel darker */
-    float highlightFactor;
     DirectX::XMFLOAT4 highlight;
+    float highlightFactor;
     std::vector<TextureAttachment> textures;
     Texture* texture;
 };
