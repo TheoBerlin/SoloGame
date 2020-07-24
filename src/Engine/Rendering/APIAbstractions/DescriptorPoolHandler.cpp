@@ -7,9 +7,7 @@
 
 DescriptorPoolHandler::~DescriptorPoolHandler()
 {
-    for (DescriptorPool* pDescriptorPool : m_DescriptorPools) {
-        delete pDescriptorPool;
-    }
+    clear();
 }
 
 void DescriptorPoolHandler::init(const DescriptorPoolInfo& poolInfos, Device* pDevice)
@@ -17,6 +15,15 @@ void DescriptorPoolHandler::init(const DescriptorPoolInfo& poolInfos, Device* pD
     m_PoolInfos = poolInfos;
 
     m_DescriptorPools.push_back(pDevice->createDescriptorPool(poolInfos));
+}
+
+void DescriptorPoolHandler::clear()
+{
+    for (DescriptorPool* pDescriptorPool : m_DescriptorPools) {
+        delete pDescriptorPool;
+    }
+
+    m_DescriptorPools.clear();
 }
 
 DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSetLayout* pLayout, Device* pDevice)

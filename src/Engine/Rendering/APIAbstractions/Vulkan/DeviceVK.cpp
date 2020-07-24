@@ -35,6 +35,9 @@ DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
 
 DeviceVK::~DeviceVK()
 {
+    deleteGraphicsObjects();
+    vmaDestroyAllocator(m_Allocator);
+
     #ifdef _DEBUG
         auto destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
         if (destroyDebugUtilsMessengerEXT) {
@@ -44,9 +47,6 @@ DeviceVK::~DeviceVK()
         }
     #endif
 
-    delete m_pSwapchain;
-
-    vmaDestroyAllocator(m_Allocator);
     vkDestroyDevice(m_Device, nullptr);
     vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
     vkDestroyInstance(m_Instance, nullptr);
@@ -224,6 +224,13 @@ bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAl
     }
 
     return vkWaitForFences(m_Device, fenceCount, fences.data(), (VkBool32)waitAll, timeout) == VK_SUCCESS;
+}
+
+void DeviceVK::waitIdle()
+{
+    if (vkDeviceWaitIdle(m_Device) != VK_SUCCESS) {
+        LOG_WARNING("Failed to wait for device to become idle");
+    }
 }
 
 DescriptorPool* DeviceVK::createDescriptorPool(const DescriptorPoolInfo& poolInfo)

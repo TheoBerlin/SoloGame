@@ -68,6 +68,7 @@ public:
     std::string getShaderFileExtension() override final { return ".spv"; }
 
     bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final;
+    void waitIdle() override final;
 
     VmaAllocator getVulkanAllocator()   { return m_Allocator; }
     VkDevice getDevice()                { return m_Device; }

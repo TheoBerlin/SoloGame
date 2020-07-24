@@ -63,6 +63,7 @@ public:
     std::string getShaderFileExtension() override final { return ".hlsl"; }
 
     bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final { return true; }
+    void waitIdle() override final {};
 
     ID3D11Device* getDevice()           { return m_pDevice; }
     ID3D11DeviceContext* getContext()   { return m_pContext; }

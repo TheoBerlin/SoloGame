@@ -8,7 +8,7 @@ class CommandListVK : public ICommandList
 {
 public:
     CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool commandPool, DeviceVK* pDevice);
-    ~CommandListVK();
+    ~CommandListVK() = default;
 
     bool begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo) override final;
     bool reset() override final;

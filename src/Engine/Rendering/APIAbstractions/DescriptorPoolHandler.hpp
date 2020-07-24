@@ -15,6 +15,7 @@ public:
 
     // Specify the settingsfor pools that will be created. Optimally, only one pool will be created, but more can be created if needed.
     void init(const DescriptorPoolInfo& poolInfos, Device* pDevice);
+    void clear();
 
     DescriptorSet* allocateDescriptorSet(const IDescriptorSetLayout* pLayout, Device* pDevice);
 

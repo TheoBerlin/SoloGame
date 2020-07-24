@@ -44,15 +44,7 @@ public:
 
     ~ResourcePool()
     {
-        if (m_Deleter) {
-            for (ResourceType* pResource : m_Resources) {
-                m_Deleter(pResource);
-            }
-        } else {
-            for (ResourceType* pResource : m_Resources) {
-                delete pResource;
-            }
-        }
+        clear();
     }
 
     void init(std::vector<ResourceType*> resources, std::function<void(ResourceType*)> m_Deleter = nullptr)
@@ -63,6 +55,21 @@ public:
         for (size_t freeIdx = 0u; freeIdx < m_FreeIndices.size(); freeIdx++) {
             m_FreeIndices[freeIdx] = freeIdx;
         }
+    }
+
+    void clear()
+    {
+        if (m_Deleter) {
+            for (ResourceType* pResource : m_Resources) {
+                m_Deleter(pResource);
+            }
+        } else {
+            for (ResourceType* pResource : m_Resources) {
+                delete pResource;
+            }
+        }
+
+        m_Resources.clear();
     }
 
     PooledResource<ResourceType> acquire()

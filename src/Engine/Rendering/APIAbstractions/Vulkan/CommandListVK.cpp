@@ -15,11 +15,6 @@ CommandListVK::CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool comman
     m_pDevice(pDevice)
 {}
 
-CommandListVK::~CommandListVK()
-{
-    vkFreeCommandBuffers(m_pDevice->getDevice(), m_CommandPool, 1u, &m_CommandBuffer);
-}
-
 bool CommandListVK::begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo)
 {
     VkCommandBufferBeginInfo beginInfo = {};
