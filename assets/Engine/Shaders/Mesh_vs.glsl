@@ -17,8 +17,8 @@ void main()
 {
     vec4 outPos         = vec4(in_Position, 1.0);
 
-    vec4 outWorldPos    = g_PerObject.World * outPos;
-    gl_Position         = g_PerObject.WVP * outPos;
-    out_Normal          = (g_PerObject.World * vec4(in_Normal, 0.0)).xyz;
+    vec4 outWorldPos    = outPos * g_PerObject.World;
+    gl_Position         = outPos * g_PerObject.WVP;
+    out_Normal          = (vec4(in_Normal, 0.0) * g_PerObject.World).xyz;
     out_TXCoords        = in_TXCoords;
 }

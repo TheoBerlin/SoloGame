@@ -98,7 +98,14 @@ void CommandListVK::bindIndexBuffer(IBuffer* pBuffer)
 
 void CommandListVK::bindViewport(const Viewport* pViewport)
 {
-    vkCmdSetViewport(m_CommandBuffer, 0u, 1u, (VkViewport*)pViewport);
+    VkViewport viewportVK = {};
+    std::memcpy(&viewportVK, pViewport, sizeof(VkViewport));
+
+    // Flip the y-axis to have it point up, and move the origin to the bottom
+    viewportVK.y      = viewportVK.height;
+    viewportVK.height = -viewportVK.height;
+
+    vkCmdSetViewport(m_CommandBuffer, 0u, 1u, &viewportVK);
 }
 
 void CommandListVK::bindScissor(const Rectangle2D& scissorRectangle)

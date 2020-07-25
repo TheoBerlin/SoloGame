@@ -123,12 +123,12 @@ public:
     // waitIdle waits for the device to be idle
     virtual void waitIdle() = 0;
 
-    Swapchain* getSwapchain()                               { return m_pSwapchain; }
-    Texture* getBackbuffer(uint32_t frameIndex)             { return m_pSwapchain->getBackbuffer(frameIndex); }
-    Texture* getDepthStencil(uint32_t frameIndex)           { return m_pSwapchain->getDepthTexture(frameIndex); }
-    ShaderHandler* getShaderHandler()                       { return m_pShaderHandler; }
-    const QueueFamilyIndices& getQueueFamilyIndices() const { return m_QueueFamilyIndices; }
-    inline uint32_t& getFrameIndex()                        { return m_FrameIndex; }
+    inline Swapchain* getSwapchain()                                { return m_pSwapchain; }
+    inline uint32_t& getFrameIndex()                                { return m_FrameIndex; }
+    inline Texture* getBackbuffer(uint32_t frameIndex)              { return m_pSwapchain->getBackbuffer(frameIndex); }
+    inline Texture* getDepthStencil(uint32_t frameIndex)            { return m_pSwapchain->getDepthTexture(frameIndex); }
+    inline ShaderHandler* getShaderHandler()                        { return m_pShaderHandler; }
+    inline const QueueFamilyIndices& getQueueFamilyIndices() const  { return m_QueueFamilyIndices; }
 
 protected:
     friend DescriptorPoolHandler;

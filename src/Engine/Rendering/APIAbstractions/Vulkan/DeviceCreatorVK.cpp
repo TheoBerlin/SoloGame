@@ -10,7 +10,7 @@
 #include <vulkan/vulkan_win32.h>
 
 const std::vector<const char*> g_RequiredLayerNames         = { "VK_LAYER_KHRONOS_validation" };
-const std::vector<const char*> g_RequiredDeviceExtensions   = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+const std::vector<const char*> g_RequiredDeviceExtensions   = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
 Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const Window* pWindow)
 {
