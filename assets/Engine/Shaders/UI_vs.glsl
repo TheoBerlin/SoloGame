@@ -20,6 +20,5 @@ void main()
     // Translate the quad by translating whilst converting positions in [0,1] to [-1,1]:
     // + position * 2.0 - 1:
     gl_Position     = vec4(in_Position * g_PerObject.Size * 2.0 + g_PerObject.Position * 2.0 - 1.0, 0.0, 1.0);
-    gl_Position.y   = -gl_Position.y;
     out_TXCoords    = in_TXCoords;
 }

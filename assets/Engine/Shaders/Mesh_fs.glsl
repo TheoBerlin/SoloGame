@@ -43,7 +43,7 @@ void main()
         vec3 toLight        = g_PerFrame.PointLights[lightIdx].Position - in_WorldPos;
         float distToLight   = length(toLight);
         toLight /= distToLight;
-        float cosAngle = min(dot(normal, toLight), 1.0);
+        float cosAngle = clamp(dot(normal, toLight), 0.0, 1.0);
 
         // Diffuse
         pointLight += cosAngle * g_PerFrame.PointLights[lightIdx].Light;
@@ -51,12 +51,12 @@ void main()
         // Specular
         vec3 toEye      = normalize(g_PerFrame.CameraPosition - in_WorldPos);
         vec3 halfwayVec = normalize(toLight + toEye);
-        pointLight += g_PerFrame.PointLights[lightIdx].Light * pow(min(dot(halfwayVec, in_Normal), 1.0), g_Material.Ks.r) * g_Material.Ks.g;
+        pointLight += g_PerFrame.PointLights[lightIdx].Light * pow(clamp(dot(halfwayVec, in_Normal), 0.0, 1.0), g_Material.Ks.r) * g_Material.Ks.g;
 
         // Attenuation
-        float attenuation = 1.0 - min(g_PerFrame.PointLights[lightIdx].RadiusRec * distToLight, 1.0);
+        float attenuation = 1.0 - clamp(g_PerFrame.PointLights[lightIdx].RadiusRec * distToLight, 0.0, 1.0);
         pointLight *= Kd * attenuation;
     }
 
-    out_Color = vec4(min(ambient + pointLight, vec3(1.0)), 1.0);
+    out_Color = vec4(clamp(ambient + pointLight, 0.0, 1.0), 1.0);
 }

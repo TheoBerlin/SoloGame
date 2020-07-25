@@ -138,7 +138,7 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentSubscriber->getComponentHandler(TID(VelocityHandler)));
     pVelocityHandler->createVelocityComponent(player);
 
-    VPHandler* pVPHandler = static_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
+    VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
 
     ViewMatrixInfo viewMatrixInfo = {};
     viewMatrixInfo.EyePosition      = DirectX::XMLoadFloat3(&camPosition);

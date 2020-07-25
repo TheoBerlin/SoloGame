@@ -46,10 +46,10 @@ Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, co
 }
 
 Device::Device(QueueFamilyIndices queueFamilyIndices)
-    :m_QueueFamilyIndices(queueFamilyIndices),
-    m_pSwapchain(nullptr),
-    m_pShaderHandler(nullptr),
+    :m_pSwapchain(nullptr),
     m_FrameIndex(0u)
+    m_pShaderHandler(nullptr),
+    m_QueueFamilyIndices(queueFamilyIndices)
 {}
 
 Device::~Device()

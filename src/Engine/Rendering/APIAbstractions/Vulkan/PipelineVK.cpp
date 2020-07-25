@@ -35,12 +35,20 @@ PipelineVK* PipelineVK::create(const PipelineInfo& pipelineInfo, DeviceVK* pDevi
     inputAssemblyState.sType      = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssemblyState.topology   = convertPrimitiveTopology(pipelineInfo.PrimitiveTopology);
 
+    std::vector<VkViewport> viewports(pipelineInfo.Viewports.size());
+    std::memcpy(viewports.data(), pipelineInfo.Viewports.data(), sizeof(VkViewport) * viewports.size());
+    for (VkViewport& viewport : viewports) {
+        // Flip the y-axis to have it point up, and move the origin to the bottom
+        viewport.y      = viewport.height;
+        viewport.height = -viewport.height;
+    }
+
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1u;
-    viewportState.pViewports    = pipelineInfo.Viewports.empty() ? nullptr : (VkViewport*)pipelineInfo.Viewports.data();
-    viewportState.scissorCount  = 1u;
-    viewportState.pScissors     = pipelineInfo.ScissorRectangles.empty() ? nullptr : (VkRect2D*)pipelineInfo.ScissorRectangles.data();
+    viewportState.viewportCount = std::max(1u, (uint32_t)pipelineInfo.Viewports.size());
+    viewportState.pViewports    = viewports.data();
+    viewportState.scissorCount  = std::max(1u, (uint32_t)pipelineInfo.ScissorRectangles.size());
+    viewportState.pScissors     = (VkRect2D*)pipelineInfo.ScissorRectangles.data();
 
     VkPipelineRasterizationStateCreateInfo rasterizerInfo = {};
     if (!convertRasterizerStateInfo(rasterizerInfo, pipelineInfo.RasterizerStateInfo)) {
