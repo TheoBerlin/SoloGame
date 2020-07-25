@@ -5,16 +5,23 @@ DescriptorPool::DescriptorPool(const DescriptorPoolInfo& descriptorPoolInfo)
     m_DescriptorSetCapacity(descriptorPoolInfo.MaxSetAllocations)
 {}
 
-void DescriptorPool::allocatedDescriptorSet(const DescriptorCounts& descriptorCounts)
+DescriptorSet* DescriptorPool::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout, const DescriptorCounts& descriptorCounts)
 {
-    m_AvailableDescriptors -= descriptorCounts;
-    m_DescriptorSetCapacity += 1u;
+    DescriptorSet* pNewSet = dAllocateDescriptorSet(pDescriptorSetLayout);
+    if (pNewSet) {
+        m_AvailableDescriptors -= descriptorCounts;
+        m_DescriptorSetCapacity -= 1u;
+    }
+
+    return pNewSet;
 }
 
-void DescriptorPool::deallocatedDescriptorSet(const DescriptorCounts& descriptorCounts)
+void DescriptorPool::deallocateDescriptorSet(const DescriptorSet* pDescriptorSet, const DescriptorCounts& descriptorCounts)
 {
+    dDeallocateDescriptorSet(pDescriptorSet);
+
     m_AvailableDescriptors += descriptorCounts;
-    m_DescriptorSetCapacity -= 1u;
+    m_DescriptorSetCapacity += 1u;
 }
 
 bool DescriptorPool::hasRoomFor(const DescriptorCounts& descriptorCounts)

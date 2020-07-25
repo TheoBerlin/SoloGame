@@ -34,7 +34,11 @@ UIRenderer::~UIRenderer()
 {
     // Delete all panel render resources
     for (Entity entity : m_Panels.getIDs()) {
-        onPanelRemoved(entity);
+        PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
+        delete panelRenderResources.pBuffer;
+        delete panelRenderResources.pDescriptorSet;
+
+        m_PanelRenderResources.pop(entity);
     }
 
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
@@ -122,7 +126,7 @@ void UIRenderer::recordCommands()
         pCommandList->bindVertexBuffer(0u, m_pQuad);
 
         for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
-            pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet, m_pPipelineLayout);
+            pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet, m_pPipelineLayout, 0u);
             pCommandList->draw(4u);
         }
     }
@@ -322,9 +326,16 @@ void UIRenderer::onPanelAdded(Entity entity)
 
 void UIRenderer::onPanelRemoved(Entity entity)
 {
-    PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
-    delete panelRenderResources.pBuffer;
-    delete panelRenderResources.pDescriptorSet;
-
+    PanelRenderResources panelRenderResources = m_PanelRenderResources.indexID(entity);
     m_PanelRenderResources.pop(entity);
+
+    std::function<void()> deleteFunction = [this, panelRenderResources]() {
+        m_pRenderingHandler->waitAllFrames();
+        delete panelRenderResources.pBuffer;
+        delete panelRenderResources.pDescriptorSet;
+    };
+
+    // TODO: Execute this on a separate thread. Currently, this needs to be done on the main thread to block
+    // it from deleting a panel texture being used in rendering.
+    deleteFunction();
 }

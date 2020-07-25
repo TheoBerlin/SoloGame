@@ -111,7 +111,7 @@ void CommandListDX11::bindPipeline(IPipeline* pPipeline)
     m_pBoundPipeline = pPipelineDX;
 }
 
-void CommandListDX11::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout)
+void CommandListDX11::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout, uint32_t setNr)
 {
     DescriptorSetDX11* pDescriptorSetDX = reinterpret_cast<DescriptorSetDX11*>(pDescriptorSet);
     pDescriptorSetDX->bind(m_pContext);

@@ -10,6 +10,5 @@ DescriptorSet::DescriptorSet(DescriptorPool* pDescriptorPool, const IDescriptorS
 
 DescriptorSet::~DescriptorSet()
 {
-    m_pDescriptorPool->deallocateDescriptorSet(this);
-    m_pDescriptorPool->deallocatedDescriptorSet(reinterpret_cast<const DescriptorSetLayoutDX11*>(m_pLayout)->getDescriptorCounts());
+    m_pDescriptorPool->deallocateDescriptorSet(this, m_pLayout->getDescriptorCounts());
 }

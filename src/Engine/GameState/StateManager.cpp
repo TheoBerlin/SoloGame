@@ -33,6 +33,7 @@ void StateManager::transitionState(State* pNewState, STATE_TRANSITION transition
             m_States.pop();
 
             if (!m_States.empty()) {
+                m_pECS->reinstateTopRegistryPage();
                 m_States.top()->resume();
             }
             break;

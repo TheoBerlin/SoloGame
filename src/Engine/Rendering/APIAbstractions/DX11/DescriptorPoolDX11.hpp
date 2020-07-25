@@ -11,6 +11,7 @@ public:
     DescriptorPoolDX11(const DescriptorPoolInfo& poolInfo);
     ~DescriptorPoolDX11() = default;
 
-    DescriptorSetDX11* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout) override final;
-    void deallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final { return; };
+private:
+    DescriptorSetDX11* dAllocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout) override final;
+    void dDeallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final { return; };
 };
