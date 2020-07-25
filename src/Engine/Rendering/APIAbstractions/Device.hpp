@@ -120,6 +120,8 @@ public:
 
     // waitAll: Wait for every fence or just one. timeout: Nanoseconds
     virtual bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) = 0;
+    // waitIdle waits for the device to be idle
+    virtual void waitIdle() = 0;
 
     Swapchain* getSwapchain()                               { return m_pSwapchain; }
     Texture* getBackbuffer(uint32_t frameIndex)             { return m_pSwapchain->getBackbuffer(frameIndex); }
@@ -133,11 +135,19 @@ protected:
 
     virtual DescriptorPool* createDescriptorPool(const DescriptorPoolInfo& poolInfo) = 0;
 
+    // VkDevice is deleted before the graphics objects in Device are. This is a workaround for that issue.
+    void deleteGraphicsObjects();
+
 protected:
     Swapchain* m_pSwapchain;
     uint32_t m_FrameIndex;
 
     DescriptorPoolHandler m_DescriptorPoolHandler;
+
+    // Each pool contains one command pool for each thread. The generated command lists are temporary, i.e. short lived.
+    ResourcePool<ICommandPool> m_CommandPoolsTempGraphics;
+    ResourcePool<ICommandPool> m_CommandPoolsTempTransfer;
+    ResourcePool<ICommandPool> m_CommandPoolsTempCompute;
 
 private:
     virtual Shader* compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo) = 0;
@@ -155,9 +165,4 @@ private:
 private:
     ShaderHandler* m_pShaderHandler;
     QueueFamilyIndices m_QueueFamilyIndices;
-
-    // Each pool contains one command pool for each thread. The generated command lists are temporary, i.e. short lived.
-    ResourcePool<ICommandPool> m_CommandPoolsTempGraphics;
-    ResourcePool<ICommandPool> m_CommandPoolsTempTransfer;
-    ResourcePool<ICommandPool> m_CommandPoolsTempCompute;
 };

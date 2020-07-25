@@ -8,7 +8,7 @@ class CommandListVK : public ICommandList
 {
 public:
     CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool commandPool, DeviceVK* pDevice);
-    ~CommandListVK();
+    ~CommandListVK() = default;
 
     bool begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo) override final;
     bool reset() override final;
@@ -22,7 +22,7 @@ public:
     void bindPipeline(IPipeline* pPipeline) override final;
 
     // Shader resources
-    void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout) override final;
+    void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout, uint32_t setNr) override final;
 
     void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) override final;
     void bindIndexBuffer(IBuffer* pBuffer) override final;

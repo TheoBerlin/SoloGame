@@ -7,9 +7,7 @@
 
 DescriptorPoolHandler::~DescriptorPoolHandler()
 {
-    for (DescriptorPool* pDescriptorPool : m_DescriptorPools) {
-        delete pDescriptorPool;
-    }
+    clear();
 }
 
 void DescriptorPoolHandler::init(const DescriptorPoolInfo& poolInfos, Device* pDevice)
@@ -19,6 +17,15 @@ void DescriptorPoolHandler::init(const DescriptorPoolInfo& poolInfos, Device* pD
     m_DescriptorPools.push_back(pDevice->createDescriptorPool(poolInfos));
 }
 
+void DescriptorPoolHandler::clear()
+{
+    for (DescriptorPool* pDescriptorPool : m_DescriptorPools) {
+        delete pDescriptorPool;
+    }
+
+    m_DescriptorPools.clear();
+}
+
 DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSetLayout* pLayout, Device* pDevice)
 {
     DescriptorCounts descriptorsToAllocate = pLayout->getDescriptorCounts();
@@ -26,10 +33,9 @@ DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSet
 
     for (DescriptorPool* pDescriptorPool : m_DescriptorPools) {
         if (pDescriptorPool->hasRoomFor(descriptorsToAllocate)) {
-            pDescriptorSet = pDescriptorPool->allocateDescriptorSet(pLayout);
+            pDescriptorSet = pDescriptorPool->allocateDescriptorSet(pLayout, descriptorsToAllocate);
 
             if (pDescriptorSet) {
-                pDescriptorPool->allocatedDescriptorSet(descriptorsToAllocate);
                 return pDescriptorSet;
             }
         }
@@ -46,7 +52,7 @@ DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSet
     m_DescriptorPools.push_back(pDevice->createDescriptorPool(newPoolInfo));
 
     // Last attempt to allocate descriptor set
-    pDescriptorSet = m_DescriptorPools.back()->allocateDescriptorSet(pLayout);
+    pDescriptorSet = m_DescriptorPools.back()->allocateDescriptorSet(pLayout, descriptorsToAllocate);
     if (!pDescriptorSet) {
         LOG_ERROR("Failed to allocate descriptor set");
     }

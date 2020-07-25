@@ -38,6 +38,8 @@ public:
 
     bool convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT srcLayout, TEXTURE_LAYOUT dstLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage);
 
+    inline void setImage(VkImage image)     { m_Image = image; }
+
     inline VkImage getImage()               { return m_Image; }
     inline VkImageView getImageView() const { return m_ImageView; }
 

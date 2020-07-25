@@ -18,6 +18,8 @@ IGame::IGame()
 
 IGame::~IGame()
 {
+    m_pDevice->waitIdle();
+
     delete m_pPhysicsCore;
     delete m_pAssetLoaders;
     delete m_pUICore;

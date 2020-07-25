@@ -13,10 +13,10 @@ public:
     MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler);
     ~MainMenu();
 
-    void resume();
-    void pause();
+    void resume() override final;
+    void pause() override final;
 
-    void update(float dt);
+    void update(float dt) override final;
 
     Device* getDevice() { return m_pDevice; };
     InputHandler* getInputHandler() { return m_pInputHandler; }

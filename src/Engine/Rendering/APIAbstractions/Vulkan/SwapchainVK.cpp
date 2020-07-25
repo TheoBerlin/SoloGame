@@ -31,6 +31,12 @@ SwapchainVK::SwapchainVK(const SwapchainInfoVK& swapchainInfo, const ISemaphore*
 
 SwapchainVK::~SwapchainVK()
 {
+    for (TextureVK* pBackbuffer : m_ppBackbuffers) {
+        // Deleting VkSwapchain also deletes its images
+        pBackbuffer->setImage(VK_NULL_HANDLE);
+        delete pBackbuffer;
+    }
+
     vkDestroySwapchainKHR(m_pDevice->getDevice(), m_Swapchain, nullptr);
 }
 

@@ -124,6 +124,15 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
     return pShader;
 }
 
+void Device::deleteGraphicsObjects()
+{
+    delete m_pSwapchain;
+    m_DescriptorPoolHandler.clear();
+    m_CommandPoolsTempGraphics.clear();
+    m_CommandPoolsTempTransfer.clear();
+    m_CommandPoolsTempCompute.clear();
+}
+
 bool Device::initTempCommandPools()
 {
     // Create pool of command pools

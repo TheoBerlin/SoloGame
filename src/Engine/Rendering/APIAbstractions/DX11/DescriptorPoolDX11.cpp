@@ -7,7 +7,7 @@ DescriptorPoolDX11::DescriptorPoolDX11(const DescriptorPoolInfo& poolInfo)
     :DescriptorPool(poolInfo)
 {}
 
-DescriptorSetDX11* DescriptorPoolDX11::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
+DescriptorSetDX11* DescriptorPoolDX11::dAllocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
 {
     const DescriptorSetLayoutDX11* pDescriptorSetLayoutDX = reinterpret_cast<const DescriptorSetLayoutDX11*>(pDescriptorSetLayout);
     return DBG_NEW DescriptorSetDX11(pDescriptorSetLayoutDX, this);

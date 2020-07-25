@@ -120,10 +120,15 @@ TextureVK::TextureVK(const glm::uvec2& dimensions, RESOURCE_FORMAT format, Devic
 TextureVK::~TextureVK()
 {
     VkDevice device = m_pDevice->getDevice();
-
     vkDestroyImageView(device, m_ImageView, nullptr);
-    vkDestroyImage(device, m_Image, nullptr);
-    vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
+
+    if (m_Image != VK_NULL_HANDLE) {
+        vkDestroyImage(device, m_Image, nullptr);
+    }
+
+    if (m_Allocation != VK_NULL_HANDLE) {
+        vmaFreeMemory(m_pDevice->getVulkanAllocator(), m_Allocation);
+    }
 }
 
 bool TextureVK::convertTextureLayout(VkCommandBuffer commandBuffer, TEXTURE_LAYOUT srcLayout, TEXTURE_LAYOUT dstLayout, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage)

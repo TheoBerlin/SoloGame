@@ -16,10 +16,11 @@ public:
     DescriptorPoolVK(VkDescriptorPool descriptorPool, const DescriptorPoolInfo& poolInfo, DeviceVK* pDevice);
     ~DescriptorPoolVK();
 
-    DescriptorSetVK* allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout) override final;
-    void deallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final;
-
     inline VkDescriptorPool getDescriptorPool() { return m_DescriptorPool; }
+
+private:
+    DescriptorSetVK* dAllocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout) override final;
+    void dDeallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final;
 
 private:
     VkDescriptorPool m_DescriptorPool;

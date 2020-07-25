@@ -23,7 +23,6 @@ layout (set = 0, binding = 0) uniform PerFrame {
     vec4 Padding;
 } g_PerFrame;
 
-layout (location = 0) in vec4 in_Position;
 layout (location = 1) in vec3 in_Normal;
 layout (location = 2) in vec3 in_WorldPos;
 layout (location = 3) in vec2 in_TXCoords;

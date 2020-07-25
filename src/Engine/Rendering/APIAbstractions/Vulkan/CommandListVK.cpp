@@ -15,11 +15,6 @@ CommandListVK::CommandListVK(VkCommandBuffer commandBuffer, VkCommandPool comman
     m_pDevice(pDevice)
 {}
 
-CommandListVK::~CommandListVK()
-{
-    vkFreeCommandBuffers(m_pDevice->getDevice(), m_CommandPool, 1u, &m_CommandBuffer);
-}
-
 bool CommandListVK::begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo)
 {
     VkCommandBufferBeginInfo beginInfo = {};
@@ -80,12 +75,12 @@ void CommandListVK::bindPipeline(IPipeline* pPipeline)
     vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 }
 
-void CommandListVK::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout)
+void CommandListVK::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout, uint32_t setNr)
 {
     VkDescriptorSet descriptorSet   = reinterpret_cast<DescriptorSetVK*>(pDescriptorSet)->getDescriptorSet();
     VkPipelineLayout pipelineLayout = reinterpret_cast<PipelineLayoutVK*>(pPipelineLayout)->getPipelineLayout();
 
-    vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0u, 1u, &descriptorSet, 0u, nullptr);
+    vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, setNr, 1u, &descriptorSet, 0u, nullptr);
 }
 
 void CommandListVK::bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer)

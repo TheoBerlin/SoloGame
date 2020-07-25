@@ -50,7 +50,7 @@ DescriptorPoolVK::~DescriptorPoolVK()
     vkDestroyDescriptorPool(m_pDevice->getDevice(), m_DescriptorPool, nullptr);
 }
 
-DescriptorSetVK* DescriptorPoolVK::allocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
+DescriptorSetVK* DescriptorPoolVK::dAllocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout)
 {
     VkDescriptorSetLayout layout = reinterpret_cast<const DescriptorSetLayoutVK*>(pDescriptorSetLayout)->getDescriptorSetLayout();
 
@@ -70,7 +70,7 @@ DescriptorSetVK* DescriptorPoolVK::allocateDescriptorSet(const IDescriptorSetLay
     return DBG_NEW DescriptorSetVK(descriptorSet, this, pLayoutVK, m_pDevice);
 }
 
-void DescriptorPoolVK::deallocateDescriptorSet(const DescriptorSet* pDescriptorSet)
+void DescriptorPoolVK::dDeallocateDescriptorSet(const DescriptorSet* pDescriptorSet)
 {
     VkDescriptorSet descriptorSet = reinterpret_cast<const DescriptorSetVK*>(pDescriptorSet)->getDescriptorSet();
     if (vkFreeDescriptorSets(m_pDevice->getDevice(), m_DescriptorPool, 1u, &descriptorSet) != VK_SUCCESS) {

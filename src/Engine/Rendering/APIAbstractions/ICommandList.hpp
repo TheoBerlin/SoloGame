@@ -49,7 +49,7 @@ public:
     virtual void bindPipeline(IPipeline* pPipeline) = 0;
 
     // Shader resources
-    virtual void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout) = 0;
+    virtual void bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout, uint32_t setNr) = 0;
 
     virtual void bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer) = 0;
     virtual void bindIndexBuffer(IBuffer* pBuffer) = 0;
