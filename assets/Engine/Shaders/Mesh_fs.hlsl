@@ -9,16 +9,14 @@ cbuffer material : register(b3) {
 
 struct PointLight {
     float3 Position;
-    float RadiusRec;
     float3 Light;
-    float Padding;
+    float RadiusRec;
 };
 
 cbuffer perFrame : register(b0) {
     PointLight pointLights[MAX_LIGHTS];
     float3 camPos;
     uint numLights;
-    float4 padding;
 };
 
 struct VS_OUT {
@@ -41,7 +39,10 @@ float4 main(VS_OUT ps_in) : SV_TARGET {
         float3 toLight = pointLights[lightIdx].Position - ps_in.worldPos;
         float distToLight = length(toLight);
         toLight /= distToLight;
-        float cosAngle = saturate(dot(normal, toLight));
+        float cosAngle = dot(normal, toLight);
+        if (cosAngle < 0.0) {
+            continue;
+        }
 
         // Diffuse
         pointLight += cosAngle * pointLights[lightIdx].Light;
@@ -49,7 +50,7 @@ float4 main(VS_OUT ps_in) : SV_TARGET {
         // Specular
         float3 toEye = normalize(camPos-ps_in.worldPos);
         float3 halfwayVec = normalize(toLight + toEye);
-        pointLight += pointLights[lightIdx].Light * pow(saturate(dot(halfwayVec, ps_in.normal)), Ks.r) * Ks.g;
+        pointLight += pointLights[lightIdx].Light * pow(saturate(dot(halfwayVec, normal)), Ks.r) * Ks.g;
 
         // Attenuation
         float attenuation = 1.0 - saturate(pointLights[lightIdx].RadiusRec * distToLight);

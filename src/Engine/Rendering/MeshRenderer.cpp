@@ -136,8 +136,8 @@ void MeshRenderer::updateBuffers()
 
         perFrame.PointLights[i] = {
             m_pTransformHandler->getPosition(pointLightEntity),
-            pointLight.RadiusReciprocal,
-            pointLight.Light
+            pointLight.Light,
+            pointLight.RadiusReciprocal
         };
     }
 
@@ -161,6 +161,7 @@ void MeshRenderer::updateBuffers()
         PerObjectMatrices matrices;
         matrices.World = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
         DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World) * camVP));
+        DirectX::XMStoreFloat4x4(&matrices.World, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World)));
 
         pMappedMemory = nullptr;
         m_pDevice->map(modelRenderResources.pWVPBuffer, &pMappedMemory);
