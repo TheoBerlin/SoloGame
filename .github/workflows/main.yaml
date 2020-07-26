@@ -8,10 +8,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out repository under $GITHUB_WORKSPACE, so the job can access it
     - uses: actions/checkout@v2
 
-    - name: Add msbuild to PATH
+    - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.1
 
     - name: Build Debug x64
@@ -21,27 +20,25 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out repository under $GITHUB_WORKSPACE, so the job can access it
     - uses: actions/checkout@v2
 
-    - name: Add msbuild to PATH
+    - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.1
 
     - name: Build Release x64
       run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
 
   lint:
-    name: cppcheck
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Generate Report
+      - name: Generate Lint Report
         uses: deep5050/cppcheck-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          enable: warning,performance,portability,information,unusedFunction,missingInclude
           exclude_check: dependencies
           platform: win64
           output_file: ./cppcheck_report
-      - name: Print Report
-        run: cat ./cppcheck_report
+      - name: Read Lint Report
+        run: python3 ./.github/workflows/read-lint-report.py -i ./cppcheck_report
