@@ -1,4 +1,4 @@
-name: Build
+name: Build-Lint
 on: pull_request
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -29,3 +29,19 @@ jobs:
 
     - name: Build Release x64
       run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
+
+  lint:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate Report
+        uses: deep5050/cppcheck-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          enable: warning,performance,portability,information,unusedFunction,missingInclude
+          exclude_check: dependencies
+          platform: win64
+          output_file: ./cppcheck_report
+      - name: Print Report
+        run: cat ./cppcheck_report
