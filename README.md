@@ -1,4 +1,3 @@
-## Build
 ![Build](https://github.com/TheoBerlin/SoloGame/workflows/Build/badge.svg)
 
 ## What is this project?
