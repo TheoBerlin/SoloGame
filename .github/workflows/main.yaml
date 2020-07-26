@@ -28,5 +28,5 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.1
 
-    - name: Build Debug x64
+    - name: Build Release x64
       run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
