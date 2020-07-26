@@ -1,0 +1,16 @@
+name: Lint
+on: pull_request
+
+jobs:
+  lint:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cppcheck
+        uses: deep5050/cppcheck-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          enable: warning,performance,portability,information,unusedFunction,missingInclude
+          exclude_check: dependencies
+          platform: win64
