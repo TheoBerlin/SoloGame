@@ -1,3 +1,6 @@
+## Build
+![Build](https://github.com/TheoBerlin/SoloGame/workflows/Build/badge.svg)
+
 ## What is this project?
 In this repository is an engine and a game, both being made from scratch using C++, DirectX and Vulkan. Both game and engine are far from being finalized. This is a project I started for two purposes; to learn and to have something to display to employers.
 
