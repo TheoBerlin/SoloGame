@@ -1,18 +1,29 @@
 import re, sys, getopt
 
 def readLine(line):
-    searchResults   = re.search(r"^\[([^:]+):([0-9]+)\]: \(([^)]+)\)\s(.*?)$", line)
-    try:
-        fileName        = searchResults.group(1)
-        lineNr          = searchResults.group(2)
-        lintCategory    = searchResults.group(3)
-        message         = searchResults.group(4)
+    fileRegex       = r"\[([^:]+):([0-9]+)\]"
+    anything        = ".*"
+    categoryRegex   = r"(\([^)]+\))"
+    messageRegex    = "(.*?)$"
+    searchResults   = re.search(rf"{fileRegex}(?:{anything}{fileRegex})?{anything}{categoryRegex}\s{messageRegex}", line).groups()
 
-        outMessage = f"({lintCategory}) {message}"
-
-        print(f"::warning file={fileName},line={lineNr}::{outMessage}")
-    except:
+    if len(searchResults) != 6:
         print(f"Failed to regex search string: {line}")
+        return
+
+    firstFileName   = searchResults[0]
+    firstLineNr     = searchResults[1]
+    lintCategory    = searchResults[4]
+    message         = searchResults[5]
+    outMessage = ""
+    if searchResults[2] is not None and searchResults[3] is not None:
+        # The line contains two files. Have the second one be printed in the output message
+        secondFileName  = searchResults[2]
+        secondLineNr    = searchResults[3]
+        outMessage += f"[{secondFileName}:{secondLineNr}]: "
+
+    outMessage += f"{lintCategory} {message}"
+    print(f"::warning file={firstFileName},line={firstLineNr}::{outMessage}")
 
 def readReport(fileName):
     containsInfoLine = False
