@@ -37,7 +37,7 @@ jobs:
         uses: deep5050/cppcheck-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          exclude_check: dependencies
+          exclude_check: vendor
           platform: win64
           output_file: ./cppcheck_report
       - name: Read Lint Report

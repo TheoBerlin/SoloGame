@@ -2,14 +2,17 @@ import re, sys, getopt
 
 def readLine(line):
     searchResults   = re.search(r"^\[([^:]+):([0-9]+)\]: \(([^)]+)\)\s(.*?)$", line)
-    fileName        = searchResults.group(1)
-    lineNr          = searchResults.group(2)
-    lintCategory    = searchResults.group(3)
-    message         = searchResults.group(4)
+    try:
+        fileName        = searchResults.group(1)
+        lineNr          = searchResults.group(2)
+        lintCategory    = searchResults.group(3)
+        message         = searchResults.group(4)
 
-    outMessage = f"({lintCategory}) {message}"
+        outMessage = f"({lintCategory}) {message}"
 
-    print(f"::warning file={fileName},line={lineNr}::{outMessage}")
+        print(f"::warning file={fileName},line={lineNr}::{outMessage}")
+    except:
+        print(f"Failed to regex search string: {line}")
 
 def readReport(fileName):
     containsInfoLine = False
