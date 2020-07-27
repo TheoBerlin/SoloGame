@@ -1,22 +1,29 @@
-import sys, getopt
+import re, sys, getopt
 
-# checkGroup could be 'warning, inconclusive'. Remove the trailing 'inconclusive'
-# checkGroup = checkGroup.split(',')[0]
-# checkColor = colorMapping[checkGroup]
-# checkGroup = re.search("\[(.*?)\]: \((.*?)\)", line).group(2)
+def readLine(line):
+    searchResults   = re.search(r"^\[([^:]+):([0-9]+)\]: \(([^)]+)\)\s(.*?)$", line)
+    fileName        = searchResults.group(1)
+    lineNr          = searchResults.group(2)
+    lintCategory    = searchResults.group(3)
+    message         = searchResults.group(4)
+
+    outMessage = f"({lintCategory}) {message}"
+
+    print(f"::warning file={fileName},line={lineNr}::{outMessage}")
 
 def readReport(fileName):
     containsInfoLine = False
 
+    lineCount = 0
     with open(fileName) as file:
-        lineCount = 0
         for line in file:
             lineCount += 1
             if line.startswith("(information)"):
                 containsInfoLine = True
-            print(f"::warning ::{line}")
+            else:
+                readLine(line)
 
-    # Fail if the lint report is not empty
+    # Succeed if the lint report is empty, or only contains the information line
     return (lineCount == 0) or (containsInfoLine and lineCount == 1)
 
 def main(argv):
