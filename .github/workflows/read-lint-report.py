@@ -38,7 +38,10 @@ def readReport(fileName):
                 readLine(line)
 
     # Succeed if the lint report is empty, or only contains the information line
-    return (lineCount == 0) or (containsInfoLine and lineCount == 1)
+    if (lineCount == 0) or (containsInfoLine and lineCount == 1):
+        return 0
+
+    return 1
 
 def main(argv):
     inputFile = ""
