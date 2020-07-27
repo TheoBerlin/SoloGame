@@ -54,11 +54,11 @@ def main(argv):
     for opt, arg in opts:
         if opt == '-h':
             print("read-lint-report.py -i <inputfile>")
-            sys.exit()
+            sys.exit(1)
         elif opt in ("-i", "--ifile"):
             inputFile = arg
 
-    return readReport(inputFile)
+    sys.exit(readReport(inputFile))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
