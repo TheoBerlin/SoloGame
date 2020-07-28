@@ -1,10 +1,19 @@
 ![Välfärden](https://github.com/TheoBerlin/SoloGame/workflows/V%C3%A4lf%C3%A4rden/badge.svg)
 
 ## What is this project?
-In this repository is an engine and a game, both being made from scratch using C++, DirectX and Vulkan. Both game and engine are far from being finalized. This is a project I started for two purposes; to learn and to have something to display to employers.
+In this repository is an engine being made from scratch using C++. Graphics rendering is performed by either DirectX or Vulkan. This is a project I started working on for two purposes; to learn and to have something to display to employers.
+
+## Contributing
+Cppcheck is a C++ linter used in the project's workflow. For a pull request to be accepted, it needs to pass the linter checks. Thus, locally installing cppcheck is recommended.
+
+#### Setting up cppcheck
+1. Download and install cppcheck from http://cppcheck.sourceforge.net/
+2. Open the cppcheck GUI
+3. Load the cppcheck project file .cppcheck/lint.cppcheck
 
 ## Highlights in the code
-Probably the best part of the code is the implementation of the Entity Component System (ECS) architecture. This resides in the
+### ECS
+The engine uses an Entity Component System (ECS) architecture for storing game object data and performing logic. ECS resides in the
 [Engine/ECS folder](https://github.com/TheoBerlin/SoloGame/tree/master/src/Engine/ECS).
 It's very much inspired by
 various discussions and videos, such as [this talk at GDC](https://www.youtube.com/watch?v=0_Byw9UMn9g).
@@ -23,6 +32,3 @@ written to by another system.
 
 The updating of systems is done in
 [Engine/ECS/SystemUpdater.cpp](https://github.com/TheoBerlin/SoloGame/blob/master/src/Engine/ECS/SystemUpdater.cpp).
-
-## What will the final game look like?
-I'm trying to make something very small, to make sure the game is finished in time for my graduation in 2021.
