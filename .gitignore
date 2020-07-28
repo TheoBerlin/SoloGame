@@ -23,4 +23,8 @@ log.txt
 
 !libs/*
 
+# SPIR-V shaders
 *.spv
+
+# cppcheck files
+.cppcheck/lint-cppcheck-build-dir/
