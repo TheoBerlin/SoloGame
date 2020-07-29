@@ -16,7 +16,7 @@ struct FramebufferInfo {
 class Framebuffer
 {
 public:
-    Framebuffer(const glm::uvec2& dimensions) { m_Dimensions = dimensions; };
+    Framebuffer(const glm::uvec2& dimensions) :m_Dimensions(dimensions) {};
     virtual ~Framebuffer() = 0 {};
 
     inline const glm::uvec2 getDimensions() const { return m_Dimensions; }

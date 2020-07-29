@@ -24,7 +24,7 @@ Device* Device::create(RENDERING_API API, const SwapchainInfo& swapchainInfo, co
             pDeviceCreator.reset(DBG_NEW DeviceCreatorVK());
             break;
         default:
-            LOG_ERROR("Erroneous API: %d", (int)API);
+            LOG_ERRORF("Erroneous API: %d", (int)API);
             return nullptr;
     }
 
@@ -115,7 +115,7 @@ Shader* Device::createShader(SHADER_TYPE shaderType, const std::string& filePath
         pShader = compileShader(shaderType, shaderPath, pInputLayoutInfo);
 
         if (!pShader) {
-            LOG_ERROR("Failed to compile [%s]", shaderPath.c_str());
+            LOG_ERRORF("Failed to compile [%s]", shaderPath.c_str());
             LOG_INFO("Edit the shader code and press any key to reattempt a compilation");
             std::getchar();
         }

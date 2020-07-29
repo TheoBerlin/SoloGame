@@ -20,7 +20,7 @@ bool createRasterizerState(ID3D11RasterizerState** ppRasterizerState, const Rast
             rsDesc.CullMode = D3D11_CULL_BACK;
             break;
         default:
-            LOG_ERROR("Erroneous cull mode flag: %d", (int)rsDesc.CullMode);
+            LOG_ERRORF("Erroneous cull mode flag: %d", (int)rsDesc.CullMode);
             return nullptr;
     }
 

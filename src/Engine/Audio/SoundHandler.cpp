@@ -28,7 +28,7 @@ bool SoundHandler::initHandler()
 {
     FMOD_RESULT result = FMOD::System_Create(&m_pSystem);
     if (result != FMOD_OK) {
-        LOG_ERROR("Failed to create FMOD system: %s", FMOD_ErrorString(result));
+        LOG_ERRORF("Failed to create FMOD system: %s", FMOD_ErrorString(result));
         return false;
     }
 
@@ -36,7 +36,7 @@ bool SoundHandler::initHandler()
 
     result = m_pSystem->init(maxChannels, FMOD_INIT_NORMAL, nullptr);
     if (result != FMOD_OK) {
-        LOG_ERROR("Failed to initialize FMOD system: %s", FMOD_ErrorString(result));
+        LOG_ERRORF("Failed to initialize FMOD system: %s", FMOD_ErrorString(result));
         return false;
     }
 
@@ -48,7 +48,7 @@ bool SoundHandler::createSound(Entity entity, const std::string& fileName)
     Sound newSound = {};
     FMOD_RESULT result = m_pSystem->createSound(fileName.c_str(), FMOD_DEFAULT, nullptr, &newSound.pSound);
     if (result != FMOD_OK) {
-        LOG_WARNING("Failed to create sound component from file [%s]: %s", fileName.c_str(), FMOD_ErrorString(result));
+        LOG_WARNINGF("Failed to create sound component from file [%s]: %s", fileName.c_str(), FMOD_ErrorString(result));
         return false;
     }
 
@@ -62,7 +62,7 @@ bool SoundHandler::playSound(Entity entity)
     Sound& sound = m_Sounds.indexID(entity);
     FMOD_RESULT result = m_pSystem->playSound(sound.pSound, nullptr, false, &sound.pChannel);
     if (result != FMOD_OK) {
-        LOG_WARNING("Failed to play sound, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        LOG_WARNINGF("Failed to play sound, entity: %d, error: %s", entity, FMOD_ErrorString(result));
         return false;
     }
 
@@ -74,7 +74,7 @@ bool SoundHandler::setVolume(Entity entity, float volume)
     Sound& sound = m_Sounds.indexID(entity);
     FMOD_RESULT result = sound.pChannel->setVolume(volume);
     if (result != FMOD_OK) {
-        LOG_WARNING("Failed to set sound volume, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        LOG_WARNINGF("Failed to set sound volume, entity: %d, error: %s", entity, FMOD_ErrorString(result));
         return false;
     }
 
@@ -84,7 +84,7 @@ bool SoundHandler::setVolume(Entity entity, float volume)
 float SoundHandler::getSoundDuration(Entity entity)
 {
     if (!m_Sounds.hasElement(entity)) {
-        LOG_WARNING("Tried to loop sound of entity that does not have a sound component: %d", entity);
+        LOG_WARNINGF("Tried to loop sound of entity that does not have a sound component: %d", entity);
         return false;
     }
 
@@ -93,7 +93,7 @@ float SoundHandler::getSoundDuration(Entity entity)
     unsigned int soundDurationMS = 0;
     FMOD_RESULT result = sound.pSound->getLength(&soundDurationMS, FMOD_TIMEUNIT_MS);
     if (result != FMOD_OK) {
-        LOG_WARNING("Failed to get sound duration, entity: %d, error: %s", entity, FMOD_ErrorString(result));
+        LOG_WARNINGF("Failed to get sound duration, entity: %d, error: %s", entity, FMOD_ErrorString(result));
         return 0.0f;
     }
 

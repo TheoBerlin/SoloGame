@@ -136,7 +136,7 @@ ShaderDX11* DeviceDX11::compileShader(SHADER_TYPE shaderType, const std::string&
         case SHADER_TYPE::FRAGMENT_SHADER:
             return ShaderDX11::createFragmentShader(shaderType, pCompiledCode, filePath, m_pDevice);
         default:
-            LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
+            LOG_ERRORF("Erroneous shader type: %d", (int)shaderType);
             return nullptr;
     }
 }

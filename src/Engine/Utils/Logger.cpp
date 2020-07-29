@@ -23,18 +23,33 @@ Logger::~Logger()
     logFile.close();
 }
 
-void Logger::log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& text)
+void Logger::logInfo(const char* pFile, int lineNr, const std::string& message)
+{
+    Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
+}
+
+void Logger::logWarning(const char* pFile, int lineNr, const std::string& message)
+{
+    Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
+}
+
+void Logger::logError(const char* pFile, int lineNr, const std::string& message)
+{
+    Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
+}
+
+void Logger::log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& message)
 {
     // Remove the path from the file string
     std::string fileName(pFile);
     fileName = std::string(&pFile[fileName.find_last_of('\\') + 1]);
 
-    std::string finalText = Logger::timeToString() + " " + severity + " " + fileName + "(" + std::to_string(lineNr) + ")" + ": " + text + "\n";
+    std::string finalText = Logger::timeToString() + " " + severity + " " + fileName + "(" + std::to_string(lineNr) + ")" + ": " + message + "\n";
 
     // Print to console
     SetConsoleTextAttribute(consoleHandle, color);
 
-    std::cout << finalText;
+    printf("%s %s %s (%d): %s\n", Logger::timeToString().c_str(), severity.c_str(), fileName.c_str(), lineNr, message.c_str());
 
     // Set console text color to white
     SetConsoleTextAttribute(consoleHandle, 15);

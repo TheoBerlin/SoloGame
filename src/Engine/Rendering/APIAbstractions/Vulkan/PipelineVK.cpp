@@ -154,7 +154,7 @@ VkPrimitiveTopology PipelineVK::convertPrimitiveTopology(PRIMITIVE_TOPOLOGY prim
         case PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP_WITH_ADJACENCY:
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
         default:
-            LOG_WARNING("Erroneous primitive topology: %d", (uint32_t)primitiveTopology);
+            LOG_WARNINGF("Erroneous primitive topology: %d", (uint32_t)primitiveTopology);
             return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     }
 }

@@ -32,7 +32,4 @@ public:
 private:
     std::vector<Binding<ID3D11Buffer*>> m_BufferBindings;
     std::vector<Binding<std::pair<ID3D11ShaderResourceView*, ID3D11SamplerState*>>> m_CombinedTextureSamplerBindings;
-
-    // Contains information on which shaders the bindings belong to
-    const DescriptorSetLayoutDX11* m_pLayout;
 };

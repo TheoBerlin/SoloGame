@@ -1,15 +1,30 @@
 import re, sys, getopt
 
-def readLine(line):
+# Regexes that will catch messages to be suppressed
+suppressedRegexes = [
+    "Class '.*' has a constructor with 1 argument that is not explicit",
+    "Consider using std::transform",
+    "The function '.*' is never used",
+    r"^\(information\)"
+]
+
+def isSuppressed(line):
+    for suppressedRegex in suppressedRegexes:
+        if re.search(suppressedRegex, line) is not None:
+            return True
+    return False
+
+def printWarning(line):
     fileRegex       = r"\[([^:]+):([0-9]+)\]"
     anything        = ".*"
     categoryRegex   = r"(\([^)]+\))"
     messageRegex    = "(.*?)$"
-    searchResults   = re.search(rf"{fileRegex}(?:{anything}{fileRegex})?{anything}{categoryRegex}\s{messageRegex}", line).groups()
-
-    if len(searchResults) != 6:
+    match           = re.search(rf"{fileRegex}(?:{anything}{fileRegex})?{anything}{categoryRegex}\s{messageRegex}", line)
+    if match is None or len(match.groups()) != 6:
         print(f"Failed to regex search string: {line}")
         return
+
+    searchResults   = match.groups()
 
     firstFileName   = searchResults[0]
     firstLineNr     = searchResults[1]
@@ -26,19 +41,24 @@ def readLine(line):
     print(f"::warning file={firstFileName},line={firstLineNr}::{outMessage}")
 
 def readReport(fileName):
-    containsInfoLine = False
+    suppressedMessages = []
+    warningCount = 0
 
-    lineCount = 0
     with open(fileName) as file:
         for line in file:
-            lineCount += 1
-            if line.startswith("(information)"):
-                containsInfoLine = True
+            if isSuppressed(line):
+                suppressedMessages.append(line)
             else:
-                readLine(line)
+                printWarning(line)
+                warningCount += 1
+
+    print(f"Warnings: {warningCount}, suppressed messages: {len(suppressedMessages)}")
+    print("Suppressed messages:")
+    for suppressedMessage in suppressedMessages:
+        print(suppressedMessage, end='')
 
     # Succeed if the lint report is empty, or only contains the information line
-    if (lineCount == 0) or (containsInfoLine and lineCount == 1):
+    if warningCount > 0:
         return 0
 
     return 1

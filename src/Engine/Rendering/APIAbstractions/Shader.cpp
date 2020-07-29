@@ -14,7 +14,7 @@ std::string Shader::getTypePostfix(SHADER_TYPE shaderType)
         case SHADER_TYPE::FRAGMENT_SHADER:
             return "_fs";
         default:
-            LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
+            LOG_ERRORF("Erroneous shader type: %d", (int)shaderType);
             return "_vs";
     }
 }

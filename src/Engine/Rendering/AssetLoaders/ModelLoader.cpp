@@ -66,10 +66,10 @@ Model* ModelLoader::loadModel(Entity entity, const std::string& filePath)
     const aiScene* scene = importer.ReadFile(filePath, aiProcess_GenUVCoords | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenNormals | aiProcess_FlipUVs);
 
     if (!scene) {
-        LOG_WARNING("Model could not be loaded: [%s]", filePath.c_str());
+        LOG_WARNINGF("Model could not be loaded: [%s]", filePath.c_str());
         return nullptr;
     } else {
-        LOG_INFO("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
+        LOG_INFOF("Loading model [%s] containing [%d] meshes and [%d] materials", filePath.c_str(), scene->mNumMeshes, scene->mNumMaterials);
     }
 
     std::shared_ptr<Model> pLoadedModel = std::shared_ptr<Model>(DBG_NEW Model(), releaseModel);
@@ -150,19 +150,19 @@ void ModelLoader::loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes)
 
     // Read indices
     std::vector<unsigned int> indices;
-    indices.resize(assimpMesh->mNumFaces * 3);
+    indices.resize(size_t(assimpMesh->mNumFaces) * 3u);
 
-    for (unsigned int i = 0; i < assimpMesh->mNumFaces; i += 1) {
-        const aiFace* face = &assimpMesh->mFaces[i];
+    for (size_t faceIdx = 0; faceIdx < assimpMesh->mNumFaces; faceIdx += 1) {
+        const aiFace* face = &assimpMesh->mFaces[faceIdx];
 
         if (face->mNumIndices != 3) {
-            LOG_WARNING("Mesh face has an unexpected amount of indices: %d", face->mNumIndices);
+            LOG_WARNINGF("Mesh face has an unexpected amount of indices: %d", face->mNumIndices);
             return;
         }
 
-        indices[i * 3] = face->mIndices[0];
-        indices[i * 3 + 1] = face->mIndices[1];
-        indices[i * 3 + 2] = face->mIndices[2];
+        indices[faceIdx * 3]        = face->mIndices[0];
+        indices[faceIdx * 3 + 1]    = face->mIndices[1];
+        indices[faceIdx * 3 + 2]    = face->mIndices[2];
     }
 
     mesh.indexCount = indices.size();
@@ -231,7 +231,7 @@ void ModelLoader::loadNode(std::vector<unsigned int>& meshIndices, aiNode* node,
 
         // Make sure the mesh has texture coordinates
         if (!scene->mMeshes[node->mMeshes[i]]->HasTextureCoords(0)) {
-            LOG_WARNING("Ignoring mesh [%d]: missing texture coordinates", node->mMeshes[i]);
+            LOG_WARNINGF("Ignoring mesh [%d]: missing texture coordinates", node->mMeshes[i]);
             continue;
         }
 

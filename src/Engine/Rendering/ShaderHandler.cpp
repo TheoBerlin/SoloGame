@@ -52,7 +52,7 @@ std::shared_ptr<Shader> ShaderHandler::loadShader(const std::string& shaderName,
         // The vertex stage is not in the cache, compile it with the corresponding input layout info
         auto inputLayoutItr = m_InputLayoutInfos.find(shaderName);
         if (inputLayoutItr == m_InputLayoutInfos.end()) {
-            LOG_ERROR("Could not find input layout info for shader: %s", shaderName.c_str());
+            LOG_ERRORF("Could not find input layout info for shader: %s", shaderName.c_str());
             return nullptr;
         }
 

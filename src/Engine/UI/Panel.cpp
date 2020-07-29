@@ -98,7 +98,7 @@ void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLO
 void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, std::shared_ptr<Texture>* pTextureReferences, size_t textureCount)
 {
     if (!panels.hasElement(entity)) {
-        LOG_WARNING("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
+        LOG_WARNINGF("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
         return;
     }
 
@@ -123,7 +123,7 @@ void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAtta
 void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight, std::function<void()> onPress)
 {
     if (!panels.hasElement(entity)) {
-        LOG_WARNING("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
+        LOG_WARNINGF("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
         return;
     }
 

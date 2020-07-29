@@ -59,7 +59,7 @@ void ECSBooter::bootHandlers()
             ComponentHandlerBootInfo& bootInfo = dependencyItr->second;
             if (bootInfo.inOpenList) {
                 if (dependencyItr != openList.back()) {
-                    LOG_ERROR("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
+                    LOG_ERRORF("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
                     break;
                 }
             } else {
@@ -165,7 +165,7 @@ void ECSBooter::finalizeHandlerBootDependencies()
             } else {
                 // The dependency is not enqueued for bootup, it might already be booted
                 if (!m_pECS->getComponentSubscriber()->getComponentHandler(dependencyTID)) {
-                    LOG_ERROR("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
+                    LOG_ERRORF("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
                     hasDependencies = false;
                     break;
                 }
@@ -186,7 +186,7 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     bootInfo.inClosedList = true;
 
     if (!bootInfo.handlerRegistration->pComponentHandler->initHandler()) {
-        LOG_ERROR("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
+        LOG_ERRORF("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
         m_pECS->getComponentSubscriber()->registerComponentHandler(*bootInfo.handlerRegistration);
     }

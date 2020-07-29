@@ -57,7 +57,7 @@ void SystemUpdater::deregisterSystem(System* pSystem)
     if (foundSystem) {
         m_SystemIDGen.popID(pSystem->getSystemID());
     } else {
-        LOG_ERROR("Failed to deregister system with ID: %ld", systemID);
+        LOG_ERRORF("Failed to deregister system with ID: %ld", systemID);
     }
 }
 

@@ -52,7 +52,7 @@ VkStencilOp convertStencilOp(STENCIL_OP stencilOp)
         case STENCIL_OP::DECREMENT_AND_WRAP:
             return VK_STENCIL_OP_DECREMENT_AND_WRAP;
         default:
-            LOG_WARNING("Erroneous stencil op: %d", (uint32_t)stencilOp);
+            LOG_WARNINGF("Erroneous stencil op: %d", (uint32_t)stencilOp);
             return VK_STENCIL_OP_REPLACE;
     }
 }

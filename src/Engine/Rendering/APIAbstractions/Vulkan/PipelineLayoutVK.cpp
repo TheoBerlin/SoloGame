@@ -3,7 +3,7 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/DescriptorSetLayoutVK.hpp>
 #include <Engine/Rendering/APIAbstractions/Vulkan/DeviceVK.hpp>
 
-PipelineLayoutVK* PipelineLayoutVK::create(std::vector<IDescriptorSetLayout*> descriptorSetLayouts, DeviceVK* pDevice)
+PipelineLayoutVK* PipelineLayoutVK::create(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts, DeviceVK* pDevice)
 {
     std::vector<VkDescriptorSetLayout> descriptorSetLayoutsVK;
     descriptorSetLayoutsVK.reserve(descriptorSetLayouts.size());

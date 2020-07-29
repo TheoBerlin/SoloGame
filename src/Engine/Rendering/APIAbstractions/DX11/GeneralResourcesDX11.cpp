@@ -46,7 +46,7 @@ RESOURCE_FORMAT convertFormatFromDX(DXGI_FORMAT format)
             return RESOURCE_FORMAT::D32_FLOAT;
 
         default:
-            LOG_ERROR("Unknown resource format: %d", (int)format);
+            LOG_ERRORF("Unknown resource format: %d", (int)format);
             return RESOURCE_FORMAT::R32G32B32A32_FLOAT;
     }
 }
@@ -69,7 +69,7 @@ D3D11_COMPARISON_FUNC convertComparisonFunc(COMPARISON_FUNC comparisonFunc)
         case COMPARISON_FUNC::ALWAYS:
             return D3D11_COMPARISON_ALWAYS;
         default:
-            LOG_WARNING("Erroneous comparison function: %d", (int)comparisonFunc);
+            LOG_WARNINGF("Erroneous comparison function: %d", (int)comparisonFunc);
             return D3D11_COMPARISON_ALWAYS;
     }
 }

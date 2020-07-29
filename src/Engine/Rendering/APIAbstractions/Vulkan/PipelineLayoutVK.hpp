@@ -9,7 +9,7 @@ class DeviceVK;
 class PipelineLayoutVK : public IPipelineLayout
 {
 public:
-    static PipelineLayoutVK* create(std::vector<IDescriptorSetLayout*> descriptorSetLayouts, DeviceVK* pDevice);
+    static PipelineLayoutVK* create(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts, DeviceVK* pDevice);
 
 public:
     PipelineLayoutVK(VkPipelineLayout pipelineLayout, DeviceVK* pDevice);

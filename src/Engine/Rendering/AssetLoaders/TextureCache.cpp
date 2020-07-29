@@ -35,7 +35,7 @@ std::shared_ptr<Texture> TextureCache::loadTexture(const std::string& filePath)
     }
 
     std::shared_ptr<Texture> texture(m_pDevice->createTextureFromFile(filePath));
-    LOG_INFO("Loaded texture: [%s]", filePath.c_str());
+    LOG_INFOF("Loaded texture: [%s]", filePath.c_str());
 
     m_Textures.insert({filePath, texture});
 

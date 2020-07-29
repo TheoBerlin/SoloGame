@@ -43,7 +43,7 @@ BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
             bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
             break;
         default:
-            LOG_ERROR("Invalid buffer usage flag: %d", bufferInfo.Usage);
+            LOG_ERRORF("Invalid buffer usage flag: %d", bufferInfo.Usage);
             return;
     }
 
@@ -59,7 +59,7 @@ BufferDX11::BufferDX11(ID3D11Device* pDevice, const BufferInfo& bufferInfo)
 
     HRESULT hr = pDevice->CreateBuffer(&bufferDesc, bufferInfo.pData ? &bufferData : nullptr, &m_pBuffer);
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to create buffer: %s", hresultToString(hr).c_str());
+        LOG_WARNINGF("Failed to create buffer: %s", hresultToString(hr).c_str());
     }
 }
 

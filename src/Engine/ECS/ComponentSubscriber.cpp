@@ -25,7 +25,7 @@ void ComponentSubscriber::registerComponentHandler(const ComponentHandlerRegistr
         auto mapItr = this->m_ComponentStorage.find(componentReg.tid);
 
         if (mapItr != this->m_ComponentStorage.end()) {
-            LOG_WARNING("Attempted to register an already handled component type: %s", componentReg.tid.name());
+            LOG_WARNINGF("Attempted to register an already handled component type: %s", componentReg.tid.name());
             continue;
         }
 
@@ -42,7 +42,7 @@ void ComponentSubscriber::deregisterComponentHandler(ComponentHandler* handler)
         auto handlerItr = m_ComponentStorage.find(componentType);
 
         if (handlerItr == m_ComponentStorage.end()) {
-            LOG_WARNING("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
+            LOG_WARNINGF("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
             continue;
         }
 
@@ -57,7 +57,7 @@ void ComponentSubscriber::deregisterComponentHandler(ComponentHandler* handler)
     auto handlerItr = m_ComponentHandlers.find(handler->getHandlerType());
 
     if (handlerItr == m_ComponentHandlers.end()) {
-        LOG_WARNING("Attempted to deregister an unregistered component handler: %s", handler->getHandlerType().name());
+        LOG_WARNINGF("Attempted to deregister an unregistered component handler: %s", handler->getHandlerType().name());
         return;
     }
 
@@ -69,7 +69,7 @@ ComponentHandler* ComponentSubscriber::getComponentHandler(const std::type_index
     auto itr = m_ComponentHandlers.find(handlerType);
 
     if (itr == m_ComponentHandlers.end()) {
-        LOG_WARNING("Failed to retrieve component handler: %s", handlerType.name());
+        LOG_WARNINGF("Failed to retrieve component handler: %s", handlerType.name());
         return nullptr;
     }
 
@@ -97,7 +97,7 @@ size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegis
             auto queryItr = m_ComponentStorage.find(componentReg.TID);
 
             if (queryItr == m_ComponentStorage.end()) {
-                LOG_ERROR("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.TID.name(), componentReg.TID.hash_code());
+                LOG_ERRORF("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.TID.name(), componentReg.TID.hash_code());
                 return 0;
             }
 
@@ -152,7 +152,7 @@ size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegis
 void ComponentSubscriber::unsubscribeFromComponents(size_t subscriptionID)
 {
     if (m_SubscriptionStorage.hasElement(subscriptionID) == false) {
-        LOG_WARNING("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);
+        LOG_WARNINGF("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);
         return;
     }
 

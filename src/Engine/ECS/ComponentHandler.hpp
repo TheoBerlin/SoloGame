@@ -31,7 +31,7 @@ class ComponentHandler
 public:
     ComponentHandler(ECSCore* pECS, std::type_index tid_handler);
     // Deregisters component handler and deletes components
-    ~ComponentHandler();
+    virtual ~ComponentHandler();
 
     virtual bool initHandler() = 0;
 

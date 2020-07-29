@@ -47,7 +47,7 @@ public:
     Framebuffer* createFramebuffer(const FramebufferInfo& framebufferInfo) override final;
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
-    IPipelineLayout* createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts) override final;
+    IPipelineLayout* createPipelineLayout(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts) override final;
     IPipeline* createPipeline(const PipelineInfo& pipelineInfo) override final;
 
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;

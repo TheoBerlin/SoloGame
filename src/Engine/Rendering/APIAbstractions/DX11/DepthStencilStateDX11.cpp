@@ -25,7 +25,7 @@ bool createDepthStencilState(DepthStencilStateDX11& depthStencilState, const Dep
 
     HRESULT hr = pDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState.pDepthStencilState);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -63,7 +63,7 @@ D3D11_STENCIL_OP convertStencilOp(STENCIL_OP stencilOp)
         case STENCIL_OP::DECREMENT_AND_WRAP:
             return D3D11_STENCIL_OP_DECR;
         default:
-            LOG_WARNING("Erroneous stencil op: %d", (int)stencilOp);
+            LOG_WARNINGF("Erroneous stencil op: %d", (int)stencilOp);
             return D3D11_STENCIL_OP_KEEP;
     }
 }

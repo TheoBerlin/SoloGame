@@ -27,7 +27,7 @@ TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
 {
     if (faces < 3) {
-        LOG_WARNING("Tube must have at least 3 faces, attempted to create one with: %d", faces);
+        LOG_WARNINGF("Tube must have at least 3 faces, attempted to create one with: %d", faces);
         return nullptr;
     }
 

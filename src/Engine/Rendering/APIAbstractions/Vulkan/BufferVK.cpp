@@ -95,7 +95,7 @@ VkBufferCreateInfo BufferVK::convertBufferInfo(const BufferInfo& bufferInfo)
             createInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             break;
         default:
-            LOG_ERROR("Invalid buffer usage flag: %d", (int)bufferInfo.Usage);
+            LOG_ERRORF("Invalid buffer usage flag: %d", (int)bufferInfo.Usage);
     }
 
     if (bufferInfo.CPUAccess != BUFFER_DATA_ACCESS::WRITE) {

@@ -246,7 +246,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
         if (!foundPresentFamily) {
             VkBool32 presentSupported = false;
             if (vkGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, (uint32_t)queueFamilyIdx, m_Surface, &presentSupported) != VK_SUCCESS) {
-                LOG_ERROR("Failed to check for present capabilities, queue family index: %d", queueFamilyIdx);
+                LOG_ERRORF("Failed to check for present capabilities, queue family index: %d", queueFamilyIdx);
                 return false;
             }
 
@@ -299,7 +299,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
         }
 
         if (!pickedFamily) {
-            LOG_ERROR("Failed to find queue family with flag: %d", (int)queueFamilyIndex.first);
+            LOG_ERRORF("Failed to find queue family with flag: %d", (int)queueFamilyIndex.first);
             return false;
         }
     }
@@ -497,7 +497,7 @@ bool DeviceCreatorVK::verifyRequiredExtensionsSupported(const std::vector<std::s
     bool hasAllExtensions = true;
     for (const std::string& pRequiredExtension : extensionNames) {
         if (!availableExtensionsSet.contains(pRequiredExtension)) {
-            LOG_ERROR("Missing required extension: %s", pRequiredExtension);
+            LOG_ERRORF("Missing required extension: %s", pRequiredExtension);
             hasAllExtensions = false;
         }
     }
@@ -555,7 +555,7 @@ bool DeviceCreatorVK::verifyLayerSupport()
     bool hasAllLayers = true;
     for (const char* pRequiredLayer : g_RequiredLayerNames) {
         if (!availableLayersSet.contains(pRequiredLayer)) {
-            LOG_ERROR("Missing required layer: %s", pRequiredLayer);
+            LOG_ERRORF("Missing required layer: %s", pRequiredLayer);
             hasAllLayers = false;
         }
     }
