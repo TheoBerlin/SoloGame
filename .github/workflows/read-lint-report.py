@@ -1,4 +1,4 @@
-import re, sys, getopt
+import csv, re, sys, getopt
 
 # Regexes that will catch messages to be suppressed
 suppressedRegexes = [
@@ -16,7 +16,8 @@ def isSuppressed(line):
             return True
     return False
 
-def printWarning(line):
+# Returns true if a warning was printed
+def printWarning(line, filesToLint):
     fileRegex       = r"\[([^:]+):([0-9]+)\]"
     anything        = ".*"
     categoryRegex   = r"(\([^)]+\))"
@@ -24,7 +25,7 @@ def printWarning(line):
     match           = re.search(rf"{fileRegex}(?:{anything}{fileRegex})?{anything}{categoryRegex}\s{messageRegex}", line)
     if match is None or len(match.groups()) != 6:
         print(f"Failed to regex search string: {line}")
-        return
+        return False
 
     searchResults   = match.groups()
 
@@ -32,6 +33,9 @@ def printWarning(line):
     firstLineNr     = searchResults[1]
     lintCategory    = searchResults[4]
     message         = searchResults[5]
+    secondFileName  = ""
+    secondLineNr    = ""
+
     outMessage = ""
     if searchResults[2] is not None and searchResults[3] is not None:
         # The line contains two files. Have the second one be printed in the output message
@@ -39,10 +43,14 @@ def printWarning(line):
         secondLineNr    = searchResults[3]
         outMessage += f"[{secondFileName}:{secondLineNr}]: "
 
+    if firstFileName not in filesToLint and secondFileName not in filesToLint:
+        return False
+
     outMessage += f"{lintCategory} {message}"
     print(f"::warning file={firstFileName},line={firstLineNr}::{outMessage}")
+    return True
 
-def readReport(fileName):
+def readReport(fileName, filesToLint):
     suppressedMessages = []
     warningCount = 0
 
@@ -50,8 +58,7 @@ def readReport(fileName):
         for line in file:
             if isSuppressed(line):
                 suppressedMessages.append(line)
-            else:
-                printWarning(line)
+            elif printWarning(line, filesToLint):
                 warningCount += 1
 
     print(f"Warnings: {warningCount}, suppressed messages: {len(suppressedMessages)}")
@@ -62,22 +69,54 @@ def readReport(fileName):
     # Succeed if the lint report is empty, or only contains the information line
     return 0 if warningCount == 0 else 1
 
+def getCSVValues(file):
+    values = []
+
+    with open(file) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                print(f'Column names are {", ".join(row)}')
+                line_count += 1
+            else:
+                values += row
+                line_count += 1
+    return values
+
+def getFilesToLint(modifiedFilesPath, addedFilesPath):
+    modifiedFiles = getCSVValues(modifiedFilesPath) if modifiedFilesPath != "" else []
+    addedFiles = getCSVValues(addedFilesPath) if addedFilesPath != "" else []
+    return modifiedFiles + addedFiles
+
 def main(argv):
     inputFile = ""
+    modifiedFilesPath = ""
+    addedFilesPath = ""
+    helpStr = '''read-lint-report.py --report <path> --modified-files <path> --added-files <path>\n
+        modified-files: path to csv file containing file paths of files modified in a merge request
+        added-files: path to csv file containing file paths of files added in a merge request'''
     try:
-        opts, args = getopt.getopt(argv,"hi:",["ifile="])
+        opts, args = getopt.getopt(argv,"h:",["report=modified-files=added-files="])
         (args) # Hack to remove lint error of args not being used
     except getopt.GetoptError:
-        print("read-lint-report.py -i <inputfile>")
+        print("Intended usage:")
+        print(helpStr)
+        print("Used flags: " + str(argv))
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print("read-lint-report.py -i <inputfile>")
+            print(helpStr)
             sys.exit(1)
-        elif opt in ("-i", "--ifile"):
+        elif opt == "report":
             inputFile = arg
+        elif opt == "modified-files":
+            modifiedFilesPath = arg
+        elif opt == "added-files":
+            addedFilesPath = arg
 
-    sys.exit(readReport(inputFile))
+    filesToLint = getFilesToLint(modifiedFilesPath, addedFilesPath)
+    sys.exit(readReport(inputFile, filesToLint))
 
 if __name__ == "__main__":
     main(sys.argv[1:])

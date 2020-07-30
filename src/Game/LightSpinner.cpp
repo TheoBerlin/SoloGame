@@ -5,7 +5,8 @@
 #include <Engine/Utils/ECSUtils.hpp>
 
 LightSpinner::LightSpinner(ECSCore* pECS)
-    :System(pECS)
+    :System(pECS),
+    m_pTransformHandler(nullptr)
 {
     PointLightComponents pointLightSub;
     pointLightSub.m_Position.Permissions    = RW;
@@ -32,8 +33,6 @@ bool LightSpinner::initSystem()
 
 void LightSpinner::update(float dt)
 {
-    size_t lightCount = m_Lights.size();
-
     const float anglePerSec = DirectX::XM_PIDIV4;
     DirectX::XMVECTOR position;
 

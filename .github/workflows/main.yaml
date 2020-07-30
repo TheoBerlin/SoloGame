@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - name: Generate Lint Report
         uses: deep5050/cppcheck-action@master
         with:
@@ -40,5 +41,14 @@ jobs:
           exclude_check: vendor
           platform: win64
           output_file: ./cppcheck_report
+
+      - name: Get file changes
+        id: get_file_changes
+        uses: trilom/file-changes-action@v1.2.3
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          output: 'csv'
+
       - name: Read Lint Report
-        run: python3 ./.github/workflows/read-lint-report.py -i ./cppcheck_report
+        run: python3 ./.github/workflows/read-lint-report.py --report ./cppcheck_report
+          --modified-files ${{ steps.file_changes.outputs.files_modified }} --added-files ${{steps.file_changes.outputs.files_added }}

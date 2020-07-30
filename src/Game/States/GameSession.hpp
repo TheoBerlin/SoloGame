@@ -14,7 +14,7 @@ class SoundHandler;
 class GameSession : public State
 {
 public:
-    GameSession(MainMenu* mainMenu);
+    GameSession(MainMenu* pMainMenu);
     ~GameSession() = default;
 
     void resume();

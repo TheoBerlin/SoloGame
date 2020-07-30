@@ -279,9 +279,7 @@ bool UIRenderer::createPipeline()
     pipelineInfo.BlendStateInfo = {};
     pipelineInfo.BlendStateInfo.RenderTargetBlendInfos  = { rtvBlendInfo };
     pipelineInfo.BlendStateInfo.IndependentBlendEnabled = false;
-    for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
-        blendConstant = 1.0f;
-    }
+    std::fill_n(pipelineInfo.BlendStateInfo.pBlendConstants, 4u, 1.0f);
 
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;
