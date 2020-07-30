@@ -58,10 +58,7 @@ def readReport(fileName):
         print(suppressedMessage, end='')
 
     # Succeed if the lint report is empty, or only contains the information line
-    if warningCount > 0:
-        return 0
-
-    return 1
+    return 0 if warningCount == 0 else 1
 
 def main(argv):
     inputFile = ""

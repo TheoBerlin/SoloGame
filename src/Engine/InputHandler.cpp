@@ -4,18 +4,16 @@
 #include <Engine/Utils/Logger.hpp>
 
 InputHandler::InputHandler()
-    :m_MousePosition(0.0, 0.0),
-    m_MouseMove(0.0, 0.0),
+    :m_pWindow(nullptr),
+    m_pKeyStates(),
+    m_pMouseButtonStates(),
     m_MouseCenter(0.0, 0.0),
+    m_MousePosition(0.0, 0.0),
+    m_MouseMove(0.0, 0.0),
     m_RawMotionEnabled(false)
 {
-    for (bool& keyState : m_pKeyStates) {
-        keyState = false;
-    }
-
-    for (bool& buttonState : m_pMouseButtonStates) {
-        buttonState = false;
-    }
+    std::fill_n(m_pKeyStates.data(), m_pKeyStates.size(), false);
+    std::fill_n(m_pMouseButtonStates.data(), m_pMouseButtonStates.size(), false);
 }
 
 InputHandler::~InputHandler()

@@ -18,7 +18,7 @@ RenderPassDX11* RenderPassDX11::create(const RenderPassInfo& renderPassInfo)
     return DBG_NEW RenderPassDX11(clearIndices);
 }
 
-RenderPassDX11::RenderPassDX11(std::vector<size_t> clearIndices)
+RenderPassDX11::RenderPassDX11(const std::vector<size_t>& clearIndices)
     :m_ClearIndices(clearIndices)
 {
     m_ClearIndices.shrink_to_fit();

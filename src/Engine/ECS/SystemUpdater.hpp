@@ -33,13 +33,14 @@ public:
     void deregisterSystem(System* pSystem);
 
     // Updates all systems with a single thread
-    void updateST(float dt);
+    void updateST(float dt) const;
     // Updates all systems with multiple threads
     void updateMT(float dt);
 
 private:
-    void registerComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::map<std::type_index, ComponentPermissions>& uniqueRegs);
+    static void registerComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::map<std::type_index, ComponentPermissions>& uniqueRegs);
 
+private:
     // Executed multiple threads simultaneously to continuously pick systems to update and update them until every one has been updated
     void updateSystems(const UpdateQueue& updateQueue, float dt);
 

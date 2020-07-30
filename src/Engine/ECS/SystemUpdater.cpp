@@ -18,10 +18,10 @@ void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
     std::map<std::type_index, ComponentPermissions> uniqueRegs;
 
     for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriberRegistration.ComponentSubscriptionRequests) {
-        registerComponentAccesses(subReq.m_ComponentAccesses, uniqueRegs);
+        SystemUpdater::registerComponentAccesses(subReq.m_ComponentAccesses, uniqueRegs);
     }
 
-    registerComponentAccesses(sysReg.SubscriberRegistration.AdditionalDependencies, uniqueRegs);
+    SystemUpdater::registerComponentAccesses(sysReg.SubscriberRegistration.AdditionalDependencies, uniqueRegs);
 
     // Merge all of the system's subscribed component types into one vector
     std::vector<ComponentAccess> updateRegs;
@@ -61,7 +61,7 @@ void SystemUpdater::deregisterSystem(System* pSystem)
     }
 }
 
-void SystemUpdater::updateST(float dt)
+void SystemUpdater::updateST(float dt) const
 {
     for (const UpdateQueue& updateQueue : m_UpdateQueues) {
         const std::vector<SystemUpdateInfo>& updateInfos = updateQueue.getVec();
@@ -81,9 +81,8 @@ void SystemUpdater::updateMT(float dt)
             continue;
         }
 
-        for (std::thread& thread : threads) {
-            thread = std::thread(&SystemUpdater::updateSystems, this, updateQueue, dt);
-        }
+        std::generate(&threads[0], &threads[MAX_THREADS],
+            [&]() { return std::thread(&SystemUpdater::updateSystems, this, updateQueue, dt); });
 
         for (std::thread& thread : threads) {
             thread.join();

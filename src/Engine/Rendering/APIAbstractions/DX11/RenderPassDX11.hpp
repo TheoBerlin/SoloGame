@@ -11,7 +11,7 @@ public:
     static RenderPassDX11* create(const RenderPassInfo& renderPassInfo);
 
 public:
-    RenderPassDX11(std::vector<size_t> clearIndices);
+    RenderPassDX11(const std::vector<size_t>& clearIndices);
     ~RenderPassDX11() = default;
 
     void begin(const RenderPassBeginInfo& beginInfo, ID3D11DeviceContext* pContext);

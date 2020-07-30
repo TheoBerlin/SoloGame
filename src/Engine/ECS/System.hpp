@@ -32,7 +32,7 @@ public:
     System(ECSCore* pECS);
 
     // Deregisters system
-    ~System();
+    virtual ~System();
 
     virtual bool initSystem() = 0;
 

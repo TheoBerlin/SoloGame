@@ -7,7 +7,7 @@ class ECSCore;
 class State
 {
 public:
-    State(StateManager* pStateManager, ECSCore* ecs, STATE_TRANSITION transitionSetting);
+    State(StateManager* pStateManager, ECSCore* pECS, STATE_TRANSITION transitionSetting);
     State(State* pOther, STATE_TRANSITION transitionSetting);
     virtual ~State();
 

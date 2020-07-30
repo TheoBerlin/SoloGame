@@ -6,9 +6,10 @@
 #include <Engine/Utils/Logger.hpp>
 
 Renderer::Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
-    :m_pECS(pECS),
-    m_pDevice(pDevice),
-    m_pRenderingHandler(pRenderingHandler)
+    :m_pDevice(pDevice),
+    m_pRenderingHandler(pRenderingHandler),
+    m_pECS(pECS),
+    m_ComponentSubscriptionID(UINT64_MAX)
 {}
 
 Renderer::~Renderer()

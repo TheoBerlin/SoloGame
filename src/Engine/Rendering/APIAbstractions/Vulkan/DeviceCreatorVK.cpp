@@ -212,7 +212,6 @@ bool DeviceCreatorVK::pickPhysicalDevice()
 
         if (deviceRating > highestRating) {
             highestRating       = deviceRating;
-            highestRatingIdx    = highestRatingIdx;
         }
     }
 
@@ -604,14 +603,10 @@ bool DeviceCreatorVK::querySwapchainSupport(VkPhysicalDevice physicalDevice, Swa
 
 void DeviceCreatorVK::chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
-    for (const VkSurfaceFormatKHR& format : availableFormats) {
-        if (format.colorSpace != VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_UNORM) {
-            m_SwapchainFormat = format;
-            return;
-        }
-    }
+    auto foundFormat = std::find_if(availableFormats.begin(), availableFormats.end(),
+        [](const VkSurfaceFormatKHR& format) { return format.colorSpace != VK_COLOR_SPACE_SRGB_NONLINEAR_KHR && format.format == VK_FORMAT_B8G8R8A8_UNORM; });
 
-    m_SwapchainFormat = availableFormats.front();
+    m_SwapchainFormat = foundFormat != availableFormats.end() ? *foundFormat : availableFormats.front();
 }
 
 VkPresentModeKHR DeviceCreatorVK::chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const

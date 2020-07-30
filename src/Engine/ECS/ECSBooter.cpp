@@ -39,6 +39,10 @@ void ECSBooter::performBootups()
     bootRenderers();
 }
 
+bool yaboy(std::unordered_map<std::type_index, ComponentHandlerBootInfo>::iterator itr) {
+    return !itr->second.inClosedList;
+}
+
 void ECSBooter::bootHandlers()
 {
     buildBootInfos();
@@ -68,16 +72,10 @@ void ECSBooter::bootHandlers()
             }
 
             // Check if the handler has any unbooted dependencies
-            auto unbootedDependencyItr = m_HandlersBootInfos.end();
+            auto unbootedDependencyItr = std::find_if(bootInfo.dependencyMapIterators.begin(), bootInfo.dependencyMapIterators.end(),
+                [](auto dependencyItr) -> bool { return !dependencyItr->second.inClosedList; });
 
-            for (auto dependency : bootInfo.dependencyMapIterators) {
-                if (!dependency->second.inClosedList) {
-                    unbootedDependencyItr = dependency;
-                    break;
-                }
-            }
-
-            if (unbootedDependencyItr == m_HandlersBootInfos.end()) {
+            if (unbootedDependencyItr == bootInfo.dependencyMapIterators.end()) {
                 // All dependencies are booted, boot the handler
                 bootHandler(bootInfo);
                 openList.pop_back();
@@ -87,7 +85,7 @@ void ECSBooter::bootHandlers()
                 }
             } else {
                 // Not all dependencies are booted, try to boot a dependency
-                dependencyItr = unbootedDependencyItr;
+                dependencyItr = *unbootedDependencyItr;
             }
         }
 

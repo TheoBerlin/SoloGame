@@ -28,9 +28,9 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRe
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
-    std::fill(m_ppCommandPools, m_ppCommandPools + MAX_FRAMES_IN_FLIGHT, nullptr);
-    std::fill(m_ppCommandLists, m_ppCommandLists + MAX_FRAMES_IN_FLIGHT, nullptr);
-    std::fill(m_ppFramebuffers, m_ppFramebuffers + MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppCommandPools, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppCommandLists, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppFramebuffers, MAX_FRAMES_IN_FLIGHT, nullptr);
 
     CameraComponents camSub;
     PointLightComponents pointLightSub;
