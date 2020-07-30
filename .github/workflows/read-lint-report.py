@@ -5,6 +5,8 @@ suppressedRegexes = [
     "Class '.*' has a constructor with 1 argument that is not explicit",
     "Consider using std::transform",
     "The function '.*' is never used",
+    "Class '.*' does not have a .* which is recommended since it has dynamic memory",
+    "Member variable '.*' is in the wrong place in the initializer list",
     r"^\(information\)"
 ]
 

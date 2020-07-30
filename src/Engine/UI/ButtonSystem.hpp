@@ -21,7 +21,7 @@ public:
 private:
     IDVector m_Buttons;
 
-    UIHandler* m_pUIhandler;
+    UIHandler* m_pUIHandler;
 
     // Used for translating panel positions from [0,1] to [0, windowWidth or windowHeight]
     unsigned int m_ClientWidth, m_ClientHeight;

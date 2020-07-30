@@ -9,10 +9,10 @@
 
 CameraSystem::CameraSystem(ECSCore* pECS, InputHandler* pInputHandler)
     :System(pECS),
-    m_pInputHandler(pInputHandler),
     m_pTransformHandler(nullptr),
     m_pVelocityHandler(nullptr),
-    m_pVPHandler(nullptr)
+    m_pVPHandler(nullptr),
+    m_pInputHandler(pInputHandler)
 {
     CameraComponents cameraComponents;
     cameraComponents.m_Position.Permissions                 = R;

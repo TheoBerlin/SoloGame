@@ -10,8 +10,8 @@
 ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, Device* pDevice)
     :ComponentHandler(pECS, TID(ShaderResourceHandler)),
     m_pDevice(pDevice),
-    m_pQuadVertices(nullptr),
-    m_pAniSampler(nullptr)
+    m_pAniSampler(nullptr),
+    m_pQuadVertices(nullptr)
 {
     ComponentHandlerRegistration handlerReg = {};
     handlerReg.pComponentHandler = this;
