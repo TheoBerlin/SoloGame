@@ -7,17 +7,18 @@
 #include <Engine/Utils/Rendering.hpp>
 
 DescriptorSetDX11::DescriptorSetDX11(const DescriptorSetLayoutDX11* pDescriptorSetLayout, DescriptorPool* pDescriptorPool)
-    :DescriptorSet(pDescriptorPool, pDescriptorSetLayout),
-    m_pLayout(pDescriptorSetLayout)
+    :DescriptorSet(pDescriptorPool, pDescriptorSetLayout)
 {}
 
 void DescriptorSetDX11::updateUniformBufferDescriptor(SHADER_BINDING binding, IBuffer* pBuffer)
 {
     BufferDX11* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer);
+    const DescriptorSetLayoutDX11* pDescriptorSetLayoutDX = reinterpret_cast<const DescriptorSetLayoutDX11*>(m_pLayout);
+
     Binding<ID3D11Buffer*> bufferBinding = {
         .Resource       = pBufferDX->getBuffer(),
         .Binding        = (UINT)binding,
-        .ShaderStages   = m_pLayout->getBindingShaderStages((uint32_t)binding)
+        .ShaderStages   = pDescriptorSetLayoutDX->getBindingShaderStages((uint32_t)binding)
     };
 
     m_BufferBindings.push_back(bufferBinding);
@@ -27,11 +28,12 @@ void DescriptorSetDX11::updateCombinedTextureSamplerDescriptor(SHADER_BINDING bi
 {
     TextureDX11* pTextureDX = reinterpret_cast<TextureDX11*>(pTexture);
     SamplerDX11* pSamplerDX = reinterpret_cast<SamplerDX11*>(pSampler);
+    const DescriptorSetLayoutDX11* pDescriptorSetLayoutDX = reinterpret_cast<const DescriptorSetLayoutDX11*>(m_pLayout);
 
     Binding<std::pair<ID3D11ShaderResourceView*, ID3D11SamplerState*>> combinedTextureSamplerBinding = {
         .Resource       = { pTextureDX->getSRV(), pSamplerDX->getSamplerState() },
         .Binding        = (UINT)binding,
-        .ShaderStages   = m_pLayout->getBindingShaderStages((uint32_t)binding)
+        .ShaderStages   = pDescriptorSetLayoutDX->getBindingShaderStages((uint32_t)binding)
     };
 
     m_CombinedTextureSamplerBindings.push_back(combinedTextureSamplerBinding);

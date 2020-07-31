@@ -17,7 +17,7 @@ ShaderDX11* ShaderDX11::createVertexShader(SHADER_TYPE shaderType, ID3DBlob* pCo
     HRESULT hr = pDevice->CreateVertexShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pVertexShader);
     if (FAILED(hr)) {
         SAFERELEASE(pVertexShader)
-        LOG_ERROR("Failed to vertex shader from compiled code: %S", filePath.c_str());
+        LOG_ERRORF("Failed to vertex shader from compiled code: %S", filePath.c_str());
         return nullptr;
     }
 
@@ -30,7 +30,7 @@ ShaderDX11* ShaderDX11::createHullShader(SHADER_TYPE shaderType, ID3DBlob* pComp
     HRESULT hr = pDevice->CreateHullShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pHullShader);
     if (FAILED(hr)) {
         SAFERELEASE(pHullShader)
-        LOG_ERROR("Failed to hull shader from compiled code: %S", filePath.c_str());
+        LOG_ERRORF("Failed to hull shader from compiled code: %S", filePath.c_str());
         return nullptr;
     }
 
@@ -43,7 +43,7 @@ ShaderDX11* ShaderDX11::createDomainShader(SHADER_TYPE shaderType, ID3DBlob* pCo
     HRESULT hr = pDevice->CreateDomainShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pDomainShader);
     if (FAILED(hr)) {
         SAFERELEASE(pDomainShader)
-        LOG_ERROR("Failed to domain shader from compiled code: %S", filePath.c_str());
+        LOG_ERRORF("Failed to domain shader from compiled code: %S", filePath.c_str());
         return nullptr;
     }
 
@@ -56,7 +56,7 @@ ShaderDX11* ShaderDX11::createGeometryShader(SHADER_TYPE shaderType, ID3DBlob* p
     HRESULT hr = pDevice->CreateGeometryShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pGeometryShader);
     if (FAILED(hr)) {
         SAFERELEASE(pGeometryShader)
-        LOG_ERROR("Failed to geometry shader from compiled code: %S", filePath.c_str());
+        LOG_ERRORF("Failed to geometry shader from compiled code: %S", filePath.c_str());
         return nullptr;
     }
 
@@ -69,7 +69,7 @@ ShaderDX11* ShaderDX11::createFragmentShader(SHADER_TYPE shaderType, ID3DBlob* p
     HRESULT hr = pDevice->CreatePixelShader(pCompiledCode->GetBufferPointer(), pCompiledCode->GetBufferSize(), nullptr, &pFragmentShader);
     if (FAILED(hr)) {
         SAFERELEASE(pFragmentShader)
-        LOG_ERROR("Failed to fragment shader from compiled code: %S", filePath.c_str());
+        LOG_ERRORF("Failed to fragment shader from compiled code: %S", filePath.c_str());
         return nullptr;
     }
 
@@ -90,7 +90,7 @@ std::string ShaderDX11::getFilePostfix(SHADER_TYPE shaderType)
         case SHADER_TYPE::FRAGMENT_SHADER:
             return "_fs";
         default:
-            LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
+            LOG_ERRORF("Erroneous shader type: %d", (int)shaderType);
             return "_vs";
     }
 }
@@ -109,7 +109,7 @@ std::string ShaderDX11::getTargetVersion(SHADER_TYPE shaderType)
         case SHADER_TYPE::FRAGMENT_SHADER:
             return "ps_5_0";
         default:
-            LOG_ERROR("Erroneous shader type: %d", (int)shaderType);
+            LOG_ERRORF("Erroneous shader type: %d", (int)shaderType);
             return "vs_5_0";
     }
 }
@@ -148,7 +148,7 @@ ID3DBlob* ShaderDX11::compileShader(LPCWSTR fileName, LPCSTR targetVer)
     HRESULT hr = D3DCompileFromFile(fileName, nullptr, nullptr, "main", targetVer, compileFlags, 0, &pCompiledCode, &errorMsgs);
     if (FAILED(hr)) {
         if (errorMsgs) {
-            LOG_ERROR("%s", (char*)errorMsgs->GetBufferPointer());
+            LOG_ERRORF("%s", (char*)errorMsgs->GetBufferPointer());
             errorMsgs->Release();
         }
 

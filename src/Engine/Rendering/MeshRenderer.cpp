@@ -25,12 +25,12 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRe
     m_pDescriptorSetCommon(nullptr),
     m_pAniSampler(nullptr),
     m_pRenderPass(nullptr),
-    m_pPipelineLayout(nullptr),
-    m_pPipeline(nullptr)
+    m_pPipeline(nullptr),
+    m_pPipelineLayout(nullptr)
 {
-    std::fill(m_ppCommandPools, m_ppCommandPools + MAX_FRAMES_IN_FLIGHT, nullptr);
-    std::fill(m_ppCommandLists, m_ppCommandLists + MAX_FRAMES_IN_FLIGHT, nullptr);
-    std::fill(m_ppFramebuffers, m_ppFramebuffers + MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppCommandPools, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppCommandLists, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppFramebuffers, MAX_FRAMES_IN_FLIGHT, nullptr);
 
     CameraComponents camSub;
     PointLightComponents pointLightSub;
@@ -407,9 +407,7 @@ bool MeshRenderer::createPipeline()
 
     pipelineInfo.BlendStateInfo.RenderTargetBlendInfos  = { rtvBlendInfo };
     pipelineInfo.BlendStateInfo.IndependentBlendEnabled = false;
-    for (float& blendConstant : pipelineInfo.BlendStateInfo.pBlendConstants) {
-        blendConstant = 1.0f;
-    }
+    std::fill_n(pipelineInfo.BlendStateInfo.pBlendConstants, 4u, 1.0f);
 
     pipelineInfo.pLayout        = m_pPipelineLayout;
     pipelineInfo.pRenderPass    = m_pRenderPass;

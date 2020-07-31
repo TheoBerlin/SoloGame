@@ -19,7 +19,8 @@ const float textureLengthReciprocal = 1/4.0f;
 
 TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
     :m_pTextureCache(nullptr),
-    m_pDevice(pDevice)
+    m_pDevice(pDevice),
+    m_TubeRadius(0.0f)
 {
     m_pTextureCache = reinterpret_cast<TextureCache*>(pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
 }
@@ -27,7 +28,7 @@ TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
 {
     if (faces < 3) {
-        LOG_WARNING("Tube must have at least 3 faces, attempted to create one with: %d", faces);
+        LOG_WARNINGF("Tube must have at least 3 faces, attempted to create one with: %d", faces);
         return nullptr;
     }
 
@@ -156,20 +157,20 @@ void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPo
 
     // Every two successive points make up a tube section
     for (size_t section = 0; section < sectionPoints.size() - 1; section += 1) {
-        createTubePoint(sectionPoints, tubePoints, section, 0.0f);
+        createSectionPoint(sectionPoints, tubePoints, section, 0.0f);
 
         for (size_t i = 0; i < addedPointsPerSection; i += 1) {
             float T = tStepPerPoint * (i+1);
 
-            createTubePoint(sectionPoints, tubePoints, section, T);
+            createSectionPoint(sectionPoints, tubePoints, section, T);
         }
     }
 
     // .. and the last point
-    createTubePoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
+    createSectionPoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
 }
 
-void TubeHandler::createTubePoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t sectionIdx, float T)
+void TubeHandler::createSectionPoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t sectionIdx, float T)
 {
     // Get four control points for catmull-rom
     size_t idx0, idx1, idx2, idx3;

@@ -4,7 +4,9 @@
 #include <Engine/ECS/ComponentSubscriber.hpp>
 
 System::System(ECSCore* pECS)
-    :m_pECS(pECS)
+    :m_pECS(pECS),
+    m_ComponentSubscriptionID(UINT64_MAX),
+    m_SystemID(UINT64_MAX)
 {}
 
 System::~System()

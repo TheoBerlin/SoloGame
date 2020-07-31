@@ -18,7 +18,7 @@ TextureVK* TextureVK::createFromFile(const std::string& filePath, DeviceVK* pDev
     int width = 0, height = 0, texChannels = 0;
     stbi_uc* pPixelData = stbi_load(filePath.c_str(), &width, &height, &texChannels, STBI_rgb_alpha);
     if (!pPixelData) {
-        LOG_WARNING("Failed to load texture from file: %s", filePath.c_str());
+        LOG_WARNINGF("Failed to load texture from file: %s", filePath.c_str());
         return nullptr;
     }
 
@@ -182,7 +182,7 @@ bool TextureVK::setInitialData(TextureVK* pTexture, const TextureInfoVK& texture
 BufferVK* TextureVK::createStagingBuffer(const TextureInfoVK& textureInfo, RESOURCE_FORMAT format, DeviceVK* pDevice)
 {
     BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize     = size_t(textureInfo.Dimensions.x * textureInfo.Dimensions.y) * getFormatSize(format);
+    bufferInfo.ByteSize     = size_t(textureInfo.Dimensions.x) * textureInfo.Dimensions.y * getFormatSize(format);
     bufferInfo.pData        = textureInfo.pInitialData->pData;
     bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
     bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
@@ -334,7 +334,7 @@ VkAccessFlags TextureVK::layoutToAccessMask(VkImageLayout layout)
         case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
             return VK_ACCESS_SHADER_READ_BIT;
         default:
-            LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
+            LOG_ERRORF("Unknown image layout flag: %d", (uint32_t)layout);
             return 0u;
 	}
 }

@@ -26,7 +26,7 @@ CommandListDX11* CommandListDX11::create(DeviceDX11* pDevice)
     ID3D11DeviceContext* pContext = nullptr;
     HRESULT hr = pDevice->getDevice()->CreateDeferredContext(0, &pContext);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create deferred context: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create deferred context: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
@@ -79,7 +79,7 @@ bool CommandListDX11::end()
 {
     HRESULT hr = m_pContext->FinishCommandList(FALSE, &m_pCommandList);
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to finish command list: %s", hresultToString(hr).c_str());
+        LOG_WARNINGF("Failed to finish command list: %s", hresultToString(hr).c_str());
         return false;
     }
 

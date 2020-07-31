@@ -57,7 +57,7 @@ void TransformHandler::createTransform(Entity entity, const DirectX::XMFLOAT3& p
 void TransformHandler::createWorldMatrix(Entity entity)
 {
     if (!m_Positions.hasElement(entity) || !m_Scales.hasElement(entity) || !m_Rotations.hasElement(entity)) {
-        LOG_WARNING("Tried to create a world matrix component for an entity which does not have a transform: %d", entity);
+        LOG_WARNINGF("Tried to create a world matrix component for an entity which does not have a transform: %d", entity);
         return;
     }
 

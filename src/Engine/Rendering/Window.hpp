@@ -17,12 +17,12 @@ public:
     bool init();
     void show();
 
-    void pollEvents();
+    static void pollEvents();
     bool shouldClose();
 
     HWND getHWND() const;
     // Vulkan-specific
-    std::vector<std::string> getRequiredInstanceExtensions() const;
+    static std::vector<std::string> getRequiredInstanceExtensions();
 
     uint32_t getWidth() const   { return m_Width; }
     uint32_t getHeight() const  { return m_Height; }

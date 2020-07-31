@@ -40,7 +40,7 @@ bool CommandPoolVK::allocateCommandLists(ICommandList** ppCommandLists, uint32_t
     allocationInfo.level                = level == COMMAND_LIST_LEVEL::PRIMARY ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
     allocationInfo.commandBufferCount   = commandListCount;
     if (vkAllocateCommandBuffers(m_pDevice->getDevice(), &allocationInfo, commandBuffers.data()) != VK_SUCCESS) {
-        LOG_ERROR("Failed to allocate [%d] command list(s)", commandListCount);
+        LOG_ERRORF("Failed to allocate [%d] command list(s)", commandListCount);
         return false;
     }
 

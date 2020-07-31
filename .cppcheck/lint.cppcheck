@@ -16,5 +16,6 @@
     </exclude>
     <suppressions>
         <suppression>unusedFunction</suppression>
+        <suppression>noExplicitConstructor</suppression>
     </suppressions>
 </project>

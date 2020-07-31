@@ -21,7 +21,7 @@ TextureDX11* TextureDX11::createFromFile(const std::string& filePath, ID3D11Devi
 
     HRESULT hr = DirectX::CreateWICTextureFromFile(pDevice, pConvertedFilePath, &pTextureResource, &pSRV);
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to load texture: [%s]", filePath.c_str());
+        LOG_WARNINGF("Failed to load texture: [%s]", filePath.c_str());
         SAFERELEASE(pTextureResource)
         return nullptr;
     }
@@ -68,7 +68,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture2D = nullptr;
     HRESULT hr = pDevice->CreateTexture2D(&txDesc, textureInfo.pInitialData ? &initialData : nullptr, texture2D.GetAddressOf());
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to create texture2D: %s", hresultToString(hr).c_str());
+        LOG_WARNINGF("Failed to create texture2D: %s", hresultToString(hr).c_str());
         return nullptr;
     }
 
@@ -78,7 +78,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
         // Create shader resource view
         hr = pDevice->CreateShaderResourceView(pTexture2D, nullptr, &pSRV);
         if (FAILED(hr)) {
-            LOG_WARNING("Failed to create shader resource view: %s", hresultToString(hr).c_str());
+            LOG_WARNINGF("Failed to create shader resource view: %s", hresultToString(hr).c_str());
             return nullptr;
         }
     }
@@ -88,7 +88,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
         // Create render target view
         hr = pDevice->CreateRenderTargetView(pTexture2D, nullptr, &pRTV);
         if (FAILED(hr)) {
-            LOG_ERROR("Failed to create render target: %s", hresultToString(hr).c_str());
+            LOG_ERRORF("Failed to create render target: %s", hresultToString(hr).c_str());
             return nullptr;
         }
     }
@@ -98,7 +98,7 @@ TextureDX11* TextureDX11::create(const TextureInfo& textureInfo, ID3D11Device* p
         // Create render target view
         hr = pDevice->CreateDepthStencilView(pTexture2D, nullptr, &pDSV);
         if (FAILED(hr)) {
-            LOG_ERROR("Failed to create depth stencil: %s", hresultToString(hr).c_str());
+            LOG_ERRORF("Failed to create depth stencil: %s", hresultToString(hr).c_str());
             return nullptr;
         }
     }

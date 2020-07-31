@@ -25,7 +25,7 @@ TextRenderer::~TextRenderer()
 {
     FT_Error err = FT_Done_FreeType(ftLib);
 	if (err) {
-		LOG_ERROR("Failed to release FreeType library: %s", FT_Error_String(err));
+		LOG_ERRORF("Failed to release FreeType library: %s", FT_Error_String(err));
 	}
 }
 
@@ -38,7 +38,7 @@ bool TextRenderer::initHandler()
     // Initialize FreeType library
 	FT_Error err = FT_Init_FreeType(&ftLib);
 	if (err) {
-		LOG_ERROR("Failed to initialize FreeType library: %s", FT_Error_String(err));
+		LOG_ERRORF("Failed to initialize FreeType library: %s", FT_Error_String(err));
         FT_Done_FreeType(ftLib);
         return false;
 	}
@@ -54,14 +54,14 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
 
     err = FT_New_Face(ftLib, font.c_str(), 0, &face);
     if (err) {
-        LOG_WARNING("Failed to load FreeType face from file [%s]: %s", font.c_str(), FT_Error_String(err));
+        LOG_WARNINGF("Failed to load FreeType face from file [%s]: %s", font.c_str(), FT_Error_String(err));
         return nullptr;
     }
 
     // Set the desired size of the font
     err = FT_Set_Pixel_Sizes(face, 0, fontPixelHeight);
     if (err) {
-        LOG_WARNING("[%s] FreeType failed to set pixel size %d: %s", font.c_str(), fontPixelHeight, FT_Error_String(err));
+        LOG_WARNINGF("[%s] FreeType failed to set pixel size %d: %s", font.c_str(), fontPixelHeight, FT_Error_String(err));
         return nullptr;
     }
 
@@ -75,7 +75,7 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
 
     // The bytemap to paste glyph bytemaps onto
     Bytemap textBytemap;
-    textBytemap.buffer.resize(textureSize.x * textureSize.y);
+    textBytemap.buffer.resize((size_t)textureSize.x * textureSize.y);
     std::memset(textBytemap.buffer.data(), 0, textBytemap.buffer.size());
     textBytemap.rows = textureSize.y;
     textBytemap.width = textureSize.x;
@@ -95,14 +95,14 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
         }*/
 
         if (character == ' ') {
-            LOG_INFO("Max advance (rendering): %d", face->size->metrics.max_advance);
+            LOG_INFOF("Max advance (rendering): %d", face->size->metrics.max_advance);
             pen.x += face->size->metrics.max_advance;
             continue;
         }
 
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
-            LOG_WARNING("Expected glyph to be loaded: '%c'", character);
+            LOG_WARNINGF("Expected glyph to be loaded: '%c'", character);
             return nullptr;
         }
 
@@ -150,7 +150,7 @@ bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face fa
 
         err = FT_Load_Char(face, character, FT_LOAD_RENDER);
         if (err) {
-            LOG_WARNING("Failed to load character: '%c', font: %s", character, font.c_str());
+            LOG_WARNINGF("Failed to load character: '%c', font: %s", character, font.c_str());
             return false;
         }
 
@@ -172,7 +172,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
     for (char character : text) {
         if (character == ' ') {
-            LOG_INFO("Max advance (calculate size): %d", face->size->metrics.max_advance);
+            LOG_INFOF("Max advance (calculate size): %d", face->size->metrics.max_advance);
             textureSize.x += (uint32_t)face->size->metrics.max_advance;
             continue;
         }
@@ -186,7 +186,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
         auto glyphsItr = glyphs.find(character);
         if (glyphsItr == glyphs.end()) {
-            LOG_WARNING("Expected glyph to be loaded: '%c'", character);
+            LOG_WARNINGF("Expected glyph to be loaded: '%c'", character);
             return textureSize;
         }
 
@@ -209,7 +209,7 @@ DirectX::XMUINT2 TextRenderer::calculateTextureSize(const std::string& text, con
 
     textureSize.x = (uint32_t)(ceil((float)textureSize.x / 64.0f));
     textureSize.y = (uint32_t)(ceil((float)textureSize.y / 64.0f));
-    LOG_INFO("Texture size: (%d, %d)", textureSize.x, textureSize.y);
+    LOG_INFOF("Texture size: (%d, %d)", textureSize.x, textureSize.y);
     return textureSize;
 }
 

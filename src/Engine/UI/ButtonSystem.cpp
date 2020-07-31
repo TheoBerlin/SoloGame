@@ -6,11 +6,14 @@
 
 ButtonSystem::ButtonSystem(ECSCore* pECS, Window* pWindow)
     :System(pECS),
+    m_pUIHandler(nullptr),
     m_ClientWidth(pWindow->getWidth()),
     m_ClientHeight(pWindow->getHeight()),
     m_pInputHandler(pWindow->getInputHandler()),
     m_PressedButtonExists(false),
-    m_PressedButton(0)
+    m_PressedButton(UINT64_MAX),
+    m_HoveredButtonExists(false),
+    m_HoveredButton(UINT64_MAX)
 {
     SystemRegistration sysReg = {};
     sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
@@ -26,8 +29,8 @@ ButtonSystem::~ButtonSystem()
 
 bool ButtonSystem::initSystem()
 {
-    m_pUIhandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
-    return m_pUIhandler;
+    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
+    return m_pUIHandler;
 }
 
 void ButtonSystem::update(float dt)
@@ -39,8 +42,8 @@ void ButtonSystem::update(float dt)
     const glm::dvec2& mousePosition = m_pInputHandler->getMousePosition();
 
     for (Entity entity : m_Buttons.getIDs()) {
-        UIPanel& panel = m_pUIhandler->panels.indexID(entity);
-        UIButton& button = m_pUIhandler->buttons.indexID(entity);
+        UIPanel& panel = m_pUIHandler->panels.indexID(entity);
+        UIButton& button = m_pUIHandler->buttons.indexID(entity);
         panel.highlight = button.defaultHighlight;
 
 		unsigned int mouseX = (unsigned int)mousePosition.x;

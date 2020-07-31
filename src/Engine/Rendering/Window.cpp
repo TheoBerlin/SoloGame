@@ -62,7 +62,7 @@ HWND Window::getHWND() const
     return glfwGetWin32Window(m_pWindow);
 }
 
-std::vector<std::string> Window::getRequiredInstanceExtensions() const
+std::vector<std::string> Window::getRequiredInstanceExtensions()
 {
     const char** ppExtensions = nullptr;
     uint32_t extensionCount = 0u;
@@ -78,5 +78,5 @@ std::vector<std::string> Window::getRequiredInstanceExtensions() const
 
 void Window::glfwErrorCallback(int error, const char* pDescription)
 {
-    LOG_ERROR("GLFW Error [%d]: %s", error, pDescription);
+    LOG_ERRORF("GLFW Error [%d]: %s", error, pDescription);
 }

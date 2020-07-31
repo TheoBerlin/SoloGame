@@ -101,7 +101,7 @@ VkCompareOp convertCompareOp(COMPARISON_FUNC comparisonFunc)
         case COMPARISON_FUNC::ALWAYS:
             return VK_COMPARE_OP_ALWAYS;
         default:
-            LOG_WARNING("Erroneous comparison func: %d", (uint32_t)comparisonFunc);
+            LOG_WARNINGF("Erroneous comparison func: %d", (uint32_t)comparisonFunc);
             return VK_COMPARE_OP_LESS;
     }
 }
@@ -122,7 +122,7 @@ VkImageLayout convertImageLayoutFlag(TEXTURE_LAYOUT layout)
         case TEXTURE_LAYOUT::PRESENT:
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         default:
-            LOG_ERROR("Unknown image layout flag: %d", (uint32_t)layout);
+            LOG_ERRORF("Unknown image layout flag: %d", (uint32_t)layout);
             return VK_IMAGE_LAYOUT_UNDEFINED;
 	}
 }

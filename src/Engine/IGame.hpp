@@ -14,7 +14,7 @@ class IGame
 {
 public:
     IGame();
-    ~IGame();
+    virtual ~IGame();
 
     bool init();
     virtual bool finalize() = 0;

@@ -154,7 +154,7 @@ VkSampleCountFlagBits RenderPassVK::convertSampleCount(uint32_t sampleCount)
         case 64u:
             return VK_SAMPLE_COUNT_64_BIT;
         default:
-            LOG_WARNING("Erroneous sample count, must be a power of 2 and <=64: %d", sampleCount);
+            LOG_WARNINGF("Erroneous sample count, must be a power of 2 and <=64: %d", sampleCount);
             return VK_SAMPLE_COUNT_1_BIT;
     }
 }
@@ -169,7 +169,7 @@ VkAttachmentLoadOp RenderPassVK::convertAttachmentLoadOp(ATTACHMENT_LOAD_OP load
         case ATTACHMENT_LOAD_OP::DONT_CARE:
             return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         default:
-            LOG_WARNING("Erroneous attachment load op: %d", (uint32_t)loadOp);
+            LOG_WARNINGF("Erroneous attachment load op: %d", (uint32_t)loadOp);
             return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     }
 }
@@ -182,7 +182,7 @@ VkAttachmentStoreOp RenderPassVK::convertAttachmentStoreOp(ATTACHMENT_STORE_OP s
         case ATTACHMENT_STORE_OP::DONT_CARE:
             return VK_ATTACHMENT_STORE_OP_DONT_CARE;
         default:
-            LOG_WARNING("Erroneous attachment store op: %d", (uint32_t)storeOp);
+            LOG_WARNINGF("Erroneous attachment store op: %d", (uint32_t)storeOp);
             return VK_ATTACHMENT_STORE_OP_DONT_CARE;
     }
 }

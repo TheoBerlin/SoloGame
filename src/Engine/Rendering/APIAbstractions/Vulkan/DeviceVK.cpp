@@ -120,7 +120,7 @@ IRenderPass* DeviceVK::createRenderPass(const RenderPassInfo& renderPassInfo)
     return RenderPassVK::create(renderPassInfo, this);
 }
 
-IPipelineLayout* DeviceVK::createPipelineLayout(std::vector<IDescriptorSetLayout*> descriptorSetLayouts)
+IPipelineLayout* DeviceVK::createPipelineLayout(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts)
 {
     return PipelineLayoutVK::create(descriptorSetLayouts, this);
 }
@@ -243,14 +243,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
     switch (messageSeverity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-            LOG_INFO("Validation layer: %s", pCallbackData->pMessage);
+            LOG_INFOF("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            LOG_WARNING("Validation layer: %s", pCallbackData->pMessage);
+            LOG_WARNINGF("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
         default:
-            LOG_ERROR("Validation layer: %s", pCallbackData->pMessage);
+            LOG_ERRORF("Validation layer: %s", pCallbackData->pMessage);
             return VK_FALSE;
     }
 }

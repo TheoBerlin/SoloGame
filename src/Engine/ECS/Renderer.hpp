@@ -19,7 +19,7 @@ class Renderer
 {
 public:
     Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
-    ~Renderer();
+    virtual ~Renderer();
 
     virtual bool init() = 0;
 

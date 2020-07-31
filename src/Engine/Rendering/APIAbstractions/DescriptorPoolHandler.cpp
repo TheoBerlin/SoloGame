@@ -47,7 +47,7 @@ DescriptorSet* DescriptorPoolHandler::allocateDescriptorSet(const IDescriptorSet
     newPoolInfo.DescriptorCounts.ceil(descriptorsToAllocate);
 
     DescriptorCounts newRecommendedPoolSize = m_PoolInfos.DescriptorCounts * (uint32_t)m_DescriptorPools.size() + descriptorsToAllocate;
-    LOG_INFO("Pool size exceeded, new recommended pool size: %s", newRecommendedPoolSize.toString().c_str());
+    LOG_INFOF("Pool size exceeded, new recommended pool size: %s", newRecommendedPoolSize.toString().c_str());
 
     m_DescriptorPools.push_back(pDevice->createDescriptorPool(newPoolInfo));
 

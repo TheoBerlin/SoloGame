@@ -32,7 +32,7 @@ bool createInputLayout(InputLayoutDX11& inputLayout, const InputLayoutInfo* pInp
 
     HRESULT hr = pDevice->CreateInputLayout(attributeDescs.data(), (UINT)attributeDescs.size(), pShaderCode->GetBufferPointer(), pShaderCode->GetBufferSize(), &inputLayout.pInputLayout);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create input layout: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create input layout: %s", hresultToString(hr).c_str());
         SAFERELEASE(inputLayout.pInputLayout)
         return false;
     }
@@ -63,7 +63,7 @@ D3D11_PRIMITIVE_TOPOLOGY convertPrimitiveTopology(PRIMITIVE_TOPOLOGY primitiveTo
         case PRIMITIVE_TOPOLOGY::TRIANGLE_STRIP_WITH_ADJACENCY:
             return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ;
         default:
-            LOG_ERROR("Erroneous primitive topology: %d", (int)primitiveTopology);
+            LOG_ERRORF("Erroneous primitive topology: %d", (int)primitiveTopology);
             return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
     }
 }

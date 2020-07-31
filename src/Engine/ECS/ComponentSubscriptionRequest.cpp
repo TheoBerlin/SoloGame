@@ -1,6 +1,6 @@
 #include "ComponentSubscriptionRequest.hpp"
 
-ComponentSubscriptionRequest::ComponentSubscriptionRequest(std::vector<ComponentAccess> componentAccesses, std::vector<IComponentGroup*> componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
+ComponentSubscriptionRequest::ComponentSubscriptionRequest(std::vector<ComponentAccess> componentAccesses, const std::vector<IComponentGroup*>& componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
     :m_pSubscriber(pSubscriber),
     m_OnEntityAdded(onEntityAdded),
     m_OnEntityRemoved(onEntityRemoved)
@@ -14,10 +14,10 @@ ComponentSubscriptionRequest::ComponentSubscriptionRequest(std::vector<Component
     m_ComponentAccesses = componentAccesses;
 }
 
-ComponentSubscriptionRequest::ComponentSubscriptionRequest(std::vector<ComponentAccess> componentAccesses, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
+ComponentSubscriptionRequest::ComponentSubscriptionRequest(const std::vector<ComponentAccess>& componentAccesses, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
     :ComponentSubscriptionRequest(componentAccesses, {}, pSubscriber, onEntityAdded, onEntityRemoved)
 {}
 
-ComponentSubscriptionRequest::ComponentSubscriptionRequest(std::vector<IComponentGroup*> componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
+ComponentSubscriptionRequest::ComponentSubscriptionRequest(const std::vector<IComponentGroup*>& componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded, std::function<void(Entity)>onEntityRemoved)
     :ComponentSubscriptionRequest({}, componentGroups, pSubscriber, onEntityAdded, onEntityRemoved)
 {}

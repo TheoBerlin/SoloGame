@@ -25,7 +25,7 @@ VkCullModeFlags convertCullMode(CULL_MODE cullMode)
         case CULL_MODE::BACK:
             return VK_CULL_MODE_BACK_BIT;
         default:
-            LOG_WARNING("Eroneous cull mode: %d", (uint32_t)cullMode);
+            LOG_WARNINGF("Eroneous cull mode: %d", (uint32_t)cullMode);
             return VK_CULL_MODE_BACK_BIT;
     }
 }

@@ -59,7 +59,7 @@ void ECSBooter::bootHandlers()
             ComponentHandlerBootInfo& bootInfo = dependencyItr->second;
             if (bootInfo.inOpenList) {
                 if (dependencyItr != openList.back()) {
-                    LOG_ERROR("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
+                    LOG_ERRORF("Detected cyclic dependencies between component handlers, can not boot: %s", currentHandlerItr->first.name());
                     break;
                 }
             } else {
@@ -68,16 +68,10 @@ void ECSBooter::bootHandlers()
             }
 
             // Check if the handler has any unbooted dependencies
-            auto unbootedDependencyItr = m_HandlersBootInfos.end();
+            auto unbootedDependencyItr = std::find_if(bootInfo.dependencyMapIterators.begin(), bootInfo.dependencyMapIterators.end(),
+                [](auto dependencyItr) -> bool { return !dependencyItr->second.inClosedList; });
 
-            for (auto dependency : bootInfo.dependencyMapIterators) {
-                if (!dependency->second.inClosedList) {
-                    unbootedDependencyItr = dependency;
-                    break;
-                }
-            }
-
-            if (unbootedDependencyItr == m_HandlersBootInfos.end()) {
+            if (unbootedDependencyItr == bootInfo.dependencyMapIterators.end()) {
                 // All dependencies are booted, boot the handler
                 bootHandler(bootInfo);
                 openList.pop_back();
@@ -87,7 +81,7 @@ void ECSBooter::bootHandlers()
                 }
             } else {
                 // Not all dependencies are booted, try to boot a dependency
-                dependencyItr = unbootedDependencyItr;
+                dependencyItr = *unbootedDependencyItr;
             }
         }
 
@@ -165,7 +159,7 @@ void ECSBooter::finalizeHandlerBootDependencies()
             } else {
                 // The dependency is not enqueued for bootup, it might already be booted
                 if (!m_pECS->getComponentSubscriber()->getComponentHandler(dependencyTID)) {
-                    LOG_ERROR("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
+                    LOG_ERRORF("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
                     hasDependencies = false;
                     break;
                 }
@@ -186,7 +180,7 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     bootInfo.inClosedList = true;
 
     if (!bootInfo.handlerRegistration->pComponentHandler->initHandler()) {
-        LOG_ERROR("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
+        LOG_ERRORF("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
         m_pECS->getComponentSubscriber()->registerComponentHandler(*bootInfo.handlerRegistration);
     }

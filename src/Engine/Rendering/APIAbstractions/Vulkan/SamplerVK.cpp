@@ -71,7 +71,7 @@ VkSamplerAddressMode SamplerVK::convertAddressMode(ADDRESS_MODE addressMode)
         case ADDRESS_MODE::CLAMP_TO_BORDER:
             return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
         default:
-            LOG_WARNING("Erroneous address mode: %d", (uint32_t)addressMode);
+            LOG_WARNINGF("Erroneous address mode: %d", (uint32_t)addressMode);
             return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     }
 }
@@ -86,7 +86,7 @@ VkBorderColor SamplerVK::convertBorderColor(BORDER_COLOR borderColor)
         case BORDER_COLOR::BLACK_TRANSPARENT:
             return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
         default:
-            LOG_WARNING("Erroneous border color: %d", (uint32_t)borderColor);
+            LOG_WARNINGF("Erroneous border color: %d", (uint32_t)borderColor);
             return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
     }
 }

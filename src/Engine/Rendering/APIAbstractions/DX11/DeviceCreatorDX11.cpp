@@ -83,7 +83,7 @@ bool DeviceCreatorDX11::initDeviceAndSwapChain(const SwapchainInfo& swapChainInf
     );
 
     if (FAILED(hr) || !m_pDevice || !m_pSwapChain || !m_pContext) {
-        LOG_ERROR("Failed to create Device and Swap Chain: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create Device and Swap Chain: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -98,14 +98,14 @@ bool DeviceCreatorDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, cons
     ID3D11Texture2D* pBackBuffer = nullptr;
     HRESULT hr = m_pSwapChain->GetBuffer(0u, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to retrieve Swap Chain's back buffer: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to retrieve Swap Chain's back buffer: %s", hresultToString(hr).c_str());
         return false;
     }
 
     ID3D11RenderTargetView* pBackBufferRTV = nullptr;
     hr = m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pBackBufferRTV);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create Render Target: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create Render Target: %s", hresultToString(hr).c_str());
         return false;
     }
 
@@ -151,7 +151,7 @@ bool DeviceCreatorDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, cons
 
     hr = m_pDevice->CreateDepthStencilState(&dsDesc, &m_pDepthStencilState);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create depth stencil state: %s", hresultToString(hr).c_str());
         return false;
     }
 

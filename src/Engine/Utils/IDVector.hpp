@@ -56,7 +56,7 @@ public:
         m_Indices[ID] = m_Data.size()-1;
     }
 
-    void pop(size_t ID)
+    void pop(size_t ID) override final
     {
         size_t popIndex = m_Indices[ID];
 
@@ -88,13 +88,13 @@ public:
         m_Indices.clear();
     }
 
-    inline bool hasElement(size_t ID) const
+    inline bool hasElement(size_t ID) const override final
     {
         // Check if the ID pointed at by indices[ID] is the same as the parameter ID
         return ID < m_Indices.size() && ID == m_IDs[m_Indices[ID]];
     }
 
-    inline size_t size() const
+    inline size_t size() const override final
     {
         return m_Data.size();
     }
@@ -114,7 +114,7 @@ public:
         return this->m_Data;
     }
 
-    const std::vector<size_t>& getIDs() const
+    const std::vector<size_t>& getIDs() const override final
     {
         return this->m_IDs;
     }
@@ -162,7 +162,7 @@ public:
         m_Indices[ID] = m_Indices.size() - 1;
     }
 
-    void pop(size_t ID)
+    void pop(size_t ID) override final
     {
         size_t popIndex = m_Indices[ID];
 
@@ -191,13 +191,13 @@ public:
         m_Indices.clear();
     }
 
-    inline bool hasElement(size_t ID) const
+    inline bool hasElement(size_t ID) const override final
     {
         // Check if the ID pointed at by indices[ID] is the same as the parameter ID
         return ID < m_Indices.size() && ID == m_IDs[m_Indices[ID]];
     }
 
-    inline size_t size() const
+    inline size_t size() const override final
     {
         return m_IDs.size();
     }
@@ -207,7 +207,7 @@ public:
         return m_IDs.empty();
     }
 
-    const std::vector<size_t>& getIDs() const
+    const std::vector<size_t>& getIDs() const override final
     {
         return m_IDs;
     }

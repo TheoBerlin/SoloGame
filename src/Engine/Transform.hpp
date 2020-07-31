@@ -57,7 +57,7 @@ const std::type_index g_TIDWorldMatrix = TID(WorldMatrix);
 class TransformHandler : public ComponentHandler
 {
 public:
-    TransformHandler(ECSCore* pECs);
+    TransformHandler(ECSCore* pECS);
     ~TransformHandler();
 
     virtual bool initHandler() override;

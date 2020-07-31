@@ -19,12 +19,12 @@ public:
 
     bool cursorIsHidden() const { return m_RawMotionEnabled; }
 
-    bool keyState(int key) { return m_pKeyStates[key]; }
+    bool keyState(int key) const { return m_pKeyStates[key]; }
 
     const glm::dvec2& getMousePosition() const   { return m_MousePosition; };
     const glm::dvec2& getMouseMove() const       { return m_MouseMove; };
 
-    bool mouseButtonState(int button) { return m_pMouseButtonStates[button]; }
+    bool mouseButtonState(int button) const { return m_pMouseButtonStates[button]; }
 
 public:
     // Calls the stateful keyActionCallback
@@ -39,10 +39,10 @@ private:
     GLFWwindow* m_pWindow;
 
     // Keyboard
-    bool m_pKeyStates[GLFW_KEY_LAST + 1];
+    std::array<bool, GLFW_KEY_LAST + 1> m_pKeyStates;
 
     // Mouse
-    bool m_pMouseButtonStates[GLFW_MOUSE_BUTTON_LAST + 1];
+    std::array<bool, GLFW_MOUSE_BUTTON_LAST + 1> m_pMouseButtonStates;
 
     // Center position of the screen. When raw mouse input is enabled, glfw returns the mouse position as mouseCenter + mouseMove.
     glm::dvec2 m_MouseCenter;

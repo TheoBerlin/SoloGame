@@ -12,10 +12,10 @@ RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice)
     m_pMeshRenderer(new MeshRenderer(pECS, pDevice, this)),
     m_pUIRenderer(new UIRenderer(pECS, pDevice, this))
 {
-    std::fill(&m_ppCommandPools[0u], &m_ppCommandPools[MAX_FRAMES_IN_FLIGHT], nullptr);
-    std::fill(&m_ppCommandLists[0u], &m_ppCommandLists[MAX_FRAMES_IN_FLIGHT], nullptr);
-    std::fill(&m_ppRenderingSemaphores[0u], &m_ppRenderingSemaphores[MAX_FRAMES_IN_FLIGHT], nullptr);
-    std::fill(&m_ppPrimaryBufferFences[0u], &m_ppPrimaryBufferFences[MAX_FRAMES_IN_FLIGHT], nullptr);
+    std::fill_n(m_ppCommandPools, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppCommandLists, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppRenderingSemaphores, MAX_FRAMES_IN_FLIGHT, nullptr);
+    std::fill_n(m_ppPrimaryBufferFences, MAX_FRAMES_IN_FLIGHT, nullptr);
 }
 
 RenderingHandler::~RenderingHandler()
@@ -151,7 +151,7 @@ void RenderingHandler::recordPrimaryCommandBuffer()
 
     // Begin mesh render pass
     std::array<ClearValue, 2> pClearValues;
-    std::fill(&pClearValues[0].ClearColorValue.uint32[0], &pClearValues[0].ClearColorValue.uint32[4], 0u);
+    std::fill_n(pClearValues[0].ClearColorValue.uint32, 4u, 0u);
     pClearValues[1].DepthStencilValue.Depth     = 1.0f;
     pClearValues[1].DepthStencilValue.Stencil   = 0u;
 

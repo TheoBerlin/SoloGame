@@ -59,8 +59,6 @@ void SoundPlayer::update([[maybe_unused]] float dt)
     const DirectX::XMVECTOR camVelocity = DirectX::XMLoadFloat3(&m_pVelocityHandler->getVelocity(m_Cameras[0]));
     float camSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(camVelocity));
 
-    size_t soundCount = m_Sounds.size();
-
     for (Entity soundEntity : m_Sounds.getIDs()) {
         Sound& sound = m_pSoundHandler->getSound(soundEntity);
         DirectX::XMFLOAT3& soundPosition = m_pTransformHandler->getPosition(soundEntity);

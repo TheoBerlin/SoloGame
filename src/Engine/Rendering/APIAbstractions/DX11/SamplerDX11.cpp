@@ -26,7 +26,7 @@ SamplerDX11* SamplerDX11::create(const SamplerInfo& samplerInfo, ID3D11Device* p
     ID3D11SamplerState* pSamplerState = nullptr;
     HRESULT hr = pDevice->CreateSamplerState(&samplerDesc, &pSamplerState);
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to create sampler state: %s", hresultToString(hr).c_str());
+        LOG_WARNINGF("Failed to create sampler state: %s", hresultToString(hr).c_str());
         SAFERELEASE(pSamplerState)
         return nullptr;
     }
@@ -103,7 +103,7 @@ D3D11_TEXTURE_ADDRESS_MODE SamplerDX11::convertAddressMode(ADDRESS_MODE addressM
         case ADDRESS_MODE::CLAMP_TO_BORDER:
             return D3D11_TEXTURE_ADDRESS_BORDER;
         default:
-            LOG_WARNING("Erroneous address mode: %d", (int)addressMode);
+            LOG_WARNINGF("Erroneous address mode: %d", (int)addressMode);
             return D3D11_TEXTURE_ADDRESS_WRAP;
     }
 }
@@ -126,7 +126,7 @@ D3D11_COMPARISON_FUNC SamplerDX11::convertComparisonFunc(COMPARISON_FUNC compari
         case COMPARISON_FUNC::ALWAYS:
             return D3D11_COMPARISON_ALWAYS;
         default:
-            LOG_WARNING("Erroneous comparison function: %d", (int)comparisonFunc);
+            LOG_WARNINGF("Erroneous comparison function: %d", (int)comparisonFunc);
             return D3D11_COMPARISON_ALWAYS;
     }
 }

@@ -36,7 +36,7 @@ void SwapchainDX11::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphor
 {
     HRESULT hr = m_pSwapchain->Present(0, 0);
     if (FAILED(hr)) {
-        LOG_WARNING("Failed to present swapchain buffer: %s", hresultToString(hr).c_str());
+        LOG_WARNINGF("Failed to present swapchain buffer: %s", hresultToString(hr).c_str());
     }
 }
 

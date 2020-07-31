@@ -16,7 +16,7 @@ size_t getFormatSize(RESOURCE_FORMAT format)
         case RESOURCE_FORMAT::D32_FLOAT:
             return 4;
         default:
-            LOG_WARNING("Erroneous resource format: %d", (int)format);
+            LOG_WARNINGF("Erroneous resource format: %d", (int)format);
             return 16;
     }
 }
@@ -35,7 +35,7 @@ FORMAT_PRIMITIVE_TYPE getFormatPrimitiveType(RESOURCE_FORMAT format)
         case RESOURCE_FORMAT::R8G8B8A8_SRGB:
             return FORMAT_PRIMITIVE_TYPE::UNSIGNED_INTEGER;
         default:
-            LOG_WARNING("Erroneous resource format: %d", (int)format);
+            LOG_WARNINGF("Erroneous resource format: %d", (int)format);
             return FORMAT_PRIMITIVE_TYPE::FLOAT;
     }
 }

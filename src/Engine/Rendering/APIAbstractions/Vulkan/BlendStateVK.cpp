@@ -70,7 +70,7 @@ VkBlendFactor convertBlendFactor(BLEND_FACTOR blendFactor)
         case BLEND_FACTOR::ONE_MINUS_SRC1_ALPHA:
             return VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
         default:
-            LOG_WARNING("Erroneous blend factor: %d", (int)blendFactor);
+            LOG_WARNINGF("Erroneous blend factor: %d", (int)blendFactor);
             return VK_BLEND_FACTOR_ONE;
     }
 }
@@ -89,7 +89,7 @@ VkBlendOp convertBlendOp(BLEND_OP blendOp)
         case BLEND_OP::MAX:
             return VK_BLEND_OP_MAX;
         default:
-            LOG_WARNING("Erroneous blend op: %d", (int)blendOp);
+            LOG_WARNINGF("Erroneous blend op: %d", (int)blendOp);
             return VK_BLEND_OP_ADD;
     }
 }

@@ -10,7 +10,7 @@
 bool createBlendState(BlendStateDX11& blendState, const BlendStateInfo& blendStateInfo, ID3D11Device* pDevice)
 {
     if (blendStateInfo.RenderTargetBlendInfos.size() > 8) {
-        LOG_ERROR("DirectX 11 does not support more than 8 simultaneous render targets, attempted nr: %d", blendStateInfo.RenderTargetBlendInfos.size());
+        LOG_ERRORF("DirectX 11 does not support more than 8 simultaneous render targets, attempted nr: %d", blendStateInfo.RenderTargetBlendInfos.size());
     }
 
     blendState = {};
@@ -40,7 +40,7 @@ bool createBlendState(BlendStateDX11& blendState, const BlendStateInfo& blendSta
 
     HRESULT hr = pDevice->CreateBlendState(&blendDesc, &blendState.pBlendState);
     if (FAILED(hr)) {
-        LOG_ERROR("Failed to create blend state: %s", hresultToString(hr).c_str());
+        LOG_ERRORF("Failed to create blend state: %s", hresultToString(hr).c_str());
         SAFERELEASE(blendState.pBlendState)
         return false;
     }
@@ -88,7 +88,7 @@ D3D11_BLEND convertBlendFactor(BLEND_FACTOR blendFactor)
         case BLEND_FACTOR::ONE_MINUS_SRC1_ALPHA:
             return D3D11_BLEND_INV_SRC1_ALPHA;
         default:
-            LOG_WARNING("Erroneous blend factor: %d", (int)blendFactor);
+            LOG_WARNINGF("Erroneous blend factor: %d", (int)blendFactor);
             return D3D11_BLEND_ONE;
     }
 }
@@ -107,7 +107,7 @@ D3D11_BLEND_OP convertBlendOp(BLEND_OP blendOp)
         case BLEND_OP::MAX:
             return D3D11_BLEND_OP_MAX;
         default:
-            LOG_WARNING("Erroneous blend op: %d", (int)blendOp);
+            LOG_WARNINGF("Erroneous blend op: %d", (int)blendOp);
             return D3D11_BLEND_OP_ADD;
     }
 }

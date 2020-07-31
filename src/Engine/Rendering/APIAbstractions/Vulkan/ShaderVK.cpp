@@ -9,7 +9,7 @@ ShaderVK* ShaderVK::compileShader(const std::string& filePath, SHADER_TYPE shade
     // Read the SPV code from file, start at the back to get the size of it
     std::ifstream file(filePath, std::ios::ate | std::ios::binary);
     if (!file.is_open()) {
-        LOG_ERROR("Failed to read shader: %s", filePath.c_str());
+        LOG_ERRORF("Failed to read shader: %s", filePath.c_str());
         return nullptr;
     }
 
@@ -27,7 +27,7 @@ ShaderVK* ShaderVK::compileShader(const std::string& filePath, SHADER_TYPE shade
 
     VkShaderModule shaderModule = VK_NULL_HANDLE;
     if (vkCreateShaderModule(pDevice->getDevice(), &shaderInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        LOG_ERROR("Failed to create shader module for shader: %s", filePath.c_str());
+        LOG_ERRORF("Failed to create shader module for shader: %s", filePath.c_str());
         return nullptr;
     }
 
@@ -58,7 +58,7 @@ VkShaderStageFlagBits ShaderVK::convertShaderFlagBits(SHADER_TYPE shaderFlags)
         case SHADER_TYPE::FRAGMENT_SHADER:
             return VK_SHADER_STAGE_FRAGMENT_BIT;
         default:
-            LOG_WARNING("Erroneous shader flag bits: %d", (uint32_t)shaderFlags);
+            LOG_WARNINGF("Erroneous shader flag bits: %d", (uint32_t)shaderFlags);
             return VK_SHADER_STAGE_VERTEX_BIT;
     }
 }
