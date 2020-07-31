@@ -1,4 +1,4 @@
-import csv, re, sys, getopt
+import json, re, sys, getopt
 
 # Regexes that will catch messages to be suppressed
 suppressedRegexes = [
@@ -66,27 +66,11 @@ def readReport(fileName, filesToLint):
     for suppressedMessage in suppressedMessages:
         print(suppressedMessage, end='')
 
-    # Succeed if the lint report is empty, or only contains the information line
-    return 0 if warningCount == 0 else 1
-
-def getCSVValues(file):
-    values = []
-
-    with open(file) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
-                line_count += 1
-            else:
-                values += row
-                line_count += 1
-    return values
-
 def getFilesToLint(modifiedFilesPath, addedFilesPath):
-    modifiedFiles = getCSVValues(modifiedFilesPath) if modifiedFilesPath != "" else []
-    addedFiles = getCSVValues(addedFilesPath) if addedFilesPath != "" else []
+    modifiedFiles = json.load(open(modifiedFilesPath, 'r')) if modifiedFilesPath != "" else []
+    addedFiles = json.load(open(addedFilesPath, 'r')) if addedFilesPath != "" else []
+    print(modifiedFiles)
+    print(addedFiles)
     return modifiedFiles + addedFiles
 
 def main(argv):
@@ -97,26 +81,25 @@ def main(argv):
         modified-files: path to csv file containing file paths of files modified in a merge request
         added-files: path to csv file containing file paths of files added in a merge request'''
     try:
-        opts, args = getopt.getopt(argv,"h:",["report=modified-files=added-files="])
-        (args) # Hack to remove lint error of args not being used
+        opts, args = getopt.getopt(argv,"h:",["report=", "modified-files=", "added-files="])
     except getopt.GetoptError:
         print("Intended usage:")
         print(helpStr)
-        print("Used flags: " + str(argv))
+        print("Used flags: " + str(args))
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print(helpStr)
             sys.exit(1)
-        elif opt == "report":
+        elif opt == "--report":
             inputFile = arg
-        elif opt == "modified-files":
+        elif opt == "--modified-files":
             modifiedFilesPath = arg
-        elif opt == "added-files":
+        elif opt == "--added-files":
             addedFilesPath = arg
 
     filesToLint = getFilesToLint(modifiedFilesPath, addedFilesPath)
-    sys.exit(readReport(inputFile, filesToLint))
+    readReport(inputFile, filesToLint)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

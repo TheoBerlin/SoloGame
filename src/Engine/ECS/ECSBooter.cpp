@@ -39,10 +39,6 @@ void ECSBooter::performBootups()
     bootRenderers();
 }
 
-bool yaboy(std::unordered_map<std::type_index, ComponentHandlerBootInfo>::iterator itr) {
-    return !itr->second.inClosedList;
-}
-
 void ECSBooter::bootHandlers()
 {
     buildBootInfos();
