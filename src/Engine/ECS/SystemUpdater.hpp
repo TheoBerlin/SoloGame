@@ -26,8 +26,8 @@ typedef std::vector<std::unordered_map<std::type_index, size_t>::iterator> Proce
 class SystemUpdater
 {
 public:
-    SystemUpdater();
-    ~SystemUpdater();
+    SystemUpdater() = default;
+    ~SystemUpdater() = default;
 
     void registerSystem(const SystemRegistration& sysReg);
     void deregisterSystem(System* pSystem);
@@ -57,6 +57,8 @@ private:
 private:
     IDGenerator m_SystemIDGen;
 
+    std::vector<size_t> m_ThreadHandles;
+
     // Each queue contains pointers to systems as well as information on what components they process and with what permissions
     // so that safe multi-threading can be performed
     std::array<UpdateQueue, g_UpdateQueueCount> m_UpdateQueues;
@@ -65,7 +67,7 @@ private:
     // Stores what systems have been processed during a multi-threaded pass, where an element is an index to the vector of systems
     IDDVector<size_t> m_ProcessedSystems;
 
-    // Maps component TIDs to how many systems are reading from them
+    // Maps component TIDs to the amount of systems are reading from them
     // Stores what components are currently being processed and with what rights
     std::unordered_map<std::type_index, size_t> m_ProcessingComponents;
 
@@ -74,5 +76,4 @@ private:
 
     // Used to time out threads unable to find updateable systems
     std::condition_variable m_TimeoutCV;
-    bool m_TimeoutDisabled;
 };

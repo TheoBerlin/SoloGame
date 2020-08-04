@@ -2,6 +2,7 @@
 
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
+#include <Engine/Utils/ThreadPool.hpp>
 #include <Game/Game.hpp>
 
 #ifdef _DEBUG
@@ -16,6 +17,8 @@ int main()
     #endif
 
     Logger::init();
+
+    ThreadPool::getInstance().initialize();
 
     Game game;
     if (!game.init() || !game.finalize()) {
