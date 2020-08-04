@@ -37,7 +37,6 @@ void ThreadPool::initialize()
 
     m_JoinResources.resize(m_Threads.size() * 2u);
     m_FreeJoinResourcesIndices.resize(m_JoinResources.size());
-    size_t freeIndex = 0u;
 
     for (size_t threadHandleIdx = 0u; threadHandleIdx < m_JoinResources.size(); threadHandleIdx++) {
         m_JoinResources[threadHandleIdx] = new JoinResources();

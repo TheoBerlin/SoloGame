@@ -77,9 +77,8 @@ void SystemUpdater::updateMT(float dt)
             continue;
         }
 
-        for (size_t& threadHandle : m_ThreadHandles) {
-            threadHandle = threadPool.execute(std::bind(&SystemUpdater::updateSystems, this, updateQueue, dt));
-        }
+        std::generate_n(m_ThreadHandles.begin(), m_ThreadHandles.size(),
+            [&]{ return threadPool.execute(std::bind(&SystemUpdater::updateSystems, this, updateQueue, dt)); });
 
         for (size_t threadHandle : m_ThreadHandles) {
             threadPool.join(threadHandle);
