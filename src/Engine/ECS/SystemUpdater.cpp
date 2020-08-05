@@ -2,18 +2,14 @@
 
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/Logger.hpp>
+#include <Engine/Utils/ThreadPool.hpp>
 
 #include <thread>
 
-SystemUpdater::SystemUpdater()
-    :m_TimeoutDisabled(true)
-{}
-
-SystemUpdater::~SystemUpdater()
-{}
-
 void SystemUpdater::registerSystem(const SystemRegistration& sysReg)
 {
+    m_ThreadHandles.resize(ThreadPool::getInstance().getThreadCount());
+
     // Eliminate duplicate component types across the system's subscriptions
     std::map<std::type_index, ComponentPermissions> uniqueRegs;
 
@@ -74,18 +70,18 @@ void SystemUpdater::updateST(float dt) const
 
 void SystemUpdater::updateMT(float dt)
 {
-    std::thread threads[MAX_THREADS];
+    ThreadPool& threadPool = ThreadPool::getInstance();
 
     for (const UpdateQueue& updateQueue : m_UpdateQueues) {
         if (updateQueue.empty()) {
             continue;
         }
 
-        std::generate(&threads[0], &threads[MAX_THREADS],
-            [&]() { return std::thread(&SystemUpdater::updateSystems, this, updateQueue, dt); });
+        std::generate_n(m_ThreadHandles.begin(), m_ThreadHandles.size(),
+            [&]{ return threadPool.execute(std::bind(&SystemUpdater::updateSystems, this, updateQueue, dt)); });
 
-        for (std::thread& thread : threads) {
-            thread.join();
+        for (size_t threadHandle : m_ThreadHandles) {
+            threadPool.join(threadHandle);
         }
 
         m_ProcessedSystems.clear();
@@ -116,8 +112,7 @@ void SystemUpdater::updateSystems(const UpdateQueue& updateQueue, float dt)
 
         if (systemToUpdate == nullptr) {
             // No updateable system was found, have the thread wait until an update finishes
-            m_TimeoutDisabled = false;
-            m_TimeoutCV.wait(lk, [this]{ return m_TimeoutDisabled; });
+            m_TimeoutCV.wait(lk);
         } else {
             ProcessingSystemsIterators updateIterators;
             registerUpdate(systemToUpdate, &updateIterators);
@@ -126,10 +121,8 @@ void SystemUpdater::updateSystems(const UpdateQueue& updateQueue, float dt)
             systemToUpdate->pSystem->update(dt);
             m_Mux.lock();
 
-            m_TimeoutDisabled = true;
-            m_TimeoutCV.notify_all();
-
             deregisterUpdate(updateIterators);
+            m_TimeoutCV.notify_all();
         }
     }
 }
@@ -170,7 +163,7 @@ void SystemUpdater::registerUpdate(const SystemUpdateInfo* systemToRegister, Pro
     processingSystemsIterators->reserve(systemToRegister->Components.size());
 
     for (const ComponentAccess& componentReg : systemToRegister->Components) {
-        size_t isReading = componentReg.Permissions == R ? 1 : 0;
+        size_t isReading = componentReg.Permissions == R;
 
         auto processingComponentItr = m_ProcessingComponents.find(componentReg.TID);
         if (processingComponentItr == m_ProcessingComponents.end()) {
@@ -186,7 +179,7 @@ void SystemUpdater::deregisterUpdate(const ProcessingSystemsIterators& processin
 {
     for (auto itr : processingSystemsIterators) {
         if (itr->second <= 1) {
-            // The system the only one reading or writing to the component type
+            // The system was the only one reading or writing to the component type
             m_ProcessingComponents.erase(itr);
         } else {
             itr->second -= 1;
