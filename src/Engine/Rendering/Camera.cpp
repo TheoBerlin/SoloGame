@@ -26,8 +26,7 @@ CameraSystem::CameraSystem(ECSCore* pECS, InputHandler* pInputHandler)
     };
     sysReg.pSystem = this;
 
-    this->subscribeToComponents(sysReg);
-    this->registerUpdate(sysReg);
+    enqueueRegistration(sysReg);
 }
 
 CameraSystem::~CameraSystem()

@@ -12,7 +12,7 @@ class ButtonSystem : public System
 {
 public:
     ButtonSystem(ECSCore* pECS, Window* pWindow);
-    ~ButtonSystem();
+    ~ButtonSystem() = default;
 
     virtual bool initSystem() override;
 

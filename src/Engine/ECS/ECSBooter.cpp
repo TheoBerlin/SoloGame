@@ -10,9 +10,6 @@ ECSBooter::ECSBooter(ECSCore* pECS)
     :m_pECS(pECS)
 {}
 
-ECSBooter::~ECSBooter()
-{}
-
 void ECSBooter::enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration)
 {
     m_ComponentHandlersToRegister.push_back(handlerRegistration);
@@ -96,6 +93,7 @@ void ECSBooter::bootHandlers()
 void ECSBooter::bootSystems()
 {
     ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+    SystemRegistry* pSystemRegistry = m_pECS->getSystemRegistry();
 
     for (const SystemRegistration& systemReg : m_SystemsToRegister) {
         System* pSystem = systemReg.pSystem;
@@ -105,6 +103,8 @@ void ECSBooter::bootSystems()
         } else {
             size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriberRegistration);
             pSystem->setComponentSubscriptionID(subscriptionID);
+
+            pSystemRegistry->registerSystem(systemReg);
         }
     }
 

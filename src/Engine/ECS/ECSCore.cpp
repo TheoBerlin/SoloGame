@@ -2,23 +2,30 @@
 
 ECSCore::ECSCore()
     :m_ComponentSubscriber(&m_EntityRegistry),
-    m_ECSBooter(this)
-{}
-
-ECSCore::~ECSCore()
+    m_SystemRegistry(&m_DeltaTime),
+    m_JobScheduler(&m_SystemRegistry),
+    m_ECSBooter(this),
+    m_DeltaTime(0.0f)
 {}
 
 void ECSCore::update(float dt)
 {
+    m_DeltaTime = dt;
+
     performDeletions();
     performRegistrations();
 
-    m_SystemUpdater.updateMT(dt);
+    m_JobScheduler.update();
 }
 
-Entity ECSCore::createEntity()
+void ECSCore::scheduleJobASAP(const Job& job)
 {
-    return m_EntityRegistry.createEntity();
+    m_JobScheduler.scheduleJob(job, CURRENT_PHASE);
+}
+
+void ECSCore::scheduleJobPostFrame(const Job& job)
+{
+    m_JobScheduler.scheduleJob(job, g_LastPhase + 1u);
 }
 
 void ECSCore::enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration)

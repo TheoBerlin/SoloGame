@@ -33,7 +33,7 @@ public:
     }
 
     // Index vector using ID, assumes ID is linked to an element
-    inline T indexID(size_t ID) const
+    inline const T& indexID(size_t ID) const
     {
         return m_Data[m_Indices[ID]];
     }

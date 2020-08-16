@@ -21,11 +21,8 @@ ButtonSystem::ButtonSystem(ECSCore* pECS, Window* pWindow)
     };
     sysReg.pSystem = this;
 
-    subscribeToComponents(sysReg);
+    enqueueRegistration(sysReg);
 }
-
-ButtonSystem::~ButtonSystem()
-{}
 
 bool ButtonSystem::initSystem()
 {

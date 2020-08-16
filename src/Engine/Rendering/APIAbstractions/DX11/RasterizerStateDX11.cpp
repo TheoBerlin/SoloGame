@@ -21,7 +21,7 @@ bool createRasterizerState(ID3D11RasterizerState** ppRasterizerState, const Rast
             break;
         default:
             LOG_ERRORF("Erroneous cull mode flag: %d", (int)rsDesc.CullMode);
-            return nullptr;
+            return false;
     }
 
     rsDesc.FrontCounterClockwise    = BOOL(rasterizerInfo.FrontFaceOrientation == FRONT_FACE_ORIENTATION::COUNTER_CLOCKWISE);

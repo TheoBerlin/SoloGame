@@ -13,7 +13,6 @@ public:
     UICore(ECSCore* pECS, Device* pDevice, Window* pWindow);
     ~UICore();
 
-    ButtonSystem& getButtonSystem() { return m_ButtonSystem; }
     UIHandler& getPanelHandler()    { return m_PanelHandler; }
 
 private:

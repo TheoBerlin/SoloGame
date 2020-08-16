@@ -13,12 +13,15 @@
 #include <Game/States/MainMenu.hpp>
 
 GameSession::GameSession(MainMenu* pMainMenu)
-    :State(pMainMenu, STATE_TRANSITION::POP_AND_PUSH),
+    :State(pMainMenu),
     m_pInputHandler(pMainMenu->getInputHandler()),
     m_TubeHandler(m_pECS, pMainMenu->getDevice()),
     m_TrackPositionHandler(m_pECS),
     m_LightSpinner(m_pECS),
     m_RacerMover(m_pECS, pMainMenu->getInputHandler(), &m_TubeHandler)
+{}
+
+void GameSession::init()
 {
     m_pECS->performRegistrations();
     LOG_INFO("Started game session");

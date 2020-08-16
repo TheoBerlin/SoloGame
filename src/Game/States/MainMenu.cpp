@@ -15,13 +15,16 @@
 #include <array>
 
 MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler)
-    :State(pStateManager, pECS, STATE_TRANSITION::PUSH),
+    :State(pStateManager, pECS),
     m_pDevice(pDevice),
     m_pInputHandler(pInputHandler)
-{
-    ComponentSubscriber* pComponentSubscriber = pECS->getComponentSubscriber();
+{}
 
-    pInputHandler->showCursor();
+void MainMenu::init()
+{
+    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+
+    m_pInputHandler->showCursor();
 
     UIHandler* pUIHandler       = reinterpret_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
     TextRenderer* pTextRenderer = reinterpret_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
@@ -46,7 +49,7 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
     pUIHandler->attachTextures(uiEntity, txAttachmentInfos, panelTextures.data(), panelTextures.size());
 
     // Make the panel a button
-    pUIHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, [this](){ DBG_NEW GameSession(this); });
+    pUIHandler->createButton(uiEntity, {0.1f, 0.0f, 0.0f, 1.0f}, {0.2f, 0.0f, 0.0f, 1.0f}, std::bind(&MainMenu::createGameSession, this));
 
     // Create test sound
     Entity soundEntity = m_pECS->createEntity();
@@ -60,9 +63,6 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
     LOG_INFO("Entered main menu, press E to start a game session");
 }
 
-MainMenu::~MainMenu()
-{}
-
 void MainMenu::resume()
 {
     m_pInputHandler->showCursor();
@@ -74,6 +74,12 @@ void MainMenu::pause()
 void MainMenu::update(float dt)
 {
     if (m_pInputHandler->keyState(GLFW_KEY_E)) {
-        DBG_NEW GameSession(this);
+        createGameSession();
     }
+}
+
+void MainMenu::createGameSession()
+{
+    GameSession* pGameSession = DBG_NEW GameSession(this);
+    m_pStateManager->enqueueStateTransition(pGameSession, STATE_TRANSITION::POP_AND_PUSH);
 }

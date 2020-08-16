@@ -24,8 +24,7 @@ RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler, Tub
     };
     sysReg.pSystem = this;
 
-    subscribeToComponents(sysReg);
-    registerUpdate(sysReg);
+    enqueueRegistration(sysReg);
 }
 
 RacerController::~RacerController()
