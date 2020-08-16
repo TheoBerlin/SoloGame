@@ -7,6 +7,7 @@
 
 class ComponentHandler;
 class ECSCore;
+class JobScheduler;
 struct ComponentHandlerRegistration;
 struct RendererRegistration;
 struct SystemRegistration;
@@ -23,7 +24,7 @@ class ECSBooter
 {
 public:
     ECSBooter(ECSCore* pECS);
-    ~ECSBooter();
+    ~ECSBooter() = default;
 
     void enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration);
     void enqueueSystemRegistration(const SystemRegistration& systemRegistration);

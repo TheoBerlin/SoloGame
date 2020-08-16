@@ -11,15 +11,20 @@ class MainMenu : public State
 {
 public:
     MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler);
-    ~MainMenu();
+    ~MainMenu() = default;
+
+    void init() override final;
 
     void resume() override final;
     void pause() override final;
 
     void update(float dt) override final;
 
-    Device* getDevice() { return m_pDevice; };
-    InputHandler* getInputHandler() { return m_pInputHandler; }
+    inline Device* getDevice()             { return m_pDevice; };
+    inline InputHandler* getInputHandler() { return m_pInputHandler; }
+
+private:
+    void createGameSession();
 
 private:
     Entity uiEntity;

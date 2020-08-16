@@ -21,7 +21,7 @@ class VelocityHandler : public ComponentHandler, public System
 {
 public:
     VelocityHandler(ECSCore* pECS);
-    ~VelocityHandler();
+    ~VelocityHandler() = default;
 
     virtual bool initHandler() override final { return true; };
     virtual bool initSystem() override final;

@@ -17,8 +17,10 @@ public:
     GameSession(MainMenu* pMainMenu);
     ~GameSession() = default;
 
-    void resume();
-    void pause();
+    void init() override final;
+
+    void resume() override final;
+    void pause() override final;
 
     void update(float dt);
 

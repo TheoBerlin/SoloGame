@@ -22,8 +22,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
         {{{R, g_TIDVelocity}}, {&cameraComponents}, &m_Cameras}
     };
 
-    subscribeToComponents(sysReg);
-    registerUpdate(sysReg);
+    enqueueRegistration(sysReg);
 }
 
 SoundPlayer::~SoundPlayer()

@@ -1,6 +1,6 @@
 #include "Velocity.hpp"
 
-#include <Engine/ECS/SystemUpdater.hpp>
+#include <Engine/ECS/Job.hpp>
 #include <Engine/Transform.hpp>
 
 VelocityHandler::VelocityHandler(ECSCore* pECS)
@@ -21,14 +21,10 @@ VelocityHandler::VelocityHandler(ECSCore* pECS)
         {{{RW, g_TIDVelocity}, {RW, g_TIDPosition}}, &m_MovingObjects}
     };
     sysReg.pSystem = this;
-    sysReg.UpdateQueueIndex = g_LastUpdateQueue;
+    sysReg.UpdateQueueIndex = g_LastPhase;
 
-    subscribeToComponents(sysReg);
-    registerUpdate(sysReg);
+    enqueueRegistration(sysReg);
 }
-
-VelocityHandler::~VelocityHandler()
-{}
 
 bool VelocityHandler::initSystem()
 {

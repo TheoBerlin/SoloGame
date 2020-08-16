@@ -87,7 +87,6 @@ void IGame::run()
         // Update logic
         m_ECS.update(dt);
         m_StateManager.update(dt);
-        m_pUICore->getButtonSystem().update(dt);
 
         m_pRenderingHandler->render();
     }

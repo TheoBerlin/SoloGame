@@ -45,7 +45,7 @@ public:
 
 protected:
     void subscribeToComponents(const SystemRegistration& sysReg);
-    void registerUpdate(const SystemRegistration& sysReg);
+    void enqueueRegistration(const SystemRegistration& sysReg);
 
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
