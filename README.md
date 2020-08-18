@@ -31,4 +31,4 @@ that has to be done to prevent data races is to only update systems that do not 
 written to by another system.
 
 The updating of systems is done in
-[Engine/ECS/SystemUpdater.cpp](https://github.com/TheoBerlin/SoloGame/blob/master/src/Engine/ECS/SystemUpdater.cpp).
+[Engine/ECS/JobScheduler.cpp](https://github.com/TheoBerlin/SoloGame/blob/master/src/Engine/ECS/JobScheduler.cpp).
