@@ -77,18 +77,18 @@ def main(argv):
     inputFile = ""
     modifiedFilesPath = ""
     addedFilesPath = ""
-    helpStr = '''read-lint-report.py --report <path> --modified-files <path> --added-files <path>\n
-        modified-files: path to csv file containing file paths of files modified in a merge request
+    helpStr = '''usage: read-lint-report.py --report <path> --modified-files <path> --added-files <path>\n
+        modified-files: path to csv file containing file paths of files modified in a merge request\n
         added-files: path to csv file containing file paths of files added in a merge request'''
     try:
-        opts, args = getopt.getopt(argv,"h:",["report=", "modified-files=", "added-files="])
+        opts, args = getopt.getopt(argv, "h:", ["report=", "modified-files=", "added-files="])
     except getopt.GetoptError:
         print("Intended usage:")
         print(helpStr)
-        print("Used flags: " + str(args))
+        print(f"Used flags: {str(args)}")
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
+        if opt == "-h":
             print(helpStr)
             sys.exit(1)
         elif opt == "--report":
