@@ -18,7 +18,8 @@ public:
     void show();
 
     static void pollEvents();
-    bool shouldClose();
+    void close();
+    bool shouldClose() const { return glfwWindowShouldClose(m_pWindow); }
 
     HWND getHWND() const;
     // Vulkan-specific

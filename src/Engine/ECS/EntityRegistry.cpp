@@ -27,7 +27,7 @@ void EntityRegistry::deregisterComponentType(Entity entity, std::type_index comp
 {
     EntityRegistryPage& topPage = m_EntityPages.top();
     if (!topPage.hasElement(entity)) {
-        LOG_WARNINGF("Attempted to deregister a component type (%s) from an unregistered entity: %d", componentType.name(), entity);
+        LOG_WARNINGF("Attempted to deregister a component type (%s) from an unregistered entity: %ld", componentType.name(), entity);
     } else {
         topPage.indexID(entity).erase(componentType);
     }
@@ -62,7 +62,7 @@ void EntityRegistry::deregisterEntity(Entity entity)
 {
     EntityRegistryPage& topPage = m_EntityPages.top();
     if (!topPage.hasElement(entity)) {
-        LOG_WARNINGF("Attempted to deregister an unregistered entity: %d", entity);
+        LOG_WARNINGF("Attempted to deregister an unregistered entity: %ld", entity);
         return;
     }
 

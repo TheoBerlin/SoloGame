@@ -7,19 +7,22 @@ class InputHandler
 {
 public:
     InputHandler();
-    ~InputHandler();
+    ~InputHandler() = default;
 
     void init(GLFWwindow* pWindow, uint32_t windowWidth, uint32_t windowHeight);
 
     void update();
 
+    void enable()   { m_Enabled = true; }
+    void disable();
+
     void showCursor();
     // Hides the cursor and stop reading the absolute position of the cursor
     bool hideCursor();
 
-    bool cursorIsHidden() const { return m_RawMotionEnabled; }
+    bool cursorIsHidden() const     { return m_RawMotionEnabled; }
 
-    bool keyState(int key) const { return m_pKeyStates[key]; }
+    bool keyState(int key) const    { return m_pKeyStates[key]; }
 
     const glm::dvec2& getMousePosition() const   { return m_MousePosition; };
     const glm::dvec2& getMouseMove() const       { return m_MouseMove; };
@@ -37,6 +40,7 @@ private:
 
 private:
     GLFWwindow* m_pWindow;
+    bool m_Enabled;
 
     // Keyboard
     std::array<bool, GLFW_KEY_LAST + 1> m_pKeyStates;

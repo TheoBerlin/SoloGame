@@ -87,7 +87,7 @@ void CameraSystem::update(float dt)
         }
 
         DirectX::XMFLOAT3& cameraVelocity = m_pVelocityHandler->getVelocity(entity);
-        DirectX::XMStoreFloat3(&cameraVelocity, camMove);
+        DirectX::XMStoreFloat3(&cameraVelocity, DirectX::XMVectorAdd(camMove, DirectX::XMLoadFloat3(&cameraVelocity)));
 
         DirectX::XMFLOAT3& position = m_pTransformHandler->getPosition(entity);
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&position);

@@ -1,6 +1,5 @@
 #pragma once
 
-#define NOMINMAX
 #include <Engine/ECS/Entity.hpp>
 #include <Engine/GameState/State.hpp>
 

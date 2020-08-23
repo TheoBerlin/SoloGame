@@ -1,4 +1,4 @@
-#include "GameSession.hpp"
+#include "Benchmark.hpp"
 
 #include <Engine/Audio/SoundHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
@@ -7,27 +7,33 @@
 #include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
+#include <Engine/Rendering/Window.hpp>
 #include <Engine/Transform.hpp>
-#include <Engine/Utils/ECSUtils.hpp>
-#include <Game/States/MainMenu.hpp>
+#include <Engine/Utils/RuntimeStats.hpp>
 
-GameSession::GameSession(MainMenu* pMainMenu)
-    :State(pMainMenu),
-    m_pInputHandler(pMainMenu->getInputHandler()),
-    m_TubeHandler(m_pECS, pMainMenu->getDevice()),
+#include <vendor/json/json.hpp>
+
+#include <fstream>
+#include <iomanip>
+
+Benchmark::Benchmark(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler, const RuntimeStats* pRuntimeStats, Window* pWindow)
+    :State(pStateManager, pECS),
+    m_pInputHandler(pInputHandler),
+    m_pRuntimeStats(pRuntimeStats),
+    m_pWindow(pWindow),
+    m_pDevice(pDevice),
     m_TrackPositionHandler(m_pECS),
+    m_TubeHandler(m_pECS, pDevice),
     m_LightSpinner(m_pECS),
-    m_RacerController(m_pECS, pMainMenu->getInputHandler(), &m_TubeHandler)
+    m_RacerController(m_pECS, pInputHandler, &m_TubeHandler)
 {}
 
-void GameSession::init()
+void Benchmark::init()
 {
-    LOG_INFO("Started game session");
+    LOG_INFO("Started benchmark");
 
+    m_pInputHandler->disable();
     m_pECS->performRegistrations();
-
-    // Set mouse mode to relative and hide the cursor
-    m_pInputHandler->hideCursor();
 
     ComponentSubscriber* pComponentSubscriber   = m_pECS->getComponentSubscriber();
     ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pComponentSubscriber->getComponentHandler(TID(ModelLoader)));
@@ -42,6 +48,8 @@ void GameSession::init()
         {2.0f, 2.0f, -22.0f},
         {0.0f, 0.0f, -32.0f},
         {-3.0f, -6.0f, -42.0f},
+        {1.0f, -9.0f, -52.0f},
+        {-1.0f, -7.0f, -60.0f}
     };
 
     std::string soundPath = "./assets/Sounds/CakedInReverb1.wav";
@@ -60,18 +68,27 @@ void GameSession::init()
     createPlayer(pTransformHandler, pComponentSubscriber);
 }
 
-void GameSession::resume()
+void Benchmark::resume()
 {
-    m_pInputHandler->hideCursor();
+    LOG_ERROR("Benchmark::resume was called. Benchmarks should be kept running continuously");
 }
 
-void GameSession::pause()
-{}
+void Benchmark::pause()
+{
+    LOG_ERROR("Benchmark::pause was called. Benchmarks should be kept running continuously");
+}
 
-void GameSession::update(float dt)
-{}
+void Benchmark::update(float dt)
+{
+    const TrackPosition& trackPosition = m_TrackPositionHandler.getTrackPosition(m_PlayerEntity);
+    if (trackPosition.section == m_TubeHandler.getTubeSections().size() - 2 && trackPosition.T >= 1.0f) {
+        // The end has been reached
+        printBenchmarkResults();
+        m_pWindow->close();
+    }
+}
 
-void GameSession::startMusic(SoundHandler* pSoundHandler)
+void Benchmark::startMusic(SoundHandler* pSoundHandler)
 {
     const float musicVolume = 0.3f;
 
@@ -83,7 +100,7 @@ void GameSession::startMusic(SoundHandler* pSoundHandler)
     }
 }
 
-void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
+void Benchmark::createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
 {
     Entity cube = m_pECS->createEntity();
     pTransformHandler->createTransform(cube, position, {0.5f, 0.5f, 0.5f});
@@ -97,7 +114,7 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::strin
     }
 }
 
-void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
+void Benchmark::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
     LightHandler* pLightHandler = reinterpret_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
@@ -117,7 +134,7 @@ void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandle
     }
 }
 
-void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
+void Benchmark::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader)
 {
     const float tubeRadius = 1.5f;
     const unsigned int tubeFaces = 10;
@@ -129,17 +146,17 @@ void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints
     pTransformHandler->createWorldMatrix(tube);
 }
 
-void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
+void Benchmark::createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
 {
-    Entity player = m_pECS->createEntity();
+    m_PlayerEntity = m_pECS->createEntity();
 
     const DirectX::XMFLOAT3 camPosition = {2.0f, 1.8f, 3.3f};
-    pTransformHandler->createPosition(player, camPosition);
-    pTransformHandler->createRotation(player);
-    const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(player);
+    pTransformHandler->createPosition(m_PlayerEntity, camPosition);
+    pTransformHandler->createRotation(m_PlayerEntity);
+    const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(m_PlayerEntity);
 
     VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentSubscriber->getComponentHandler(TID(VelocityHandler)));
-    pVelocityHandler->createVelocityComponent(player);
+    pVelocityHandler->createVelocityComponent(m_PlayerEntity);
 
     VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
 
@@ -154,5 +171,23 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     projMatrixInfo.NearZ            = 0.1f;
     projMatrixInfo.FarZ             = 20.0f;
 
-    pVPHandler->createViewProjectionMatrices(player, viewMatrixInfo, projMatrixInfo);
+    pVPHandler->createViewProjectionMatrices(m_PlayerEntity, viewMatrixInfo, projMatrixInfo);
+
+    m_TrackPositionHandler.createTrackPosition(m_PlayerEntity);
+    m_TrackPositionHandler.createTrackSpeed(m_PlayerEntity);
+}
+
+void Benchmark::printBenchmarkResults() const
+{
+    const char* outFile = "benchmark_results.json";
+    LOG_INFOF("Writing benchmark results to %s", outFile);
+    using json = nlohmann::json;
+
+    json benchmarkResults;
+    benchmarkResults["AverageFPS"] = 1.0f / m_pRuntimeStats->getAverageFrametime();
+
+    std::ofstream benchmarkFile(outFile, std::fstream::out | std::fstream::trunc);
+    benchmarkFile << std::setw(4) << benchmarkResults << std::endl;
+
+    benchmarkFile.close();
 }
