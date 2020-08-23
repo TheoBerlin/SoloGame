@@ -81,6 +81,7 @@ void IGame::run()
         float dt = dtChrono.count();
 
         timer = timeNow;
+        m_RuntimeStats.setFrameTime(dt);
 
         m_Window.getInputHandler()->update();
 

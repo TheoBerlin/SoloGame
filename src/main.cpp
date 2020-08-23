@@ -5,11 +5,13 @@
 #include <Engine/Utils/ThreadPool.hpp>
 #include <Game/Game.hpp>
 
+#include <argh/argh.h>
+
 #ifdef _DEBUG
     #include <crtdbg.h>
 #endif
 
-int main()
+int main(int argc, char** argv)
 {
     // Check for memory leaks. Disabled when not debugging
     #ifdef _DEBUG
@@ -17,11 +19,12 @@ int main()
     #endif
 
     Logger::init();
+    argh::parser flagParser(argc, argv);
 
     ThreadPool::getInstance().initialize();
 
     Game game;
-    if (!game.init() || !game.finalize()) {
+    if (!game.init() || !game.finalize(flagParser)) {
         return 1;
     }
 

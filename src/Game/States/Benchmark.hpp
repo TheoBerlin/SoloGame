@@ -6,23 +6,25 @@
 #include <Game/Racer/Components/Track.hpp>
 #include <Game/Racer/Systems/RacerController.hpp>
 
+class Device;
 class InputHandler;
-class MainMenu;
 class ModelLoader;
+class RuntimeStats;
 class SoundHandler;
+class Window;
 
-class GameSession : public State
+class Benchmark : public State
 {
 public:
-    GameSession(MainMenu* pMainMenu);
-    ~GameSession() = default;
+    Benchmark(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, InputHandler* pInputHandler, const RuntimeStats* pRuntimeStats, Window* pWindow);
+    ~Benchmark() = default;
 
     void init() override final;
 
     void resume() override final;
     void pause() override final;
 
-    void update(float dt);
+    void update(float dt) override final;
 
 private:
     void startMusic(SoundHandler* pSoundHandler);
@@ -31,7 +33,17 @@ private:
     void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
     void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
 
+    void printBenchmarkResults() const;
+
 private:
+    InputHandler* m_pInputHandler;
+    Device* m_pDevice;
+
+    const RuntimeStats* m_pRuntimeStats;
+    Window* m_pWindow;
+
+    Entity m_PlayerEntity;
+
     // Component handlers
     TrackHandler m_TrackPositionHandler;
     TubeHandler m_TubeHandler;
@@ -39,6 +51,4 @@ private:
     // Systems
     LightSpinner m_LightSpinner;
     RacerController m_RacerController;
-
-    InputHandler* m_pInputHandler;
 };

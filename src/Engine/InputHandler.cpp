@@ -5,6 +5,7 @@
 
 InputHandler::InputHandler()
     :m_pWindow(nullptr),
+    m_Enabled(true),
     m_pKeyStates(),
     m_pMouseButtonStates(),
     m_MouseCenter(0.0, 0.0),
@@ -15,9 +16,6 @@ InputHandler::InputHandler()
     std::fill_n(m_pKeyStates.data(), m_pKeyStates.size(), false);
     std::fill_n(m_pMouseButtonStates.data(), m_pMouseButtonStates.size(), false);
 }
-
-InputHandler::~InputHandler()
-{}
 
 void InputHandler::init(GLFWwindow* pWindow, uint32_t windowWidth, uint32_t windowHeight)
 {
@@ -40,6 +38,13 @@ void InputHandler::update()
     } else {
         glfwGetCursorPos(m_pWindow, &m_MousePosition.x, &m_MousePosition.y);
     }
+}
+
+void InputHandler::disable()
+{
+    m_Enabled = false;
+    std::fill_n(m_pKeyStates.data(), m_pKeyStates.size(), false);
+    std::fill_n(m_pMouseButtonStates.data(), m_pMouseButtonStates.size(), false);
 }
 
 void InputHandler::showCursor()
@@ -88,10 +93,10 @@ void InputHandler::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button
 
 void InputHandler::keyActionCallback(int key, int scancode, int action, int mods)
 {
-    m_pKeyStates[key] = action != GLFW_RELEASE;
+    m_pKeyStates[key] = action != GLFW_RELEASE && m_Enabled;
 }
 
 void InputHandler::mouseButtonCallback(int button, int action, int mods)
 {
-    m_pMouseButtonStates[button] = action != GLFW_RELEASE;
+    m_pMouseButtonStates[button] = action != GLFW_RELEASE && m_Enabled;
 }

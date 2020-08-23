@@ -87,7 +87,9 @@
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.cpp" />
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\Swapchain.cpp" />
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.cpp" />
+    <ClCompile Include="src\Engine\Utils\RuntimeStats.cpp" />
     <ClCompile Include="src\Engine\Utils\ThreadPool.cpp" />
+    <ClCompile Include="src\Game\States\Benchmark.cpp" />
     <ClCompile Include="vendor\DirectXTK\DDSTextureLoader.cpp" />
     <ClCompile Include="vendor\DirectXTK\WICTextureLoader.cpp" />
     <ClCompile Include="src\Engine\Audio\AudioCore.cpp" />
@@ -196,7 +198,9 @@
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.hpp" />
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\Swapchain.hpp" />
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.hpp" />
+    <ClInclude Include="src\Engine\Utils\RuntimeStats.hpp" />
     <ClInclude Include="src\Engine\Utils\ThreadPool.hpp" />
+    <ClInclude Include="src\Game\States\Benchmark.hpp" />
     <ClInclude Include="vendor\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="vendor\DirectXTK\WICTextureLoader.h" />
     <ClInclude Include="vendor\stb\stb_image.h" />

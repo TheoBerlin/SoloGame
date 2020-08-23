@@ -52,9 +52,9 @@ void Window::pollEvents()
     glfwPollEvents();
 }
 
-bool Window::shouldClose()
+void Window::close()
 {
-    return glfwWindowShouldClose(m_pWindow);
+    glfwSetWindowShouldClose(m_pWindow, GLFW_TRUE);
 }
 
 HWND Window::getHWND() const

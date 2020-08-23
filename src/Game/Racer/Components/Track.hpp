@@ -28,11 +28,11 @@ public:
 
     virtual bool initHandler() override;
 
-    inline TrackPosition& getTrackPosition(Entity entity)   { return m_TrackPositions.indexID(entity); }
-    inline float& getTrackSpeed(Entity entity)               { return m_TrackSpeeds.indexID(entity).Speed; }
-
     void createTrackPosition(Entity entity);
     void createTrackSpeed(Entity entity, float speed = 0.0f);
+
+    TrackPosition& getTrackPosition(Entity entity)   { return m_TrackPositions.indexID(entity); }
+    float& getTrackSpeed(Entity entity)              { return m_TrackSpeeds.indexID(entity).Speed; }
 
 private:
     IDDVector<TrackPosition> m_TrackPositions;

@@ -11,11 +11,8 @@ class MainMenu;
 class Game : public IGame
 {
 public:
-    Game();
-    ~Game();
+    Game() = default;
+    ~Game() override final = default;
 
-    bool finalize() override final;
-
-private:
-    MainMenu* m_pMainMenu;
+    bool finalize(const argh::parser& flagParser) override final;
 };
