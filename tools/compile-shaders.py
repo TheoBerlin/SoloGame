@@ -8,11 +8,11 @@ def findGLSLCPath():
     vulkanVersion   = "1.2.135.0"
 
     for driveLetter in driveLetters:
-        path = "{}:\\VulkanSDK\\{}\\Bin\\glslc.exe".format(driveLetter, vulkanVersion)
+        path = f"{driveLetter}:\\VulkanSDK\\{vulkanVersion}\\Bin\\glslc.exe"
         if os.path.exists(path):
             return path
 
-    print("Failed to find glslc.exe in '<drive letter>:\\VulkanSDK\\{}\\Bin\\glslc.exe'. Is the installed version not {}?".format(vulkanVersion, vulkanVersion))
+    print(f"Failed to find glslc.exe in '<drive letter>:\\VulkanSDK\\{vulkanVersion}\\Bin\\glslc.exe'. Is the installed version not {vulkanVersion}?")
     sys.exit(1)
 
 def listGLSLShaders():
@@ -43,18 +43,18 @@ def compileShaders(glslcPath):
         elif "_cs" in shader:
             stage = "compute"
         else:
-            print("Failed to recognize shader stage by file name: {}".format(shader))
+            print(f"Failed to recognize shader stage by file name: {shader}")
             continue
 
-        os.system("{} -O -fshader-stage={} {}{} -o {}{}".format(glslcPath, stage, shadersFolder, shader, shadersFolder, shader.replace(".glsl",  ".spv")))
+        os.system(f"{glslcPath} -O -fshader-stage={stage} {shadersFolder}{shader} -o {shadersFolder}{shader.replace('.glsl', '.spv')}")
 
-    print("Compiled {} shaders".format(len(shaders)))
+    print(f"Compiled {len(shaders)} shaders")
 
 def main():
     glslcPath = findGLSLCPath()
 
     if not os.path.exists(shadersFolder):
-        print("Could not find shaders folder: {}".format(shadersFolder))
+        print(f"Could not find shaders folder: {shadersFolder}")
         return 1
 
     compileShaders(glslcPath)
