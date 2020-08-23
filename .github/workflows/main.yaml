@@ -6,9 +6,10 @@ jobs:
   Build-Debug-x64:
     runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: true
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.1
@@ -18,9 +19,10 @@ jobs:
   Build-Release-x64:
     runs-on: windows-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: true
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.1
@@ -33,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
 
       - name: Generate Lint Report
         uses: deep5050/cppcheck-action@master
