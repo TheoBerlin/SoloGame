@@ -15,6 +15,10 @@ namespace argh {
     class parser;
 }
 
+struct EngineConfig {
+    RENDERING_API RenderingAPI;
+};
+
 class IGame
 {
 public:
@@ -46,4 +50,7 @@ protected:
 
     // Rendering
     RenderingHandler* m_pRenderingHandler;
+
+private:
+    bool loadEngineConfig(EngineConfig& engineConfig) const;
 };
