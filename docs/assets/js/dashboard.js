@@ -1,7 +1,6 @@
 ---
 ---
 
-
 const chartjs = window.Chart.min;
 
 window.onload = function() {
