@@ -1,11 +1,5 @@
 name: Välfärden
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '!master'
+on: pull_request
 
 jobs:
   Build-Debug-x64:
@@ -60,14 +54,30 @@ jobs:
         run: python3 ./.github/workflows/read-lint-report.py --report ./cppcheck_report
           --modified-files $HOME/files_modified.json --added-files $HOME/files_added.json
 
+name: Benchmark
+push:
+    branches:
+      - master
+
+jobs:
   benchmark:
     runs-on: [self-hosted, Windows, X64]
 
     needs: Build-Release-x64
     if: github.ref == 'refs/heads/master'
     steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.1
+
+      - name: Build Release x64
+        run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
+
       - name: Compile Shaders
-        run: python ../../tools/compile-shaders.py
+        run: python tools/compile-shaders.py
 
       - name: Benchmark & Update Charts
         run: python benchmark.py x64/Release/GameProject.exe
