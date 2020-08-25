@@ -2,6 +2,10 @@
 
 #include <Engine/Utils/Debug.hpp>
 
+#include <vendor/json/json.hpp>
+
+#include <algorithm>
+#include <fstream>
 #include <iostream>
 
 IGame::IGame()
@@ -18,7 +22,9 @@ IGame::IGame()
 
 IGame::~IGame()
 {
-    m_pDevice->waitIdle();
+    if (m_pDevice) {
+        m_pDevice->waitIdle();
+    }
 
     delete m_pPhysicsCore;
     delete m_pAssetLoaders;
@@ -32,6 +38,12 @@ IGame::~IGame()
 
 bool IGame::init()
 {
+    EngineConfig engineCFG = {};
+    if (!loadEngineConfig(engineCFG)) {
+        return false;
+    }
+    LOG_INFOF("Launching with %s", engineCFG.RenderingAPI == RENDERING_API::VULKAN ? "Vulkan" : "DirectX 11");
+
     if (!m_Window.init()) {
         return false;
     }
@@ -44,7 +56,7 @@ bool IGame::init()
     DescriptorCounts descriptorPoolSize;
     descriptorPoolSize.setAll(100u);
 
-    m_pDevice = Device::create(RENDERING_API::VULKAN, swapChainInfo, &m_Window);
+    m_pDevice = Device::create(engineCFG.RenderingAPI, swapChainInfo, &m_Window);
     if (!m_pDevice || !m_pDevice->init(descriptorPoolSize)) {
         return false;
     }
@@ -91,4 +103,34 @@ void IGame::run()
 
         m_pRenderingHandler->render();
     }
+}
+
+bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
+{
+    // Default config
+    engineConfig.RenderingAPI = RENDERING_API::VULKAN;
+
+    using json = nlohmann::json;
+
+    const char* pInFile = "engine_config.json";
+    std::ifstream cfgFile(pInFile);
+    if (!cfgFile.is_open()) {
+        LOG_ERRORF("Failed to open engine configuration file: %s", pInFile);
+        return false;
+    }
+
+    json configJSON;
+    cfgFile >> configJSON;
+    cfgFile.close();
+
+    std::string APIStr = configJSON["API"].get<std::string>();
+    std::transform(APIStr.begin(), APIStr.end(), APIStr.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+
+    const std::unordered_set<std::string> dx11Strings = {
+        "dx11", "directx11"
+    };
+
+    engineConfig.RenderingAPI = dx11Strings.contains(APIStr) ? RENDERING_API::DIRECTX11 : RENDERING_API::VULKAN;
+    return true;
 }

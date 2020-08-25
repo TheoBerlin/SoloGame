@@ -179,14 +179,14 @@ void Benchmark::createPlayer(TransformHandler* pTransformHandler, ComponentSubsc
 
 void Benchmark::printBenchmarkResults() const
 {
-    const char* outFile = "benchmark_results.json";
-    LOG_INFOF("Writing benchmark results to %s", outFile);
+    const char* pOutFile = "benchmark_results.json";
+    LOG_INFOF("Writing benchmark results to %s", pOutFile);
     using json = nlohmann::json;
 
     json benchmarkResults;
     benchmarkResults["AverageFPS"] = 1.0f / m_pRuntimeStats->getAverageFrametime();
 
-    std::ofstream benchmarkFile(outFile, std::fstream::out | std::fstream::trunc);
+    std::ofstream benchmarkFile(pOutFile, std::fstream::out | std::fstream::trunc);
     benchmarkFile << std::setw(4) << benchmarkResults << std::endl;
 
     benchmarkFile.close();
