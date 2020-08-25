@@ -23,4 +23,4 @@ jobs:
         run: python tools/compile-shaders.py
 
       - name: Benchmark & Update Charts
-        run: python benchmark.py x64/Release/GameProject.exe
+        run: python .github/workflows/benchmark.py x64/Release/GameProject.exe
