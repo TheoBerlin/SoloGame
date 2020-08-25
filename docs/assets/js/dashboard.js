@@ -11,46 +11,58 @@ window.onload = function() {
 function generateGraphs() {
     // @ts-ignore
     var data = {{ site.data.average_fps | jsonify }};
+    data = data["AverageFPS"]
     console.log(data);
 
     var ctx = document.getElementById('avgFPSChart').getContext('2d');
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data["labels"],
+            labels: data['labels'],
             datasets: [
                 {
-                    data: data["vulkan"],
-                    label: "Vulkan",
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)'
-                    ],
+                    data: data['vulkan'],
+                    label: 'Vulkan',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1
                 },
                 {
                     data: data["directx11"],
                     label: "DirectX 11",
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)'
-                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
                 }
             ]
         },
         options: {
-            responsive: false,
+            title: {
+                display: true,
+                text: 'Average FPS'
+            },
+            responsive: true,
             scales: {
+                xAxes: [{
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 77,
+                        minRotation: 77
+                    }
+                }],
                 yAxes: [{
                     ticks: {
                         beginAtZero: true
                     }
                 }]
+            },
+            tooltips: {
+                mode: 'index',
+                callbacks: {
+                    afterTitle: function(tooltipItem, _) {
+                        return data['tooltips'][tooltipItem[0].index];
+                    }
+                }
             }
         }
     });
