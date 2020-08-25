@@ -25,5 +25,10 @@ jobs:
       - name: Benchmark & Update Charts
         run: python .github/workflows/benchmark.py x64/Release/GameProject.exe
 
-      - name: Commit Chart Update
+      - name: Commit Chart Updates
         uses: EndBug/add-and-commit@v4.4.0
+        with:
+          src: 'docs/_data/charts.json'
+          message: "Add benchmark results"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
