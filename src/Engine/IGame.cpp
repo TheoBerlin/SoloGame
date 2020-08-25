@@ -128,7 +128,7 @@ bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
         [](unsigned char c){ return std::tolower(c); });
 
     const std::unordered_set<std::string> dx11Strings = {
-        "dx11", "directx11"
+        "dx11", "directx11", "directx 11"
     };
 
     engineConfig.RenderingAPI = dx11Strings.contains(APIStr) ? RENDERING_API::DIRECTX11 : RENDERING_API::VULKAN;
