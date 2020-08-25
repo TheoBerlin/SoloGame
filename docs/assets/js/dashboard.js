@@ -10,7 +10,7 @@ window.onload = function() {
 
 function generateGraphs() {
     // @ts-ignore
-    var data = {{ site.data.average_fps | jsonify }};
+    var data = {{ site.data.charts | jsonify }};
     data = data["AverageFPS"]
     console.log(data);
 
