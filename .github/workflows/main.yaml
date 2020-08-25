@@ -54,3 +54,15 @@ jobs:
       - name: Read Lint Report
         run: python3 ./.github/workflows/read-lint-report.py --report ./cppcheck_report
           --modified-files $HOME/files_modified.json --added-files $HOME/files_added.json
+
+  benchmark:
+    runs-on: [self-hosted, Windows, X64]
+
+    needs: Build-Release-x64
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Compile Shaders
+        run: python ../../tools/compile-shaders.py
+
+      - name: Benchmark & Update Charts
+        run: python benchmark.py x64/Release/GameProject.exe
