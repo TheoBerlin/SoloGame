@@ -8,8 +8,6 @@ jobs:
   benchmark:
     runs-on: [self-hosted, Windows, X64]
 
-    needs: Build-Release-x64
-    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
         with:
