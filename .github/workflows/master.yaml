@@ -25,15 +25,5 @@ jobs:
       - name: Benchmark
         run: python .github/workflows/benchmark.py --bin x64/Release/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
 
-      # Fetch the pages repo so that the charts data can be updated
-      - uses: actions/checkout@v2
-        with:
-          repository: 'TheoBerlin/SoloGamePages'
-          ref: 'master'
-          token: ${{ secrets.DOCS_PAT }}
-          path: docs
-          clean: false
-
       - name: Update Charts
-        run: cd docs |
-          python ../.github/workflows/update-charts.py --data _data --vk ../benchmark_results_vk.json --dx11 ../benchmark_results_dx11.json --pat ${{ secrets.DOCS_PAT }}
+        run: python .github/workflows/update-charts.py --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json --pat ${{ secrets.DOCS_PAT }}
