@@ -3,14 +3,17 @@ import json, os, subprocess, sys, getopt
 repoOwner   = 'TheoBerlin'
 repo        = 'SoloGame'
 
-benchmarkFileName       = 'benchmark_results'
-benchmarkFileNameVulkan = benchmarkFileName + '_vk'
-benchmarkFileNameDX11   = benchmarkFileName + '_dx11'
+benchmarkFileName = 'benchmark_results.json'
 
-def remove_existing_benchmark_files():
-    for fileName in [benchmarkFileName, benchmarkFileNameVulkan, benchmarkFileNameDX11]:
-        if os.path.exists(fileName + '.json'):
-            os.remove(fileName + '.json')
+def print_help(helpString, args):
+    print('Intended usage:')
+    print(helpString)
+    print(f'Used flags: {str(args)}')
+
+def remove_existing_benchmark_files(vkResultsPath, dx11ResultsPath):
+    for fileName in [benchmarkFileName, vkResultsPath, dx11ResultsPath]:
+        if os.path.exists(fileName):
+            os.remove(fileName)
 
 def set_rendering_api(API):
     with open('engine_config.json', 'r+') as cfgFile:
@@ -41,68 +44,40 @@ def get_commit_info(commitID):
         sys.exit(1)
     return resp.json()
 
-def update_average_fps_chart(chartData, vkResults, dx11Results, commitID):
-    commitInfo = get_commit_info(commitID)
-    commitMsg = commitInfo['commit']['message']
-    timestamp = commitInfo['commit']['author']['date']
-
-    chartData['vulkan'].append(vkResults['AverageFPS'])
-    chartData['directx11'].append(dx11Results['AverageFPS'])
-    chartData['labels'].append(commitID[:7])
-    chartData['tooltips'].append(f'{commitMsg}\n{timestamp}')
-
-def update_charts(commitID):
-    # The files benchmark_results_vk.json and ...dx.json have been created.
-    # Use their data to update the charts in /docs
-    print('Updating charts in docs/')
-
-    with open(benchmarkFileNameVulkan + '.json', 'r') as benchmarkFile:
-        vkResults = json.load(benchmarkFile)
-        benchmarkFile.close()
-
-    with open(benchmarkFileNameDX11 + '.json', 'r') as benchmarkFile:
-        dx11Results = json.load(benchmarkFile)
-        benchmarkFile.close()
-
-    with open('docs/_data/charts.json', 'r+') as chartsFile:
-        chartsData = json.load(chartsFile)
-        update_average_fps_chart(chartsData['AverageFPS'], vkResults, dx11Results, commitID)
-        chartsFile.seek(0)
-        json.dump(chartsData, chartsFile, indent=4)
-        chartsFile.truncate()
-        chartsFile.close()
-
 def main(argv):
-    commitID = '8ed033477cd8e94bd9d10bfccc67efaf3b4db3f5'
-    #commitID = os.environ.get('GITHUB_SHA')
-    if not commitID:
-        print('Failed to retireve commit ID through GITHUB_SHA environment variable')
+    helpStr = '''usage: --bin <binpath> --vk <name_of_vk_results.json> --dx11 <name_of_dx11_results.json>\n
+        bin: path to application binary to benchmark\n
+        vk: name of .JSON file to create and store Vulkan benchmarks results in\n
+        dx11: name of .JSON file to create and store DirectX 11 benchmarks results in'''
+    try:
+        opts, args = getopt.getopt(argv, 'h', ['help, bin=, vk=, dx11='])
+    except getopt.GetoptError:
+        print_help(helpStr, args)
         sys.exit(1)
 
-    helpStr = '''usage: <binpath>\n
-        binpath: path to application binary to benchmark'''
-    try:
-        opts, args = getopt.getopt(argv, 'h', ['help'])
-    except getopt.GetoptError:
-        print('Intended usage:')
-        print(helpStr)
-        print(f'Used flags: {str(args)}')
-        sys.exit(2)
-    if 'h' in opts or 'help' in opts or len(args) == 0:
-            print(helpStr)
+    for opt, arg in opts:
+        if opt in ['-h', '--help']:
+            print_help(helpStr, args)
             sys.exit(1)
+        if opt == '--bin':
+            binPath = arg
+        elif opt == '--vk':
+            vkResultsPath = arg
+        elif opt == '--dx11':
+            dx11ResultsPath = arg
 
-    binPath = args[0]
+    if not binPath or not vkResultsPath or not dx11ResultsPath:
+        print('Missing argument')
+        print_help(helpStr, args)
+        sys.exit(1)
 
-    remove_existing_benchmark_files()
+    remove_existing_benchmark_files(vkResultsPath, dx11ResultsPath)
 
     run_benchmark(binPath, 'DirectX 11')
-    os.rename(benchmarkFileName + '.json', benchmarkFileNameDX11 + '.json')
+    os.rename(benchmarkFileName, dx11ResultsPath)
 
     run_benchmark(binPath, 'Vulkan')
-    os.rename(benchmarkFileName + '.json', benchmarkFileNameVulkan + '.json')
-
-    update_charts(commitID)
+    os.rename(benchmarkFileName, vkResultsPath)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

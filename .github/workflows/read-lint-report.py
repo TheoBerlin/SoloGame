@@ -81,7 +81,7 @@ def main(argv):
         modified-files: path to csv file containing file paths of files modified in a merge request\n
         added-files: path to csv file containing file paths of files added in a merge request'''
     try:
-        opts, args = getopt.getopt(argv, "h:", ["report=", "modified-files=", "added-files="])
+        opts, args = getopt.getopt(argv, "h", ["report=", "modified-files=", "added-files="])
     except getopt.GetoptError:
         print("Intended usage:")
         print(helpStr)
