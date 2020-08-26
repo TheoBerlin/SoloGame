@@ -23,7 +23,7 @@ jobs:
         run: python tools/compile-shaders.py
 
       - name: Benchmark
-        run: python benchmark.py --bin x64/Release/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
+        run: python .github/workflows/benchmark.py --bin x64/Release/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
 
       # Fetch the pages repo so that the charts data can be updated
       - uses: actions/checkout@v2
@@ -35,4 +35,5 @@ jobs:
           clean: false
 
       - name: Update Charts
-        run: python update-charts.py --data docs/_data --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json --pat ${{ secrets.DOCS_PAT }}
+        run: cd docs |
+          python .github/workflows/update-charts.py --data docs/_data --vk ../benchmark_results_vk.json --dx11 ../benchmark_results_dx11.json --pat ${{ secrets.DOCS_PAT }}
