@@ -50,7 +50,7 @@ def main(argv):
         vk: name of .JSON file to create and store Vulkan benchmarks results in\n
         dx11: name of .JSON file to create and store DirectX 11 benchmarks results in'''
     try:
-        opts, args = getopt.getopt(argv, 'h', ['help, bin=, vk=, dx11='])
+        opts, args = getopt.getopt(argv, 'h', ['help', 'bin=', 'vk=', 'dx11='])
     except getopt.GetoptError:
         print_help(helpStr, args)
         sys.exit(1)

@@ -33,11 +33,11 @@ def update_average_fps_chart(chartData, vkResults, dx11Results, commitID):
 def update_charts(commitID, dataPath, vkResultsPath, dx11ResultsPath):
     print('Updating charts in docs/')
 
-    with open(vkResultsPath + '.json', 'r') as benchmarkFile:
+    with open(vkResultsPath, 'r') as benchmarkFile:
         vkResults = json.load(benchmarkFile)
         benchmarkFile.close()
 
-    with open(dx11ResultsPath + '.json', 'r') as benchmarkFile:
+    with open(dx11ResultsPath, 'r') as benchmarkFile:
         dx11Results = json.load(benchmarkFile)
         benchmarkFile.close()
 
@@ -80,10 +80,15 @@ def main(argv):
         dx11: path to .JSON file to retrieve DirectX 11 benchmarks results from
         pat: Personal Access Token with rights to write to the GitHub Pages repo'''
     try:
-        opts, args = getopt.getopt(argv, 'h', ['help, data=, vk=, dx11='])
+        opts, args = getopt.getopt(argv, 'h', ['help', 'data=', 'vk=', 'dx11=', 'pat='])
     except getopt.GetoptError:
         print_help(helpStr, args)
         sys.exit(1)
+
+    dataPath        = None
+    vkResultsPath   = None
+    dx11ResultsPath = None
+    pat_token       = None
 
     for opt, arg in opts:
         if opt in ['-h', '--help']:
@@ -95,7 +100,7 @@ def main(argv):
             vkResultsPath = arg
         elif opt == '--dx11':
             dx11ResultsPath = arg
-        elif opt == 'pat':
+        elif opt == '--pat':
             pat_token = arg
 
     if not dataPath or not vkResultsPath or not dx11ResultsPath or not pat_token:
