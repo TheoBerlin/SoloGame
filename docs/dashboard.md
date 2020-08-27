@@ -1,4 +1,0 @@
----
-layout: dashboard
-title: Dashboard
----

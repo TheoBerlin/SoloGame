@@ -22,13 +22,10 @@ jobs:
       - name: Compile Shaders
         run: python tools/compile-shaders.py
 
-      - name: Benchmark & Update Charts
-        run: python .github/workflows/benchmark.py x64/Release/GameProject.exe
+      - name: Benchmark
+        run: python .github/workflows/benchmark.py --bin x64/Release/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
 
-      - name: Commit Chart Updates
-        uses: EndBug/add-and-commit@v4.4.0
-        with:
-          add: 'docs/_data/charts.json'
-          message: "Add benchmark results"
+      - name: Update Charts
+        run: python .github/workflows/update-charts.py --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.DOCS_PAT }}
