@@ -1,5 +1,4 @@
 import json, os, subprocess, sys, getopt
-from git import Repo
 
 repoOwner   = 'TheoBerlin'
 repoName    = 'SoloGamePages'
@@ -12,12 +11,16 @@ def print_help(helpString, args):
     print(helpString)
     print(f'Used flags: {str(args)}')
 
-def pull_pages_repo(pat_token):
-    repoURL = f'https://{pat_token}:x-oauth-basic@github.com/{repoOwner}/{repoName}'
-    return Repo.clone_from(repoURL, repoDir)
+def pull_pages_repo(repoURL):
+    subprocess.run(f'git clone {repoURL} {repoDir}', shell=True, check=True)
 
+# Gets information regarding a commit in the game repository
 def get_commit_info(commitID):
-    URL = f'https://api.github.com/repos/{repoOwner}/{repoName}/commits/{commitID}'
+    # GITHUB_REPOSITORY: repoOwner/repoName
+    gameRepoInfo    = os.environ.get('GITHUB_REPOSITORY').split('/')
+    gameRepoOwner   = gameRepoInfo[0]
+    gameRepo        = gameRepoInfo[1]
+    URL = f'https://api.github.com/repos/{gameRepoOwner}/{gameRepo}/commits/{commitID}'
 
     import requests
     resp = requests.get(URL)
@@ -36,8 +39,8 @@ def update_average_fps_chart(chartData, vkResults, dx11Results, commitID):
     chartData['labels'].append(commitID[:7])
     chartData['tooltips'].append(f'{commitMsg}\n{timestamp}')
 
-def update_charts(commitID, vkResultsPath, dx11ResultsPath):
-    print('Updating charts in docs/')
+def update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir):
+    print(f'Updating charts in {repoDir}/_data/')
 
     with open(vkResultsPath, 'r') as benchmarkFile:
         vkResults = json.load(benchmarkFile)
@@ -47,7 +50,7 @@ def update_charts(commitID, vkResultsPath, dx11ResultsPath):
         dx11Results = json.load(benchmarkFile)
         benchmarkFile.close()
 
-    with open('_data/charts.json', 'r+') as chartsFile:
+    with open(f'{repoDir}/_data/charts.json', 'r+') as chartsFile:
         chartsData = json.load(chartsFile)
         update_average_fps_chart(chartsData['AverageFPS'], vkResults, dx11Results, commitID)
         chartsFile.seek(0)
@@ -55,11 +58,11 @@ def update_charts(commitID, vkResultsPath, dx11ResultsPath):
         chartsFile.truncate()
         chartsFile.close()
 
-def commit_changes(pagesRepo):
-    pagesRepo.index.git.add(['_data/*'], update=True)
-    pagesRepo.index.commit('-m', 'Update charts data')
-    origin = pagesRepo.remote(name='origin')
-    origin.push()
+def commit_changes(repoURL):
+    subprocess.run('git add _data/*', shell=True, check=True)
+    subprocess.run('git commit -m \"Update charts data\"', shell=True, check=True)
+    subprocess.run(f'git remote set-url origin {repoURL}', shell=True, check=True)
+    subprocess.run(f'git push {repoURL}', shell=True, check=True)
 
 def main(argv):
     commitID = '8ed033477cd8e94bd9d10bfccc67efaf3b4db3f5'
@@ -98,10 +101,11 @@ def main(argv):
         print_help(helpStr, args)
         sys.exit(1)
 
-    pagesRepo = pull_pages_repo(pat_token)
+    repoURL = f'https://{pat_token}:x-oauth-basic@github.com/{repoOwner}/{repoName}.git'
+    pull_pages_repo(repoURL)
+    update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir)
     os.chdir(repoDir)
-    update_charts(commitID, f'../{vkResultsPath}', f'../{dx11ResultsPath}')
-    commit_changes(pagesRepo)
+    commit_changes(repoURL)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
