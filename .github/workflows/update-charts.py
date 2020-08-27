@@ -65,25 +65,23 @@ def commit_changes(repoURL):
     subprocess.run(f'git push {repoURL}', shell=True, check=True)
 
 def main(argv):
-    commitID = '8ed033477cd8e94bd9d10bfccc67efaf3b4db3f5'
-    #commitID = os.environ.get('GITHUB_SHA')
+    commitID = os.environ.get('GITHUB_SHA')
     if not commitID:
         print('Failed to retireve commit ID through GITHUB_SHA environment variable')
         sys.exit(1)
 
-    helpStr = '''usage: --data <path_to_pages_data> --vk <path_to_vk_results.json> --dx11 <path_to_dx11_results.json> --pat <PAT_TOKEN>\n
+    helpStr = '''usage: --data <path_to_pages_data> --vk <path_to_vk_results.json> --dx11 <path_to_dx11_results.json>\n
         vk: path to .JSON file to retrieve Vulkan benchmarks results from\n
-        dx11: path to .JSON file to retrieve DirectX 11 benchmarks results from\n
-        pat: Personal Access Token with rights to write to the GitHub Pages repo'''
+        dx11: path to .JSON file to retrieve DirectX 11 benchmarks results from'''
     try:
-        opts, args = getopt.getopt(argv, 'h', ['help', 'vk=', 'dx11=', 'pat='])
+        opts, args = getopt.getopt(argv, 'h', ['help', 'vk=', 'dx11='])
     except getopt.GetoptError:
         print_help(helpStr, args)
         sys.exit(1)
 
     vkResultsPath   = None
     dx11ResultsPath = None
-    pat_token       = None
+    pat             = os.environ.get('PAT') # Personal Access Token for executing authenticated git commands
 
     for opt, arg in opts:
         if opt in ['-h', '--help']:
@@ -93,15 +91,13 @@ def main(argv):
             vkResultsPath = arg
         elif opt == '--dx11':
             dx11ResultsPath = arg
-        elif opt == '--pat':
-            pat_token = arg
 
-    if not vkResultsPath or not dx11ResultsPath or not pat_token:
+    if not vkResultsPath or not dx11ResultsPath or not pat:
         print('Missing argument(s)')
         print_help(helpStr, args)
         sys.exit(1)
 
-    repoURL = f'https://{pat_token}:x-oauth-basic@github.com/{repoOwner}/{repoName}.git'
+    repoURL = f'https://{pat}:x-oauth-basic@github.com/{repoOwner}/{repoName}.git'
     pull_pages_repo(repoURL)
     update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir)
     os.chdir(repoDir)
