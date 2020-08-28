@@ -1,8 +1,8 @@
 import json, os, subprocess, sys, getopt
 
-repoOwner   = 'TheoBerlin'
-repoName    = 'SoloGamePages'
-repoDir     = 'docs'
+REPO_OWNER   = 'TheoBerlin'
+REPO_NAME    = 'SoloGamePages'
+REPO_DIR     = 'docs'
 
 benchmarkFileName = 'benchmark_results.json'
 
@@ -12,7 +12,7 @@ def print_help(helpString, args):
     print(f'Used flags: {str(args)}')
 
 def pull_pages_repo(repoURL):
-    subprocess.run(f'git clone {repoURL} {repoDir}', shell=True, check=True)
+    subprocess.run(f'git clone {repoURL} {REPO_DIR}', shell=True, check=True)
 
 # Gets information regarding a commit in the game repository
 def get_commit_info(commitID):
@@ -97,10 +97,10 @@ def main(argv):
         print_help(helpStr, args)
         sys.exit(1)
 
-    repoURL = f'https://{pat}:x-oauth-basic@github.com/{repoOwner}/{repoName}.git'
+    repoURL = f'https://{pat}:x-oauth-basic@github.com/{REPO_OWNER}/{REPO_NAME}.git'
     pull_pages_repo(repoURL)
-    update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir)
-    os.chdir(repoDir)
+    update_charts(commitID, vkResultsPath, dx11ResultsPath, REPO_DIR)
+    os.chdir(REPO_DIR)
     commit_changes(repoURL)
 
 if __name__ == '__main__':

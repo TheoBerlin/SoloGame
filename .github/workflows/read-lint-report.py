@@ -1,7 +1,7 @@
 import json, re, sys, getopt
 
 # Regexes that will catch messages to be suppressed
-suppressedRegexes = [
+SUPPRESSED_REGEXES = [
     "Class '.*' has a constructor with 1 argument that is not explicit",
     "Consider using std::transform",
     "The function '.*' is never used",
@@ -11,7 +11,7 @@ suppressedRegexes = [
 ]
 
 def isSuppressed(line):
-    for suppressedRegex in suppressedRegexes:
+    for suppressedRegex in SUPPRESSED_REGEXES:
         if re.search(suppressedRegex, line) is not None:
             return True
     return False

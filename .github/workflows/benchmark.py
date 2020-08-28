@@ -1,7 +1,7 @@
 import json, os, subprocess, sys, getopt
 
-repoOwner   = 'TheoBerlin'
-repo        = 'SoloGame'
+REPO_OWNER   = 'TheoBerlin'
+REPO        = 'SoloGame'
 
 benchmarkFileName = 'benchmark_results.json'
 
@@ -35,7 +35,7 @@ def run_benchmark(binPath, API):
     print(' Success')
 
 def get_commit_info(commitID):
-    URL = f'https://api.github.com/repos/{repoOwner}/{repo}/commits/{commitID}'
+    URL = f'https://api.github.com/repos/{REPO_OWNER}/{REPO}/commits/{commitID}'
 
     import requests
     resp = requests.get(URL)
