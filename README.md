@@ -3,14 +3,6 @@
 ## What is this project?
 In this repository is an engine being made from scratch using C++. Graphics rendering is performed by either DirectX or Vulkan. This is a project I started working on for two purposes; to learn and to have something to display to employers.
 
-## Contributing
-Cppcheck is a C++ linter used in the project's workflow. For a pull request to be accepted, it needs to pass the linter checks. Thus, locally installing cppcheck is recommended.
-
-#### Setting up cppcheck
-1. Download and install cppcheck from http://cppcheck.sourceforge.net/
-2. Open the cppcheck GUI
-3. Load the cppcheck project file .cppcheck/lint.cppcheck
-
 ## Highlights in the code
 ### ECS
 The engine uses an Entity Component System (ECS) architecture for storing game object data and performing logic. ECS resides in the
