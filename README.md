@@ -1,4 +1,6 @@
-![Välfärden](https://github.com/TheoBerlin/SoloGame/workflows/V%C3%A4lf%C3%A4rden/badge.svg)
+![Benchmark](https://github.com/TheoBerlin/SoloGame/workflows/Benchmark/badge.svg?branch=master)
+
+## [Dashboard](https://theoberlin.github.io/SoloGamePages/dashboard.html)
 
 ## What is this project?
 In this repository is an engine being made from scratch using C++. Graphics rendering is performed by either DirectX or Vulkan. This is a project I started working on for two purposes; to learn and to have something to display to employers.
