@@ -1,9 +1,7 @@
 #include "ECSCore.hpp"
 
 ECSCore::ECSCore()
-    :m_ComponentPublisher(&m_EntityRegistry),
-    m_SystemRegistry(&m_DeltaTime),
-    m_JobScheduler(&m_SystemRegistry),
+    :m_EntityPublisher(&m_EntityRegistry),
     m_ECSBooter(this),
     m_DeltaTime(0.0f)
 {}
@@ -12,7 +10,7 @@ void ECSCore::update(float dt)
 {
     m_DeltaTime = dt;
 
-    performDeletions();
+    performEntityDeletions();
     performRegistrations();
 
     m_JobScheduler.update();
@@ -44,14 +42,14 @@ void ECSCore::performRegistrations()
     m_ECSBooter.performBootups();
 }
 
-void ECSCore::deleteEntityDelayed(Entity entity)
+void ECSCore::enqueueEntityDeletion(Entity entity)
 {
     m_EntitiesToDelete.push_back(entity);
 }
 
-void ECSCore::performDeletions()
+void ECSCore::performEntityDeletions()
 {
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_ComponentPublisher.getComponentStorage();
+    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_EntityPublisher.getComponentStorage();
     const EntityRegistryPage& registryPage = m_EntityRegistry.getTopRegistryPage();
 
     for (Entity entity : m_EntitiesToDelete) {
@@ -69,7 +67,7 @@ void ECSCore::performDeletions()
             component.m_pContainer->pop(entity);
 
             // Notify systems that the component has been removed
-            m_ComponentPublisher.removedComponent(entity, componentType);
+            m_EntityPublisher.removedComponent(entity, componentType);
         }
 
         // Free the entity ID
@@ -96,7 +94,7 @@ void ECSCore::deregisterTopRegistryPage()
 
         for (std::type_index type : typeSet) {
             // Deregister entity's components from systems
-            m_ComponentPublisher.removedComponent(entities[i], type);
+            m_EntityPublisher.removedComponent(entities[i], type);
         }
     }
 }
@@ -107,14 +105,14 @@ void ECSCore::deleteTopRegistryPage()
     const auto& entityComponentSets = page.getVec();
     const std::vector<Entity>& entities = page.getIDs();
 
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_ComponentPublisher.getComponentStorage();
+    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_EntityPublisher.getComponentStorage();
 
     for (size_t i = 0; i < entities.size(); i++) {
         const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
 
         for (std::type_index componentType : typeSet) {
             // Deregister entity's component from systems
-            m_ComponentPublisher.removedComponent(entities[i], componentType);
+            m_EntityPublisher.removedComponent(entities[i], componentType);
 
             // Delete the component
             auto containerItr = componentStorage.find(componentType);
@@ -142,7 +140,7 @@ void ECSCore::reinstateTopRegistryPage()
         const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
 
         for (std::type_index componentType : typeSet) {
-            m_ComponentPublisher.newComponent(entities[i], componentType);
+            m_EntityPublisher.newComponent(entities[i], componentType);
         }
     }
 }
@@ -150,13 +148,13 @@ void ECSCore::reinstateTopRegistryPage()
 void ECSCore::componentAdded(Entity entity, std::type_index componentType)
 {
     m_EntityRegistry.registerComponentType(entity, componentType);
-    m_ComponentPublisher.newComponent(entity, componentType);
+    m_EntityPublisher.newComponent(entity, componentType);
 }
 
 void ECSCore::componentDeleted(Entity entity, std::type_index componentType)
 {
     m_EntityRegistry.deregisterComponentType(entity, componentType);
-    m_ComponentPublisher.removedComponent(entity, componentType);
+    m_EntityPublisher.removedComponent(entity, componentType);
 }
 
 void ECSCore::enqueueEntitySubscriptions(const EntitySubscriberRegistration& subscriberRegistration, const std::function<bool()>& initFn, size_t* pSubscriberID)

@@ -35,10 +35,10 @@ void Benchmark::init()
     m_pInputHandler->disable();
     m_pECS->performRegistrations();
 
-    ComponentPublisher* pComponentPublisher   = m_pECS->getComponentPublisher();
-    ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pComponentPublisher->getComponentHandler(TID(ModelLoader)));
-    TransformHandler* pTransformHandler         = reinterpret_cast<TransformHandler*>(pComponentPublisher->getComponentHandler(TID(TransformHandler)));
-    SoundHandler* pSoundHandler                 = reinterpret_cast<SoundHandler*>(pComponentPublisher->getComponentHandler(TID(SoundHandler)));
+    EntityPublisher* pEntityPublisher   = m_pECS->getEntityPublisher();
+    ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pEntityPublisher->getComponentHandler(TID(ModelLoader)));
+    TransformHandler* pTransformHandler         = reinterpret_cast<TransformHandler*>(pEntityPublisher->getComponentHandler(TID(TransformHandler)));
+    SoundHandler* pSoundHandler                 = reinterpret_cast<SoundHandler*>(pEntityPublisher->getComponentHandler(TID(SoundHandler)));
 
     startMusic(pSoundHandler);
 
@@ -63,9 +63,9 @@ void Benchmark::init()
         createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
     }
 
-    createPointLights(pSoundHandler, pTransformHandler, pComponentPublisher);
+    createPointLights(pSoundHandler, pTransformHandler, pEntityPublisher);
     createTube(sectionPoints, pTransformHandler, pModelLoader);
-    createPlayer(pTransformHandler, pComponentPublisher);
+    createPlayer(pTransformHandler, pEntityPublisher);
 }
 
 void Benchmark::resume()
@@ -114,9 +114,9 @@ void Benchmark::createCube(const DirectX::XMFLOAT3& position, const std::string&
     }
 }
 
-void Benchmark::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher)
+void Benchmark::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, EntityPublisher* pEntityPublisher)
 {
-    LightHandler* pLightHandler = reinterpret_cast<LightHandler*>(pComponentPublisher->getComponentHandler(TID(LightHandler)));
+    LightHandler* pLightHandler = reinterpret_cast<LightHandler*>(pEntityPublisher->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
 
     for (unsigned i = 0; i < 1u; i++) {
@@ -146,7 +146,7 @@ void Benchmark::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, 
     pTransformHandler->createWorldMatrix(tube);
 }
 
-void Benchmark::createPlayer(TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher)
+void Benchmark::createPlayer(TransformHandler* pTransformHandler, EntityPublisher* pEntityPublisher)
 {
     m_PlayerEntity = m_pECS->createEntity();
 
@@ -155,10 +155,10 @@ void Benchmark::createPlayer(TransformHandler* pTransformHandler, ComponentPubli
     pTransformHandler->createRotation(m_PlayerEntity);
     const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(m_PlayerEntity);
 
-    VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentPublisher->getComponentHandler(TID(VelocityHandler)));
+    VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pEntityPublisher->getComponentHandler(TID(VelocityHandler)));
     pVelocityHandler->createVelocityComponent(m_PlayerEntity);
 
-    VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pComponentPublisher->getComponentHandler(TID(VPHandler)));
+    VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pEntityPublisher->getComponentHandler(TID(VPHandler)));
 
     ViewMatrixInfo viewMatrixInfo = {};
     viewMatrixInfo.EyePosition      = DirectX::XMLoadFloat3(&camPosition);

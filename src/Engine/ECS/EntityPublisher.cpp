@@ -1,19 +1,19 @@
-#include "ComponentPublisher.hpp"
+#include "EntityPublisher.hpp"
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/GeneralUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-ComponentPublisher::ComponentPublisher(EntityRegistry* pEntityRegistry)
+EntityPublisher::EntityPublisher(EntityRegistry* pEntityRegistry)
     :m_pEntityRegistry(pEntityRegistry)
 {}
 
-ComponentPublisher::~ComponentPublisher()
+EntityPublisher::~EntityPublisher()
 {}
 
 
-void ComponentPublisher::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
+void EntityPublisher::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
 {
     ComponentHandler* pComponentHandler = componentHandlerRegistration.pComponentHandler;
     std::type_index tidHandler = pComponentHandler->getHandlerType();
@@ -33,7 +33,7 @@ void ComponentPublisher::registerComponentHandler(const ComponentHandlerRegistra
     }
 }
 
-void ComponentPublisher::deregisterComponentHandler(ComponentHandler* handler)
+void EntityPublisher::deregisterComponentHandler(ComponentHandler* handler)
 {
     const std::vector<std::type_index>& componentTypes = handler->getHandledTypes();
 
@@ -64,7 +64,7 @@ void ComponentPublisher::deregisterComponentHandler(ComponentHandler* handler)
     m_ComponentHandlers.erase(handlerItr);
 }
 
-ComponentHandler* ComponentPublisher::getComponentHandler(const std::type_index& handlerType)
+ComponentHandler* EntityPublisher::getComponentHandler(const std::type_index& handlerType)
 {
     auto itr = m_ComponentHandlers.find(handlerType);
 
@@ -76,17 +76,17 @@ ComponentHandler* ComponentPublisher::getComponentHandler(const std::type_index&
     return itr->second;
 }
 
-size_t ComponentPublisher::subscribeToComponents(const EntitySubscriberRegistration& subscriberRegistration)
+size_t EntityPublisher::subscribeToComponents(const EntitySubscriberRegistration& subscriberRegistration)
 {
     // Create subscriptions from the subscription requests by finding the desired component containers
-    std::vector<ComponentSubscriptions> subscriptions;
+    std::vector<EntitySubscription> subscriptions;
     const std::vector<EntitySubscriptionRegistration>& subscriptionRequests = subscriberRegistration.EntitySubscriptionRegistrations;
     subscriptions.reserve(subscriptionRequests.size());
 
     for (const EntitySubscriptionRegistration& subReq : subscriptionRequests) {
         const std::vector<ComponentAccess>& componentRegs = subReq.m_ComponentAccesses;
 
-        ComponentSubscriptions newSub;
+        EntitySubscription newSub;
         newSub.componentTypes.reserve(componentRegs.size());
 
         newSub.subscriber = subReq.m_pSubscriber;
@@ -113,7 +113,7 @@ size_t ComponentPublisher::subscribeToComponents(const EntitySubscriberRegistrat
     m_SubscriptionStorage.push_back(subscriptions, subID);
 
     // Map each component type to its subscriptions
-    const std::vector<ComponentSubscriptions>& subs = m_SubscriptionStorage.indexID(subID);
+    const std::vector<EntitySubscription>& subs = m_SubscriptionStorage.indexID(subID);
 
     for (size_t subscriptionNr = 0; subscriptionNr < subs.size(); subscriptionNr += 1) {
         const std::vector<std::type_index>& componentTypes = subs[subscriptionNr].componentTypes;
@@ -124,7 +124,7 @@ size_t ComponentPublisher::subscribeToComponents(const EntitySubscriberRegistrat
     }
 
     // A subscription has been made, notify the system of all existing components it subscribed to
-    for (ComponentSubscriptions& subscription : subscriptions) {
+    for (EntitySubscription& subscription : subscriptions) {
         // Fetch the entity vector of the first subscribed component type
         auto queryItr = m_ComponentStorage.find(subscription.componentTypes.front());
 
@@ -149,7 +149,7 @@ size_t ComponentPublisher::subscribeToComponents(const EntitySubscriberRegistrat
     return subID;
 }
 
-void ComponentPublisher::unsubscribeFromComponents(size_t subscriptionID)
+void EntityPublisher::unsubscribeFromComponents(size_t subscriptionID)
 {
     if (m_SubscriptionStorage.hasElement(subscriptionID) == false) {
         LOG_WARNINGF("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);
@@ -157,9 +157,9 @@ void ComponentPublisher::unsubscribeFromComponents(size_t subscriptionID)
     }
 
     // Use the subscriptions to find and delete component subscriptions
-    std::vector<ComponentSubscriptions>& subscriptions = m_SubscriptionStorage.indexID(subscriptionID);
+    std::vector<EntitySubscription>& subscriptions = m_SubscriptionStorage.indexID(subscriptionID);
 
-    for (const ComponentSubscriptions& subscription : subscriptions) {
+    for (const EntitySubscription& subscription : subscriptions) {
         const std::vector<std::type_index>& componentTypes = subscription.componentTypes;
 
         for (const std::type_index& componentType : componentTypes) {
@@ -190,14 +190,14 @@ void ComponentPublisher::unsubscribeFromComponents(size_t subscriptionID)
     m_SystemIDGenerator.popID(subscriptionID);
 }
 
-void ComponentPublisher::newComponent(Entity entityID, std::type_index componentType)
+void EntityPublisher::newComponent(Entity entityID, std::type_index componentType)
 {
     // Get all subscriptions for the component type by iterating through the unordered_map bucket
     auto subBucketItr = m_ComponentSubscriptions.find(componentType);
 
     while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == componentType) {
         // Use indices stored in the component type -> component storage mapping to get the component subscription
-        ComponentSubscriptions& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
+        EntitySubscription& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
 
         if (m_pEntityRegistry->entityHasTypes(entityID, sysSub.componentTypes)) {
             sysSub.subscriber->push_back(entityID);
@@ -211,14 +211,14 @@ void ComponentPublisher::newComponent(Entity entityID, std::type_index component
     }
 }
 
-void ComponentPublisher::removedComponent(Entity entityID, std::type_index componentType)
+void EntityPublisher::removedComponent(Entity entityID, std::type_index componentType)
 {
     // Get all subscriptions for the component type by iterating through the unordered_map bucket
     auto subBucketItr = m_ComponentSubscriptions.find(componentType);
 
     while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == componentType) {
         // Use indices stored in the component type -> component storage mapping to get the component subscription
-        ComponentSubscriptions& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
+        EntitySubscription& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
 
         if (!sysSub.subscriber->hasElement(entityID)) {
             subBucketItr++;

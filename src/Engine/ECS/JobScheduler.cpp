@@ -1,13 +1,11 @@
 #include "JobScheduler.hpp"
 
-#include <Engine/ECS/SystemRegistry.hpp>
 #include <Engine/Utils/ThreadPool.hpp>
 
 #include <numeric>
 
-JobScheduler::JobScheduler(SystemRegistry* pSystemRegistry)
-    :m_pSystemRegistry(pSystemRegistry),
-    m_CurrentPhase(0u)
+JobScheduler::JobScheduler()
+    :m_CurrentPhase(0u)
 {}
 
 void JobScheduler::update()
@@ -84,6 +82,25 @@ void JobScheduler::scheduleJobs(const std::vector<Job>& jobs, uint32_t phase)
     m_Lock.unlock();
 }
 
+size_t JobScheduler::scheduleRegularJob(const Job& job, uint32_t phase)
+{
+    m_Lock.lock();
+
+    size_t jobID = m_RegularJobIDGenerator.genID();
+    m_RegularJobs[phase].push_back(job, jobID);
+
+    m_Lock.unlock();
+
+    return jobID;
+}
+
+void JobScheduler::descheduleRegularJob(size_t phase, size_t jobID)
+{
+    m_Lock.lock();
+    m_RegularJobs[phase].pop(jobID);
+    m_Lock.unlock();
+}
+
 const Job* JobScheduler::findExecutableJob()
 {
     std::vector<Job>& scheduledJobs = m_Jobs[m_CurrentPhase];
@@ -100,12 +117,11 @@ const Job* JobScheduler::findExecutableJob()
     }
 
     if (m_CurrentPhase < g_PhaseCount) {
-        const IDDVector<Job>& systemJobs = m_pSystemRegistry->getPhaseJobs(m_CurrentPhase);
-        for (size_t& systemID : m_SystemIDsToUpdate) {
-            const Job& job = systemJobs.indexID(systemID);
+        for (size_t& jobID : m_RegularJobIDsToUpdate) {
+            const Job& job = m_RegularJobs[m_CurrentPhase].indexID(jobID);
             if (canExecute(job)) {
-                systemID = m_SystemIDsToUpdate.back();
-                m_SystemIDsToUpdate.pop_back();
+                jobID = m_RegularJobIDsToUpdate.back();
+                m_RegularJobIDsToUpdate.pop_back();
 
                 return &job;
             }
@@ -167,13 +183,11 @@ void JobScheduler::setPhase(uint32_t phase)
     m_CurrentPhase = phase;
 
     if (m_CurrentPhase < g_PhaseCount) {
-        const std::vector<size_t>& systemIDs = m_pSystemRegistry->getPhaseJobs(m_CurrentPhase).getIDs();
-        m_SystemIDsToUpdate.resize(systemIDs.size());
-        std::memcpy(m_SystemIDsToUpdate.data(), systemIDs.data(), sizeof(size_t) * systemIDs.size());
+        m_RegularJobIDsToUpdate = m_RegularJobs[m_CurrentPhase].getIDs();
     }
 }
 
 bool JobScheduler::phaseJobsExist() const
 {
-    return !m_SystemIDsToUpdate.empty() || !m_JobIndices[m_CurrentPhase].empty();
+    return !m_RegularJobIDsToUpdate.empty() || !m_JobIndices[m_CurrentPhase].empty();
 }

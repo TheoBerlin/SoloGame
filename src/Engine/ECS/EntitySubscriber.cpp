@@ -31,9 +31,7 @@ EntitySubscriber::EntitySubscriber(ECSCore* pECS)
 
 EntitySubscriber::~EntitySubscriber()
 {
-    if (m_pECS) {
-        m_pECS->getComponentPublisher()->unsubscribeFromComponents(m_SubscriptionID);
-    }
+    m_pECS->getEntityPublisher()->unsubscribeFromComponents(m_SubscriptionID);
 }
 
 void EntitySubscriber::subscribeToEntities(const EntitySubscriberRegistration& subscriberRegistration, const std::function<bool()>& initFn)

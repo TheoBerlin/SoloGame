@@ -1,7 +1,7 @@
 #include "Renderer.hpp"
 
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/Utils/Logger.hpp>
+#include <Engine/ECS/EntityPublisher.hpp>
 
 Renderer::Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
     :EntitySubscriber(pECS),
@@ -17,5 +17,5 @@ void Renderer::registerRenderer(const EntitySubscriberRegistration& subscriberRe
 
 ComponentHandler* Renderer::getComponentHandler(const std::type_index& handlerType)
 {
-    return m_pECS->getComponentPublisher()->getComponentHandler(handlerType);
+    return m_pECS->getEntityPublisher()->getComponentHandler(handlerType);
 }

@@ -19,7 +19,6 @@ ButtonSystem::ButtonSystem(ECSCore* pECS, Window* pWindow)
     sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{{RW, tid_UIPanel}, {R, tid_UIButton}}, &m_Buttons}
     };
-    sysReg.pSystem = this;
 
     enqueueRegistration(sysReg);
 }

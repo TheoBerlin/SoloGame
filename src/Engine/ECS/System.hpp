@@ -1,7 +1,8 @@
 #pragma once
 
-#include <Engine/ECS/EntitySubscriber.hpp>
 #include <Engine/ECS/Entity.hpp>
+#include <Engine/ECS/EntitySubscriber.hpp>
+#include <Engine/ECS/RegularWorker.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
 #include <functional>
@@ -12,15 +13,14 @@ class System;
 
 struct SystemRegistration {
     EntitySubscriberRegistration SubscriberRegistration;
-    System* pSystem;
-    size_t Phase = 0;
+    uint32_t Phase = 0;
 };
 
 class ComponentHandler;
 class ECSCore;
 
 // A system processes components each frame in the update function
-class System : private EntitySubscriber
+class System : private EntitySubscriber, private RegularWorker
 {
 public:
     // Registers the system in the system handler
@@ -37,7 +37,6 @@ public:
     void setSystemID(size_t systemID)   { m_SystemID = systemID; }
 
 protected:
-    void subscribeToComponents(const SystemRegistration& sysReg);
     void enqueueRegistration(const SystemRegistration& sysReg);
 
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);

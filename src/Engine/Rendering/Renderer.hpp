@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Engine/ECS/ComponentPublisher.hpp>
 #include <Engine/ECS/EntitySubscriber.hpp>
 
 class ComponentHandler;

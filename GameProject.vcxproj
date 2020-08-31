@@ -83,7 +83,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\ECS\JobScheduler.cpp" />
-    <ClCompile Include="src\Engine\ECS\SystemRegistry.cpp" />
+    <ClCompile Include="src\Engine\ECS\RegularWorker.cpp" />
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.cpp" />
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\Swapchain.cpp" />
     <ClCompile Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.cpp" />
@@ -101,7 +101,7 @@
     <ClCompile Include="src\Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="src\Engine\ECS\EntityRegistry.cpp" />
     <ClCompile Include="src\Engine\ECS\System.cpp" />
-    <ClCompile Include="src\Engine\ECS\ComponentPublisher.cpp" />
+    <ClCompile Include="src\Engine\ECS\EntityPublisher.cpp" />
     <ClCompile Include="src\Engine\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Engine\EnginePCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -194,7 +194,7 @@
   <ItemGroup>
     <ClInclude Include="src\Engine\ECS\Job.hpp" />
     <ClInclude Include="src\Engine\ECS\JobScheduler.hpp" />
-    <ClInclude Include="src\Engine\ECS\SystemRegistry.hpp" />
+    <ClInclude Include="src\Engine\ECS\RegularWorker.hpp" />
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\DX11\SwapchainDX11.hpp" />
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\Swapchain.hpp" />
     <ClInclude Include="src\Engine\Rendering\APIAbstractions\Vulkan\SwapchainVK.hpp" />
@@ -215,7 +215,7 @@
     <ClInclude Include="src\Engine\ECS\Entity.hpp" />
     <ClInclude Include="src\Engine\ECS\EntityRegistry.hpp" />
     <ClInclude Include="src\Engine\ECS\System.hpp" />
-    <ClInclude Include="src\Engine\ECS\ComponentPublisher.hpp" />
+    <ClInclude Include="src\Engine\ECS\EntityPublisher.hpp" />
     <ClInclude Include="src\Engine\EnginePCH.hpp" />
     <ClInclude Include="src\Engine\GameState\State.hpp" />
     <ClInclude Include="src\Engine\GameState\StateManager.hpp" />
