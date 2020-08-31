@@ -23,7 +23,6 @@ RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler, Tub
         {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, g_TIDTrackPosition}, {RW, g_TIDTrackSpeed}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
     };
     sysReg.Phase = 1u;
-    sysReg.pSystem          = this;
 
     enqueueRegistration(sysReg);
 }

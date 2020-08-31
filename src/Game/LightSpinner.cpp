@@ -16,7 +16,6 @@ LightSpinner::LightSpinner(ECSCore* pECS)
     sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{&pointLightSub}, &m_Lights}
     };
-    sysReg.pSystem = this;
 
     enqueueRegistration(sysReg);
 }

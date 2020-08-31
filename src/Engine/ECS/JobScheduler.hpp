@@ -8,18 +8,21 @@
 
 #define CURRENT_PHASE UINT32_MAX
 
-class SystemRegistry;
-
 class JobScheduler
 {
 public:
-    JobScheduler(SystemRegistry* pSystemRegistry);
+    JobScheduler();
     ~JobScheduler() = default;
 
     void update();
 
     void scheduleJob(const Job& job, uint32_t phase = CURRENT_PHASE);
     void scheduleJobs(const std::vector<Job>& jobs, uint32_t phase = CURRENT_PHASE);
+
+    /*  scheduleRegularJob schedules a job that is performed each frame, until it is explicitly deregistered using the job ID.
+        Returns the job ID. */
+    size_t scheduleRegularJob(const Job& job, uint32_t phase = CURRENT_PHASE);
+    void descheduleRegularJob(size_t phase, size_t jobID);
 
     // Schedules an advance to the next phase
     void nextPhase();
@@ -38,8 +41,6 @@ private:
     bool phaseJobsExist() const;
 
 private:
-    SystemRegistry* m_pSystemRegistry;
-
     // One vector of jobs per phase. These jobs are anything but system updates, i.e. they are irregularly scheduled.
     // g_PhaseCount + 1 is used to allow jobs to be scheduled as post-systems
     std::array<std::vector<Job>, g_PhaseCount + 1> m_Jobs;
@@ -47,9 +48,13 @@ private:
     // Indices to jobs yet to be executed within each phase
     std::array<std::vector<size_t>, g_PhaseCount + 1> m_JobIndices;
 
+    // Regular jobs are performed each frame, until they are explicitly deregistered
+    std::array<IDDVector<Job>, g_PhaseCount> m_RegularJobs;
+    IDGenerator m_RegularJobIDGenerator;
+
     // IDs of the systems to update in the current phase
     // Populated at the beginning of each phase
-    std::vector<size_t> m_SystemIDsToUpdate;
+    std::vector<size_t> m_RegularJobIDsToUpdate;
 
     // Maps component TIDs to the amount of jobs are reading from them.
     // A zero read count means the component type is being written to.

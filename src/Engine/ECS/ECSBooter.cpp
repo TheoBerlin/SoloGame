@@ -86,14 +86,13 @@ void ECSBooter::bootHandlers()
 
 void ECSBooter::bootSubscribers()
 {
-    ComponentPublisher* pComponentPublisher = m_pECS->getComponentPublisher();
-    SystemRegistry* pSystemRegistry = m_pECS->getSystemRegistry();
+    EntityPublisher* pEntityPublisher = m_pECS->getEntityPublisher();
 
     for (const Subscriber& subscriber : m_Subscribers) {
         if (!subscriber.InitFunction()) {
             LOG_ERROR("Failed to initialize subscriber");
         } else {
-            *subscriber.pSubscriberID = pComponentPublisher->subscribeToComponents(subscriber.ComponentSubscriptions);
+            *subscriber.pSubscriberID = pEntityPublisher->subscribeToComponents(subscriber.ComponentSubscriptions);
         }
     }
 
@@ -129,7 +128,7 @@ void ECSBooter::finalizeHandlerBootDependencies()
                 bootInfo.dependencyMapIterators.push_back(dependencyItr);
             } else {
                 // The dependency is not enqueued for bootup, it might already be booted
-                if (!m_pECS->getComponentPublisher()->getComponentHandler(dependencyTID)) {
+                if (!m_pECS->getEntityPublisher()->getComponentHandler(dependencyTID)) {
                     LOG_ERRORF("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
                     hasDependencies = false;
                     break;
@@ -153,6 +152,6 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     if (!bootInfo.handlerRegistration->pComponentHandler->initHandler()) {
         LOG_ERRORF("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
-        m_pECS->getComponentPublisher()->registerComponentHandler(*bootInfo.handlerRegistration);
+        m_pECS->getEntityPublisher()->registerComponentHandler(*bootInfo.handlerRegistration);
     }
 }

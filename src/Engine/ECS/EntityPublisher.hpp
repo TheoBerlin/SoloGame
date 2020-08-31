@@ -16,7 +16,7 @@
 class ComponentHandler;
 struct ComponentHandlerRegistration;
 
-struct ComponentSubscriptions {
+struct EntitySubscription {
     // Stores IDs of entities found using subscription
     IDVector* subscriber;
     std::vector<std::type_index> componentTypes;
@@ -39,11 +39,11 @@ struct ComponentStorage {
     std::function<void(Entity)> m_ComponentDestructor;
 };
 
-class ComponentPublisher
+class EntityPublisher
 {
 public:
-    ComponentPublisher(EntityRegistry* pEntityRegistry);
-    ~ComponentPublisher();
+    EntityPublisher(EntityRegistry* pEntityRegistry);
+    ~EntityPublisher();
 
     void registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration);
     void deregisterComponentHandler(ComponentHandler* handler);
@@ -67,7 +67,7 @@ private:
     std::unordered_multimap<std::type_index, SubscriptionStorageIndex> m_ComponentSubscriptions;
 
     // Map systems' IDs to their subscriptions
-    IDDVector<std::vector<ComponentSubscriptions>> m_SubscriptionStorage;
+    IDDVector<std::vector<EntitySubscription>> m_SubscriptionStorage;
     IDGenerator m_SystemIDGenerator;
 
     std::unordered_map<std::type_index, ComponentHandler*> m_ComponentHandlers;

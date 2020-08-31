@@ -25,7 +25,6 @@ CameraSystem::CameraSystem(ECSCore* pECS, InputHandler* pInputHandler)
         {{&cameraComponents}, &m_Cameras},
     };
     sysReg.Phase = 0u;
-    sysReg.pSystem          = this;
 
     enqueueRegistration(sysReg);
 }
