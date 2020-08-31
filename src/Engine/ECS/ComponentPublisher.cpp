@@ -1,19 +1,19 @@
-#include "ComponentSubscriber.hpp"
+#include "ComponentPublisher.hpp"
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/GeneralUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-ComponentSubscriber::ComponentSubscriber(EntityRegistry* pEntityRegistry)
+ComponentPublisher::ComponentPublisher(EntityRegistry* pEntityRegistry)
     :m_pEntityRegistry(pEntityRegistry)
 {}
 
-ComponentSubscriber::~ComponentSubscriber()
+ComponentPublisher::~ComponentPublisher()
 {}
 
 
-void ComponentSubscriber::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
+void ComponentPublisher::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
 {
     ComponentHandler* pComponentHandler = componentHandlerRegistration.pComponentHandler;
     std::type_index tidHandler = pComponentHandler->getHandlerType();
@@ -33,7 +33,7 @@ void ComponentSubscriber::registerComponentHandler(const ComponentHandlerRegistr
     }
 }
 
-void ComponentSubscriber::deregisterComponentHandler(ComponentHandler* handler)
+void ComponentPublisher::deregisterComponentHandler(ComponentHandler* handler)
 {
     const std::vector<std::type_index>& componentTypes = handler->getHandledTypes();
 
@@ -64,7 +64,7 @@ void ComponentSubscriber::deregisterComponentHandler(ComponentHandler* handler)
     m_ComponentHandlers.erase(handlerItr);
 }
 
-ComponentHandler* ComponentSubscriber::getComponentHandler(const std::type_index& handlerType)
+ComponentHandler* ComponentPublisher::getComponentHandler(const std::type_index& handlerType)
 {
     auto itr = m_ComponentHandlers.find(handlerType);
 
@@ -76,14 +76,14 @@ ComponentHandler* ComponentSubscriber::getComponentHandler(const std::type_index
     return itr->second;
 }
 
-size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegistration& subscriberRegistration)
+size_t ComponentPublisher::subscribeToComponents(const EntitySubscriberRegistration& subscriberRegistration)
 {
     // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<ComponentSubscriptions> subscriptions;
-    const std::vector<ComponentSubscriptionRequest>& subscriptionRequests = subscriberRegistration.ComponentSubscriptionRequests;
+    const std::vector<EntitySubscriptionRegistration>& subscriptionRequests = subscriberRegistration.EntitySubscriptionRegistrations;
     subscriptions.reserve(subscriptionRequests.size());
 
-    for (const ComponentSubscriptionRequest& subReq : subscriptionRequests) {
+    for (const EntitySubscriptionRegistration& subReq : subscriptionRequests) {
         const std::vector<ComponentAccess>& componentRegs = subReq.m_ComponentAccesses;
 
         ComponentSubscriptions newSub;
@@ -149,7 +149,7 @@ size_t ComponentSubscriber::subscribeToComponents(const ComponentSubscriberRegis
     return subID;
 }
 
-void ComponentSubscriber::unsubscribeFromComponents(size_t subscriptionID)
+void ComponentPublisher::unsubscribeFromComponents(size_t subscriptionID)
 {
     if (m_SubscriptionStorage.hasElement(subscriptionID) == false) {
         LOG_WARNINGF("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);
@@ -190,7 +190,7 @@ void ComponentSubscriber::unsubscribeFromComponents(size_t subscriptionID)
     m_SystemIDGenerator.popID(subscriptionID);
 }
 
-void ComponentSubscriber::newComponent(Entity entityID, std::type_index componentType)
+void ComponentPublisher::newComponent(Entity entityID, std::type_index componentType)
 {
     // Get all subscriptions for the component type by iterating through the unordered_map bucket
     auto subBucketItr = m_ComponentSubscriptions.find(componentType);
@@ -211,7 +211,7 @@ void ComponentSubscriber::newComponent(Entity entityID, std::type_index componen
     }
 }
 
-void ComponentSubscriber::removedComponent(Entity entityID, std::type_index componentType)
+void ComponentPublisher::removedComponent(Entity entityID, std::type_index componentType)
 {
     // Get all subscriptions for the component type by iterating through the unordered_map bucket
     auto subBucketItr = m_ComponentSubscriptions.find(componentType);

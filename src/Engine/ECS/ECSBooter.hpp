@@ -20,6 +20,12 @@ struct ComponentHandlerBootInfo {
     bool inOpenList = false, inClosedList = false;
 };
 
+struct Subscriber {
+    EntitySubscriberRegistration ComponentSubscriptions;
+    std::function<bool()> InitFunction;
+    size_t* pSubscriberID;
+};
+
 class ECSBooter
 {
 public:
@@ -27,8 +33,7 @@ public:
     ~ECSBooter() = default;
 
     void enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration);
-    void enqueueSystemRegistration(const SystemRegistration& systemRegistration);
-    void enqueueRendererRegistration(const RendererRegistration& rendererRegistration);
+    void enqueueSubscriberInitialization(const Subscriber& subscriber);
 
     void performBootups();
 
@@ -40,8 +45,7 @@ private:
 
 private:
     void bootHandlers();
-    void bootSystems();
-    void bootRenderers();
+    void bootSubscribers();
 
     void buildBootInfos();
     // Get the map iterators of each handler's dependency, for faster lookups. Also remove dependencies that have already been booted.
@@ -52,8 +56,7 @@ private:
     ECSCore* m_pECS;
 
     std::vector<ComponentHandlerRegistration> m_ComponentHandlersToRegister;
-    std::vector<SystemRegistration> m_SystemsToRegister;
-    std::vector<RendererRegistration> m_RenderersToRegister;
+    std::vector<Subscriber> m_Subscribers;
 
     // Maps handlers' types to their boot info
     std::unordered_map<std::type_index, ComponentHandlerBootInfo> m_HandlersBootInfos;

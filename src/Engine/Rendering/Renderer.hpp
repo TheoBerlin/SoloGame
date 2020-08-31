@@ -1,8 +1,7 @@
 #pragma once
 
-#define NOMINMAX
-
-#include <Engine/ECS/ComponentSubscriptionRequest.hpp>
+#include <Engine/ECS/ComponentPublisher.hpp>
+#include <Engine/ECS/EntitySubscriber.hpp>
 
 class ComponentHandler;
 class Device;
@@ -10,16 +9,11 @@ class ECSCore;
 class Renderer;
 class RenderingHandler;
 
-struct RendererRegistration {
-    ComponentSubscriberRegistration SubscriberRegistration;
-    Renderer* pRenderer;
-};
-
-class Renderer
+class Renderer : private EntitySubscriber
 {
 public:
     Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
-    virtual ~Renderer();
+    virtual ~Renderer() = default;
 
     virtual bool init() = 0;
 
@@ -27,10 +21,8 @@ public:
     virtual void recordCommands() = 0;
     virtual void executeCommands(ICommandList* pPrimaryCommandList) = 0;
 
-    void setComponentSubscriptionID(size_t ID) { m_ComponentSubscriptionID = ID; }
-
 protected:
-    void registerRenderer(const RendererRegistration& rendererRegistration);
+    void registerRenderer(const EntitySubscriberRegistration& subscriberRegistration);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
 protected:
@@ -39,6 +31,4 @@ protected:
 
 private:
     ECSCore* m_pECS;
-
-    size_t m_ComponentSubscriptionID;
 };

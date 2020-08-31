@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/ECS/Renderer.hpp>
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Utils/IDVector.hpp>
 

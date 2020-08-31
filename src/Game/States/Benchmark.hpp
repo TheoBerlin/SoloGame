@@ -29,9 +29,9 @@ public:
 private:
     void startMusic(SoundHandler* pSoundHandler);
     void createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
-    void createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
+    void createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher);
     void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
-    void createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber);
+    void createPlayer(TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher);
 
     void printBenchmarkResults() const;
 

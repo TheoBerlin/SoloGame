@@ -29,10 +29,10 @@ void GameSession::init()
     // Set mouse mode to relative and hide the cursor
     m_pInputHandler->hideCursor();
 
-    ComponentSubscriber* pComponentSubscriber   = m_pECS->getComponentSubscriber();
-    ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pComponentSubscriber->getComponentHandler(TID(ModelLoader)));
-    TransformHandler* pTransformHandler         = reinterpret_cast<TransformHandler*>(pComponentSubscriber->getComponentHandler(TID(TransformHandler)));
-    SoundHandler* pSoundHandler                 = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
+    ComponentPublisher* pComponentPublisher   = m_pECS->getComponentPublisher();
+    ModelLoader* pModelLoader                   = reinterpret_cast<ModelLoader*>(pComponentPublisher->getComponentHandler(TID(ModelLoader)));
+    TransformHandler* pTransformHandler         = reinterpret_cast<TransformHandler*>(pComponentPublisher->getComponentHandler(TID(TransformHandler)));
+    SoundHandler* pSoundHandler                 = reinterpret_cast<SoundHandler*>(pComponentPublisher->getComponentHandler(TID(SoundHandler)));
 
     startMusic(pSoundHandler);
 
@@ -55,9 +55,9 @@ void GameSession::init()
         createCube(sectionPoint, soundPath, pSoundHandler, pTransformHandler, pModelLoader);
     }
 
-    createPointLights(pSoundHandler, pTransformHandler, pComponentSubscriber);
+    createPointLights(pSoundHandler, pTransformHandler, pComponentPublisher);
     createTube(sectionPoints, pTransformHandler, pModelLoader);
-    createPlayer(pTransformHandler, pComponentSubscriber);
+    createPlayer(pTransformHandler, pComponentPublisher);
 }
 
 void GameSession::resume()
@@ -97,9 +97,9 @@ void GameSession::createCube(const DirectX::XMFLOAT3& position, const std::strin
     }
 }
 
-void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
+void GameSession::createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher)
 {
-    LightHandler* pLightHandler = reinterpret_cast<LightHandler*>(pComponentSubscriber->getComponentHandler(TID(LightHandler)));
+    LightHandler* pLightHandler = reinterpret_cast<LightHandler*>(pComponentPublisher->getComponentHandler(TID(LightHandler)));
     const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
 
     for (unsigned i = 0; i < 1u; i++) {
@@ -129,7 +129,7 @@ void GameSession::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints
     pTransformHandler->createWorldMatrix(tube);
 }
 
-void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSubscriber* pComponentSubscriber)
+void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentPublisher* pComponentPublisher)
 {
     Entity player = m_pECS->createEntity();
 
@@ -138,10 +138,10 @@ void GameSession::createPlayer(TransformHandler* pTransformHandler, ComponentSub
     pTransformHandler->createRotation(player);
     const DirectX::XMFLOAT4& camRotationQuat = pTransformHandler->getRotation(player);
 
-    VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentSubscriber->getComponentHandler(TID(VelocityHandler)));
+    VelocityHandler* pVelocityHandler = reinterpret_cast<VelocityHandler*>(pComponentPublisher->getComponentHandler(TID(VelocityHandler)));
     pVelocityHandler->createVelocityComponent(player);
 
-    VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pComponentSubscriber->getComponentHandler(TID(VPHandler)));
+    VPHandler* pVPHandler = reinterpret_cast<VPHandler*>(pComponentPublisher->getComponentHandler(TID(VPHandler)));
 
     ViewMatrixInfo viewMatrixInfo = {};
     viewMatrixInfo.EyePosition      = DirectX::XMLoadFloat3(&camPosition);

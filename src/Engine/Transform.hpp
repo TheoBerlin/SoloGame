@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/ECS/ComponentSubscriptionRequest.hpp>
+#include <Engine/ECS/EntitySubscriber.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
 

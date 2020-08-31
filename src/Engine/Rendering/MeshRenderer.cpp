@@ -35,15 +35,15 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRe
     CameraComponents camSub;
     PointLightComponents pointLightSub;
 
-    RendererRegistration rendererReg = {};
-    rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
-        {{{R, g_TIDModel}, {R, g_TIDWorldMatrix}}, &m_Renderables, [this](Entity entity){ onMeshAdded(entity); }, [this](Entity entity){ onMeshRemoved(entity); }},
-        {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
-        {{&pointLightSub}, &m_PointLights}
+    EntitySubscriberRegistration entitySubscriberRegistration = {
+        {
+            {{{R, g_TIDModel}, {R, g_TIDWorldMatrix}}, &m_Renderables, [this](Entity entity){ onMeshAdded(entity); }, [this](Entity entity){ onMeshRemoved(entity); }},
+            {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
+            {{&pointLightSub}, &m_PointLights}
+        }
     };
-    rendererReg.pRenderer = this;
 
-    registerRenderer(rendererReg);
+    registerRenderer(entitySubscriberRegistration);
 }
 
 MeshRenderer::~MeshRenderer()

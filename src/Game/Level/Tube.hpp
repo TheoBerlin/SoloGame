@@ -10,7 +10,7 @@
 struct Model;
 class Device;
 class ModelLoader;
-class ComponentSubscriber;
+class ComponentPublisher;
 class TextureCache;
 
 struct TubePoint {

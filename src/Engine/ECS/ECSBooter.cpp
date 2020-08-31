@@ -2,7 +2,7 @@
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/ECS/ECSCore.hpp>
-#include <Engine/ECS/Renderer.hpp>
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/Utils/Logger.hpp>
 
@@ -15,25 +15,19 @@ void ECSBooter::enqueueComponentHandlerRegistration(const ComponentHandlerRegist
     m_ComponentHandlersToRegister.push_back(handlerRegistration);
 }
 
-void ECSBooter::enqueueSystemRegistration(const SystemRegistration& systemRegistration)
+void ECSBooter::enqueueSubscriberInitialization(const Subscriber& subscriber)
 {
-    m_SystemsToRegister.push_back(systemRegistration);
-}
-
-void ECSBooter::enqueueRendererRegistration(const RendererRegistration& rendererRegistration)
-{
-    m_RenderersToRegister.push_back(rendererRegistration);
+    m_Subscribers.push_back(subscriber);
 }
 
 void ECSBooter::performBootups()
 {
-    if (m_ComponentHandlersToRegister.empty() && m_SystemsToRegister.empty() && m_RenderersToRegister.empty()) {
+    if (m_ComponentHandlersToRegister.empty() && m_Subscribers.empty()) {
         return;
     }
 
     bootHandlers();
-    bootSystems();
-    bootRenderers();
+    bootSubscribers();
 }
 
 void ECSBooter::bootHandlers()
@@ -90,43 +84,20 @@ void ECSBooter::bootHandlers()
     m_HandlersBootInfos.clear();
 }
 
-void ECSBooter::bootSystems()
+void ECSBooter::bootSubscribers()
 {
-    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+    ComponentPublisher* pComponentPublisher = m_pECS->getComponentPublisher();
     SystemRegistry* pSystemRegistry = m_pECS->getSystemRegistry();
 
-    for (const SystemRegistration& systemReg : m_SystemsToRegister) {
-        System* pSystem = systemReg.pSystem;
-
-        if (!pSystem->initSystem()) {
-            LOG_ERROR("Failed to initialize system");
+    for (const Subscriber& subscriber : m_Subscribers) {
+        if (!subscriber.InitFunction()) {
+            LOG_ERROR("Failed to initialize subscriber");
         } else {
-            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(systemReg.SubscriberRegistration);
-            pSystem->setComponentSubscriptionID(subscriptionID);
-
-            pSystemRegistry->registerSystem(systemReg);
+            *subscriber.pSubscriberID = pComponentPublisher->subscribeToComponents(subscriber.ComponentSubscriptions);
         }
     }
 
-    m_SystemsToRegister.clear();
-}
-
-void ECSBooter::bootRenderers()
-{
-    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
-
-    for (const RendererRegistration& rendererReg : m_RenderersToRegister) {
-        Renderer* pRenderer = rendererReg.pRenderer;
-
-        if (!pRenderer->init()) {
-            LOG_ERROR("Failed to initialize renderer");
-        } else {
-            size_t subscriptionID = pComponentSubscriber->subscribeToComponents(rendererReg.SubscriberRegistration);
-            pRenderer->setComponentSubscriptionID(subscriptionID);
-        }
-    }
-
-    m_RenderersToRegister.clear();
+    m_Subscribers.clear();
 }
 
 void ECSBooter::buildBootInfos()
@@ -158,7 +129,7 @@ void ECSBooter::finalizeHandlerBootDependencies()
                 bootInfo.dependencyMapIterators.push_back(dependencyItr);
             } else {
                 // The dependency is not enqueued for bootup, it might already be booted
-                if (!m_pECS->getComponentSubscriber()->getComponentHandler(dependencyTID)) {
+                if (!m_pECS->getComponentPublisher()->getComponentHandler(dependencyTID)) {
                     LOG_ERRORF("Cannot boot handler: %s, missing dependency: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name(), dependencyTID.name());
                     hasDependencies = false;
                     break;
@@ -182,6 +153,6 @@ void ECSBooter::bootHandler(ComponentHandlerBootInfo& bootInfo)
     if (!bootInfo.handlerRegistration->pComponentHandler->initHandler()) {
         LOG_ERRORF("Failed to initialize component handler: %s", bootInfo.handlerRegistration->pComponentHandler->getHandlerType().name());
     } else {
-        m_pECS->getComponentSubscriber()->registerComponentHandler(*bootInfo.handlerRegistration);
+        m_pECS->getComponentPublisher()->registerComponentHandler(*bootInfo.handlerRegistration);
     }
 }

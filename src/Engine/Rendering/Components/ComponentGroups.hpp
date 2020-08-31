@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/ECS/ComponentSubscriptionRequest.hpp>
+#include <Engine/ECS/EntitySubscriber.hpp>
 #include <Engine/Physics/Velocity.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>

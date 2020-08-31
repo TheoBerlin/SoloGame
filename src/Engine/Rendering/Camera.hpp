@@ -16,7 +16,7 @@ class CameraSystem : public System
 {
 public:
     CameraSystem(ECSCore* pECS, InputHandler* pInputHandler);
-    ~CameraSystem();
+    ~CameraSystem() = default;
 
     virtual bool initSystem() override;
 

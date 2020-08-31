@@ -1,16 +1,18 @@
 #pragma once
 
 #include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/ECS/ComponentSubscriber.hpp>
+#include <Engine/ECS/ComponentPublisher.hpp>
 #include <Engine/ECS/ECSBooter.hpp>
 #include <Engine/ECS/EntityRegistry.hpp>
 #include <Engine/ECS/JobScheduler.hpp>
-#include <Engine/ECS/Renderer.hpp>
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/ECS/System.hpp>
 #include <Engine/ECS/SystemRegistry.hpp>
 #include <Engine/Utils/IDGenerator.hpp>
 
 #include <vector>
+
+class EntitySubscriber;
 
 class ECSCore
 {
@@ -23,14 +25,13 @@ public:
 
     void update(float dt);
 
-    inline Entity createEntity() { return m_EntityRegistry.createEntity(); }
+    Entity createEntity() { return m_EntityRegistry.createEntity(); }
 
     void scheduleJobASAP(const Job& job);
     void scheduleJobPostFrame(const Job& job);
 
     void enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration);
-    void enqueueSystemRegistration(const SystemRegistration& systemRegistration);
-    void enqueueRendererRegistration(const RendererRegistration& rendererRegistration);
+    void enqueueComponentSubscriberRegistration(const Subscriber& subscriber);
 
     // Registers and initializes component handlers and systems
     void performRegistrations();
@@ -47,12 +48,16 @@ public:
     void componentAdded(Entity entity, std::type_index componentType);
     void componentDeleted(Entity entity, std::type_index componentType);
 
-    inline ComponentSubscriber* getComponentSubscriber()    { return &m_ComponentSubscriber; }
-    inline SystemRegistry* getSystemRegistry()              { return &m_SystemRegistry; }
+    ComponentPublisher* getComponentPublisher()  { return &m_ComponentPublisher; }
+    SystemRegistry* getSystemRegistry()          { return &m_SystemRegistry; }
+
+protected:
+    friend EntitySubscriber;
+    void enqueueEntitySubscriptions(const EntitySubscriberRegistration& subscriberRegistration, const std::function<bool()>& initFn, size_t* pSubscriberID);
 
 private:
     EntityRegistry m_EntityRegistry;
-    ComponentSubscriber m_ComponentSubscriber;
+    ComponentPublisher m_ComponentPublisher;
     SystemRegistry m_SystemRegistry;
     JobScheduler m_JobScheduler;
     ECSBooter m_ECSBooter;

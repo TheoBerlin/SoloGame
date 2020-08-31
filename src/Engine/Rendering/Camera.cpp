@@ -21,16 +21,14 @@ CameraSystem::CameraSystem(ECSCore* pECS, InputHandler* pInputHandler)
     cameraComponents.m_Velocity.Permissions                 = RW;
 
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{&cameraComponents}, &m_Cameras},
     };
-    sysReg.pSystem = this;
+    sysReg.Phase = 0u;
+    sysReg.pSystem          = this;
 
     enqueueRegistration(sysReg);
 }
-
-CameraSystem::~CameraSystem()
-{}
 
 bool CameraSystem::initSystem()
 {
@@ -87,7 +85,7 @@ void CameraSystem::update(float dt)
         }
 
         DirectX::XMFLOAT3& cameraVelocity = m_pVelocityHandler->getVelocity(entity);
-        DirectX::XMStoreFloat3(&cameraVelocity, DirectX::XMVectorAdd(camMove, DirectX::XMLoadFloat3(&cameraVelocity)));
+        DirectX::XMStoreFloat3(&cameraVelocity, camMove);
 
         DirectX::XMFLOAT3& position = m_pTransformHandler->getPosition(entity);
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&position);
