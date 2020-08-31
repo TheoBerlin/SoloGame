@@ -93,10 +93,10 @@ void InputHandler::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button
 
 void InputHandler::keyActionCallback(int key, int scancode, int action, int mods)
 {
-    m_pKeyStates[key] = action != GLFW_RELEASE && m_Enabled;
+    m_pKeyStates[key] = (action != GLFW_RELEASE) && m_Enabled;
 }
 
 void InputHandler::mouseButtonCallback(int button, int action, int mods)
 {
-    m_pMouseButtonStates[button] = action != GLFW_RELEASE && m_Enabled;
+    m_pMouseButtonStates[button] = (action != GLFW_RELEASE) && m_Enabled;
 }

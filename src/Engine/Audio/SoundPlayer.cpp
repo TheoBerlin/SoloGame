@@ -16,7 +16,7 @@ SoundPlayer::SoundPlayer(ECSCore* pECS)
     CameraComponents cameraComponents;
     SystemRegistration sysReg = {};
     sysReg.pSystem = this;
-    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{{RW, g_TIDSound}, {R, g_TIDPosition}}, &m_Sounds},
         {{{RW, g_TIDSoundLooper}}, &m_LoopedSounds},
         {{{R, g_TIDVelocity}}, {&cameraComponents}, &m_Cameras}

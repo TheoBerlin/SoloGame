@@ -39,18 +39,18 @@ struct ComponentStorage {
     std::function<void(Entity)> m_ComponentDestructor;
 };
 
-class ComponentSubscriber
+class ComponentPublisher
 {
 public:
-    ComponentSubscriber(EntityRegistry* pEntityRegistry);
-    ~ComponentSubscriber();
+    ComponentPublisher(EntityRegistry* pEntityRegistry);
+    ~ComponentPublisher();
 
     void registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration);
     void deregisterComponentHandler(ComponentHandler* handler);
     ComponentHandler* getComponentHandler(const std::type_index& handlerType);
 
     // Returns a subscription ID
-    size_t subscribeToComponents(const ComponentSubscriberRegistration& subscriberRegistration);
+    size_t subscribeToComponents(const EntitySubscriberRegistration& subscriberRegistration);
     void unsubscribeFromComponents(size_t subscriptionID);
 
     // Notifies subscribed systems that a new component has been made

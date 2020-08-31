@@ -21,13 +21,13 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRender
     std::fill_n(m_ppCommandPools, MAX_FRAMES_IN_FLIGHT, nullptr);
     std::fill_n(m_ppFramebuffers, MAX_FRAMES_IN_FLIGHT, nullptr);
 
-    RendererRegistration rendererReg = {};
-    rendererReg.SubscriberRegistration.ComponentSubscriptionRequests = {
-        {{{R, tid_UIPanel}}, &m_Panels, [this](Entity entity){ onPanelAdded(entity); }, [this](Entity entity){ onPanelRemoved(entity); }}
+    EntitySubscriberRegistration entitySubscriberRegistration = {
+        {
+            {{{R, tid_UIPanel}}, &m_Panels, [this](Entity entity){ onPanelAdded(entity); }, [this](Entity entity){ onPanelRemoved(entity); }}
+        }
     };
-    rendererReg.pRenderer = this;
 
-    registerRenderer(rendererReg);
+    registerRenderer(entitySubscriberRegistration);
 }
 
 UIRenderer::~UIRenderer()

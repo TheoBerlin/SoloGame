@@ -9,7 +9,7 @@ ComponentHandler::ComponentHandler(ECSCore* pECS, std::type_index tid_handler)
 
 ComponentHandler::~ComponentHandler()
 {
-    m_pECS->getComponentSubscriber()->deregisterComponentHandler(this);
+    m_pECS->getComponentPublisher()->deregisterComponentHandler(this);
 }
 
 void ComponentHandler::registerHandler(const ComponentHandlerRegistration& handlerRegistration)

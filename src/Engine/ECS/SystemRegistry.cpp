@@ -12,7 +12,7 @@ void SystemRegistry::registerSystem(const SystemRegistration& sysReg)
 
     Job job;
     convertRegistrationToJob(sysReg, job);
-    m_UpdateJobs[sysReg.UpdateQueueIndex].push_back(job, systemID);
+    m_UpdateJobs[sysReg.Phase].push_back(job, systemID);
 }
 
 void SystemRegistry::deregisterSystem(System* pSystem)
@@ -35,7 +35,7 @@ void SystemRegistry::convertRegistrationToJob(const SystemRegistration& sysReg, 
     // Eliminate duplicate component types across the system's subscriptions
     std::unordered_map<std::type_index, ComponentPermissions> uniqueRegs;
 
-    for (const ComponentSubscriptionRequest& subReq : sysReg.SubscriberRegistration.ComponentSubscriptionRequests) {
+    for (const EntitySubscriptionRegistration& subReq : sysReg.SubscriberRegistration.EntitySubscriptionRegistrations) {
         SystemRegistry::mapComponentAccesses(subReq.m_ComponentAccesses, uniqueRegs);
     }
 

@@ -96,13 +96,13 @@
     <ClCompile Include="src\Engine\Audio\SoundHandler.cpp" />
     <ClCompile Include="src\Engine\Audio\SoundPlayer.cpp" />
     <ClCompile Include="src\Engine\ECS\ComponentHandler.cpp" />
-    <ClCompile Include="src\Engine\ECS\ComponentSubscriptionRequest.cpp" />
+    <ClCompile Include="src\Engine\ECS\EntitySubscriber.cpp" />
     <ClCompile Include="src\Engine\ECS\ECSBooter.cpp" />
     <ClCompile Include="src\Engine\ECS\ECSCore.cpp" />
     <ClCompile Include="src\Engine\ECS\EntityRegistry.cpp" />
-    <ClCompile Include="src\Engine\ECS\Renderer.cpp" />
     <ClCompile Include="src\Engine\ECS\System.cpp" />
-    <ClCompile Include="src\Engine\ECS\ComponentSubscriber.cpp" />
+    <ClCompile Include="src\Engine\ECS\ComponentPublisher.cpp" />
+    <ClCompile Include="src\Engine\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Engine\EnginePCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -209,14 +209,13 @@
     <ClInclude Include="src\Engine\Audio\SoundHandler.hpp" />
     <ClInclude Include="src\Engine\Audio\SoundPlayer.hpp" />
     <ClInclude Include="src\Engine\ECS\ComponentHandler.hpp" />
-    <ClInclude Include="src\Engine\ECS\ComponentSubscriptionRequest.hpp" />
+    <ClInclude Include="src\Engine\ECS\EntitySubscriber.hpp" />
     <ClInclude Include="src\Engine\ECS\ECSBooter.hpp" />
     <ClInclude Include="src\Engine\ECS\ECSCore.hpp" />
     <ClInclude Include="src\Engine\ECS\Entity.hpp" />
     <ClInclude Include="src\Engine\ECS\EntityRegistry.hpp" />
-    <ClInclude Include="src\Engine\ECS\Renderer.hpp" />
     <ClInclude Include="src\Engine\ECS\System.hpp" />
-    <ClInclude Include="src\Engine\ECS\ComponentSubscriber.hpp" />
+    <ClInclude Include="src\Engine\ECS\ComponentPublisher.hpp" />
     <ClInclude Include="src\Engine\EnginePCH.hpp" />
     <ClInclude Include="src\Engine\GameState\State.hpp" />
     <ClInclude Include="src\Engine\GameState\StateManager.hpp" />
@@ -303,6 +302,7 @@
     <ClInclude Include="src\Engine\Rendering\Components\VPMatrices.hpp" />
     <ClInclude Include="src\Engine\Rendering\Components\PointLight.hpp" />
     <ClInclude Include="src\Engine\Rendering\MeshRenderer.hpp" />
+    <ClInclude Include="src\Engine\Rendering\Renderer.hpp" />
     <ClInclude Include="src\Engine\Rendering\RenderingCore.hpp" />
     <ClInclude Include="src\Engine\Rendering\RenderingHandler.hpp" />
     <ClInclude Include="src\Engine\Rendering\ShaderBindings.hpp" />

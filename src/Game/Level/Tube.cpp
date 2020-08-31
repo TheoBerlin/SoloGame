@@ -22,7 +22,7 @@ TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
     m_pDevice(pDevice),
     m_TubeRadius(0.0f)
 {
-    m_pTextureCache = reinterpret_cast<TextureCache*>(pECS->getComponentSubscriber()->getComponentHandler(TID(TextureCache)));
+    m_pTextureCache = reinterpret_cast<TextureCache*>(pECS->getComponentPublisher()->getComponentHandler(TID(TextureCache)));
 }
 
 Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)

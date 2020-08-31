@@ -16,7 +16,7 @@ ButtonSystem::ButtonSystem(ECSCore* pECS, Window* pWindow)
     m_HoveredButton(UINT64_MAX)
 {
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{{RW, tid_UIPanel}, {R, tid_UIButton}}, &m_Buttons}
     };
     sysReg.pSystem = this;

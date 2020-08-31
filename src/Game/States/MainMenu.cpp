@@ -22,13 +22,13 @@ MainMenu::MainMenu(StateManager* pStateManager, ECSCore* pECS, Device* pDevice, 
 
 void MainMenu::init()
 {
-    ComponentSubscriber* pComponentSubscriber = m_pECS->getComponentSubscriber();
+    ComponentPublisher* pComponentPublisher = m_pECS->getComponentPublisher();
 
     m_pInputHandler->showCursor();
 
-    UIHandler* pUIHandler       = reinterpret_cast<UIHandler*>(pComponentSubscriber->getComponentHandler(TID(UIHandler)));
-    TextRenderer* pTextRenderer = reinterpret_cast<TextRenderer*>(pComponentSubscriber->getComponentHandler(TID(TextRenderer)));
-    TextureCache* pTextureCache = reinterpret_cast<TextureCache*>(pComponentSubscriber->getComponentHandler(TID(TextureCache)));
+    UIHandler* pUIHandler       = reinterpret_cast<UIHandler*>(pComponentPublisher->getComponentHandler(TID(UIHandler)));
+    TextRenderer* pTextRenderer = reinterpret_cast<TextRenderer*>(pComponentPublisher->getComponentHandler(TID(TextRenderer)));
+    TextureCache* pTextureCache = reinterpret_cast<TextureCache*>(pComponentPublisher->getComponentHandler(TID(TextureCache)));
 
     // Create UI panel
     uiEntity = m_pECS->createEntity();
@@ -55,7 +55,7 @@ void MainMenu::init()
     Entity soundEntity = m_pECS->createEntity();
     const std::string soundFile = "./assets/Sounds/muscle-car-daniel_simon.mp3";
 
-    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentSubscriber->getComponentHandler(TID(SoundHandler)));
+    SoundHandler* pSoundHandler = reinterpret_cast<SoundHandler*>(pComponentPublisher->getComponentHandler(TID(SoundHandler)));
     if (pSoundHandler->createSound(soundEntity, soundFile)) {
         pSoundHandler->playSound(soundEntity);
     }

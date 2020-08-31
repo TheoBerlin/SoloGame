@@ -19,10 +19,11 @@ RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler, Tub
     m_pVelocityHandler(nullptr)
 {
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{{RW, g_TIDPosition}, {RW, g_TIDRotation}, {RW, g_TIDTrackPosition}, {RW, g_TIDTrackSpeed}, {RW, g_TIDVelocity}}, &m_Racers, [this](Entity entity){ racerAdded(entity); }}
     };
-    sysReg.pSystem = this;
+    sysReg.Phase = 1u;
+    sysReg.pSystem          = this;
 
     enqueueRegistration(sysReg);
 }

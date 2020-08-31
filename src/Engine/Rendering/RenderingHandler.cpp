@@ -1,6 +1,6 @@
 #include "RenderingHandler.hpp"
 
-#include <Engine/ECS/Renderer.hpp>
+#include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
 #include <Engine/Utils/Logger.hpp>
 

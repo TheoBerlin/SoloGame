@@ -17,11 +17,11 @@ VelocityHandler::VelocityHandler(ECSCore* pECS)
     this->registerHandler(handlerReg);
 
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.ComponentSubscriptionRequests = {
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
         {{{RW, g_TIDVelocity}, {RW, g_TIDPosition}}, &m_MovingObjects}
     };
     sysReg.pSystem = this;
-    sysReg.UpdateQueueIndex = g_LastPhase;
+    sysReg.Phase = g_LastPhase;
 
     enqueueRegistration(sysReg);
 }

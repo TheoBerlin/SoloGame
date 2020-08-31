@@ -62,7 +62,7 @@ bool UIHandler::initHandler()
     }
 
     // Retrieve quad from shader resource handler
-    ShaderResourceHandler* pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getComponentSubscriber()->getComponentHandler(TID(ShaderResourceHandler)));
+    ShaderResourceHandler* pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getComponentPublisher()->getComponentHandler(TID(ShaderResourceHandler)));
     // Retrieve UI rendering shader program from shader handler
     if (!pShaderResourceHandler) {
         return false;
