@@ -28,9 +28,6 @@ RacerController::RacerController(ECSCore* pECS, InputHandler* pInputHandler, Tub
     enqueueRegistration(sysReg);
 }
 
-RacerController::~RacerController()
-{}
-
 bool RacerController::initSystem()
 {
     m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));

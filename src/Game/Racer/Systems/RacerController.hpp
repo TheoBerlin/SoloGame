@@ -32,7 +32,7 @@ class RacerController : public System
 {
 public:
     RacerController(ECSCore* pECS, InputHandler* pInputHandler, TubeHandler* pTubeHandler);
-    ~RacerController();
+    ~RacerController() = default;
 
     virtual bool initSystem() override;
 
