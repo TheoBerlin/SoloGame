@@ -5,6 +5,8 @@ REPO        = 'SoloGame'
 
 BENCHMARK_FILE_NAME = 'benchmark_results.json'
 
+PRESENTATION_MODE   = 'immediate'
+
 def print_help(helpString, args):
     print('Intended usage:')
     print(helpString)
@@ -15,17 +17,18 @@ def remove_existing_benchmark_files(vkResultsPath, dx11ResultsPath):
         if os.path.exists(fileName):
             os.remove(fileName)
 
-def set_rendering_api(API):
+def set_engine_config(API):
     with open('engine_config.json', 'r+') as cfgFile:
         config = json.load(cfgFile)
         config['API'] = API
+        config['PresentationMode'] = PRESENTATION_MODE
         cfgFile.seek(0)
         json.dump(config, cfgFile, indent=4)
         cfgFile.truncate()
         cfgFile.close()
 
 def run_benchmark(binPath, API):
-    set_rendering_api(API)
+    set_engine_config(API)
     print(f'Benchmarking using {API}... ', end='', flush=True)
     completedProcess = subprocess.run([binPath, '--benchmark'], capture_output=True)
     if completedProcess.returncode != 0:

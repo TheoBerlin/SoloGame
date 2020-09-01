@@ -27,7 +27,7 @@ private:
     bool initLogicalDevice();
     void initQueues();
     bool initAllocator();
-    bool initSwapchain(const Window* pWindow);
+    bool initSwapchain(const Window* pWindow, PRESENTATION_MODE preferredPresentMode);
     bool initSwapchainImageViews();
     bool initBackbuffersAndDepthTextures(DeviceVK* pDevice);
 
@@ -36,8 +36,10 @@ private:
     bool verifyLayerSupport();
     bool querySwapchainSupport(VkPhysicalDevice physicalDevice, SwapchainSupportDetails& supportDetails) const;
     void chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const;
+    static VkPresentModeKHR chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, VkPresentModeKHR preferredMode);
     VkExtent2D chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities, const Window* pWindow) const;
+
+    static VkPresentModeKHR convertPresentMode(PRESENTATION_MODE presentationMode);
 
 private:
     VkInstance m_Instance;

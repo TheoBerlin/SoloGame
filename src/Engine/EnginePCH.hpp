@@ -30,6 +30,8 @@
 // ECS
 #include <Engine/ECS/ECSCore.hpp>
 
+#include <Engine/IGame.hpp>
+
 #include <Engine/Utils/Logger.hpp>
 
 #include <string>
