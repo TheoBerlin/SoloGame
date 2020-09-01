@@ -1,9 +1,9 @@
 import json, os, subprocess, sys, getopt
 
-REPO_OWNER   = 'TheoBerlin'
+REPO_OWNER  = 'TheoBerlin'
 REPO        = 'SoloGame'
 
-benchmarkFileName = 'benchmark_results.json'
+BENCHMARK_FILE_NAME = 'benchmark_results.json'
 
 def print_help(helpString, args):
     print('Intended usage:')
@@ -11,7 +11,7 @@ def print_help(helpString, args):
     print(f'Used flags: {str(args)}')
 
 def remove_existing_benchmark_files(vkResultsPath, dx11ResultsPath):
-    for fileName in [benchmarkFileName, vkResultsPath, dx11ResultsPath]:
+    for fileName in [BENCHMARK_FILE_NAME, vkResultsPath, dx11ResultsPath]:
         if os.path.exists(fileName):
             os.remove(fileName)
 
@@ -74,10 +74,10 @@ def main(argv):
     remove_existing_benchmark_files(vkResultsPath, dx11ResultsPath)
 
     run_benchmark(binPath, 'DirectX 11')
-    os.rename(benchmarkFileName, dx11ResultsPath)
+    os.rename(BENCHMARK_FILE_NAME, dx11ResultsPath)
 
     run_benchmark(binPath, 'Vulkan')
-    os.rename(benchmarkFileName, vkResultsPath)
+    os.rename(BENCHMARK_FILE_NAME, vkResultsPath)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

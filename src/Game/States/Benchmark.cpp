@@ -184,7 +184,8 @@ void Benchmark::printBenchmarkResults() const
     using json = nlohmann::json;
 
     json benchmarkResults;
-    benchmarkResults["AverageFPS"] = 1.0f / m_pRuntimeStats->getAverageFrametime();
+    benchmarkResults["AverageFPS"]      = 1.0f / m_pRuntimeStats->getAverageFrametime();
+    benchmarkResults["PeakMemoryUsage"] = float(m_pRuntimeStats->getPeakMemoryUsage() / 1000000.0f);
 
     std::ofstream benchmarkFile(pOutFile, std::fstream::out | std::fstream::trunc);
     benchmarkFile << std::setw(4) << benchmarkResults << std::endl;
