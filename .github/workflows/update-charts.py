@@ -4,8 +4,6 @@ REPO_OWNER   = 'TheoBerlin'
 REPO_NAME    = 'SoloGamePages'
 REPO_DIR     = 'docs'
 
-benchmarkFileName = 'benchmark_results.json'
-
 def print_help(helpString, args):
     print('Intended usage:')
     print(helpString)
@@ -17,10 +15,11 @@ def pull_pages_repo(repoURL):
 # Gets information regarding a commit in the game repository
 def get_commit_info(commitID):
     # GITHUB_REPOSITORY: repoOwner/repoName
-    gameRepoInfo    = os.environ.get('GITHUB_REPOSITORY').split('/')
-    gameRepoOwner   = gameRepoInfo[0]
-    gameRepo        = gameRepoInfo[1]
-    URL = f'https://api.github.com/repos/{gameRepoOwner}/{gameRepo}/commits/{commitID}'
+    gameRepoInfo    = os.environ.get('GITHUB_REPOSITORY')
+    if not gameRepoInfo:
+        print('Missing environment variable: GITHUB_REPOSITORY')
+        sys.exit(1)
+    URL = f'https://api.github.com/repos/{gameRepoInfo}/commits/{commitID}'
 
     import requests
     resp = requests.get(URL)
@@ -39,6 +38,16 @@ def update_average_fps_chart(chartData, vkResults, dx11Results, commitID):
     chartData['labels'].append(commitID[:7])
     chartData['tooltips'].append(f'{commitMsg}\n{timestamp}')
 
+def update_peak_memory_usage_chart(chartData, vkResults, dx11Results, commitID):
+    commitInfo = get_commit_info(commitID)
+    commitMsg = commitInfo['commit']['message']
+    timestamp = commitInfo['commit']['author']['date']
+
+    chartData['vulkan'].append(vkResults['PeakMemoryUsage'])
+    chartData['directx11'].append(dx11Results['PeakMemoryUsage'])
+    chartData['labels'].append(commitID[:7])
+    chartData['tooltips'].append(f'{commitMsg}\n{timestamp}')
+
 def update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir):
     print(f'Updating charts in {repoDir}/_data/')
 
@@ -53,6 +62,7 @@ def update_charts(commitID, vkResultsPath, dx11ResultsPath, repoDir):
     with open(f'{repoDir}/_data/charts.json', 'r+') as chartsFile:
         chartsData = json.load(chartsFile)
         update_average_fps_chart(chartsData['AverageFPS'], vkResults, dx11Results, commitID)
+        update_peak_memory_usage_chart(chartsData['PeakMemoryUsage'], vkResults, dx11Results, commitID)
         chartsFile.seek(0)
         json.dump(chartsData, chartsFile, indent=4)
         chartsFile.truncate()
