@@ -4,6 +4,7 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/GameState/StateManager.hpp>
 #include <Engine/Physics/PhysicsCore.hpp>
+#include <Engine/Rendering/APIAbstractions/Swapchain.hpp>
 #include <Engine/Rendering/AssetLoaders/AssetLoadersCore.hpp>
 #include <Engine/Rendering/RenderingCore.hpp>
 #include <Engine/Rendering/RenderingHandler.hpp>
@@ -17,6 +18,7 @@ namespace argh {
 
 struct EngineConfig {
     RENDERING_API RenderingAPI;
+    PRESENTATION_MODE PresentationMode;
 };
 
 class IGame

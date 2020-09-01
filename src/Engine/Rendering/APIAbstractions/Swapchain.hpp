@@ -11,6 +11,18 @@ enum class SYNC_OPTION {
     SEMAPHORE   = FENCE << 1
 };
 
+enum class PRESENTATION_MODE {
+    IMMEDIATE,
+    MAILBOX
+};
+
+struct SwapchainInfo {
+    uint32_t FrameRateLimit;
+    uint32_t Multisamples;
+    PRESENTATION_MODE PresentationMode;
+    bool Windowed;
+};
+
 DEFINE_BITMASK_OPERATIONS(SYNC_OPTION)
 
 class Swapchain

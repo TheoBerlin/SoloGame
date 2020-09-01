@@ -42,21 +42,22 @@ bool IGame::init()
     if (!loadEngineConfig(engineCFG)) {
         return false;
     }
-    LOG_INFOF("Launching with %s", engineCFG.RenderingAPI == RENDERING_API::VULKAN ? "Vulkan" : "DirectX 11");
+    LOG_INFOF("Using %s", engineCFG.RenderingAPI == RENDERING_API::VULKAN ? "Vulkan" : "DirectX 11");
 
     if (!m_Window.init()) {
         return false;
     }
 
-    SwapchainInfo swapChainInfo = {};
-    swapChainInfo.FrameRateLimit    = 60u;
-    swapChainInfo.Multisamples      = 1u;
-    swapChainInfo.Windowed          = true;
+    SwapchainInfo swapchainInfo = {};
+    swapchainInfo.FrameRateLimit    = 60u;
+    swapchainInfo.Multisamples      = 1u;
+    swapchainInfo.PresentationMode  = engineCFG.PresentationMode;
+    swapchainInfo.Windowed          = true;
 
     DescriptorCounts descriptorPoolSize;
     descriptorPoolSize.setAll(100u);
 
-    m_pDevice = Device::create(engineCFG.RenderingAPI, swapChainInfo, &m_Window);
+    m_pDevice = Device::create(engineCFG.RenderingAPI, swapchainInfo, &m_Window);
     if (!m_pDevice || !m_pDevice->init(descriptorPoolSize)) {
         return false;
     }
@@ -108,7 +109,8 @@ void IGame::run()
 bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
 {
     // Default config
-    engineConfig.RenderingAPI = RENDERING_API::VULKAN;
+    engineConfig.RenderingAPI       = RENDERING_API::VULKAN;
+    engineConfig.PresentationMode   = PRESENTATION_MODE::MAILBOX;
 
     using json = nlohmann::json;
 
@@ -132,5 +134,14 @@ bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
     };
 
     engineConfig.RenderingAPI = dx11Strings.contains(APIStr) ? RENDERING_API::DIRECTX11 : RENDERING_API::VULKAN;
+
+    std::string presentationModeStr = configJSON["PresentationMode"].get<std::string>();
+    std::transform(presentationModeStr.begin(), presentationModeStr.end(), presentationModeStr.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+
+    if (presentationModeStr == "immediate") {
+        engineConfig.PresentationMode = PRESENTATION_MODE::IMMEDIATE;
+    }
+
     return true;
 }

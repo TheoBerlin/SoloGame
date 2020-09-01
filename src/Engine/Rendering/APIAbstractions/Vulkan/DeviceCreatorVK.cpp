@@ -49,7 +49,7 @@ Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const 
         return nullptr;
     }
 
-    if (!initSwapchain(pWindow)) {
+    if (!initSwapchain(pWindow, swapChainInfo.PresentationMode)) {
         return nullptr;
     }
 
@@ -369,7 +369,7 @@ bool DeviceCreatorVK::initAllocator()
     return true;
 }
 
-bool DeviceCreatorVK::initSwapchain(const Window* pWindow)
+bool DeviceCreatorVK::initSwapchain(const Window* pWindow, PRESENTATION_MODE preferredPresentMode)
 {
     SwapchainSupportDetails supportDetails = {};
     if (!querySwapchainSupport(m_PhysicalDevice, supportDetails)) {
@@ -397,9 +397,11 @@ bool DeviceCreatorVK::initSwapchain(const Window* pWindow)
     swapchainInfo.imageSharingMode  = VK_SHARING_MODE_EXCLUSIVE;
     swapchainInfo.preTransform      = supportDetails.SurfaceCapabilities.currentTransform;
     swapchainInfo.compositeAlpha    = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapchainInfo.presentMode       = chooseSwapchainPresentMode(supportDetails.PresentModes);
+    swapchainInfo.presentMode       = chooseSwapchainPresentMode(supportDetails.PresentModes, convertPresentMode(preferredPresentMode));
     swapchainInfo.clipped           = VK_TRUE;
     swapchainInfo.oldSwapchain      = VK_NULL_HANDLE;
+
+    LOG_INFOF("Presentation mode: %s", swapchainInfo.presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR ? "immediate" : "mailbox");
 
     if (vkCreateSwapchainKHR(m_Device, &swapchainInfo, nullptr, &m_Swapchain) != VK_SUCCESS) {
         LOG_ERROR("Failed to create swapchain");
@@ -609,14 +611,12 @@ void DeviceCreatorVK::chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR
     m_SwapchainFormat = foundFormat != availableFormats.end() ? *foundFormat : availableFormats.front();
 }
 
-VkPresentModeKHR DeviceCreatorVK::chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) const
+VkPresentModeKHR DeviceCreatorVK::chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, VkPresentModeKHR preferredMode)
 {
     std::unordered_set<VkPresentModeKHR> availablePresentModesSet(availablePresentModes.begin(), availablePresentModes.end());
-    if (availablePresentModesSet.contains(VK_PRESENT_MODE_MAILBOX_KHR)) {
-        return VK_PRESENT_MODE_MAILBOX_KHR;
-    }
-
-    if (availablePresentModesSet.contains(VK_PRESENT_MODE_IMMEDIATE_KHR)) {
+    if (availablePresentModesSet.contains(preferredMode)) {
+        return preferredMode;
+    } else if (preferredMode != VK_PRESENT_MODE_IMMEDIATE_KHR && availablePresentModesSet.contains(VK_PRESENT_MODE_IMMEDIATE_KHR)) {
         return VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 
@@ -639,4 +639,9 @@ VkExtent2D DeviceCreatorVK::chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR
     swapChainExtent.height  = std::clamp(windowExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
     return swapChainExtent;
+}
+
+VkPresentModeKHR DeviceCreatorVK::convertPresentMode(PRESENTATION_MODE presentationMode)
+{
+    return presentationMode == PRESENTATION_MODE::IMMEDIATE ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_MAILBOX_KHR;
 }

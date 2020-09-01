@@ -37,13 +37,8 @@ struct RasterizerStateInfo;
 struct RenderPassInfo;
 struct SamplerInfo;
 struct StagingResources;
+struct SwapchainInfo;
 struct TextureInfo;
-
-struct SwapchainInfo {
-    uint32_t FrameRateLimit;
-    uint32_t Multisamples;
-    bool Windowed;
-};
 
 enum class RENDERING_API {
     DIRECTX11,

@@ -32,12 +32,12 @@ size_t RuntimeStats::getPeakMemoryUsage()
 
         if (!result) {
             LOG_WARNING("Failed to retrieve process memory info");
-            return 0.0f;
+            return 0;
         }
 
-        return memInfo.PeakWorkingSetSize;
+        return (size_t)memInfo.PeakWorkingSetSize;
     #else
         LOG_WARNING("Retrieving memory usage not yet supported outside of Windows");
-        return 0.0f;
+        return 0;
     #endif
 }
