@@ -48,7 +48,7 @@ public:
     void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
     void copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height) override final;
 
-    inline ID3D11CommandList* getCommandList() { return m_pCommandList; }
+    ID3D11CommandList* getCommandList() { return m_pCommandList; }
 
 private:
     void copyResource(ID3D11Resource* pSrc, ID3D11Resource* pDst, UINT width, UINT height);

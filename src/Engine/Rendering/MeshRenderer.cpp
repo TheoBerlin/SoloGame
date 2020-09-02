@@ -15,6 +15,7 @@
 MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
     :Renderer(pECS, pDevice, pRenderingHandler),
     m_pDevice(pDevice),
+    m_CommandListsToReset(MAX_FRAMES_IN_FLIGHT),
     m_pModelLoader(nullptr),
     m_pTransformHandler(nullptr),
     m_pVPHandler(nullptr),
@@ -172,6 +173,12 @@ void MeshRenderer::updateBuffers()
 
 void MeshRenderer::recordCommands()
 {
+    if (m_CommandListsToReset == 0u) {
+        return;
+    }
+
+    m_CommandListsToReset -= 1u;
+
     const uint32_t frameIndex = m_pDevice->getFrameIndex();
     ICommandList* pCommandList = m_ppCommandLists[frameIndex];
 
@@ -419,6 +426,8 @@ bool MeshRenderer::createPipeline()
 
 void MeshRenderer::onMeshAdded(Entity entity)
 {
+    m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
+
     Model* pModel = m_pModelLoader->getModel(entity);
 
     // Create buffers and descriptor sets for the model and its meshes
@@ -469,6 +478,8 @@ void MeshRenderer::onMeshAdded(Entity entity)
 
 void MeshRenderer::onMeshRemoved(Entity entity)
 {
+    m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
+
     ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(entity);
     delete modelRenderResources.pDescriptorSet;
     delete modelRenderResources.pWVPBuffer;

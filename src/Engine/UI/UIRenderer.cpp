@@ -10,10 +10,12 @@
 
 UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
     :Renderer(pECS, pDevice, pRenderingHandler),
+    m_pUIHandler(nullptr),
+    m_CommandListsToReset(MAX_FRAMES_IN_FLIGHT),
     m_pQuad(nullptr),
-    m_pDescriptorSetLayout(nullptr),
     m_pAniSampler(nullptr),
     m_pRenderPass(nullptr),
+    m_pDescriptorSetLayout(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
 {
@@ -112,6 +114,12 @@ void UIRenderer::updateBuffers()
 
 void UIRenderer::recordCommands()
 {
+    if (m_CommandListsToReset == 0u) {
+        return;
+    }
+
+    m_CommandListsToReset -= 1u;
+
     const uint32_t frameIndex = m_pDevice->getFrameIndex();
     ICommandList* pCommandList = m_ppCommandLists[frameIndex];
 
@@ -291,6 +299,8 @@ bool UIRenderer::createPipeline()
 
 void UIRenderer::onPanelAdded(Entity entity)
 {
+    m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
+
     UIPanel& panel = m_pUIHandler->panels.indexID(entity);
 
     PanelRenderResources panelRenderResources = {};
@@ -324,6 +334,8 @@ void UIRenderer::onPanelAdded(Entity entity)
 
 void UIRenderer::onPanelRemoved(Entity entity)
 {
+    m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
+
     PanelRenderResources panelRenderResources = m_PanelRenderResources.indexID(entity);
     m_PanelRenderResources.pop(entity);
 
