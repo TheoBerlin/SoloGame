@@ -2,9 +2,8 @@
 
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DeviceDX11.hpp>
-#include <Engine/Utils/Logger.hpp>
 
-#include <thread>
+#include <Engine/Utils/ThreadPool.hpp>
 
 RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice)
     :m_pECS(pECS),
@@ -118,29 +117,31 @@ void RenderingHandler::endFrame()
 
 void RenderingHandler::updateBuffers()
 {
-    std::vector<std::thread> threads;
+    ThreadPool& threadPool = ThreadPool::getInstance();
+    std::vector<size_t> threads;
     threads.reserve(m_Renderers.size());
 
     for (Renderer* pRenderer : m_Renderers) {
-        threads.push_back(std::thread(&Renderer::updateBuffers, pRenderer));
+        threads.push_back(threadPool.execute(std::bind(&Renderer::updateBuffers, pRenderer)));
     }
 
-    for (std::thread& thread : threads) {
-        thread.join();
+    for (size_t thread : threads) {
+        threadPool.join(thread);
     }
 }
 
 void RenderingHandler::recordSecondaryCommandBuffers()
 {
-    std::vector<std::thread> threads;
+    ThreadPool& threadPool = ThreadPool::getInstance();
+    std::vector<size_t> threads;
     threads.reserve(m_Renderers.size());
 
     for (Renderer* pRenderer : m_Renderers) {
-        threads.push_back(std::thread(&Renderer::recordCommands, pRenderer));
+        threads.push_back(threadPool.execute(std::bind(&Renderer::recordCommands, pRenderer)));
     }
 
-    for (std::thread& thread : threads) {
-        thread.join();
+    for (size_t thread : threads) {
+        threadPool.join(thread);
     }
 }
 

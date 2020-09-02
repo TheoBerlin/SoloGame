@@ -81,6 +81,8 @@ private:
     Device* m_pDevice;
     ICommandPool* m_ppCommandPools[MAX_FRAMES_IN_FLIGHT];
     ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];
+    // Amount of command lists to reset and re-record
+    uint32_t m_CommandListsToReset;
 
     ModelLoader* m_pModelLoader;
     TransformHandler* m_pTransformHandler;
