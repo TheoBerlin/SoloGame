@@ -15,6 +15,7 @@ jobs:
 
     - name: Build Debug x64
       run: msbuild GameProject.vcxproj -p:Configuration=Debug -p:Platform=x64
+
   Build-Release-x64:
     runs-on: windows-latest
 
@@ -29,9 +30,9 @@ jobs:
     - name: Build Release x64
       run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
 
-  lint:
-    name: Lint
+  Lint:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
         with:

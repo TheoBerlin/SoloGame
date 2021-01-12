@@ -1,8 +1,5 @@
 import json, os, subprocess, sys, getopt
 
-REPO_OWNER  = 'TheoBerlin'
-REPO        = 'SoloGame'
-
 BENCHMARK_FILE_NAME = 'benchmark_results.json'
 
 PRESENTATION_MODE   = 'immediate'
@@ -36,16 +33,6 @@ def run_benchmark(binPath, API):
         sys.exit(1)
 
     print(' Success')
-
-def get_commit_info(commitID):
-    URL = f'https://api.github.com/repos/{REPO_OWNER}/{REPO}/commits/{commitID}'
-
-    import requests
-    resp = requests.get(URL)
-    if resp.status_code != 200:
-        print(f'Error: {URL} returned {resp.status_code}')
-        sys.exit(1)
-    return resp.json()
 
 def main(argv):
     helpStr = '''usage: --bin <binpath> --vk <name_of_vk_results.json> --dx11 <name_of_dx11_results.json>\n

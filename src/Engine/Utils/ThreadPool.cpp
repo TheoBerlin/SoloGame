@@ -39,7 +39,7 @@ void ThreadPool::initialize()
     m_FreeJoinResourcesIndices.resize(m_JoinResources.size());
 
     for (size_t threadHandleIdx = 0u; threadHandleIdx < m_JoinResources.size(); threadHandleIdx++) {
-        m_JoinResources[threadHandleIdx] = new JoinResources();
+        m_JoinResources[threadHandleIdx] = DBG_NEW JoinResources();
         m_JoinResources[threadHandleIdx]->FinishSignal = false;
         m_FreeJoinResourcesIndices[threadHandleIdx] = threadHandleIdx;
     }
@@ -54,7 +54,7 @@ size_t ThreadPool::execute(std::function<void()> job)
     if (m_FreeJoinResourcesIndices.empty()) {
         // Create new join resources
         joinResourceIdx = m_JoinResources.size();
-        m_JoinResources.push_back(new JoinResources());
+        m_JoinResources.push_back(DBG_NEW JoinResources());
     } else {
         joinResourceIdx = m_FreeJoinResourcesIndices.back();
         m_FreeJoinResourcesIndices.pop_back();
