@@ -184,13 +184,11 @@ void TransformHandler::setForward(DirectX::XMFLOAT4& rotationQuat, const DirectX
 	if (cosAngle >= 1.0f - FLT_EPSILON * 10.0f) {
 		// The new forward is identical to the old one, do nothing
 		return;
-	}
-	else if (cosAngle <= -1.0f + FLT_EPSILON * 10.0f) {
+	} else if (cosAngle <= -1.0f + FLT_EPSILON * 10.0f) {
 		// The new forward is parallell to the old one, create a 180 degree rotation quarternion
 		// around any axis
         rotation = DirectX::XMQuaternionRotationNormal(g_DefaultUp, DirectX::XM_PI);
-	}
-	else {
+	} else {
 		// Calculate rotation quaternion
 		DirectX::XMVECTOR axis = DirectX::XMVector3Cross(currentForward, forward);
 

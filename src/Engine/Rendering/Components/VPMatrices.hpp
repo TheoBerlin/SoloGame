@@ -28,7 +28,7 @@ class VPHandler : public ComponentHandler
 {
 public:
     VPHandler(ECSCore* pECS);
-    ~VPHandler();
+    ~VPHandler() = default;
 
     virtual bool initHandler() override;
 

@@ -37,7 +37,7 @@ size_t RuntimeStats::getPeakMemoryUsage()
 
         return (size_t)memInfo.PeakWorkingSetSize;
     #else
-        LOG_WARNING("Retrieving memory usage not yet supported outside of Windows");
+        LOG_WARNING("Retrieving memory usage not yet supported on platforms other than Windows");
         return 0;
     #endif
 }

@@ -14,9 +14,6 @@ VPHandler::VPHandler(ECSCore* pECS)
     this->registerHandler(handlerReg);
 }
 
-VPHandler::~VPHandler()
-{}
-
 bool VPHandler::initHandler()
 {
     return true;

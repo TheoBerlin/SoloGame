@@ -2,54 +2,38 @@ name: Välfärden
 on: pull_request
 
 jobs:
-  Build-Debug-x64:
-    runs-on: windows-latest
-
+  Build:
+    runs-on: [self-hosted, Windows, X64]
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: true
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.1
+      uses: microsoft/setup-msbuild@v1
 
-    - name: Build Debug x64
-      run: msbuild GameProject.vcxproj -p:Configuration=Debug -p:Platform=x64
-  Build-Release-x64:
-    runs-on: windows-latest
+    - name: Build Debug
+      run: msbuild GameProject.vcxproj -p:Configuration=Debug -p:Platform=x64 /warnaserror
 
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
+    - name: Build Release
+      run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64 /warnaserror
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.1
+  Lint:
+    runs-on: [self-hosted, Windows, X64]
 
-    - name: Build Release x64
-      run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
 
       - name: Generate Lint Report
-        uses: deep5050/cppcheck-action@master
-        with:
-          exclude_check: vendor
-          platform: win64
-          output_file: ./cppcheck_report
+        run: python .github/workflows/generate-lint-report.py -o cppcheck_report.txt -i vendor
 
       - name: Get file changes
-        id: get_file_changes
-        uses: trilom/file-changes-action@v1.2.3
+        uses: lots0logs/gh-action-get-changed-files@2.1.4
         with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Read Lint Report
-        run: python3 ./.github/workflows/read-lint-report.py --report ./cppcheck_report
+        run: python ./.github/workflows/read-lint-report.py --report ./cppcheck_report.txt
           --modified-files $HOME/files_modified.json --added-files $HOME/files_added.json
