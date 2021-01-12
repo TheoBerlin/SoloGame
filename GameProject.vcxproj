@@ -54,6 +54,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Engine\EnginePCH.hpp</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Engine/EnginePCH.hpp</ForcedIncludeFiles>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)libs\Common;$(ProjectDir)libs\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
