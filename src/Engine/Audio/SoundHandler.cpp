@@ -1,6 +1,6 @@
 #include "SoundHandler.hpp"
 
-#include <FMOD/core/fmod_errors.h>
+#include <fmod_errors.h>
 
 #include <Engine/Utils/Logger.hpp>
 

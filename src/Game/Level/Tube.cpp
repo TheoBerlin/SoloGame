@@ -150,6 +150,8 @@ float TubeHandler::getTubeRadius() const
 
 void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius)
 {
+    UNREFERENCED_VARIABLE(radius);
+
     // Rough estimate of the amount of points in the tube
     tubePoints.reserve((sectionPoints.size()-1) * addedPointsPerSection + sectionPoints.size());
 

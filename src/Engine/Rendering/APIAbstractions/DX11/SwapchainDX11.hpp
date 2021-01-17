@@ -26,7 +26,7 @@ public:
 
     void present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount) override final;
 
-    Texture* getBackbuffer(uint32_t frameIndex) override final { return m_pBackbuffer; }
+    Texture* getBackbuffer(uint32_t frameIndex) override final { UNREFERENCED_VARIABLE(frameIndex); return m_pBackbuffer; }
 
 private:
     bool dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions) override final;

@@ -26,7 +26,7 @@ public:
     void executeSecondaryCommandList(ICommandList* pSecondaryCommandList) override final;
 
     void beginRenderPass(IRenderPass* pRenderPass, const RenderPassBeginInfo& beginInfo) override final;
-    void nextSubpass(COMMAND_LIST_LEVEL subpassCommandListLevel) override final {};
+    void nextSubpass(COMMAND_LIST_LEVEL subpassCommandListLevel) override final { UNREFERENCED_VARIABLE(subpassCommandListLevel); }
     void endRenderPass() override final;
     void bindPipeline(IPipeline* pPipeline) override final;
 
@@ -43,7 +43,14 @@ public:
     void draw(size_t vertexCount) override final;
     void drawIndexed(size_t indexCount) override final;
 
-    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage) override final {};
+    void convertTextureLayout(TEXTURE_LAYOUT oldLayout, TEXTURE_LAYOUT newLayout, Texture* pTexture, PIPELINE_STAGE srcStage, PIPELINE_STAGE dstStage) override final
+    {
+        UNREFERENCED_VARIABLE(oldLayout);
+        UNREFERENCED_VARIABLE(newLayout);
+        UNREFERENCED_VARIABLE(pTexture);
+        UNREFERENCED_VARIABLE(srcStage);
+        UNREFERENCED_VARIABLE(dstStage);
+    }
 
     void copyBuffer(IBuffer* pSrc, IBuffer* pDst, size_t byteSize) override final;
     void copyBufferToTexture(IBuffer* pBuffer, Texture* pTexture, uint32_t width, uint32_t height) override final;

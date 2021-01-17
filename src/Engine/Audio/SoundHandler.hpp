@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FMOD/core/fmod.hpp>
+#include <fmod.hpp>
 
 #include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Utils/ECSUtils.hpp>

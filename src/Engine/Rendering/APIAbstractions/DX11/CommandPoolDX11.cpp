@@ -6,11 +6,10 @@ CommandPoolDX11::CommandPoolDX11(DeviceDX11* pDevice)
     :m_pDevice(pDevice)
 {}
 
-CommandPoolDX11::~CommandPoolDX11()
-{}
-
 bool CommandPoolDX11::allocateCommandLists(ICommandList** ppCommandLists, uint32_t commandListCount, COMMAND_LIST_LEVEL level)
 {
+    UNREFERENCED_VARIABLE(level);
+
     for (uint32_t commandListIdx = 0u; commandListIdx < commandListCount; commandListIdx++) {
         ppCommandLists[commandListIdx] = nullptr;
         ppCommandLists[commandListIdx] = CommandListDX11::create(m_pDevice);

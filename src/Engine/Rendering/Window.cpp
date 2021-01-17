@@ -1,6 +1,6 @@
 #include "Window.hpp"
 
-Window::Window(uint32_t clientHeight, float aspectRatio, bool windowed)
+Window::Window(uint32_t clientHeight, float aspectRatio)
     :m_Width(uint32_t(float(clientHeight) * aspectRatio)),
     m_Height(clientHeight),
     m_pWindow(nullptr)

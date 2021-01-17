@@ -11,7 +11,7 @@
 class Window
 {
 public:
-    Window(uint32_t clientHeight, float aspectRatio, bool windowed);
+    Window(uint32_t clientHeight, float aspectRatio);
     ~Window();
 
     bool init();

@@ -44,12 +44,12 @@ public:
     IRenderPass* createRenderPass(const RenderPassInfo& renderPassInfo) override final;
 
     PipelineDX11* createPipeline(const PipelineInfo& pipelineInfo) override final;
-    PipelineLayoutDX11* createPipelineLayout(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts) override final { return DBG_NEW PipelineLayoutDX11(); }
+    PipelineLayoutDX11* createPipelineLayout(const std::vector<IDescriptorSetLayout*>& descriptorSetLayouts) override final { UNREFERENCED_VARIABLE(descriptorSetLayouts); return DBG_NEW PipelineLayoutDX11(); }
 
     void map(IBuffer* pBuffer, void** ppMappedMemory) override final;
     void unmap(IBuffer* pBuffer) override final;
 
-    IFence* createFence(bool createSignaled) override final { return DBG_NEW FenceDX11(); }
+    IFence* createFence(bool createSignaled) override final {  UNREFERENCED_VARIABLE(createSignaled); return DBG_NEW FenceDX11(); }
     ISemaphore* createSemaphore() override final { return DBG_NEW SemaphoreDX11(); }
 
     // Shader resources
@@ -62,7 +62,15 @@ public:
 
     std::string getShaderFileExtension() override final { return ".hlsl"; }
 
-    bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final { return true; }
+    bool waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAll, uint64_t timeout) override final
+    {
+        UNREFERENCED_VARIABLE(ppFences);
+        UNREFERENCED_VARIABLE(fenceCount);
+        UNREFERENCED_VARIABLE(waitAll);
+        UNREFERENCED_VARIABLE(timeout);
+
+        return true;
+    }
     void waitIdle() override final {};
 
     ID3D11Device* getDevice()           { return m_pDevice; }

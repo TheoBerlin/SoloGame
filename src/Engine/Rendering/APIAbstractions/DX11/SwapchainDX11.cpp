@@ -34,7 +34,10 @@ SwapchainDX11::~SwapchainDX11()
 
 void SwapchainDX11::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphoreCount)
 {
-    HRESULT hr = m_pSwapchain->Present(0, 0);
+    UNREFERENCED_VARIABLE(ppWaitSemaphores);
+    UNREFERENCED_VARIABLE(waitSemaphoreCount);
+
+    const HRESULT hr = m_pSwapchain->Present(0, 0);
     if (FAILED(hr)) {
         LOG_WARNINGF("Failed to present swapchain buffer: %s", hresultToString(hr).c_str());
     }
@@ -42,6 +45,8 @@ void SwapchainDX11::present(ISemaphore** ppWaitSemaphores, uint32_t waitSemaphor
 
 bool SwapchainDX11::dAcquireNextBackbuffer(uint32_t& frameIndex, SYNC_OPTION syncOptions)
 {
+    UNREFERENCED_VARIABLE(syncOptions);
+
     frameIndex = (frameIndex + 1u) % MAX_FRAMES_IN_FLIGHT;
     return true;
 }

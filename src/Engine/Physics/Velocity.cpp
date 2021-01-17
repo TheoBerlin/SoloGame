@@ -34,6 +34,8 @@ bool VelocityHandler::initSystem()
 
 void VelocityHandler::update(float dt)
 {
+    UNREFERENCED_VARIABLE(dt);
+
     DirectX::XMVECTOR velocity, position;
 
     for (Entity entity : m_MovingObjects.getIDs()) {

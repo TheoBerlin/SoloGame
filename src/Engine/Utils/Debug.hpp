@@ -1,13 +1,11 @@
 #pragma once
 
-#ifdef _DEBUG
-    #ifdef _MSC_VER
+#ifdef TOUCAN_DEBUG
+    #ifdef TOUCAN_PLATFORM_WINDOWS
         #include <crtdbg.h>
         #include <iostream>
 
-        #define _CRTDBG_MAP_ALLOC
         #define DBG_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__)
-
     #else
         #define DBG_NEW new
     #endif

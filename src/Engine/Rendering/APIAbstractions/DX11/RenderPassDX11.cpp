@@ -30,8 +30,7 @@ void RenderPassDX11::begin(const RenderPassBeginInfo& beginInfo, ID3D11DeviceCon
     FLOAT pClearColor[4];
 
     std::vector<RenderTargetInfo>& renderTargetInfos = pFramebuffer->getRenderTargets();
-    size_t depthStencilIdx = pFramebuffer->getDepthStencilIdx();
-    bool clearDepthStencil = false;
+    const size_t depthStencilIdx = pFramebuffer->getDepthStencilIdx();
 
     for (size_t clearIndex : m_ClearIndices) {
         const ClearValue& clearValue = beginInfo.pClearValues[clearIndex];
@@ -57,7 +56,7 @@ void RenderPassDX11::begin(const RenderPassBeginInfo& beginInfo, ID3D11DeviceCon
 
             pContext->ClearRenderTargetView(renderTargetInfos[clearIndex].pRTV, pClearColor);
         } else {
-            pContext->ClearDepthStencilView(pFramebuffer->getDepthStencil(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearValue.DepthStencilValue.Depth, clearValue.DepthStencilValue.Stencil);
+            pContext->ClearDepthStencilView(pFramebuffer->getDepthStencil(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, clearValue.DepthStencilValue.Depth, (UINT8)clearValue.DepthStencilValue.Stencil);
         }
     }
 

@@ -16,6 +16,8 @@ void DescriptorSetLayoutDX11::addBindingCombinedTextureSampler(SHADER_BINDING bi
 
 bool DescriptorSetLayoutDX11::finalize(Device* pDevice)
 {
+    UNREFERENCED_VARIABLE(pDevice);
+
     m_UniformBufferSlots.shrink_to_fit();
     m_CombinedTextureSamplerSlots.shrink_to_fit();
     return true;

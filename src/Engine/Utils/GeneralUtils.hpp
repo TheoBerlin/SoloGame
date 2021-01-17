@@ -2,6 +2,8 @@
 
 #include <set>
 
+#define UNREFERENCED_VARIABLE(x) (x)
+
 // Eliminate duplicates from a vector. Note that no memory is deallocated from the vector; its capacity remains the same.
 template <typename T>
 void eliminateDuplicates(std::vector<T>& vec)

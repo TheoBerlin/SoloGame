@@ -73,6 +73,8 @@ void MainMenu::pause()
 
 void MainMenu::update(float dt)
 {
+    UNREFERENCED_VARIABLE(dt);
+
     if (m_pInputHandler->keyState(GLFW_KEY_E)) {
         createGameSession();
     }
