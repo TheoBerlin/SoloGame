@@ -26,7 +26,7 @@ jobs:
         run: python tools/compile-shaders.py
 
       - name: Benchmark
-        run: python .github/workflows/benchmark.py --bin x64/Production/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
+        run: python .github/workflows/benchmark.py --bin build/bin/Production-windows-x86_64-x64/GameProject/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
 
       - name: Update Charts
         run: python .github/workflows/update-charts.py --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
