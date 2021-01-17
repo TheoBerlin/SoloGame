@@ -47,9 +47,10 @@ public:
         clear();
     }
 
-    void init(std::vector<ResourceType*> resources, std::function<void(ResourceType*)> m_Deleter = nullptr)
+    void init(std::vector<ResourceType*> resources, std::function<void(ResourceType*)> deleter = nullptr)
     {
         m_Resources = resources;
+        m_Deleter = deleter;
 
         m_FreeIndices.resize(resources.size());
         for (size_t freeIdx = 0u; freeIdx < m_FreeIndices.size(); freeIdx++) {

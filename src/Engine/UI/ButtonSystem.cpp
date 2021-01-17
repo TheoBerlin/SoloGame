@@ -31,6 +31,8 @@ bool ButtonSystem::initSystem()
 
 void ButtonSystem::update(float dt)
 {
+    UNREFERENCED_VARIABLE(dt);
+
     if (m_pInputHandler->cursorIsHidden()) {
         return;
     }

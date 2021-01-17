@@ -48,6 +48,8 @@ CommandListDX11::~CommandListDX11()
 
 bool CommandListDX11::begin(COMMAND_LIST_USAGE usageFlags, CommandListBeginInfo* pBeginInfo)
 {
+    UNREFERENCED_VARIABLE(usageFlags);
+
     SAFERELEASE(m_pCommandList)
     m_pCommandList = nullptr;
     if (pBeginInfo) {
@@ -113,12 +115,17 @@ void CommandListDX11::bindPipeline(IPipeline* pPipeline)
 
 void CommandListDX11::bindDescriptorSet(DescriptorSet* pDescriptorSet, IPipelineLayout* pPipelineLayout, uint32_t setNr)
 {
+    UNREFERENCED_VARIABLE(pPipelineLayout);
+    UNREFERENCED_VARIABLE(setNr);
+
     DescriptorSetDX11* pDescriptorSetDX = reinterpret_cast<DescriptorSetDX11*>(pDescriptorSet);
     pDescriptorSetDX->bind(m_pContext);
 }
 
 void CommandListDX11::bindVertexBuffer(uint32_t firstBinding, IBuffer* pBuffer)
 {
+    UNREFERENCED_VARIABLE(firstBinding);
+
     ID3D11Buffer* pBufferDX = reinterpret_cast<BufferDX11*>(pBuffer)->getBuffer();
     UINT vertexSize         = m_pBoundPipeline->getVertexSize();
     UINT offsets            = 0u;

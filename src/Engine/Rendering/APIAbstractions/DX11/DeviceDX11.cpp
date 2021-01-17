@@ -31,21 +31,33 @@ DeviceDX11::~DeviceDX11()
 
 bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
+    UNREFERENCED_VARIABLE(pFence);
+    UNREFERENCED_VARIABLE(pSemaphoreInfo);
+
     return executeCommandList(pCommandList);
 }
 
 bool DeviceDX11::transferQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
+    UNREFERENCED_VARIABLE(pFence);
+    UNREFERENCED_VARIABLE(pSemaphoreInfo);
+
     return executeCommandList(pCommandList);
 }
 
 bool DeviceDX11::computeQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)
 {
+    UNREFERENCED_VARIABLE(pFence);
+    UNREFERENCED_VARIABLE(pSemaphoreInfo);
+
     return executeCommandList(pCommandList);
 }
 
 ICommandPool* DeviceDX11::createCommandPool(COMMAND_POOL_FLAG creationFlags, uint32_t queueFamilyIndex)
 {
+    UNREFERENCED_VARIABLE(creationFlags);
+    UNREFERENCED_VARIABLE(queueFamilyIndex);
+
     return DBG_NEW CommandPoolDX11(this);
 }
 
@@ -85,6 +97,8 @@ void DeviceDX11::unmap(IBuffer* pBuffer)
 
 BufferDX11* DeviceDX11::createBuffer(const BufferInfo& bufferInfo, StagingResources* pStagingResources)
 {
+    UNREFERENCED_VARIABLE(pStagingResources);
+
     BufferDX11* pBuffer = DBG_NEW BufferDX11(m_pDevice, bufferInfo);
     if (!pBuffer->getBuffer()) {
         delete pBuffer;

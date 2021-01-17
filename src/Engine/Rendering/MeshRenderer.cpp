@@ -131,14 +131,16 @@ void MeshRenderer::updateBuffers()
     PerFrameBuffer perFrame;
     uint32_t numLights = std::min(MAX_POINTLIGHTS, (uint32_t)m_PointLights.size());
     for (uint32_t i = 0; i < numLights; i += 1) {
-        Entity pointLightEntity = m_PointLights[i];
+        const Entity pointLightEntity = m_PointLights[i];
 
         const PointLight& pointLight = m_pLightHandler->getPointLight(pointLightEntity);
 
+        const DirectX::XMFLOAT3& pointLightPos = m_pTransformHandler->getPosition(pointLightEntity);
+
         perFrame.PointLights[i] = {
-            m_pTransformHandler->getPosition(pointLightEntity),
-            pointLight.Light,
-            pointLight.RadiusReciprocal
+            .Position = DirectX::XMFLOAT4(pointLightPos.x, pointLightPos.y, pointLightPos.z, 0.0f),
+            .Light = DirectX::XMFLOAT4(pointLight.Light.x, pointLight.Light.y, pointLight.Light.z, 0.0f),
+            .RadiusReciprocal = pointLight.RadiusReciprocal
         };
     }
 

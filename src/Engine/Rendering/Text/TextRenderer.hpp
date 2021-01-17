@@ -41,7 +41,7 @@ public:
 
 private:
     // Loads and maps each character in a string to FreeType glyph data
-    bool loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight);
+    bool loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font);
 
     // Calculates the size in pixels required by a texture to hold the rendered text
     DirectX::XMUINT2 calculateTextureSize(const std::string& text, const std::map<char, ProcessedGlyph>& glyphs, const FT_Face face);

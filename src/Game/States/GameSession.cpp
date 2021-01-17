@@ -69,7 +69,9 @@ void GameSession::pause()
 {}
 
 void GameSession::update(float dt)
-{}
+{
+    UNREFERENCED_VARIABLE(dt);
+}
 
 void GameSession::startMusic(SoundHandler* pSoundHandler)
 {

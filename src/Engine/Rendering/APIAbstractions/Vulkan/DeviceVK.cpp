@@ -19,7 +19,11 @@
 
 #define NOMINMAX
 #define VMA_IMPLEMENTATION
+
+#pragma warning(push, 0)
 #include <vma/vk_mem_alloc.h>
+#pragma warning(pop)
+
 #include <vulkan/vulkan_win32.h>
 
 DeviceVK::DeviceVK(const DeviceInfoVK& deviceInfo)
@@ -240,6 +244,9 @@ DescriptorPool* DeviceVK::createDescriptorPool(const DescriptorPoolInfo& poolInf
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
+    UNREFERENCED_VARIABLE(pUserData);
+    UNREFERENCED_VARIABLE(messageType);
+
     switch (messageSeverity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
@@ -257,6 +264,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DeviceVK::vulkanCallback(VkDebugUtilsMessageSever
 
 Shader* DeviceVK::compileShader(SHADER_TYPE shaderType, const std::string& filePath, const InputLayoutInfo* pInputLayoutInfo)
 {
+    UNREFERENCED_VARIABLE(pInputLayoutInfo);
+
     return ShaderVK::compileShader(filePath, shaderType, this);
 }
 

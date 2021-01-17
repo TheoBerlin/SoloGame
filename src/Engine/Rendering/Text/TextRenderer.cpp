@@ -67,7 +67,7 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
 
     // Create texture to render all characters to
     std::map<char, ProcessedGlyph> glyphs;
-    if (!loadGlyphs(glyphs, face, text, font, fontPixelHeight)) {
+    if (!loadGlyphs(glyphs, face, text, font)) {
         return nullptr;
     }
 
@@ -134,7 +134,7 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
     return finalTexture;
 }
 
-bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font, unsigned int fontPixelHeight)
+bool TextRenderer::loadGlyphs(std::map<char, ProcessedGlyph>& glyphs, FT_Face face, const std::string& text, const std::string& font)
 {
     FT_Error err;
 

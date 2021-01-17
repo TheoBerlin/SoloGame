@@ -3,8 +3,6 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorPool.hpp>
 #include <Engine/Rendering/APIAbstractions/DX11/DescriptorSetDX11.hpp>
 
-#include <unordered_map>
-
 class DescriptorPoolDX11 : public DescriptorPool
 {
 public:
@@ -13,5 +11,5 @@ public:
 
 private:
     DescriptorSetDX11* dAllocateDescriptorSet(const IDescriptorSetLayout* pDescriptorSetLayout) override final;
-    void dDeallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final { return; };
+    void dDeallocateDescriptorSet(const DescriptorSet* pDescriptorSet) override final { UNREFERENCED_VARIABLE(pDescriptorSet); return; };
 };

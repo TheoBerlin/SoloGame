@@ -1,6 +1,6 @@
 #pragma once
 
-// All rendering API abstractions
+// Rendering API abstractions
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
 #include <Engine/Rendering/APIAbstractions/CommandPool.hpp>
 #include <Engine/Rendering/APIAbstractions/DepthStencilState.hpp>
@@ -32,6 +32,7 @@
 
 #include <Engine/IGame.hpp>
 
+#include <Engine/Utils/GeneralUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
 #include <string>

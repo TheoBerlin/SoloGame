@@ -92,6 +92,8 @@ bool DeviceCreatorDX11::initDeviceAndSwapChain(const SwapchainInfo& swapChainInf
 
 bool DeviceCreatorDX11::initBackBuffers(const SwapchainInfo& swapChainInfo, const Window* pWindow)
 {
+    UNREFERENCED_VARIABLE(swapChainInfo);
+
     // Create render target views from swap chain's back buffers.
     // All of the swapchain's buffers in DirectX 11 are hidden behind the same buffer pointer.
     // Hence only one pointer is retrieved, and the same texture pointers are used each frame.

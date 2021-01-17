@@ -275,7 +275,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
 
         for (const std::pair<uint32_t, uint32_t>& queueFamily : sortedQueueFamilies) {
             const VkQueueFamilyProperties& familyProperties = queueFamilyProperties[queueFamily.second];
-            if (queueFamilyIndex.first == (queueFamilyIndex.first & familyProperties.queueFlags) && !usedQueueFamilyIndices.contains(queueFamily.second)) {
+            if (uint32_t(queueFamilyIndex.first) == (queueFamilyIndex.first & familyProperties.queueFlags) && !usedQueueFamilyIndices.contains(queueFamily.second)) {
                 *queueFamilyIndex.second = queueFamily.second;
                 pickedFamily = true;
                 usedQueueFamilyIndices.insert(queueFamily.second);
@@ -290,7 +290,7 @@ bool DeviceCreatorVK::pickQueueFamilyIndices()
         // No unused queue family was found, use the first one that is compatible with the operations flag
         for (const std::pair<uint32_t, uint32_t>& queueFamily : sortedQueueFamilies) {
             const VkQueueFamilyProperties& familyProperties = queueFamilyProperties[queueFamily.second];
-            if (queueFamilyIndex.first == (queueFamilyIndex.first & familyProperties.queueFlags)) {
+            if (uint32_t(queueFamilyIndex.first) == (queueFamilyIndex.first & familyProperties.queueFlags)) {
                 *queueFamilyIndex.second = queueFamily.second;
                 pickedFamily = true;
                 break;
@@ -496,9 +496,9 @@ bool DeviceCreatorVK::verifyRequiredExtensionsSupported(const std::vector<std::s
     }
 
     bool hasAllExtensions = true;
-    for (const std::string& pRequiredExtension : extensionNames) {
-        if (!availableExtensionsSet.contains(pRequiredExtension)) {
-            LOG_ERRORF("Missing required extension: %s", pRequiredExtension);
+    for (const std::string& requiredExtension : extensionNames) {
+        if (!availableExtensionsSet.contains(requiredExtension)) {
+            LOG_ERRORF("Missing required extension: %s", requiredExtension.c_str());
             hasAllExtensions = false;
         }
     }

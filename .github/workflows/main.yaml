@@ -12,6 +12,9 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
 
+    - name: Execute Premake
+      run: .\premake5.exe vs2019
+
     - name: Build Debug
       run: msbuild GameProject.vcxproj -p:Configuration=Debug -p:Platform=x64 /warnaserror
 
@@ -25,6 +28,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
+
+      # Create the vcxproj file used by the linter
+      - name: Execute Premake
+        run: .\premake5.exe vs2019
 
       - name: Generate Lint Report
         run: python .github/workflows/generate-lint-report.py -o cppcheck_report.txt -i vendor

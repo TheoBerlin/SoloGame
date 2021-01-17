@@ -80,6 +80,8 @@ void Benchmark::pause()
 
 void Benchmark::update(float dt)
 {
+    UNREFERENCED_VARIABLE(dt);
+
     const TrackPosition& trackPosition = m_TrackPositionHandler.getTrackPosition(m_PlayerEntity);
     if (trackPosition.section == m_TubeHandler.getTubeSections().size() - 2 && trackPosition.T >= 1.0f) {
         // The end has been reached

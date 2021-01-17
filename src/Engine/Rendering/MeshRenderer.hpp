@@ -45,9 +45,10 @@ public:
 
 private:
     struct alignas(16) PointLightBuffer {
-        alignas(16) DirectX::XMFLOAT3 Position;
-        alignas(16) DirectX::XMFLOAT3 Light;
+        DirectX::XMFLOAT4 Position;
+        DirectX::XMFLOAT4 Light;
         float RadiusReciprocal;
+        float Padding[3];
     };
 
     struct PerObjectMatrices {

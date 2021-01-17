@@ -9,7 +9,7 @@
 #include <iostream>
 
 IGame::IGame()
-    :m_Window(720u, 16.0f / 9.0f, true),
+    :m_Window(720u, 16.0f / 9.0f),
     m_pDevice(nullptr),
     m_StateManager(&m_ECS),
     m_pPhysicsCore(nullptr),
@@ -127,7 +127,7 @@ bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
 
     std::string APIStr = configJSON["API"].get<std::string>();
     std::transform(APIStr.begin(), APIStr.end(), APIStr.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        [](unsigned char c){ return (char)std::tolower(c); });
 
     const std::unordered_set<std::string> dx11Strings = {
         "dx11", "directx11", "directx 11"
@@ -137,7 +137,7 @@ bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
 
     std::string presentationModeStr = configJSON["PresentationMode"].get<std::string>();
     std::transform(presentationModeStr.begin(), presentationModeStr.end(), presentationModeStr.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        [](unsigned char c){ return (char)std::tolower(c); });
 
     if (presentationModeStr == "immediate") {
         engineConfig.PresentationMode = PRESENTATION_MODE::IMMEDIATE;
