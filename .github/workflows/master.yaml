@@ -16,14 +16,17 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v1
 
-      - name: Build Release
-        run: msbuild GameProject.vcxproj -p:Configuration=Release -p:Platform=x64  /warnaserror
+      - name: Execute Premake
+        run: .\premake5.exe vs2019
+
+      - name: Build Production
+        run: msbuild GameProject.vcxproj -p:Configuration=Production -p:Platform=x64  /warnaserror
 
       - name: Compile Shaders
         run: python tools/compile-shaders.py
 
       - name: Benchmark
-        run: python .github/workflows/benchmark.py --bin x64/Release/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
+        run: python .github/workflows/benchmark.py --bin x64/Production/GameProject.exe --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
 
       - name: Update Charts
         run: python .github/workflows/update-charts.py --vk benchmark_results_vk.json --dx11 benchmark_results_dx11.json
