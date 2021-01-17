@@ -101,7 +101,7 @@ workspace "GameProject"
 	filter {}
 
 	project "GameProject"
-		kind "WindowedApp"
+		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++latest"
 		systemversion "latest"
