@@ -13,7 +13,7 @@ public:
 
     void render();
 
-    // waitALlFrames blocks the calling thread until all currently queued command lists have finished executing
+    // waitAllFrames blocks the calling thread until all currently queued command lists have finished executing
     void waitAllFrames();
 
     inline ICommandList* getCurrentPrimaryCommandList()     { return m_ppCommandLists[m_pDevice->getFrameIndex()]; }

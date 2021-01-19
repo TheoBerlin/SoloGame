@@ -227,13 +227,19 @@ bool DeviceVK::waitForFences(IFence** ppFences, uint32_t fenceCount, bool waitAl
         fences[fenceIdx] = reinterpret_cast<FenceVK*>(ppFences[fenceIdx])->getFence();
     }
 
-    return vkWaitForFences(m_Device, fenceCount, fences.data(), (VkBool32)waitAll, timeout) == VK_SUCCESS;
+    const VkResult results = vkWaitForFences(m_Device, fenceCount, fences.data(), (VkBool32)waitAll, timeout);
+    if (results != VK_SUCCESS) {
+        LOG_ERRORF("Failed to wait for fence(s), VkResult: %d", results);
+        return false;
+    }
+
+    return true;
 }
 
 void DeviceVK::waitIdle()
 {
     if (vkDeviceWaitIdle(m_Device) != VK_SUCCESS) {
-        LOG_WARNING("Failed to wait for device to become idle");
+        LOG_ERROR("Failed to wait for device to become idle");
     }
 }
 
