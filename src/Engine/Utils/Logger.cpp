@@ -30,12 +30,12 @@ void Logger::logInfo(const char* pFile, int lineNr, const std::string& message)
 
 void Logger::logWarning(const char* pFile, int lineNr, const std::string& message)
 {
-    Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
+    Logger::log(pFile, lineNr, WARN_COLOR, "[INFO]", message);
 }
 
 void Logger::logError(const char* pFile, int lineNr, const std::string& message)
 {
-    Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
+    Logger::log(pFile, lineNr, ERROR_COLOR, "[INFO]", message);
 }
 
 void Logger::log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& message)

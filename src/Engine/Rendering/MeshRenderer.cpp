@@ -138,8 +138,8 @@ void MeshRenderer::updateBuffers()
         const DirectX::XMFLOAT3& pointLightPos = m_pTransformHandler->getPosition(pointLightEntity);
 
         perFrame.PointLights[i] = {
-            .Position = DirectX::XMFLOAT4(pointLightPos.x, pointLightPos.y, pointLightPos.z, 0.0f),
-            .Light = DirectX::XMFLOAT4(pointLight.Light.x, pointLight.Light.y, pointLight.Light.z, 0.0f),
+            .Position = pointLightPos,
+            .Light = pointLight.Light,
             .RadiusReciprocal = pointLight.RadiusReciprocal
         };
     }

@@ -44,11 +44,11 @@ public:
     inline Framebuffer* getFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
 
 private:
-    struct alignas(16) PointLightBuffer {
-        DirectX::XMFLOAT4 Position;
-        DirectX::XMFLOAT4 Light;
+    struct PointLightBuffer {
+        DirectX::XMFLOAT3 Position;
+        float Padding;
+        DirectX::XMFLOAT3 Light;
         float RadiusReciprocal;
-        float Padding[3];
     };
 
     struct PerObjectMatrices {

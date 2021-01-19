@@ -54,7 +54,7 @@ private:
 template<typename ... Args>
 void Logger::logInfof(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
-    std::string message = Logger::formatString(format, args ...);
+    const std::string message = Logger::formatString(format, args ...);
 
     Logger::log(pFile, lineNr, INFO_COLOR, "[INFO]", message);
 }
@@ -62,7 +62,7 @@ void Logger::logInfof(const char* pFile, int lineNr, const std::string& format, 
 template<typename ... Args>
 void Logger::logWarningf(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
-    std::string message = Logger::formatString(format, args ...);
+    const std::string message = Logger::formatString(format, args ...);
 
     Logger::log(pFile, lineNr, WARN_COLOR, "[WARNING]", message);
 }
@@ -70,7 +70,7 @@ void Logger::logWarningf(const char* pFile, int lineNr, const std::string& forma
 template<typename ... Args>
 void Logger::logErrorf(const char* pFile, int lineNr, const std::string& format, Args&& ... args)
 {
-    std::string message = Logger::formatString(format, args ...);
+    const std::string message = Logger::formatString(format, args ...);
 
     Logger::log(pFile, lineNr, ERROR_COLOR, "[ERROR]", message);
 }
