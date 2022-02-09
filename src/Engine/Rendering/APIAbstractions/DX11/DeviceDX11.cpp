@@ -13,6 +13,14 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
+#ifdef CONFIG_DEBUG
+    #ifdef PLATFORM_WINDOWS
+        #include <windows.h>
+        #include <dxgidebug.h>
+        #include <dxgi1_3.h>
+    #endif
+#endif
+
 DeviceDX11::DeviceDX11(const DeviceInfoDX11& deviceInfo)
     :Device({}),
     m_pDevice(deviceInfo.pDevice),
@@ -27,6 +35,15 @@ DeviceDX11::~DeviceDX11()
     SAFERELEASE(m_pContext)
     SAFERELEASE(m_pDepthStencilState)
     SAFERELEASE(m_pDevice)
+
+#ifdef CONFIG_DEBUG
+    #ifdef PLATFORM_WINDOWS
+        IDXGIDebug* pDebugInfo;
+        HRESULT hr = DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebugInfo));
+        hr = pDebugInfo->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+        pDebugInfo->Release();
+    #endif
+#endif
 }
 
 bool DeviceDX11::graphicsQueueSubmit(ICommandList* pCommandList, IFence* pFence, const SemaphoreSubmitInfo* pSemaphoreInfo)

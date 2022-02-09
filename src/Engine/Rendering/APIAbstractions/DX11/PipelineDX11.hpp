@@ -7,7 +7,6 @@
 #include <Engine/Rendering/APIAbstractions/Pipeline.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <memory>
 
@@ -22,8 +21,6 @@ struct PipelineInfoDX11 {
 };
 
 class DeviceDX11;
-class Shader;
-class ShaderHandler;
 
 class PipelineDX11 : public IPipeline
 {

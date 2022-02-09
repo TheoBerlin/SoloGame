@@ -1,6 +1,5 @@
 #pragma once
 
-#define NOMINMAX
 #include <Engine/Rendering/Renderer.hpp>
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Rendering/Components/PointLight.hpp>
@@ -8,11 +7,6 @@
 #include <DirectXMath.h>
 
 #define MAX_POINTLIGHTS 7u
-
-class ModelLoader;
-class Texture;
-class TransformHandler;
-class VPHandler;
 
 struct MeshRenderResources {
     // Points at the mesh's material attributes buffer and diffuse texture
@@ -31,14 +25,14 @@ struct ModelRenderResources {
 class MeshRenderer : public Renderer
 {
 public:
-    MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
+    MeshRenderer(Device* pDevice, RenderingHandler* pRenderingHandler);
     ~MeshRenderer();
 
-    bool init() override final;
+    bool Init() override final;
 
-    void updateBuffers() override final;
-    void recordCommands() override final;
-    void executeCommands(ICommandList* pPrimaryCommandList) override final;
+    void UpdateBuffers() override final;
+    void RecordCommands() override final;
+    void ExecuteCommands(ICommandList* pPrimaryCommandList) override final;
 
     inline IRenderPass* getRenderPass()                     { return m_pRenderPass; }
     inline Framebuffer* getFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
@@ -69,8 +63,8 @@ private:
     bool createFramebuffers();
     bool createPipeline();
 
-    void onMeshAdded(Entity entity);
-    void onMeshRemoved(Entity entity);
+    void OnMeshAdded(Entity entity);
+    void OnMeshRemoved(Entity entity);
 
 private:
     IDVector m_Renderables;
@@ -84,11 +78,6 @@ private:
     ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];
     // Amount of command lists to reset and re-record
     uint32_t m_CommandListsToReset;
-
-    ModelLoader* m_pModelLoader;
-    TransformHandler* m_pTransformHandler;
-    VPHandler* m_pVPHandler;
-    LightHandler* m_pLightHandler;
 
     IDescriptorSetLayout* m_pDescriptorSetLayoutCommon; // Common for all models and mesh: Sampler and point lights
     IDescriptorSetLayout* m_pDescriptorSetLayoutModel;  // Per model: WVP matrices

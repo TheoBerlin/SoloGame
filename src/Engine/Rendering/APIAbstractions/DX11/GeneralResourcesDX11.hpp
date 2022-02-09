@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 DXGI_FORMAT convertFormatToDX(RESOURCE_FORMAT textureFormat);

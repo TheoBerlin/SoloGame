@@ -2,6 +2,7 @@
 
 #include <set>
 
+#define SAFEDELETE(x) delete x; x = nullptr;
 #define UNREFERENCED_VARIABLE(x) (x)
 
 // Eliminate duplicates from a vector. Note that no memory is deallocated from the vector; its capacity remains the same.

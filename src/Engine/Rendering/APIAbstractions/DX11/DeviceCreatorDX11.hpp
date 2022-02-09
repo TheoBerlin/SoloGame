@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/DeviceCreator.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 class TextureDX11;

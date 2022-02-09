@@ -1,65 +1,98 @@
 #include "SoundPlayer.hpp"
 
-#include <Engine/Audio/SoundHandler.hpp>
-#include <Engine/Rendering/Components/ComponentGroups.hpp>
+#include <Engine/Rendering/Camera.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Physics/Velocity.hpp>
 #include <Engine/Transform.hpp>
 
-SoundPlayer::SoundPlayer(ECSCore* pECS)
-    :System(pECS),
-    m_pLightHandler(nullptr),
-    m_pSoundHandler(nullptr),
-    m_pTransformHandler(nullptr),
-    m_pVelocityHandler(nullptr)
+#include <fmod_errors.h>
+
+SoundPlayer::SoundPlayer()
+    :m_pSystem(nullptr)
 {
-    CameraComponents cameraComponents;
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
-        {{{RW, g_TIDSound}, {R, g_TIDPosition}}, &m_Sounds},
-        {{{RW, g_TIDSoundLooper}}, &m_LoopedSounds},
-        {{{R, g_TIDVelocity}}, {&cameraComponents}, &m_Cameras}
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations =
+    {
+        {
+            .pSubscriber = &m_Sounds,
+            .ComponentAccesses =
+            {
+                { RW, SoundComponent::Type() }, { R, PositionComponent::Type() }
+            },
+        },
+        {
+            .pSubscriber = &m_LoopedSounds,
+            .ComponentAccesses =
+            {
+                { RW, SoundLooperComponent::Type() }, { RW, SoundComponent::Type() }
+            },
+        },
+        {
+            .pSubscriber = &m_Cameras,
+            .ComponentAccesses =
+            {
+                { R, PositionComponent::Type() }, { R, RotationComponent::Type() }, { R, VelocityComponent::Type() },
+                { NDA, CameraTagComponent::Type() }
+            }
+        }
     };
 
-    enqueueRegistration(sysReg);
+    RegisterSystem(TYPE_NAME(SoundPlayer), sysReg);
 }
 
 SoundPlayer::~SoundPlayer()
-{}
-
-bool SoundPlayer::initSystem()
 {
-    m_pSoundHandler     = reinterpret_cast<SoundHandler*>(getComponentHandler(TID(SoundHandler)));
-    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pLightHandler     = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
-    m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
-
-    return m_pSoundHandler && m_pTransformHandler && m_pLightHandler && m_pVelocityHandler;
+    m_pSystem->release();
 }
 
-void SoundPlayer::update([[maybe_unused]] float dt)
+bool SoundPlayer::Init()
 {
-    FMOD::System* pSystem = m_pSoundHandler->getSystem();
-    pSystem->update();
+    FMOD_RESULT result = FMOD::System_Create(&m_pSystem);
+    if (result != FMOD_OK) {
+        LOG_ERRORF("Failed to create FMOD system: %s", FMOD_ErrorString(result));
+        return false;
+    }
 
-    if (m_Cameras.empty()) {
+    const int maxChannels = 512;
+
+    result = m_pSystem->init(maxChannels, FMOD_INIT_NORMAL, nullptr);
+    if (result != FMOD_OK) {
+        LOG_ERRORF("Failed to initialize FMOD system: %s", FMOD_ErrorString(result));
+        return false;
+    }
+
+    return true;
+}
+
+void SoundPlayer::Update(float dt)
+{
+    m_pSystem->update();
+
+    if (m_Cameras.Empty()) {
         return;
     }
 
-    const DirectX::XMFLOAT3& cameraPosition = m_pTransformHandler->getPosition(m_Cameras[0]);
-    const DirectX::XMFLOAT4& camRotationQuaternion = m_pTransformHandler->getRotation(m_Cameras[0]);
+    ECSCore* pECS = ECSCore::GetInstance();
+    const ComponentArray<PositionComponent>* pPositionComponents = pECS->GetComponentArray<PositionComponent>();
+    const ComponentArray<VelocityComponent>* pVelocityComponents = pECS->GetComponentArray<VelocityComponent>();
+    ComponentArray<SoundComponent>* pSoundComponents = pECS->GetComponentArray<SoundComponent>();
+    ComponentArray<SoundLooperComponent>* pSoundLooperComponents = pECS->GetComponentArray<SoundLooperComponent>();
 
-    DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&cameraPosition);
-    DirectX::XMVECTOR camDir = m_pTransformHandler->getForward(camRotationQuaternion);
+    const Entity cameraEntity = m_Cameras[0];
+    const DirectX::XMFLOAT3& cameraPosition = pPositionComponents->GetConstData(cameraEntity).Position;
+    const DirectX::XMFLOAT4& camRotationQuaternion = pECS->GetConstComponent<RotationComponent>(cameraEntity).Quaternion;
+
+    const DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&cameraPosition);
+    const DirectX::XMVECTOR camDir = GetForward(camRotationQuaternion);
     DirectX::XMVECTOR camDirFlat = camDir;
     camDirFlat = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camDirFlat, 0.0f));
 
-    const DirectX::XMVECTOR camVelocity = DirectX::XMLoadFloat3(&m_pVelocityHandler->getVelocity(m_Cameras[0]));
+    const DirectX::XMVECTOR camVelocity = DirectX::XMLoadFloat3(&pVelocityComponents->GetConstData(cameraEntity).Velocity);
     float camSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(camVelocity));
 
-    for (Entity soundEntity : m_Sounds.getIDs()) {
-        Sound& sound = m_pSoundHandler->getSound(soundEntity);
-        DirectX::XMFLOAT3& soundPosition = m_pTransformHandler->getPosition(soundEntity);
+    for (Entity soundEntity : m_Sounds) {
+        SoundComponent& sound = pSoundComponents->GetData(soundEntity);
+        const DirectX::XMFLOAT3& soundPosition = pPositionComponents->GetConstData(soundEntity).Position;
 
         DirectX::XMVECTOR soundPos = DirectX::XMLoadFloat3(&soundPosition);
 
@@ -72,53 +105,104 @@ void SoundPlayer::update([[maybe_unused]] float dt)
 
         stereoPan(sound, camToSound, camDirFlat);
 
-        DirectX::XMFLOAT3 objectVelocity = {0.0f, 0.0f, 0.0f};
-        if (m_pVelocityHandler->hasVelocity(soundEntity)) {
-            objectVelocity = m_pVelocityHandler->getVelocity(soundEntity);
+        const VelocityComponent* pSoundComponent = nullptr;
+        if (pVelocityComponents->GetConstIf(soundEntity, &pSoundComponent)) {
+            dopplerEffect(sound, camPos, camVelocity, camSpeed, soundPos, pSoundComponent->Velocity);
         }
-
-        dopplerEffect(sound, camPos, camVelocity, camSpeed, soundPos, objectVelocity);
     }
 
-    for (Entity loopedSound : m_LoopedSounds.getIDs()) {
-        SoundLooper& soundLooper = m_pSoundHandler->getSoundLooper(loopedSound);
+    for (Entity loopedSoundEntity : m_LoopedSounds) {
+        SoundLooperComponent& soundLooper = pSoundLooperComponents->GetData(loopedSoundEntity);
         soundLooper.NextLoopCountdown -= dt;
 
         if (soundLooper.NextLoopCountdown < 0.0f) {
-            m_pSoundHandler->playSound(loopedSound);
-            soundLooper.NextLoopCountdown = m_pSoundHandler->getSoundDuration(loopedSound);
+            SoundComponent& sound = pSoundComponents->GetData(loopedSoundEntity);
+            PlaySound(sound);
+            soundLooper.NextLoopCountdown = GetSoundDuration(sound);
         }
     }
 }
 
-void SoundPlayer::stereoPan(Sound& sound, const DirectX::XMVECTOR& camToSound, const DirectX::XMVECTOR& camDirFlat)
+SoundComponent SoundPlayer::CreateSound(const std::string& fileName)
+{
+    SoundComponent sound = {};
+    const FMOD_RESULT result = m_pSystem->createSound(fileName.c_str(), FMOD_DEFAULT, nullptr, &sound.pSound);
+    if (result != FMOD_OK) {
+        LOG_WARNINGF("Failed to create sound component from file [%s]: %s", fileName.c_str(), FMOD_ErrorString(result));
+    }
+
+    return sound;
+}
+
+bool SoundPlayer::PlaySound(SoundComponent& sound)
+{
+    const FMOD_RESULT result = m_pSystem->playSound(sound.pSound, nullptr, false, &sound.pChannel);
+    if (result != FMOD_OK) {
+        LOG_WARNINGF("Failed to play sound: %s", FMOD_ErrorString(result));
+        return false;
+    }
+
+    return true;
+}
+
+bool SoundPlayer::SetVolume(SoundComponent& sound, float volume)
+{
+    const FMOD_RESULT result = sound.pChannel->setVolume(volume);
+    if (result != FMOD_OK) {
+        LOG_WARNINGF("Failed to set sound volume: %s", FMOD_ErrorString(result));
+        return false;
+    }
+
+    return true;
+}
+
+SoundLooperComponent SoundPlayer::CreateSoundLooper(const SoundComponent& sound)
+{
+    return SoundLooperComponent{
+        .NextLoopCountdown = GetSoundDuration(sound)
+    };
+}
+
+float SoundPlayer::GetSoundDuration(const SoundComponent& sound)
+{
+    unsigned int soundDurationMS = 0;
+    const FMOD_RESULT result = sound.pSound->getLength(&soundDurationMS, FMOD_TIMEUNIT_MS);
+    if (result != FMOD_OK) {
+        LOG_WARNINGF("Failed to get sound duration: %s", FMOD_ErrorString(result));
+        return 0.0f;
+    }
+
+    return float(soundDurationMS) * 0.001f;
+}
+
+void SoundPlayer::stereoPan(SoundComponent& sound, const DirectX::XMVECTOR& camToSound, const DirectX::XMVECTOR& camDirFlat)
 {
     // Ignore vertical difference between camera and sound, this allows for calculating the yaw
-    DirectX::XMVECTOR camToSoundNorm = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
+    const DirectX::XMVECTOR camToSoundNorm = DirectX::XMVector3Normalize(DirectX::XMVectorSetY(camToSound, 0.0f));
 
-    float angle = -m_pTransformHandler->getOrientedAngle(camToSoundNorm, camDirFlat, g_DefaultUp);
-    float cosAngle = std::cosf(angle);
-    float sinAngle = std::sinf(angle);
+    const float angle = -GetOrientedAngle(camToSoundNorm, camDirFlat, g_DefaultUp);
+    const float cosAngle = std::cosf(angle);
+    const float sinAngle = std::sinf(angle);
 
-    float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
-    float ampLeft   = 0.5f * (sqrtTwoRec * (cosAngle + sinAngle)) + 0.5f;
-    float ampRight  = 0.5f * (sqrtTwoRec * (cosAngle - sinAngle)) + 0.5f;
+    const float sqrtTwoRec = 1.0f / std::sqrtf(2.0f);
+    const float ampLeft   = 0.5f * (sqrtTwoRec * (cosAngle + sinAngle)) + 0.5f;
+    const float ampRight  = 0.5f * (sqrtTwoRec * (cosAngle - sinAngle)) + 0.5f;
 
     sound.pChannel->setMixLevelsOutput(ampLeft, ampRight, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-void SoundPlayer::dopplerEffect(Sound& sound, const DirectX::XMVECTOR& camPos, const DirectX::XMVECTOR& camVelocity, float camSpeed, const DirectX::XMVECTOR& objectPos, const DirectX::XMFLOAT3& objectVelocity)
+void SoundPlayer::dopplerEffect(SoundComponent& sound, const DirectX::XMVECTOR& camPos, const DirectX::XMVECTOR& camVelocity, float camSpeed, const DirectX::XMVECTOR& objectPos, const DirectX::XMFLOAT3& objectVelocity)
 {
-    DirectX::XMVECTOR objVelocity = DirectX::XMLoadFloat3(&objectVelocity);
+    const DirectX::XMVECTOR objVelocity = DirectX::XMLoadFloat3(&objectVelocity);
 
     // Calculate signs for velocities
-    DirectX::XMVECTOR camToObject = DirectX::XMVectorSubtract(objectPos, camPos);
+    const DirectX::XMVECTOR camToObject = DirectX::XMVectorSubtract(objectPos, camPos);
 
     // camVelocity is positive if it is moving towards the sound
-    float camVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(camVelocity, camToObject));
+    const float camVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(camVelocity, camToObject));
 
     // objectVelocity is positive if it is moving away from the receiver
-    float objectVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(objVelocity, camToObject));
+    const float objectVelocitySign = DirectX::XMVectorGetX(DirectX::XMVector3Dot(objVelocity, camToObject));
 
     camSpeed = camVelocitySign < 0.0f ? -camSpeed : camSpeed;
     float objSpeed = DirectX::XMVectorGetX(DirectX::XMVector3Length(objVelocity));
@@ -128,7 +212,7 @@ void SoundPlayer::dopplerEffect(Sound& sound, const DirectX::XMVECTOR& camPos, c
     float frequency = 0.0f;
     sound.pChannel->getFrequency(&frequency);
 
-    float observedFrequency = frequency * (soundPropagation + camSpeed) / (soundPropagation + objSpeed);
+    const float observedFrequency = frequency * (soundPropagation + camSpeed) / (soundPropagation + objSpeed);
 
     sound.pChannel->setFrequency(observedFrequency);
 }

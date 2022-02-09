@@ -2,11 +2,13 @@
 
 #include <Engine/Rendering/Window.hpp>
 
-UICore::UICore(ECSCore* pECS, Device* pDevice, Window* pWindow)
-    :m_PanelHandler(pECS, pDevice),
-    m_TextRenderer(pECS, pDevice),
-    m_ButtonSystem(pECS, pWindow)
+UICore::UICore(RenderingCore* pRenderingCore)
+    :   m_PanelHandler(pRenderingCore->GetDevice())
+    ,   m_TextRenderer(pRenderingCore->GetDevice())
+    ,   m_ButtonSystem(pRenderingCore->GetWindow())
 {}
 
-UICore::~UICore()
-{}
+bool UICore::Init()
+{
+    return m_TextRenderer.Init() && m_PanelHandler.Init();
+}

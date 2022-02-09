@@ -5,11 +5,10 @@
 #include <Engine/Rendering/ShaderResourceHandler.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
-const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
+constexpr const RESOURCE_FORMAT g_PanelTextureFormat = RESOURCE_FORMAT::R8G8B8A8_UNORM;
 
-UIHandler::UIHandler(ECSCore* pECS, Device* pDevice)
-    :ComponentHandler(pECS, TID(UIHandler)),
-    m_pDevice(pDevice),
+UIHandler::UIHandler(Device* pDevice)
+    :m_pDevice(pDevice),
     m_pCommandPool(nullptr),
     m_pCommandList(nullptr),
     m_pQuadVertices(nullptr),
@@ -18,29 +17,10 @@ UIHandler::UIHandler(ECSCore* pECS, Device* pDevice)
     m_pRenderPass(nullptr),
     m_pPipelineLayout(nullptr),
     m_pPipeline(nullptr)
-{
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-    handlerReg.ComponentRegistrations = {
-        {tid_UIPanel, &panels, [this](Entity entity){ delete panels.indexID(entity).texture; }},
-        {tid_UIButton, &buttons}
-    };
-
-    handlerReg.HandlerDependencies = {
-        TID(ShaderResourceHandler)
-    };
-
-    this->registerHandler(handlerReg);
-}
+{}
 
 UIHandler::~UIHandler()
 {
-    std::vector<UIPanel>& panelVec = panels.getVec();
-
-    for (UIPanel& panel : panelVec) {
-        delete panel.texture;
-    }
-
     delete m_pCommandList;
     delete m_pCommandPool;
     delete m_pDescriptorSetLayout;
@@ -49,7 +29,7 @@ UIHandler::~UIHandler()
     delete m_pPipeline;
 }
 
-bool UIHandler::initHandler()
+bool UIHandler::Init()
 {
     m_pCommandPool = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
     if (!m_pCommandPool) {
@@ -62,84 +42,75 @@ bool UIHandler::initHandler()
     }
 
     // Retrieve quad from shader resource handler
-    ShaderResourceHandler* pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(m_pECS->getEntityPublisher()->getComponentHandler(TID(ShaderResourceHandler)));
-    // Retrieve UI rendering shader program from shader handler
-    if (!pShaderResourceHandler) {
+    ShaderResourceHandler* pShaderResourceHandler = ShaderResourceHandler::GetInstance();
+    m_pQuadVertices = pShaderResourceHandler->GetQuarterScreenQuad();
+    m_pAniSampler   = pShaderResourceHandler->GetAniSampler();
+
+    if (!CreateRenderPass()) {
         return false;
     }
 
-    m_pQuadVertices = pShaderResourceHandler->getQuarterScreenQuad();
-    m_pAniSampler   = pShaderResourceHandler->getAniSampler();
-
-    if (!createRenderPass()) {
+    if (!CreateDescriptorSetLayout()) {
         return false;
     }
 
-    if (!createDescriptorSetLayout()) {
+    if (!CreatePipeline()) {
         return false;
     }
 
-    return createPipeline();
+    const ComponentOwnership<UIPanelComponent> panelOwnership = {
+        .Destructor = std::bind_front(&UIHandler::PanelDestructor, this)
+    };
+
+    SetComponentOwner(panelOwnership);
+
+    return true;
 }
 
-void UIHandler::createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor)
+UIPanelComponent UIHandler::CreatePanel(DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, const DirectX::XMFLOAT4& highlight, float highlightFactor)
 {
-    UIPanel panel;
+    UIPanelComponent panel;
     panel.position = pos;
     panel.size = size;
     panel.highlightFactor = highlightFactor;
     panel.highlight = highlight;
-    createPanelTexture(panel);
+    CreatePanelTexture(panel);
 
-    panels.push_back(panel, entity);
-    this->registerComponent(entity, tid_UIPanel);
+    return panel;
 }
 
-void UIHandler::attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, std::shared_ptr<Texture>* pTextureReferences, size_t textureCount)
+void UIHandler::AttachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, const std::shared_ptr<Texture>* pTextureReferences, size_t textureCount)
 {
-    if (!panels.hasElement(entity)) {
+    UIPanelComponent* pPanel = nullptr;
+    if (!ECSCore::GetInstance()->GetComponentIf(entity, &pPanel)) {
         LOG_WARNINGF("Tried to attach textures to a non-existing UI panel, entity: %d", entity);
         return;
     }
 
-    UIPanel& panel = panels.indexID(entity);
-
     std::vector<TextureAttachment> attachments(textureCount);
 
     for (size_t textureIdx = 0; textureIdx < textureCount; textureIdx++) {
-        createTextureAttachment(attachments[textureIdx], pAttachmentInfos[textureIdx], pTextureReferences[textureIdx], panel);
+        CreateTextureAttachment(attachments[textureIdx], pAttachmentInfos[textureIdx], pTextureReferences[textureIdx], *pPanel);
     }
 
-    renderTexturesOntoPanel(attachments, panel);
+    RenderTexturesOntoPanel(attachments, *pPanel);
 
-    size_t oldTextureCount = panel.textures.size();
-    panel.textures.resize(oldTextureCount + textureCount);
+    size_t oldTextureCount = pPanel->textures.size();
+    pPanel->textures.resize(oldTextureCount + textureCount);
 
     for (TextureAttachment& txAttachment : attachments) {
-        panel.textures[oldTextureCount++] = txAttachment;
+        pPanel->textures[oldTextureCount++] = txAttachment;
     }
 }
 
-void UIHandler::createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight, std::function<void()> onPress)
+void UIHandler::PanelDestructor(UIPanelComponent& panel, Entity entity)
 {
-    if (!panels.hasElement(entity)) {
-        LOG_WARNINGF("Tried to create a UI button for entity (%d) which does not have a UI panel", entity);
-        return;
-    }
+    UNREFERENCED_VARIABLE(entity);
 
-    DirectX::XMFLOAT4 defaultHighlight = panels.indexID(entity).highlight;
-
-    buttons.push_back({
-        defaultHighlight,
-        hoverHighlight,
-        pressHighlight,
-        onPress
-    }, entity);
-
-    this->registerComponent(entity, tid_UIButton);
+    delete panel.texture;
 }
 
-bool UIHandler::createRenderPass()
+bool UIHandler::CreateRenderPass()
 {
     // Render pass attachments
     AttachmentInfo panelTextureAttachment   = {};
@@ -178,7 +149,7 @@ bool UIHandler::createRenderPass()
     return m_pRenderPass;
 }
 
-bool UIHandler::createDescriptorSetLayout()
+bool UIHandler::CreateDescriptorSetLayout()
 {
     // Create a single layout, even if some descriptors are per-panel and per-texture attachment
     m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
@@ -187,7 +158,7 @@ bool UIHandler::createDescriptorSetLayout()
     return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
-bool UIHandler::createPipeline()
+bool UIHandler::CreatePipeline()
 {
     m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayout });
     if (!m_pPipelineLayout) {
@@ -239,7 +210,7 @@ bool UIHandler::createPipeline()
     return m_pPipeline;
 }
 
-void UIHandler::createPanelTexture(UIPanel& panel)
+void UIHandler::CreatePanelTexture(UIPanelComponent& panel)
 {
     const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 
@@ -253,7 +224,7 @@ void UIHandler::createPanelTexture(UIPanel& panel)
     panel.texture = m_pDevice->createTexture(textureInfo);
 }
 
-void UIHandler::createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel)
+void UIHandler::CreateTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const std::shared_ptr<Texture>& texture, const UIPanelComponent& panel)
 {
     attachment.texture = texture;
 
@@ -306,15 +277,15 @@ void UIHandler::createTextureAttachment(TextureAttachment& attachment, const Tex
     }
 }
 
-void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel)
+void UIHandler::RenderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanelComponent& panel)
 {
     std::vector<AttachmentRenderResources> renderResources;
-    if (!createPanelRenderResources(renderResources, attachments)) {
+    if (!CreatePanelRenderResources(renderResources, attachments)) {
         LOG_ERROR("Failed to render textures onto panel, could not create create render resources");
         return;
     }
 
-    Framebuffer* pFramebuffer = createFramebuffer(panel);
+    Framebuffer* pFramebuffer = CreateFramebuffer(panel);
 
     CommandListBeginInfo beginInfo = {};
     beginInfo.pRenderPass   = m_pRenderPass;
@@ -372,7 +343,7 @@ void UIHandler::renderTexturesOntoPanel(std::vector<TextureAttachment>& attachme
     deleterThread.detach();
 }
 
-bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments)
+bool UIHandler::CreatePanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments)
 {
     renderResources.reserve(attachments.size());
 
@@ -415,7 +386,7 @@ bool UIHandler::createPanelRenderResources(std::vector<AttachmentRenderResources
     return true;
 }
 
-Framebuffer* UIHandler::createFramebuffer(UIPanel& panel)
+Framebuffer* UIHandler::CreateFramebuffer(UIPanelComponent& panel)
 {
     const glm::uvec2& backbufferDims = m_pDevice->getBackbuffer(0u)->getDimensions();
 

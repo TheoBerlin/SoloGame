@@ -3,7 +3,6 @@
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Utils/EnumClass.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <system_error>
@@ -16,4 +15,4 @@ inline std::string hresultToString(HRESULT hr)
     return std::system_category().message(hr);
 }
 
-DirectX::XMVECTOR catmullRomDerivative(DirectX::XMVECTOR P0, DirectX::XMVECTOR P1, DirectX::XMVECTOR P2, DirectX::XMVECTOR P3, float T);
+DirectX::XMVECTOR CatmullRomDerivative(DirectX::XMVECTOR P0, DirectX::XMVECTOR P1, DirectX::XMVECTOR P2, DirectX::XMVECTOR P3, float T);

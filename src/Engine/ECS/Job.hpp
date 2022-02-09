@@ -1,9 +1,18 @@
 #pragma once
 
-const size_t g_PhaseCount = 3;
-const size_t g_LastPhase = g_PhaseCount - 1;
+#include "Engine/ECS/EntitySubscriber.hpp"
 
-struct Job {
-    std::function<void()> Function;
-    std::vector<ComponentAccess> Components;
+#define PHASE_COUNT 4u
+#define LAST_PHASE PHASE_COUNT - 1u
+
+struct Job
+{
+	std::vector<ComponentAccess> Components;
+	std::function<void()> Function;
+};
+
+struct RegularJob : Job
+{
+	float TickPeriod;
+	float Accumulator;
 };

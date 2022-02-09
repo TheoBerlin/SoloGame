@@ -17,7 +17,6 @@
 #include <Engine/Rendering/APIAbstractions/Vulkan/TextureVK.hpp>
 #include <Engine/Rendering/Window.hpp>
 
-#define NOMINMAX
 #define VMA_IMPLEMENTATION
 
 #pragma warning(push, 0)
@@ -42,7 +41,7 @@ DeviceVK::~DeviceVK()
     deleteGraphicsObjects();
     vmaDestroyAllocator(m_Allocator);
 
-    #ifdef _DEBUG
+    #ifdef CONFIG_DEBUG
         auto destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
         if (destroyDebugUtilsMessengerEXT) {
             destroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);

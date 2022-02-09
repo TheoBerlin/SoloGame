@@ -4,7 +4,10 @@
 
 #include <memory>
 #include <string>
-#include <Windows.h>
+
+#ifdef PLATFORM_WINDOWS
+    #include <Windows.h>
+#endif
 
 #define LOG_PATH "log.txt"
 
@@ -12,13 +15,13 @@
 #define WARN_COLOR FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY
 #define ERROR_COLOR FOREGROUND_RED | FOREGROUND_INTENSITY
 
-#define LOG_INFOF(format, ...) Logger::logInfof(__FILE__, __LINE__, format, __VA_ARGS__);
-#define LOG_WARNINGF(format, ...) Logger::logWarningf(__FILE__, __LINE__, format, __VA_ARGS__);
-#define LOG_ERRORF(format, ...) Logger::logErrorf(__FILE__, __LINE__, format, __VA_ARGS__);
+#define LOG_INFOF(format, ...) Logger::logInfof(__FILE__, __LINE__, format, __VA_ARGS__)
+#define LOG_WARNINGF(format, ...) Logger::logWarningf(__FILE__, __LINE__, format, __VA_ARGS__)
+#define LOG_ERRORF(format, ...) Logger::logErrorf(__FILE__, __LINE__, format, __VA_ARGS__)
 
-#define LOG_INFO(message, ...) Logger::logInfo(__FILE__, __LINE__, message);
-#define LOG_WARNING(message) Logger::logWarning(__FILE__, __LINE__, message);
-#define LOG_ERROR(message) Logger::logError(__FILE__, __LINE__, message);
+#define LOG_INFO(message, ...) Logger::logInfo(__FILE__, __LINE__, message)
+#define LOG_WARNING(message) Logger::logWarning(__FILE__, __LINE__, message)
+#define LOG_ERROR(message) Logger::logError(__FILE__, __LINE__, message)
 
 class Logger
 {
@@ -39,12 +42,12 @@ public:
     static void logWarning(const char* pFile, int lineNr, const std::string& message);
     static void logError(const char* pFile, int lineNr, const std::string& message);
 
+    template<typename ... Args>
+    static std::string formatString(const std::string& format, Args&& ... args);
+
 private:
     // Prints prefix, formatted string, current time to console and file
     static void log(const char* pFile, int lineNr, unsigned short color, const std::string& severity, const std::string& message);
-
-    template<typename ... Args>
-    static std::string formatString(const std::string& format, Args&& ... args);
     static std::string timeToString();
 
     static HANDLE consoleHandle;

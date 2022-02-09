@@ -1,47 +1,32 @@
 #pragma once
 
-#include <Engine/ECS/Entity.hpp>
-#include <Engine/ECS/EntitySubscriber.hpp>
-#include <Engine/ECS/RegularWorker.hpp>
-#include <Engine/Utils/IDVector.hpp>
+#include "Engine/ECS/Entity.hpp"
+#include "Engine/ECS/EntitySubscriber.hpp"
+#include "Engine/ECS/RegularWorker.hpp"
+#include "Engine/Utils/IDVector.hpp"
 
 #include <functional>
 #include <typeindex>
-#include <vector>
-
-class System;
 
 struct SystemRegistration {
-    EntitySubscriberRegistration SubscriberRegistration;
-    uint32_t Phase = 0;
+	EntitySubscriberRegistration SubscriberRegistration;
+	uint32_t Phase = 0;
+	uint32_t TickFrequency = 0;
 };
 
-class ComponentHandler;
-class ECSCore;
-
-// A system processes components each frame in the update function
-class System : private EntitySubscriber, private RegularWorker
+// A system processes components in the Update function
+class System : public EntitySubscriber, RegularWorker
 {
 public:
-    // Registers the system in the system handler
-    System(ECSCore* pECS);
+	~System() = default;
 
-    // Deregisters system
-    virtual ~System() = default;
+	virtual void Update(float deltaTime) = 0;
 
-    virtual bool initSystem() = 0;
-
-    virtual void update(float dt) = 0;
-
-    size_t getSystemID() const          { return m_SystemID; }
-    void setSystemID(size_t systemID)   { m_SystemID = systemID; }
+	const std::string& GetName() const { return m_SystemName; }
 
 protected:
-    void enqueueRegistration(const SystemRegistration& sysReg);
-
-    ComponentHandler* getComponentHandler(const std::type_index& handlerType);
+	virtual void RegisterSystem(const std::string& systemName, SystemRegistration& systemRegistration);
 
 private:
-    ECSCore* m_pECS;
-    size_t m_SystemID;
+	std::string m_SystemName;
 };

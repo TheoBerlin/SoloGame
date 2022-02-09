@@ -5,11 +5,10 @@
 
 #include <Engine/Utils/ThreadPool.hpp>
 
-RenderingHandler::RenderingHandler(ECSCore* pECS, Device* pDevice)
-    :m_pECS(pECS),
-    m_pDevice(pDevice),
-    m_pMeshRenderer(new MeshRenderer(pECS, pDevice, this)),
-    m_pUIRenderer(new UIRenderer(pECS, pDevice, this))
+RenderingHandler::RenderingHandler(RenderingCore* pRenderingCore)
+    :   m_pDevice(pRenderingCore->GetDevice())
+    ,   m_pMeshRenderer(new MeshRenderer(pRenderingCore->GetDevice(), this))
+    ,   m_pUIRenderer(new UIRenderer(pRenderingCore->GetDevice(), this))
 {
     std::fill_n(m_ppCommandPools, MAX_FRAMES_IN_FLIGHT, nullptr);
     std::fill_n(m_ppCommandLists, MAX_FRAMES_IN_FLIGHT, nullptr);
@@ -30,7 +29,7 @@ RenderingHandler::~RenderingHandler()
     }
 }
 
-bool RenderingHandler::init()
+bool RenderingHandler::Init()
 {
     m_Renderers = {
         m_pMeshRenderer,
@@ -55,6 +54,12 @@ bool RenderingHandler::init()
 
         m_ppPrimaryBufferFences[frameIndex] = m_pDevice->createFence(true);
         if (!m_ppPrimaryBufferFences[frameIndex]) {
+            return false;
+        }
+    }
+
+    for (Renderer* pRenderer : m_Renderers) {
+        if (!pRenderer->Init()) {
             return false;
         }
     }
@@ -117,31 +122,31 @@ void RenderingHandler::endFrame()
 
 void RenderingHandler::updateBuffers()
 {
-    ThreadPool& threadPool = ThreadPool::getInstance();
+    ThreadPool& threadPool = ThreadPool::GetInstance();
     std::vector<size_t> threads;
     threads.reserve(m_Renderers.size());
 
     for (Renderer* pRenderer : m_Renderers) {
-        threads.push_back(threadPool.execute(std::bind(&Renderer::updateBuffers, pRenderer)));
+        threads.push_back(threadPool.Execute(std::bind(&Renderer::UpdateBuffers, pRenderer)));
     }
 
     for (size_t thread : threads) {
-        threadPool.join(thread);
+        threadPool.Join(thread);
     }
 }
 
 void RenderingHandler::recordSecondaryCommandBuffers()
 {
-    ThreadPool& threadPool = ThreadPool::getInstance();
+    ThreadPool& threadPool = ThreadPool::GetInstance();
     std::vector<size_t> threads;
     threads.reserve(m_Renderers.size());
 
     for (Renderer* pRenderer : m_Renderers) {
-        threads.push_back(threadPool.execute(std::bind(&Renderer::recordCommands, pRenderer)));
+        threads.push_back(threadPool.Execute(std::bind(&Renderer::RecordCommands, pRenderer)));
     }
 
     for (size_t thread : threads) {
-        threadPool.join(thread);
+        threadPool.Join(thread);
     }
 }
 
@@ -163,16 +168,16 @@ void RenderingHandler::recordPrimaryCommandBuffer()
     renderPassBeginInfo.RecordingListType   = COMMAND_LIST_LEVEL::SECONDARY;
     m_ppCommandLists[frameIndex]->beginRenderPass(m_pMeshRenderer->getRenderPass(), renderPassBeginInfo);
 
-    m_pMeshRenderer->executeCommands(pPrimaryCommandList);
+    m_pMeshRenderer->ExecuteCommands(pPrimaryCommandList);
 
     pPrimaryCommandList->endRenderPass();
 
     // Begin UI render pass
-    renderPassBeginInfo.pFramebuffer    = m_pUIRenderer->getFramebuffer(frameIndex);
+    renderPassBeginInfo.pFramebuffer    = m_pUIRenderer->GetFramebuffer(frameIndex);
     renderPassBeginInfo.ClearValueCount = 0u;
-    m_ppCommandLists[frameIndex]->beginRenderPass(m_pUIRenderer->getRenderPass(), renderPassBeginInfo);
+    m_ppCommandLists[frameIndex]->beginRenderPass(m_pUIRenderer->GetRenderPass(), renderPassBeginInfo);
 
-    m_pUIRenderer->executeCommands(pPrimaryCommandList);
+    m_pUIRenderer->ExecuteCommands(pPrimaryCommandList);
 
     m_ppCommandLists[frameIndex]->endRenderPass();
     m_ppCommandLists[frameIndex]->end();

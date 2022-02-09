@@ -1,41 +1,33 @@
 #include "LightSpinner.hpp"
 
-#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
-LightSpinner::LightSpinner(ECSCore* pECS)
-    :System(pECS),
-    m_pTransformHandler(nullptr)
+LightSpinner::LightSpinner()
 {
-    PointLightComponents pointLightSub;
-    pointLightSub.m_Position.Permissions    = RW;
-    pointLightSub.m_PointLight.Permissions  = NDA;
-
     SystemRegistration sysReg = {};
     sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
-        {{&pointLightSub}, &m_Lights}
+        {
+            .pSubscriber = &m_Lights,
+            .ComponentAccesses =
+            {
+                { RW, PositionComponent::Type() }, { NDA, PointLightComponent::Type() }
+            }
+        }
     };
 
-    enqueueRegistration(sysReg);
+    RegisterSystem(TYPE_NAME(LightSpinner), sysReg);
 }
 
-LightSpinner::~LightSpinner()
-{}
-
-bool LightSpinner::initSystem()
-{
-    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    return m_pTransformHandler;
-}
-
-void LightSpinner::update(float dt)
+void LightSpinner::Update(float dt)
 {
     const float anglePerSec = DirectX::XM_PIDIV4;
     DirectX::XMVECTOR position;
 
-    for (Entity entity : m_Lights.getIDs()) {
-        DirectX::XMFLOAT3& lightPos = m_pTransformHandler->getPosition(entity);
+    ComponentArray<PositionComponent>* pPositionComponents = ECSCore::GetInstance()->GetComponentArray<PositionComponent>();
+
+    for (Entity entity : m_Lights) {
+        DirectX::XMFLOAT3& lightPos = pPositionComponents->GetData(entity).Position;
 
         position = DirectX::XMLoadFloat3(&lightPos);
 

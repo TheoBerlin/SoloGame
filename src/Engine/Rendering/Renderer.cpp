@@ -3,19 +3,12 @@
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/ECS/EntityPublisher.hpp>
 
-Renderer::Renderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
-    :EntitySubscriber(pECS),
-    m_pDevice(pDevice),
-    m_pRenderingHandler(pRenderingHandler),
-    m_pECS(pECS)
+Renderer::Renderer(Device* pDevice, RenderingHandler* pRenderingHandler)
+    :m_pDevice(pDevice),
+    m_pRenderingHandler(pRenderingHandler)
 {}
 
-void Renderer::registerRenderer(const EntitySubscriberRegistration& subscriberRegistration)
+void Renderer::RegisterRenderer(EntitySubscriberRegistration& subscriberRegistration)
 {
-    subscribeToEntities(subscriberRegistration, std::bind(&Renderer::init, this));
-}
-
-ComponentHandler* Renderer::getComponentHandler(const std::type_index& handlerType)
-{
-    return m_pECS->getEntityPublisher()->getComponentHandler(handlerType);
+    SubscribeToEntities(subscriberRegistration);
 }

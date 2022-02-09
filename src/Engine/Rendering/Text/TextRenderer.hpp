@@ -1,12 +1,8 @@
 #pragma once
 
-#define NOMINMAX
-
-#include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Rendering/ShaderHandler.hpp>
 
-#define NOMINMAX
 #include <DirectXMath.h>
 #include <map>
 #include <memory>
@@ -28,13 +24,13 @@ struct ProcessedGlyph {
 
 class Device;
 
-class TextRenderer : public ComponentHandler
+class TextRenderer
 {
 public:
-    TextRenderer(ECSCore* pECS, Device* pDevice);
+    TextRenderer(Device* pDevice);
     ~TextRenderer();
 
-    virtual bool initHandler() override;
+    bool Init();
 
     // Creates a texture with text rendered onto it
     std::shared_ptr<Texture> renderText(const std::string& text, const std::string& font, unsigned int fontPixelHeight);

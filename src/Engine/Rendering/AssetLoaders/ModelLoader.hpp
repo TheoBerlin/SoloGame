@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Engine/ECS/ComponentHandler.hpp>
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
@@ -17,36 +16,28 @@
 class Device;
 class TextureCache;
 
-const std::type_index g_TIDModel = TID(Model);
-
-class ModelLoader : public ComponentHandler
+class ModelLoader
 {
 public:
-    ModelLoader(ECSCore* pECS, TextureCache* txLoader, Device* pDevice);
+    ModelLoader(TextureCache* pTextureCache, Device* pDevice);
     ~ModelLoader() = default;
 
-    virtual bool initHandler() override { return true; };
-
-    Model* loadModel(Entity entity, const std::string& filePath);
-    void registerModel(Entity entity, Model* pModel);
-
-    Model* getModel(Entity entity) { return m_ModelComponents.indexID(entity).get(); }
+    ModelComponent LoadModel(const std::string& filePath);
 
 private:
     /*
         Functions for converting assimp structures to engine's structures
     */
-    void loadMesh(const aiMesh* assimpMesh, std::vector<Mesh>& meshes);
-    void loadMaterial(const aiMaterial* assimpMaterial, std::vector<Material>& materials, const std::string& directory);
+    void LoadMesh(const aiMesh* pAssimpMesh, std::vector<Mesh>& meshes);
+    void LoadMaterial(const aiMaterial* pAssimpMaterial, std::vector<Material>& materials, const std::string& directory);
 
     // Recursively traverse assimp scene nodes to find out which meshes are used
-    void loadNode(std::vector<unsigned int>& meshIndices, aiNode* node, const aiScene* scene);
+    void LoadNode(std::vector<unsigned int>& meshIndices, aiNode* pNode, const aiScene* pScene);
 
 private:
-    // The same model can be used by multiple entities, hence the shared pointer
-    IDDVector<std::shared_ptr<Model>> m_ModelComponents;
+    // The same model can be used by multiple entities, hence the weak pointer
     std::unordered_map<std::string, std::weak_ptr<Model>> m_ModelCache;
 
-    TextureCache* m_pTXLoader;
+    TextureCache* m_pTextureCache;
     Device* m_pDevice;
 };

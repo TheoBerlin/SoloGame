@@ -1,25 +1,22 @@
 #include "IDGenerator.hpp"
 
 IDGenerator::IDGenerator()
-    :nextFree(0)
+    :m_NextFree(0)
 {}
 
-IDGenerator::~IDGenerator()
-{}
-
-size_t IDGenerator::genID()
+uint32_t IDGenerator::GenID()
 {
-    if (!recycled.empty()) {
-        size_t newID = recycled.front();
-        recycled.pop();
+    if (!m_Recycled.empty()) {
+        const uint32_t newID = m_Recycled.front();
+        m_Recycled.pop();
 
         return newID;
     }
 
-    return nextFree++;
+    return m_NextFree++;
 }
 
-void IDGenerator::popID(size_t ID)
+void IDGenerator::PopID(uint32_t ID)
 {
-    recycled.push(ID);
+    m_Recycled.push(ID);
 }

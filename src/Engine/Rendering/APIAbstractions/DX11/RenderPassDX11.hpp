@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/RenderPass.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 class RenderPassDX11 : public IRenderPass

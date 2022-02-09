@@ -2,146 +2,66 @@
 
 #include <Engine/Utils/Debug.hpp>
 
-#include <vendor/json/json.hpp>
-
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-
 IGame::IGame()
-    :m_Window(720u, 16.0f / 9.0f),
-    m_pDevice(nullptr),
-    m_StateManager(&m_ECS),
-    m_pPhysicsCore(nullptr),
-    m_pAssetLoaders(nullptr),
-    m_pUICore(nullptr),
-    m_pRenderingCore(nullptr),
-    m_pAudioCore(nullptr),
-    m_pRenderingHandler(nullptr)
-{}
+    :m_pRenderingHandler(nullptr)
+{
+    m_ECS.SetInstance(&m_ECS);
+}
 
 IGame::~IGame()
 {
-    if (m_pDevice) {
-        m_pDevice->waitIdle();
+    Device* pDevice = m_EngineCore.GetRenderingCore()->GetDevice();
+    if (pDevice) {
+        pDevice->waitIdle();
     }
 
-    delete m_pPhysicsCore;
-    delete m_pAssetLoaders;
-    delete m_pUICore;
-    delete m_pRenderingCore;
-    delete m_pAudioCore;
+    m_StateManager.Release();
 
     delete m_pRenderingHandler;
-    delete m_pDevice;
 }
 
-bool IGame::init()
+bool IGame::Init()
 {
-    EngineConfig engineCFG = {};
-    if (!loadEngineConfig(engineCFG)) {
-        return false;
-    }
-    LOG_INFOF("Using %s", engineCFG.RenderingAPI == RENDERING_API::VULKAN ? "Vulkan" : "DirectX 11");
-
-    if (!m_Window.init()) {
+    EngineCore::SetInstance(&m_EngineCore);
+    if (!m_EngineCore.Init()) {
         return false;
     }
 
-    SwapchainInfo swapchainInfo = {};
-    swapchainInfo.FrameRateLimit    = 60u;
-    swapchainInfo.Multisamples      = 1u;
-    swapchainInfo.PresentationMode  = engineCFG.PresentationMode;
-    swapchainInfo.Windowed          = true;
-
-    DescriptorCounts descriptorPoolSize;
-    descriptorPoolSize.setAll(100u);
-
-    m_pDevice = Device::create(engineCFG.RenderingAPI, swapchainInfo, &m_Window);
-    if (!m_pDevice || !m_pDevice->init(descriptorPoolSize)) {
+    RenderingCore* pRenderingCore = m_EngineCore.GetRenderingCore();
+    m_pRenderingHandler = DBG_NEW RenderingHandler(m_EngineCore.GetRenderingCore());
+    if (!m_pRenderingHandler->Init()) {
         return false;
     }
 
-    m_pPhysicsCore      = DBG_NEW PhysicsCore(&m_ECS);
-    m_pAssetLoaders     = DBG_NEW AssetLoadersCore(&m_ECS, m_pDevice);
-    m_pUICore           = DBG_NEW UICore(&m_ECS, m_pDevice, &m_Window);
-    m_pRenderingCore    = DBG_NEW RenderingCore(&m_ECS, m_pDevice, &m_Window);
-    m_pAudioCore        = DBG_NEW AudioCore(&m_ECS);
-
-    m_pRenderingHandler = DBG_NEW RenderingHandler(&m_ECS, m_pDevice);
-    if (!m_pRenderingHandler->init()) {
-        return false;
-    }
-
-    m_ECS.performRegistrations();
-    m_Window.show();
+    pRenderingCore->GetWindow()->show();
 
     return true;
 }
 
-void IGame::run()
+void IGame::Run()
 {
     auto timer = std::chrono::high_resolution_clock::now();
     auto timeNow = timer;
     std::chrono::duration<float> dtChrono;
 
-    MSG msg = {0};
-    while(!m_Window.shouldClose()) {
-        m_Window.pollEvents();
+    Window* pWindow = m_EngineCore.GetRenderingCore()->GetWindow();
+
+    while (!pWindow->shouldClose()) {
+        pWindow->pollEvents();
 
         timeNow = std::chrono::high_resolution_clock::now();
         dtChrono = timeNow - timer;
-        float dt = dtChrono.count();
+        const float dt = dtChrono.count();
 
         timer = timeNow;
         m_RuntimeStats.setFrameTime(dt);
 
-        m_Window.getInputHandler()->update();
+        pWindow->GetInputHandler()->update();
 
         // Update logic
-        m_ECS.update(dt);
-        m_StateManager.update(dt);
+        m_ECS.Update(dt);
+        m_StateManager.Update(dt);
 
         m_pRenderingHandler->render();
     }
-}
-
-bool IGame::loadEngineConfig(EngineConfig& engineConfig) const
-{
-    // Default config
-    engineConfig.RenderingAPI       = RENDERING_API::VULKAN;
-    engineConfig.PresentationMode   = PRESENTATION_MODE::MAILBOX;
-
-    using json = nlohmann::json;
-
-    const char* pInFile = "engine_config.json";
-    std::ifstream cfgFile(pInFile);
-    if (!cfgFile.is_open()) {
-        LOG_ERRORF("Failed to open engine configuration file: %s", pInFile);
-        return false;
-    }
-
-    json configJSON;
-    cfgFile >> configJSON;
-    cfgFile.close();
-
-    std::string APIStr = configJSON["API"].get<std::string>();
-    std::transform(APIStr.begin(), APIStr.end(), APIStr.begin(),
-        [](unsigned char c){ return (char)std::tolower(c); });
-
-    const std::unordered_set<std::string> dx11Strings = {
-        "dx11", "directx11", "directx 11"
-    };
-
-    engineConfig.RenderingAPI = dx11Strings.contains(APIStr) ? RENDERING_API::DIRECTX11 : RENDERING_API::VULKAN;
-
-    std::string presentationModeStr = configJSON["PresentationMode"].get<std::string>();
-    std::transform(presentationModeStr.begin(), presentationModeStr.end(), presentationModeStr.begin(),
-        [](unsigned char c){ return (char)std::tolower(c); });
-
-    if (presentationModeStr == "immediate") {
-        engineConfig.PresentationMode = PRESENTATION_MODE::IMMEDIATE;
-    }
-
-    return true;
 }

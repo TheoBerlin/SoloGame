@@ -139,13 +139,13 @@ ID3DBlob* ShaderDX11::compileShader(LPCWSTR fileName, LPCSTR targetVer)
 {
     UINT compileFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
 
-    #ifdef _DEBUG
+    #ifdef CONFIG_DEBUG
         compileFlags |= D3DCOMPILE_DEBUG;
     #endif
 
     ID3DBlob* pCompiledCode = nullptr, *errorMsgs = nullptr;
 
-    HRESULT hr = D3DCompileFromFile(fileName, nullptr, nullptr, "main", targetVer, compileFlags, 0, &pCompiledCode, &errorMsgs);
+    const HRESULT hr = D3DCompileFromFile(fileName, nullptr, nullptr, "main", targetVer, compileFlags, 0, &pCompiledCode, &errorMsgs);
     if (FAILED(hr)) {
         if (errorMsgs) {
             LOG_ERRORF("%s", (char*)errorMsgs->GetBufferPointer());

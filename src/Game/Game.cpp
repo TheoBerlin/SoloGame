@@ -1,21 +1,20 @@
 #include "Game.hpp"
 
-#include <Game/States/Benchmark.hpp>
-#include <Game/States/MainMenu.hpp>
-#include <Engine/Utils/Debug.hpp>
+#include "Game/States/BenchmarkState.hpp"
+#include "Game/States/MainMenuState.hpp"
 
 #include <argh/argh.h>
 
-bool Game::finalize(const argh::parser& flagParser)
+bool Game::Finalize(const argh::parser& flagParser)
 {
     State* pStartingState = nullptr;
 
     if (flagParser[{"-b", "--benchmark"}]) {
-        pStartingState = DBG_NEW Benchmark(&m_StateManager, &m_ECS, m_pDevice, m_Window.getInputHandler(), &m_RuntimeStats, &m_Window);
+        pStartingState = DBG_NEW BenchmarkState(&m_StateManager, &m_RuntimeStats);
     } else {
-        pStartingState = DBG_NEW MainMenu(&m_StateManager, &m_ECS, m_pDevice, m_Window.getInputHandler());
+        pStartingState = DBG_NEW MainMenuState(&m_StateManager);
     }
 
-    m_StateManager.enqueueStateTransition(pStartingState, STATE_TRANSITION::PUSH);
+    m_StateManager.EnqueueStateTransition(pStartingState, STATE_TRANSITION::PUSH);
     return pStartingState;
 }

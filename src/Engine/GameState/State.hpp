@@ -1,24 +1,23 @@
 #pragma once
 
-#include <Engine/GameState/StateManager.hpp>
+#include "Engine/GameState/StateManager.hpp"
 
-class ECSCore;
+class StateManager;
 
 class State
 {
 public:
-    State(StateManager* pStateManager, ECSCore* pECS);
-    State(State* pOther);
-    virtual ~State() = 0 {};
+	State(StateManager* pStateManager) : m_pStateManager(pStateManager) {}
+	State(State* pOther);
+	virtual ~State() = 0 {};
 
-    virtual void init() = 0;
+	virtual void Init() = 0;
 
-    virtual void resume() = 0;
-    virtual void pause() = 0;
+	virtual void Resume() = 0;
+	virtual void Pause() = 0;
 
-    virtual void update(float dt) = 0;
+	virtual void Update(float delta) = 0;
 
 protected:
-    ECSCore* m_pECS;
-    StateManager* m_pStateManager;
+	StateManager* m_pStateManager;
 };

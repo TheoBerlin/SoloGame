@@ -5,42 +5,34 @@
 #include <Engine/Rendering/AssetContainers/Model.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
 
-ShaderResourceHandler::ShaderResourceHandler(ECSCore* pECS, Device* pDevice)
-    :ComponentHandler(pECS, TID(ShaderResourceHandler)),
-    m_pDevice(pDevice),
+ShaderResourceHandler ShaderResourceHandler::s_Instance;
+
+ShaderResourceHandler::ShaderResourceHandler()
+    :m_pDevice(nullptr),
     m_pAniSampler(nullptr),
     m_pQuadVertices(nullptr)
-{
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
+{}
 
-    registerHandler(handlerReg);
-}
-
-ShaderResourceHandler::~ShaderResourceHandler()
+bool ShaderResourceHandler::Init(Device* pDevice)
 {
-    delete m_pQuadVertices;
-    delete m_pAniSampler;
-}
+    m_pDevice = pDevice;
 
-bool ShaderResourceHandler::initHandler()
-{
-    SamplerInfo samplerInfo = {};
-    samplerInfo.FilterMin           = FILTER::NEAREST;
-    samplerInfo.FilterMag           = FILTER::NEAREST;
-    samplerInfo.FilterMip           = FILTER::NEAREST;
-    samplerInfo.AnisotropyEnabled   = true;
-    samplerInfo.MaxAnisotropy       = 1.0f;
-    samplerInfo.AddressModeU        = ADDRESS_MODE::MIRROR_REPEAT;
-    samplerInfo.AddressModeV        = samplerInfo.AddressModeU;
-    samplerInfo.AddressModeW        = samplerInfo.AddressModeU;
-    samplerInfo.MipLODBias          = 0.0f;
-    samplerInfo.CompareEnabled      = false;
-    samplerInfo.ComparisonFunc      = COMPARISON_FUNC::ALWAYS;
-    samplerInfo.MinLOD              = 0.0f;
-    samplerInfo.MaxLOD              = 0.0f;
+    const SamplerInfo samplerInfo = {
+        .FilterMin           = FILTER::NEAREST,
+        .FilterMag           = FILTER::NEAREST,
+        .FilterMip           = FILTER::NEAREST,
+        .AnisotropyEnabled   = true,
+        .MaxAnisotropy       = 1.0f,
+        .AddressModeU        = ADDRESS_MODE::MIRROR_REPEAT,
+        .AddressModeV        = samplerInfo.AddressModeU,
+        .AddressModeW        = samplerInfo.AddressModeU,
+        .MipLODBias          = 0.0f,
+        .CompareEnabled      = false,
+        .ComparisonFunc      = COMPARISON_FUNC::ALWAYS,
+        .MinLOD              = 0.0f,
+        .MaxLOD              = 0.0f
+    };
 
     m_pAniSampler = m_pDevice->createSampler(samplerInfo);
     if (!m_pAniSampler) {
@@ -51,7 +43,7 @@ bool ShaderResourceHandler::initHandler()
 
     // Create quad. DirectX's NDC has coordinates in [-1, 1], but here [0, 1]
     // is used as it eases resizing and positioning in the UI vertex shader.
-    Vertex2D pQuadVertices[4] = {
+    const Vertex2D pQuadVertices[4] = {
         // Position, TXCoord
         {{0.0f, 0.0f}, {0.0f, 1.0f}},
         {{0.0f, 1.0f}, {0.0f, 0.0f}},
@@ -59,12 +51,18 @@ bool ShaderResourceHandler::initHandler()
         {{1.0f, 1.0f}, {1.0f, 0.0f}}
     };
 
-    IBuffer* pQuadBuffer = m_pDevice->createVertexBuffer(pQuadVertices, sizeof(Vertex2D), 4);
-    m_pQuadVertices = reinterpret_cast<BufferDX11*>(pQuadBuffer);
+    m_pQuadVertices = m_pDevice->createVertexBuffer(pQuadVertices, sizeof(Vertex2D), 4);
+
     return m_pQuadVertices;
 }
 
-IBuffer* ShaderResourceHandler::getQuarterScreenQuad()
+void ShaderResourceHandler::Release()
+{
+    delete m_pQuadVertices;
+    delete m_pAniSampler;
+}
+
+IBuffer* ShaderResourceHandler::GetQuarterScreenQuad()
 {
     return m_pQuadVertices;
 }

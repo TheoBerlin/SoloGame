@@ -29,24 +29,24 @@ public:
     ThreadPool(const ThreadPool& other) = delete;
     void operator=(const ThreadPool& other) = delete;
 
-    static ThreadPool& getInstance() { return s_Instance; }
+    static ThreadPool& GetInstance() { return s_Instance; }
 
-    void initialize();
+    void Init();
 
-    // Returns index to thread join resources. Calling join() on the returned index is required.
-    size_t execute(std::function<void()> job);
+    // Returns index to thread join resources. Calling Join() on the returned index is required.
+    size_t Execute(std::function<void()> job);
 
-    // Schedules a job without any join resources attached. Calling joinAll() before the program exits is required.
-    void executeDetached(std::function<void()> job);
+    // Schedules a job without any join resources attached. Calling JoinAll() before the program exits is required.
+    void ExecuteDetached(std::function<void()> job);
 
-    void join(size_t joinResourcesIndex);
-    void joinAll();
+    void Join(size_t joinResourcesIndex);
+    void JoinAll();
 
-    size_t getThreadCount() const { return m_Threads.size(); }
+    size_t GetThreadCount() const { return m_Threads.size(); }
 
 private:
     // Infinite loop where threads wait for jobs
-    void waitForJob();
+    void WaitForJob();
 
 private:
     static ThreadPool s_Instance;

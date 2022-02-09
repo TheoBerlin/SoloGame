@@ -6,7 +6,6 @@
 
 #include <vulkan/vulkan.h>
 
-#define NOMINMAX
 #include <vma/vk_mem_alloc.h>
 
 class DeviceCreatorVK;

@@ -18,13 +18,12 @@
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 CommandListDX11* CommandListDX11::create(DeviceDX11* pDevice)
 {
     ID3D11DeviceContext* pContext = nullptr;
-    HRESULT hr = pDevice->getDevice()->CreateDeferredContext(0, &pContext);
+    const HRESULT hr = pDevice->getDevice()->CreateDeferredContext(0, &pContext);
     if (FAILED(hr)) {
         LOG_ERRORF("Failed to create deferred context: %s", hresultToString(hr).c_str());
         return nullptr;

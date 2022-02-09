@@ -6,7 +6,6 @@
 #include <Engine/Rendering/ShaderHandler.hpp>
 #include <Engine/Utils/ResourcePool.hpp>
 
-#define NOMINMAX
 #include <DirectXMath.h>
 
 #include <array>

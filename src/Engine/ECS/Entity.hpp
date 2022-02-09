@@ -1,3 +1,3 @@
 #pragma once
 
-typedef size_t Entity;
+typedef uint32_t Entity;

@@ -12,31 +12,26 @@
 
 #include <algorithm>
 
-TextRenderer::TextRenderer(ECSCore* pECS, Device* pDevice)
-    :ComponentHandler(pECS, TID(TextRenderer)),
-    m_pDevice(pDevice)
-{
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-    registerHandler(handlerReg);
-}
+TextRenderer::TextRenderer(Device* pDevice)
+    :m_pDevice(pDevice)
+{}
 
 TextRenderer::~TextRenderer()
 {
-    FT_Error err = FT_Done_FreeType(ftLib);
+    const FT_Error err = FT_Done_FreeType(ftLib);
 	if (err) {
 		LOG_ERRORF("Failed to release FreeType library: %s", FT_Error_String(err));
 	}
 }
 
-bool TextRenderer::initHandler()
+bool TextRenderer::Init()
 {
     // https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html
     // [Since 2.5.6] In multi-threaded applications it is easiest to use one FT_Library object per thread.
     // In case this is too cumbersome, a single FT_Library object across threads is possible also, as long as a mutex lock is used around FT_New_Face and FT_Done_Face.
 
     // Initialize FreeType library
-	FT_Error err = FT_Init_FreeType(&ftLib);
+	const FT_Error err = FT_Init_FreeType(&ftLib);
 	if (err) {
 		LOG_ERRORF("Failed to initialize FreeType library: %s", FT_Error_String(err));
         FT_Done_FreeType(ftLib);
@@ -71,7 +66,7 @@ std::shared_ptr<Texture> TextRenderer::renderText(const std::string& text, const
         return nullptr;
     }
 
-    DirectX::XMUINT2 textureSize = calculateTextureSize(text, glyphs, face);
+    const DirectX::XMUINT2 textureSize = calculateTextureSize(text, glyphs, face);
 
     // The bytemap to paste glyph bytemaps onto
     Bytemap textBytemap;

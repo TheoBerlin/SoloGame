@@ -1,6 +1,5 @@
 #pragma once
 
-#define NOMINMAX
 #include <Engine/ECS/System.hpp>
 #include <Engine/InputHandler.hpp>
 
@@ -11,12 +10,10 @@ class Window;
 class ButtonSystem : public System
 {
 public:
-    ButtonSystem(ECSCore* pECS, Window* pWindow);
+    ButtonSystem(Window* pWindow);
     ~ButtonSystem() = default;
 
-    virtual bool initSystem() override;
-
-    void update(float dt);
+    void Update(float dt);
 
 private:
     IDVector m_Buttons;

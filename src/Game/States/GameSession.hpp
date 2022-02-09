@@ -7,38 +7,32 @@
 #include <Game/Racer/Systems/RacerController.hpp>
 
 class InputHandler;
-class MainMenu;
+class MainMenuState;
 class ModelLoader;
 class SoundHandler;
 
 class GameSession : public State
 {
 public:
-    GameSession(MainMenu* pMainMenu);
+    GameSession(MainMenuState* pMainMenu);
     ~GameSession() = default;
 
-    void init() override final;
+    void Init() override final;
 
-    void resume() override final;
-    void pause() override final;
+    void Resume() override final;
+    void Pause() override final;
 
-    void update(float dt);
-
-private:
-    void startMusic(SoundHandler* pSoundHandler);
-    void createCube(const DirectX::XMFLOAT3& position, const std::string& soundPath, SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
-    void createPointLights(SoundHandler* pSoundHandler, TransformHandler* pTransformHandler, EntityPublisher* pEntityPublisher);
-    void createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, TransformHandler* pTransformHandler, ModelLoader* pModelLoader);
-    void createPlayer(TransformHandler* pTransformHandler, EntityPublisher* pEntityPublisher);
+    void Update(float dt) override final;
 
 private:
-    // Component handlers
-    TrackHandler m_TrackPositionHandler;
+    void CreatePointLights();
+    void CreateTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints);
+    void CreatePlayer();
+
+private:
     TubeHandler m_TubeHandler;
 
     // Systems
     LightSpinner m_LightSpinner;
     RacerController m_RacerController;
-
-    InputHandler* m_pInputHandler;
 };

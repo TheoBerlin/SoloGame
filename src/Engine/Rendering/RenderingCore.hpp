@@ -1,24 +1,28 @@
 #pragma once
 
-#include <Engine/Rendering/Camera.hpp>
-#include <Engine/Rendering/Components/PointLight.hpp>
-#include <Engine/Rendering/Components/VPMatrices.hpp>
-#include <Engine/Rendering/ShaderResourceHandler.hpp>
+#include <Engine/Rendering/Window.hpp>
 
-class Window;
+class CameraSystem;
+class Device;
+
+struct EngineConfig;
 
 class RenderingCore
 {
 public:
-    RenderingCore(ECSCore* pECS, Device* pDevice, Window* pWindow);
+    RenderingCore();
     ~RenderingCore();
 
+    bool Init(const EngineConfig& engineConfig);
+
+    Window* GetWindow()             { return &m_Window; }
+    Device* GetDevice()             { return m_pDevice; }
+    CameraSystem* GetCameraSystem() { return m_pCameraSystem; }
+
 private:
-    // Component Handlers
-    VPHandler m_VPHandler;
-    ShaderResourceHandler m_ShaderResourceHandler;
-    LightHandler m_LightHandler;
+    Window m_Window;
+    Device* m_pDevice;
 
     // Systems
-    CameraSystem m_CameraSystem;
+    CameraSystem* m_pCameraSystem;
 };

@@ -20,7 +20,7 @@ def lint(cppcheck_path, report_path, ignore_path):
 		'--template={callstack}: ({severity}) {message}',
 		'--inconclusive',
 		'-q',
-		'--project=LambdaEngine.sln',
+		'--project=GameProject.sln',
 		'--project-configuration=Release|x64'
 	]
 

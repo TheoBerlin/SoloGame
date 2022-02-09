@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/ECS/Component.hpp>
 #include <Engine/ECS/EntitySubscriber.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
@@ -9,99 +9,59 @@
 
 const DirectX::XMVECTOR g_DefaultForward = {0.0f, 0.0f, -1.0f};
 const DirectX::XMVECTOR g_DefaultUp = {0.0f, 1.0f, 0.0f};
+constexpr const DirectX::XMFLOAT4 g_QuaternionIdentity = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-struct Position {
+struct PositionComponent {
+    DECL_COMPONENT(PositionComponent);
     DirectX::XMFLOAT3 Position;
 };
 
-struct Scale {
+struct ScaleComponent {
+    DECL_COMPONENT(ScaleComponent);
     DirectX::XMFLOAT3 Scale;
 };
 
-struct Rotation {
+struct RotationComponent {
+    DECL_COMPONENT(RotationComponent);
     DirectX::XMFLOAT4 Quaternion;
-};
-
-const std::type_index g_TIDPosition = TID(Position);
-const std::type_index g_TIDScale    = TID(Scale);
-const std::type_index g_TIDRotation = TID(Rotation);
-
-struct Transform {
-    DirectX::XMFLOAT3& Position;
-    DirectX::XMFLOAT3& Scale;
-    DirectX::XMFLOAT4& RotationQuaternion;
 };
 
 class TransformComponents : public IComponentGroup
 {
 public:
-    std::vector<ComponentAccess> toVector() const override final
+    std::vector<ComponentAccess> ToArray() const override final
     {
-        return {m_Position, m_Scale, m_Rotation};
+        return { m_Position, m_Scale, m_Rotation };
     }
 
 public:
-    ComponentAccess m_Position    = {R, g_TIDPosition};
-    ComponentAccess m_Scale       = {R, g_TIDScale};
-    ComponentAccess m_Rotation    = {R, g_TIDRotation};
+    GroupedComponent<PositionComponent> m_Position;
+    GroupedComponent<ScaleComponent> m_Scale;
+    GroupedComponent<RotationComponent> m_Rotation;
 };
 
-struct WorldMatrix {
-    DirectX::XMFLOAT4X4 worldMatrix;
-    // Flags whether or not the potential belonging Transform component has been written to since the last access
-    bool dirty;
+struct WorldMatrixComponent {
+    DECL_COMPONENT_WITH_DIRTY_FLAG(WorldMatrixComponent);
+    DirectX::XMFLOAT4X4 WorldMatrix;
 };
 
-const std::type_index g_TIDWorldMatrix = TID(WorldMatrix);
+DirectX::XMFLOAT4X4 CreateWorldMatrix(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& scale, const DirectX::XMFLOAT4& rotationQuat);
 
-class TransformHandler : public ComponentHandler
-{
-public:
-    TransformHandler(ECSCore* pECS);
-    ~TransformHandler();
+// Transform calculation functions
+DirectX::XMVECTOR GetUp(const DirectX::XMFLOAT4& rotationQuat);
+DirectX::XMVECTOR GetForward(const DirectX::XMFLOAT4& rotationQuat);
+DirectX::XMFLOAT4 GetRotationQuaternion(const DirectX::XMFLOAT3& forward);
 
-    virtual bool initHandler() override;
+float GetPitch(const DirectX::XMVECTOR& forward);
+float GetYaw(const DirectX::XMVECTOR& forward);
+float GetRoll(const DirectX::XMFLOAT4& rotationQuat);
+// Vectors are assumed to be normalized
+float GetOrientedAngle(const DirectX::XMVECTOR& V1, const DirectX::XMVECTOR& V2, const DirectX::XMVECTOR& normal);
 
-    void createPosition(Entity entity, const DirectX::XMFLOAT3& position = {0.0f, 0.0f, 0.0f});
-    void createScale(Entity entity, const DirectX::XMFLOAT3& scale = {1.0f, 1.0f, 1.0f});
-    void createRotation(Entity entity);
+// Assumes the forward is normalized
+void SetForward(DirectX::XMFLOAT4& rotationQuat, const DirectX::XMVECTOR& forward);
 
-    void createTransform(Entity entity, const DirectX::XMFLOAT3& position = {0.0f, 0.0f, 0.0f}, const DirectX::XMFLOAT3& scale = {1.0f, 1.0f, 1.0f});
-    // Requires that the entity has a transform component
-    void createWorldMatrix(Entity entity);
+void Roll(DirectX::XMFLOAT4& rotationQuat, float angle);
 
-public:
-    // Required components: Position, Rotation and Scale
-    Transform getTransform(Entity entity);
-    // Required components: Position, Rotation, Scale and World Matrix
-    WorldMatrix& getWorldMatrix(Entity entity);
-    inline DirectX::XMFLOAT3& getPosition(Entity entity)   { return m_Positions.indexID(entity).Position; }
-    inline DirectX::XMFLOAT3& getScale(Entity entity)      { return m_Scales.indexID(entity).Scale; }
-    inline DirectX::XMFLOAT4& getRotation(Entity entity)   { return m_Rotations.indexID(entity).Quaternion; }
-
-public:
-    // Transform calculation functions
-    static DirectX::XMVECTOR getUp(const DirectX::XMFLOAT4& rotationQuat);
-    static DirectX::XMVECTOR getForward(const DirectX::XMFLOAT4& rotationQuat);
-    static DirectX::XMFLOAT4 getRotationQuaternion(const DirectX::XMFLOAT3& forward);
-
-    static float getPitch(const DirectX::XMVECTOR& forward);
-    static float getYaw(const DirectX::XMVECTOR& forward);
-    static float getRoll(const DirectX::XMFLOAT4& rotationQuat);
-    // Vectors are assumed to be normalized
-    static float getOrientedAngle(const DirectX::XMVECTOR& V1, const DirectX::XMVECTOR& V2, const DirectX::XMVECTOR& normal);
-
-    // Assumes the forward is normalized
-    static void setForward(DirectX::XMFLOAT4& rotationQuat, const DirectX::XMVECTOR& forward);
-
-    static void roll(DirectX::XMFLOAT4& rotationQuat, float angle);
-
-    // Rotate V around P using a given axis and angle
-    static void rotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle);
-
-private:
-    IDDVector<Position>     m_Positions;
-    IDDVector<Scale>        m_Scales;
-    IDDVector<Rotation>     m_Rotations;
-    IDDVector<WorldMatrix>  m_WorldMatrices;
-};
+// Rotate V around P using a given axis and angle
+void RotateAroundPoint(const DirectX::XMVECTOR& P, DirectX::XMVECTOR& V, const DirectX::XMVECTOR& axis, float angle);

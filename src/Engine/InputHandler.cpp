@@ -80,7 +80,7 @@ void InputHandler::keyActionCallbackStatic(GLFWwindow* pGLFWWindow, int key, int
     if (key != GLFW_KEY_UNKNOWN) {
         // Retrieve pointer to InputHandler instance
         Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
-        pWindow->getInputHandler()->keyActionCallback(key, scancode, action, mods);
+        pWindow->GetInputHandler()->keyActionCallback(key, scancode, action, mods);
     }
 }
 
@@ -88,7 +88,7 @@ void InputHandler::mouseButtonCallbackStatic(GLFWwindow* pGLFWWindow, int button
 {
     // Retrieve pointer to InputHandler instance
     Window* pWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGLFWWindow));
-    pWindow->getInputHandler()->mouseButtonCallback(button, action, mods);
+    pWindow->GetInputHandler()->mouseButtonCallback(button, action, mods);
 }
 
 void InputHandler::keyActionCallback(int key, int scancode, int action, int mods)

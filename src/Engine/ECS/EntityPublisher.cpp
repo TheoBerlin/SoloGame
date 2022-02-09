@@ -1,146 +1,82 @@
 #include "EntityPublisher.hpp"
 
-#include <Engine/ECS/ComponentHandler.hpp>
-#include <Engine/ECS/System.hpp>
-#include <Engine/Utils/GeneralUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
+#include "Engine/ECS/ComponentStorage.hpp"
+#include "Engine/ECS/System.hpp"
 
-EntityPublisher::EntityPublisher(EntityRegistry* pEntityRegistry)
-    :m_pEntityRegistry(pEntityRegistry)
+EntityPublisher::EntityPublisher(const ComponentStorage* pComponentStorage, const EntityRegistry* pEntityRegistry)
+    :m_pComponentStorage(pComponentStorage),
+    m_pEntityRegistry(pEntityRegistry)
 {}
 
-EntityPublisher::~EntityPublisher()
-{}
-
-
-void EntityPublisher::registerComponentHandler(const ComponentHandlerRegistration& componentHandlerRegistration)
-{
-    ComponentHandler* pComponentHandler = componentHandlerRegistration.pComponentHandler;
-    std::type_index tidHandler = pComponentHandler->getHandlerType();
-
-    this->m_ComponentHandlers[tidHandler] = pComponentHandler;
-
-    // Register component containers
-    for (const ComponentRegistration& componentReg : componentHandlerRegistration.ComponentRegistrations) {
-        auto mapItr = this->m_ComponentStorage.find(componentReg.tid);
-
-        if (mapItr != this->m_ComponentStorage.end()) {
-            LOG_WARNINGF("Attempted to register an already handled component type: %s", componentReg.tid.name());
-            continue;
-        }
-
-        this->m_ComponentStorage.insert({componentReg.tid, {componentReg.pComponentContainer, componentReg.m_ComponentDestructor}});
-    }
-}
-
-void EntityPublisher::deregisterComponentHandler(ComponentHandler* handler)
-{
-    const std::vector<std::type_index>& componentTypes = handler->getHandledTypes();
-
-    for (const std::type_index& componentType : componentTypes) {
-        // Delete component query functions
-        auto handlerItr = m_ComponentStorage.find(componentType);
-
-        if (handlerItr == m_ComponentStorage.end()) {
-            LOG_WARNINGF("Attempted to deregister a component handler for an unregistered component type: %s", componentType.name());
-            continue;
-        }
-
-        const std::vector<Entity>& entities = handlerItr->second.m_pContainer->getIDs();
-        for (Entity entity : entities) {
-            removedComponent(entity, componentType);
-        }
-
-        m_ComponentStorage.erase(handlerItr);
-    }
-
-    auto handlerItr = m_ComponentHandlers.find(handler->getHandlerType());
-
-    if (handlerItr == m_ComponentHandlers.end()) {
-        LOG_WARNINGF("Attempted to deregister an unregistered component handler: %s", handler->getHandlerType().name());
-        return;
-    }
-
-    m_ComponentHandlers.erase(handlerItr);
-}
-
-ComponentHandler* EntityPublisher::getComponentHandler(const std::type_index& handlerType)
-{
-    auto itr = m_ComponentHandlers.find(handlerType);
-
-    if (itr == m_ComponentHandlers.end()) {
-        LOG_WARNINGF("Failed to retrieve component handler: %s", handlerType.name());
-        return nullptr;
-    }
-
-    return itr->second;
-}
-
-size_t EntityPublisher::subscribeToComponents(const EntitySubscriberRegistration& subscriberRegistration)
+uint32_t EntityPublisher::SubscribeToEntities(const EntitySubscriberRegistration& subscriberRegistration)
 {
     // Create subscriptions from the subscription requests by finding the desired component containers
     std::vector<EntitySubscription> subscriptions;
     const std::vector<EntitySubscriptionRegistration>& subscriptionRequests = subscriberRegistration.EntitySubscriptionRegistrations;
     subscriptions.reserve(subscriptionRequests.size());
 
+    // Convert subscription requests to subscriptions. Also eliminate duplicate TIDs in subscription requests.
     for (const EntitySubscriptionRegistration& subReq : subscriptionRequests) {
-        const std::vector<ComponentAccess>& componentRegs = subReq.m_ComponentAccesses;
+        const std::vector<ComponentAccess>& componentRegs = subReq.ComponentAccesses;
 
         EntitySubscription newSub;
-        newSub.componentTypes.reserve(componentRegs.size());
+        newSub.ComponentTypes.reserve(componentRegs.size());
 
-        newSub.subscriber = subReq.m_pSubscriber;
-        newSub.onEntityAdded = subReq.m_OnEntityAdded;
-        newSub.onEntityRemoved = subReq.m_OnEntityRemoved;
+        newSub.pSubscriber = subReq.pSubscriber;
+        newSub.OnEntityAdded = subReq.OnEntityAdded;
+        newSub.OnEntityRemoval = subReq.OnEntityRemoval;
+        newSub.ExcludedComponentTypes = subReq.ExcludedComponentTypes;
 
+        newSub.ComponentTypes.reserve(componentRegs.size());
         for (const ComponentAccess& componentReg : componentRegs) {
-            auto queryItr = m_ComponentStorage.find(componentReg.TID);
-
-            if (queryItr == m_ComponentStorage.end()) {
-                LOG_ERRORF("Attempted to subscribe to unregistered component type: %s, hash: %d", componentReg.TID.name(), componentReg.TID.hash_code());
-                return 0;
-            }
-
-            newSub.componentTypes.push_back(componentReg.TID);
+            newSub.ComponentTypes.push_back(componentReg.pTID);
         }
 
-        eliminateDuplicates(newSub.componentTypes);
-        newSub.componentTypes.shrink_to_fit();
-        subscriptions.push_back(newSub);
+        EliminateDuplicateTIDs(newSub.ComponentTypes);
+        newSub.ComponentTypes.shrink_to_fit();
+        subscriptions.emplace_back(newSub);
     }
 
-    size_t subID = m_SystemIDGenerator.genID();
+    const uint32_t subID = m_SystemIDGenerator.GenID();
     m_SubscriptionStorage.push_back(subscriptions, subID);
 
-    // Map each component type to its subscriptions
-    const std::vector<EntitySubscription>& subs = m_SubscriptionStorage.indexID(subID);
+    // Map each component type (included and excluded) to its subscriptions
+    const std::vector<EntitySubscription>& subs = m_SubscriptionStorage.IndexID(subID);
 
-    for (size_t subscriptionNr = 0; subscriptionNr < subs.size(); subscriptionNr += 1) {
-        const std::vector<std::type_index>& componentTypes = subs[subscriptionNr].componentTypes;
+    for (uint32_t subscriptionNr = 0; subscriptionNr < subs.size(); subscriptionNr += 1) {
+        const EntitySubscription& subscription = subs[subscriptionNr];
+        const std::vector<const ComponentType*>& componentTypes          = subscription.ComponentTypes;
+        const std::vector<const ComponentType*>& excludedComponentTypes  = subscription.ExcludedComponentTypes;
 
-        for (const std::type_index& componentType : componentTypes) {
-            m_ComponentSubscriptions.insert({componentType, {subID, subscriptionNr}});
+        for (const ComponentType* pComponentType : componentTypes) {
+            m_ComponentSubscriptions.insert({ pComponentType, { subID, subscriptionNr }});
+        }
+
+        for (const ComponentType* pExcludedComponentType : excludedComponentTypes) {
+            m_ComponentSubscriptions.insert({ pExcludedComponentType, { subID, subscriptionNr }});
         }
     }
 
     // A subscription has been made, notify the system of all existing components it subscribed to
     for (EntitySubscription& subscription : subscriptions) {
-        // Fetch the entity vector of the first subscribed component type
-        auto queryItr = m_ComponentStorage.find(subscription.componentTypes.front());
+        const ComponentType* pFirstComponentType = subscription.ComponentTypes.front();
+        if (!m_pComponentStorage->HasType(pFirstComponentType)) {
+            continue;
+        }
 
-        // It has already been ensured that the component type is registered, no need to check for a missed search
-        const IDContainer* pComponentContainer = queryItr->second.m_pContainer;
-        const std::vector<Entity>& entities = pComponentContainer->getIDs();
+        // Fetch the component vector of the first subscribed component type
+        const IComponentArray* pComponentArray = m_pComponentStorage->GetComponentArray(pFirstComponentType);
+        const std::vector<Entity>& entities = pComponentArray->GetIDs();
 
         // See which entities in the entity vector also have all the other component types. Register those entities in the system.
         for (Entity entity : entities) {
-            bool registerEntity = m_pEntityRegistry->entityHasTypes(entity, subscription.componentTypes);
+            const bool registerEntity = m_pEntityRegistry->EntityHasAllowedTypes(entity, subscription.ComponentTypes, subscription.ExcludedComponentTypes);
 
             if (registerEntity) {
-                subscription.subscriber->push_back(entity);
+                subscription.pSubscriber->push_back(entity);
 
-                if (subscription.onEntityAdded != nullptr) {
-                    subscription.onEntityAdded(entity);
+                if (subscription.OnEntityAdded != nullptr) {
+                    subscription.OnEntityAdded(entity);
                 }
             }
         }
@@ -149,21 +85,21 @@ size_t EntityPublisher::subscribeToComponents(const EntitySubscriberRegistration
     return subID;
 }
 
-void EntityPublisher::unsubscribeFromComponents(size_t subscriptionID)
+void EntityPublisher::UnsubscribeFromEntities(uint32_t subscriptionID)
 {
-    if (m_SubscriptionStorage.hasElement(subscriptionID) == false) {
-        LOG_WARNINGF("Attempted to deregistered an unregistered system, ID: %d", subscriptionID);
+    if (m_SubscriptionStorage.HasElement(subscriptionID) == false) {
+        LOG_WARNINGF("Attempted to deregistered an unregistered system, ID: %u", subscriptionID);
         return;
     }
 
     // Use the subscriptions to find and delete component subscriptions
-    std::vector<EntitySubscription>& subscriptions = m_SubscriptionStorage.indexID(subscriptionID);
+    const std::vector<EntitySubscription>& subscriptions = m_SubscriptionStorage.IndexID(subscriptionID);
 
     for (const EntitySubscription& subscription : subscriptions) {
-        const std::vector<std::type_index>& componentTypes = subscription.componentTypes;
+        const std::vector<const ComponentType*>& componentTypes = subscription.ComponentTypes;
 
-        for (const std::type_index& componentType : componentTypes) {
-            auto subBucketItr = m_ComponentSubscriptions.find(componentType);
+        for (const ComponentType* pComponentType : componentTypes) {
+            auto subBucketItr = m_ComponentSubscriptions.find(pComponentType);
 
             if (subBucketItr == m_ComponentSubscriptions.end()) {
                 LOG_WARNING("Attempted to delete non-existent component subscription");
@@ -172,8 +108,8 @@ void EntityPublisher::unsubscribeFromComponents(size_t subscriptionID)
             }
 
             // Find the subscription and delete it
-            while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == componentType) {
-                if (subBucketItr->second.systemID == subscriptionID) {
+            while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == pComponentType) {
+                if (subBucketItr->second.SystemID == subscriptionID) {
                     m_ComponentSubscriptions.erase(subBucketItr);
                     break;
                 }
@@ -184,26 +120,38 @@ void EntityPublisher::unsubscribeFromComponents(size_t subscriptionID)
     }
 
     // All component->subscription mappings have been deleted
-    m_SubscriptionStorage.pop(subscriptionID);
+    m_SubscriptionStorage.Pop(subscriptionID);
 
     // Recycle system iD
-    m_SystemIDGenerator.popID(subscriptionID);
+    m_SystemIDGenerator.PopID(subscriptionID);
 }
 
-void EntityPublisher::newComponent(Entity entityID, std::type_index componentType)
+void EntityPublisher::PublishComponent(Entity entity, const ComponentType* pComponentType)
 {
     // Get all subscriptions for the component type by iterating through the unordered_map bucket
-    auto subBucketItr = m_ComponentSubscriptions.find(componentType);
+    auto subBucketItr = m_ComponentSubscriptions.find(pComponentType);
 
-    while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == componentType) {
+    while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == pComponentType) {
         // Use indices stored in the component type -> component storage mapping to get the component subscription
-        EntitySubscription& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
+        EntitySubscription& sysSub = m_SubscriptionStorage.IndexID(subBucketItr->second.SystemID)[subBucketItr->second.SubIdx];
 
-        if (m_pEntityRegistry->entityHasTypes(entityID, sysSub.componentTypes)) {
-            sysSub.subscriber->push_back(entityID);
+        const bool entityHasExcludedTypes = m_pEntityRegistry->EntityHasAnyOfTypes(entity, sysSub.ExcludedComponentTypes);
+        const bool subscriberHasEntity = sysSub.pSubscriber->HasElement(entity);
 
-            if (sysSub.onEntityAdded) {
-                sysSub.onEntityAdded(entityID);
+        // Check if an excluded type was added. If so, remove the entity
+        if (subscriberHasEntity && entityHasExcludedTypes) {
+            if (sysSub.OnEntityRemoval) {
+                sysSub.OnEntityRemoval(entity);
+            }
+
+            sysSub.pSubscriber->Pop(entity);
+        }
+        // Check if the entity should be added to the subscription
+        else if (!subscriberHasEntity && !entityHasExcludedTypes && m_pEntityRegistry->EntityHasAllTypes(entity, sysSub.ComponentTypes)) {
+            sysSub.pSubscriber->push_back(entity);
+
+            if (sysSub.OnEntityAdded) {
+                sysSub.OnEntityAdded(entity);
             }
         }
 
@@ -211,26 +159,43 @@ void EntityPublisher::newComponent(Entity entityID, std::type_index componentTyp
     }
 }
 
-void EntityPublisher::removedComponent(Entity entityID, std::type_index componentType)
+void EntityPublisher::UnpublishComponent(Entity entity, const ComponentType* pComponentType)
 {
-    // Get all subscriptions for the component type by iterating through the unordered_map bucket
-    auto subBucketItr = m_ComponentSubscriptions.find(componentType);
+    // Get all subscriptions for the component type by iterating through the unordered_multimap bucket
+    auto subBucketItr = m_ComponentSubscriptions.find(pComponentType);
 
-    while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == componentType) {
+    while (subBucketItr != m_ComponentSubscriptions.end() && subBucketItr->first == pComponentType) {
         // Use indices stored in the component type -> component storage mapping to get the component subscription
-        EntitySubscription& sysSub = m_SubscriptionStorage.indexID(subBucketItr->second.systemID)[subBucketItr->second.subIdx];
+        EntitySubscription& sysSub = m_SubscriptionStorage.IndexID(subBucketItr->second.SystemID)[subBucketItr->second.SubIdx];
 
-        if (!sysSub.subscriber->hasElement(entityID)) {
-            subBucketItr++;
-            continue;
+        if (!sysSub.pSubscriber->HasElement(entity)) {
+            // Check if this component was excluded, and therefore preventing an entity to being pushed to a subscriber
+            if (m_pEntityRegistry->EntityHasAllowedTypes(entity, sysSub.ComponentTypes, sysSub.ExcludedComponentTypes)) {
+                sysSub.pSubscriber->push_back(entity);
+
+                if (sysSub.OnEntityAdded) {
+                    sysSub.OnEntityAdded(entity);
+                }
+            }
         }
+        else {
+            if (sysSub.OnEntityRemoval) {
+                sysSub.OnEntityRemoval(entity);
+            }
 
-        if (sysSub.onEntityRemoved) {
-            sysSub.onEntityRemoved(entityID);
+            sysSub.pSubscriber->Pop(entity);
         }
-
-        sysSub.subscriber->pop(entityID);
 
         subBucketItr++;
     }
+}
+
+void EntityPublisher::EliminateDuplicateTIDs(std::vector<const ComponentType*>& TIDs)
+{
+    std::unordered_set<const ComponentType*> set;
+    for (const ComponentType* pElement : TIDs) {
+        set.insert(pElement);
+    }
+
+    TIDs.assign(set.begin(), set.end());
 }

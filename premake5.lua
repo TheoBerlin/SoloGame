@@ -62,24 +62,27 @@ workspace "GameProject"
 		symbols "on"
 		runtime "Debug"
 		defines {
+			"NOMINMAX",
 			"_DEBUG",
-			"TOUCAN_CONFIG_DEBUG",
+			"CONFIG_DEBUG",
 		}
 	filter "configurations:Release"
 		symbols "on"
 		runtime "Release"
 		optimize "Full"
 		defines {
+			"NOMINMAX",
 			"NDEBUG",
-			"TOUCAN_CONFIG_RELEASE",
+			"CONFIG_RELEASE",
 		}
 	filter "configurations:Production"
 		symbols "off"
 		runtime "Release"
 		optimize "Full"
 		defines {
+			"NOMINMAX",
 			"NDEBUG",
-			"TOUCAN_CONFIG_PRODUCTION",
+			"CONFIG_PRODUCTION",
 		}
 	filter {}
 
@@ -96,7 +99,7 @@ workspace "GameProject"
 
 	filter "system:windows"
 		defines {
-			"TOUCAN_PLATFORM_WINDOWS",
+			"PLATFORM_WINDOWS",
 		}
 	filter {}
 
@@ -171,6 +174,12 @@ workspace "GameProject"
 				"runtimeobject.lib",
                 "D3DCompiler.lib"
 			}
+
+			filter { "system:windows", "configurations:Debug" }
+				links {
+					"dxgi.lib"
+				}
+		filter { "system:windows" }
 			postbuildcommands {
 				("{COPY} " .. FMOD_DLL_PATH .. " \"build/bin/" .. outputdir .. "/GameProject/\""),
 			}

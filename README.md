@@ -3,7 +3,7 @@
 ## [Dashboard](https://theoberlin.github.io/SoloGamePages/dashboard.html)
 
 ## What is this project?
-In this repository is an engine being made from scratch using C++. Graphics rendering is performed by either DirectX or Vulkan. This is a project I started working on for two purposes; to learn and to have something to display to employers.
+In this repository is an engine being made from scratch using C++. Graphics rendering is performed by either DirectX or Vulkan. This is a project I started working on mainly for learning and experimenting.
 
 ## Highlights in the code
 ### ECS

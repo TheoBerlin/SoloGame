@@ -1,6 +1,6 @@
 #include "DirectXUtils.hpp"
 
-DirectX::XMVECTOR catmullRomDerivative(DirectX::XMVECTOR P0, DirectX::XMVECTOR P1, DirectX::XMVECTOR P2, DirectX::XMVECTOR P3, float T)
+DirectX::XMVECTOR CatmullRomDerivative(DirectX::XMVECTOR P0, DirectX::XMVECTOR P1, DirectX::XMVECTOR P2, DirectX::XMVECTOR P3, float T)
 {
     float TT = T * T;
 
