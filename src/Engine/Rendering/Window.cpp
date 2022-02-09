@@ -52,7 +52,7 @@ void Window::pollEvents()
     glfwPollEvents();
 }
 
-void Window::close()
+void Window::Close()
 {
     glfwSetWindowShouldClose(m_pWindow, GLFW_TRUE);
 }

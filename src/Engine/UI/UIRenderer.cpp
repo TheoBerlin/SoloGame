@@ -8,9 +8,8 @@
 
 #include <algorithm>
 
-UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
-    :Renderer(pECS, pDevice, pRenderingHandler),
-    m_pUIHandler(nullptr),
+UIRenderer::UIRenderer(Device* pDevice, RenderingHandler* pRenderingHandler)
+    :Renderer(pDevice, pRenderingHandler),
     m_CommandListsToReset(MAX_FRAMES_IN_FLIGHT),
     m_pQuad(nullptr),
     m_pAniSampler(nullptr),
@@ -24,23 +23,31 @@ UIRenderer::UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRender
     std::fill_n(m_ppFramebuffers, MAX_FRAMES_IN_FLIGHT, nullptr);
 
     EntitySubscriberRegistration entitySubscriberRegistration = {
-        {
-            {{{R, tid_UIPanel}}, &m_Panels, [this](Entity entity){ onPanelAdded(entity); }, [this](Entity entity){ onPanelRemoved(entity); }}
+        .EntitySubscriptionRegistrations = {
+            {
+                .pSubscriber = &m_Panels,
+                .ComponentAccesses =
+                {
+                    { R, UIPanelComponent::Type() }
+                },
+                .OnEntityAdded = std::bind_front(&UIRenderer::OnPanelAdded, this),
+                .OnEntityRemoval = std::bind_front(&UIRenderer::OnPanelRemoved, this)
+            }
         }
     };
 
-    registerRenderer(entitySubscriberRegistration);
+    RegisterRenderer(entitySubscriberRegistration);
 }
 
 UIRenderer::~UIRenderer()
 {
     // Delete all panel render resources
-    for (Entity entity : m_Panels.getIDs()) {
-        PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
+    for (Entity entity : m_Panels) {
+        PanelRenderResources& panelRenderResources = m_PanelRenderResources.IndexID(entity);
         delete panelRenderResources.pBuffer;
         delete panelRenderResources.pDescriptorSet;
 
-        m_PanelRenderResources.pop(entity);
+        m_PanelRenderResources.Pop(entity);
     }
 
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
@@ -55,7 +62,7 @@ UIRenderer::~UIRenderer()
     delete m_pPipeline;
 }
 
-bool UIRenderer::init()
+bool UIRenderer::Init()
 {
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
         m_ppCommandPools[frameIndex] = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
@@ -69,40 +76,37 @@ bool UIRenderer::init()
         }
     }
 
-    m_pUIHandler = static_cast<UIHandler*>(getComponentHandler(TID(UIHandler)));
-    if (!m_pUIHandler) {
+    ShaderResourceHandler* pShaderResourceHandler = ShaderResourceHandler::GetInstance();
+    m_pQuad         = pShaderResourceHandler->GetQuarterScreenQuad();
+    m_pAniSampler   = pShaderResourceHandler->GetAniSampler();
+
+    if (!CreateDescriptorSetLayouts()) {
         return false;
     }
 
-    ShaderResourceHandler* pShaderResourceHandler = static_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
-    m_pQuad         = pShaderResourceHandler->getQuarterScreenQuad();
-    m_pAniSampler   = pShaderResourceHandler->getAniSampler();
-
-    if (!createDescriptorSetLayouts()) {
+    if (!CreateRenderPass()) {
         return false;
     }
 
-    if (!createRenderPass()) {
+    if (!CreateFramebuffers()) {
         return false;
     }
 
-    if (!createFramebuffers()) {
-        return false;
-    }
-
-    return createPipeline();
+    return CreatePipeline();
 }
 
-void UIRenderer::updateBuffers()
+void UIRenderer::UpdateBuffers()
 {
-    size_t bufferSize = sizeof(
+    constexpr const size_t bufferSize = sizeof(
         DirectX::XMFLOAT2) * 2 +    // Position and size
         sizeof(DirectX::XMFLOAT4) + // Highlight color
         sizeof(float);              // Highlight factor
 
-    for (const Entity& entity : m_Panels.getIDs()) {
-        UIPanel& panel = m_pUIHandler->panels.indexID(entity);
-        PanelRenderResources& panelRenderResources = m_PanelRenderResources.indexID(entity);
+    const ComponentArray<UIPanelComponent>* pPanelComponents = ECSCore::GetInstance()->GetComponentArray<UIPanelComponent>();
+
+    for (const Entity& entity : m_Panels) {
+        const UIPanelComponent& panel = pPanelComponents->GetConstData(entity);
+        PanelRenderResources& panelRenderResources = m_PanelRenderResources.IndexID(entity);
 
         // Set per-object buffer
         void* pMappedBuffer = nullptr;
@@ -112,7 +116,7 @@ void UIRenderer::updateBuffers()
     }
 }
 
-void UIRenderer::recordCommands()
+void UIRenderer::RecordCommands()
 {
     if (m_CommandListsToReset == 0u) {
         return;
@@ -129,11 +133,11 @@ void UIRenderer::recordCommands()
     beginInfo.pFramebuffer  = m_ppFramebuffers[frameIndex];
     pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
-    if (!m_Panels.empty()) {
+    if (!m_Panels.Empty()) {
         pCommandList->bindPipeline(m_pPipeline);
         pCommandList->bindVertexBuffer(0u, m_pQuad);
 
-        for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources.getVec()) {
+        for (const PanelRenderResources& panelRenderResources : m_PanelRenderResources) {
             pCommandList->bindDescriptorSet(panelRenderResources.pDescriptorSet, m_pPipelineLayout, 0u);
             pCommandList->draw(4u);
         }
@@ -142,12 +146,12 @@ void UIRenderer::recordCommands()
     pCommandList->end();
 }
 
-void UIRenderer::executeCommands(ICommandList* pPrimaryCommandList)
+void UIRenderer::ExecuteCommands(ICommandList* pPrimaryCommandList)
 {
     pPrimaryCommandList->executeSecondaryCommandList(m_ppCommandLists[m_pDevice->getFrameIndex()]);
 }
 
-bool UIRenderer::createDescriptorSetLayouts()
+bool UIRenderer::CreateDescriptorSetLayouts()
 {
     m_pDescriptorSetLayout = m_pDevice->createDescriptorSetLayout();
     if (!m_pDescriptorSetLayout) {
@@ -159,7 +163,7 @@ bool UIRenderer::createDescriptorSetLayouts()
     return m_pDescriptorSetLayout->finalize(m_pDevice);
 }
 
-bool UIRenderer::createRenderPass()
+bool UIRenderer::CreateRenderPass()
 {
     RenderPassInfo renderPassInfo   = {};
 
@@ -214,7 +218,7 @@ bool UIRenderer::createRenderPass()
     return m_pRenderPass;
 }
 
-bool UIRenderer::createFramebuffers()
+bool UIRenderer::CreateFramebuffers()
 {
     FramebufferInfo framebufferInfo = {};
     framebufferInfo.pRenderPass     = m_pRenderPass;
@@ -232,7 +236,7 @@ bool UIRenderer::createFramebuffers()
     return true;
 }
 
-bool UIRenderer::createPipeline()
+bool UIRenderer::CreatePipeline()
 {
     m_pPipelineLayout = m_pDevice->createPipelineLayout({ m_pDescriptorSetLayout });
     if (!m_pPipelineLayout) {
@@ -297,23 +301,25 @@ bool UIRenderer::createPipeline()
     return m_pPipeline;
 }
 
-void UIRenderer::onPanelAdded(Entity entity)
+void UIRenderer::OnPanelAdded(Entity entity)
 {
+    LOG_INFO("hello there");
     m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
 
-    UIPanel& panel = m_pUIHandler->panels.indexID(entity);
+    UIPanelComponent& panel = ECSCore::GetInstance()->GetComponent<UIPanelComponent>(entity);
 
     PanelRenderResources panelRenderResources = {};
 
     // Create panel buffer
-    BufferInfo bufferInfo = {};
-    bufferInfo.ByteSize =
-        sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
-        sizeof(DirectX::XMFLOAT4) +     // Highlight color
-        sizeof(float);                  // Highlight factor
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
-    bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;
+    const BufferInfo bufferInfo = {
+        .ByteSize =
+            sizeof(DirectX::XMFLOAT2) * 2 + // Position and size
+            sizeof(DirectX::XMFLOAT4) +     // Highlight color
+            sizeof(float),                  // Highlight factor
+        .CPUAccess    = BUFFER_DATA_ACCESS::WRITE,
+        .GPUAccess    = BUFFER_DATA_ACCESS::READ,
+        .Usage        = BUFFER_USAGE::UNIFORM_BUFFER
+    };
 
     panelRenderResources.pBuffer = m_pDevice->createBuffer(bufferInfo);
     if (!panelRenderResources.pBuffer) {
@@ -332,12 +338,12 @@ void UIRenderer::onPanelAdded(Entity entity)
     m_PanelRenderResources.push_back(panelRenderResources, entity);
 }
 
-void UIRenderer::onPanelRemoved(Entity entity)
+void UIRenderer::OnPanelRemoved(Entity entity)
 {
     m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
 
-    PanelRenderResources panelRenderResources = m_PanelRenderResources.indexID(entity);
-    m_PanelRenderResources.pop(entity);
+    PanelRenderResources panelRenderResources = m_PanelRenderResources.IndexID(entity);
+    m_PanelRenderResources.Pop(entity);
 
     std::function<void()> deleteFunction = [this, panelRenderResources]() {
         m_pRenderingHandler->waitAllFrames();

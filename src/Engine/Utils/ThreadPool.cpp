@@ -8,7 +8,7 @@ ThreadPool::ThreadPool()
 
 ThreadPool::~ThreadPool()
 {
-    joinAll();
+    JoinAll();
 
     m_ScheduleLock.lock();
     m_TimeToTerminate = true;
@@ -24,7 +24,7 @@ ThreadPool::~ThreadPool()
     }
 }
 
-void ThreadPool::initialize()
+void ThreadPool::Init()
 {
     // hardware_concurrency might return 0
     size_t hwConc = std::thread::hardware_concurrency();
@@ -32,7 +32,7 @@ void ThreadPool::initialize()
 
     m_Threads.reserve(threadCount);
     for (size_t threadIdx = 0u; threadIdx < threadCount; threadIdx++) {
-        m_Threads.push_back(std::thread(std::bind(&ThreadPool::waitForJob, this)));
+        m_Threads.push_back(std::thread(std::bind(&ThreadPool::WaitForJob, this)));
     }
 
     m_JoinResources.resize(m_Threads.size() * 2u);
@@ -47,7 +47,7 @@ void ThreadPool::initialize()
     LOG_INFOF("Started thread pool with %ld threads", threadCount);
 }
 
-size_t ThreadPool::execute(std::function<void()> job)
+size_t ThreadPool::Execute(std::function<void()> job)
 {
     m_ScheduleLock.lock();
     size_t joinResourceIdx = 0u;
@@ -68,7 +68,7 @@ size_t ThreadPool::execute(std::function<void()> job)
     return joinResourceIdx;
 }
 
-void ThreadPool::executeDetached(std::function<void()> job)
+void ThreadPool::ExecuteDetached(std::function<void()> job)
 {
     m_ScheduleLock.lock();
     m_Jobs.push({ job, UINT64_MAX });
@@ -76,7 +76,7 @@ void ThreadPool::executeDetached(std::function<void()> job)
     m_ScheduleLock.unlock();
 }
 
-void ThreadPool::join(size_t joinResourcesIndex)
+void ThreadPool::Join(size_t joinResourcesIndex)
 {
     JoinResources* pJoinResources = m_JoinResources[joinResourcesIndex];
     std::unique_lock<std::mutex> uLock(pJoinResources->Mutex);
@@ -88,14 +88,14 @@ void ThreadPool::join(size_t joinResourcesIndex)
     m_ScheduleLock.unlock();
 }
 
-void ThreadPool::joinAll()
+void ThreadPool::JoinAll()
 {
     // Wait for all jobs to finish
     std::unique_lock<std::mutex> uLock(m_ScheduleLock);
     m_JobsExist.wait(uLock, [this]{ return m_Jobs.empty() && m_FreeJoinResourcesIndices.size() == m_JoinResources.size(); });
 }
 
-void ThreadPool::waitForJob()
+void ThreadPool::WaitForJob()
 {
     std::unique_lock<std::mutex> uLock(m_ScheduleLock);
     while (true) {

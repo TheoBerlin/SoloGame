@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/BlendState.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 struct BlendStateDX11 {

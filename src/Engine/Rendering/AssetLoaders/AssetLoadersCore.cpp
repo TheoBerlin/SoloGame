@@ -1,6 +1,6 @@
 #include "AssetLoadersCore.hpp"
 
-AssetLoadersCore::AssetLoadersCore(ECSCore* pECS, Device* pDevice)
-    :m_TextureLoader(pECS, pDevice),
-    m_ModelLoader(pECS, &m_TextureLoader, pDevice)
+AssetLoadersCore::AssetLoadersCore(RenderingCore* pRenderingCore)
+    :   m_TextureCache(pRenderingCore->GetDevice())
+    ,   m_ModelLoader(&m_TextureCache, pRenderingCore->GetDevice())
 {}

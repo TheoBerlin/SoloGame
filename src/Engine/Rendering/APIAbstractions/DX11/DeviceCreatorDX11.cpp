@@ -39,7 +39,7 @@ bool DeviceCreatorDX11::initDeviceAndSwapChain(const SwapchainInfo& swapChainInf
     UINT deviceFlags = 0;
 
     // If in debug mode, turn on D3D11 debugging
-    #if defined _DEBUG
+    #ifdef CONFIG_DEBUG
         deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
     #endif
 

@@ -3,7 +3,6 @@
 #include <Engine/Rendering/APIAbstractions/Framebuffer.hpp>
 #include <Engine/Rendering/APIAbstractions/GeneralResources.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <vector>
 

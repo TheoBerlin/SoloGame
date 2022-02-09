@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/ISampler.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <type_traits>
 

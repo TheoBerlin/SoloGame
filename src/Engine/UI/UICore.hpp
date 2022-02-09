@@ -4,16 +4,18 @@
 #include <Engine/UI/ButtonSystem.hpp>
 #include <Engine/Rendering/Text/TextRenderer.hpp>
 
-class Device;
-class Window;
+class RenderingCore;
 
 class UICore
 {
 public:
-    UICore(ECSCore* pECS, Device* pDevice, Window* pWindow);
-    ~UICore();
+    UICore(RenderingCore* pRenderingCore);
+    ~UICore() = default;
 
-    UIHandler& getPanelHandler()    { return m_PanelHandler; }
+    UIHandler* GetPanelHandler()    { return &m_PanelHandler; }
+    TextRenderer* GetTextRenderer() { return &m_TextRenderer; }
+
+    bool Init();
 
 private:
     // Component Handlers

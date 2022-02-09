@@ -32,6 +32,8 @@
 
 #include <Engine/IGame.hpp>
 
+#include <Engine/Utils/Assert.hpp>
+#include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/GeneralUtils.hpp>
 #include <Engine/Utils/Logger.hpp>
 

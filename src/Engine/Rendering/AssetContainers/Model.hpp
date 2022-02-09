@@ -27,7 +27,12 @@ struct Model {
     std::vector<Material> Materials;
 };
 
-inline void releaseModel(Model* pModel)
+struct ModelComponent {
+    DECL_COMPONENT(ModelComponent);
+    std::shared_ptr<Model> ModelPtr;
+};
+
+inline void ReleaseModel(Model* pModel)
 {
     for (Mesh& mesh : pModel->Meshes) {
         delete mesh.pVertexBuffer;

@@ -6,15 +6,15 @@ class IDGenerator
 {
 public:
     IDGenerator();
-    ~IDGenerator();
+    ~IDGenerator() = default;
 
-    size_t genID();
+    uint32_t GenID();
 
     // Registers ID as free to be generated again
-    void popID(size_t ID);
+    void PopID(uint32_t ID);
 
 private:
-    size_t nextFree;
+    uint32_t m_NextFree;
 
-    std::queue<size_t> recycled;
+    std::queue<uint32_t> m_Recycled;
 };

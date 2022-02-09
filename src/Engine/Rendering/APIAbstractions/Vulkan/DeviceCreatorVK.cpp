@@ -15,7 +15,7 @@ const std::vector<const char*> g_RequiredDeviceExtensions   = { VK_KHR_SWAPCHAIN
 Device* DeviceCreatorVK::createDevice(const SwapchainInfo& swapChainInfo, const Window* pWindow)
 {
     bool debugMode = false;
-    #ifdef _DEBUG
+    #ifdef CONFIG_DEBUG
         debugMode = true;
     #endif
 

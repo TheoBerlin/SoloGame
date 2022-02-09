@@ -1,26 +1,26 @@
 #pragma once
 
-#include <Engine/ECS/ComponentHandler.hpp>
-
-#define NOMINMAX
-#include <d3d11.h>
-
-class IBuffer;
 class Device;
+class IBuffer;
 class ISampler;
-struct Vertex;
 
-class ShaderResourceHandler : public ComponentHandler
+class ShaderResourceHandler
 {
 public:
-    ShaderResourceHandler(ECSCore* pECS, Device* pDevice);
-    ~ShaderResourceHandler();
+    ShaderResourceHandler();
+    ~ShaderResourceHandler() = default;
 
-    virtual bool initHandler() override;
+    bool Init(Device* pDevice);
+    void Release();
 
-    ISampler* getAniSampler() { return m_pAniSampler; }
+    ISampler* GetAniSampler() { return m_pAniSampler; }
 
-    IBuffer* getQuarterScreenQuad();
+    IBuffer* GetQuarterScreenQuad();
+
+    static ShaderResourceHandler* GetInstance() { return &s_Instance; }
+
+private:
+    static ShaderResourceHandler s_Instance;
 
 private:
     Device* m_pDevice;

@@ -22,7 +22,7 @@ public:
 
     bool cursorIsHidden() const     { return m_RawMotionEnabled; }
 
-    bool keyState(int key) const    { return m_pKeyStates[key]; }
+    bool KeyState(int key) const    { return m_pKeyStates[key]; }
 
     const glm::dvec2& getMousePosition() const   { return m_MousePosition; };
     const glm::dvec2& getMouseMove() const       { return m_MouseMove; };

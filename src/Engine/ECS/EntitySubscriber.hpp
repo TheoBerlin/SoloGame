@@ -1,66 +1,47 @@
 #pragma once
 
-#include <Engine/ECS/Entity.hpp>
+#include "Engine/ECS/Component.hpp"
+#include "Engine/ECS/Entity.hpp"
 
 #include <functional>
-#include <typeindex>
-#include <vector>
 
-class ECSCore;
 class IDVector;
 
-enum ComponentPermissions {
-    NDA = 0, // No Data Access
-    R   = 1,
-    RW  = 2
-};
-
-struct ComponentAccess {
-    ComponentPermissions Permissions;
-    std::type_index TID;
-};
-
-class IComponentGroup
-{
-public:
-    virtual std::vector<ComponentAccess> toVector() const = 0;
-};
-
-// EntitySubscriptionRegistration contains all required information to request a single entity subscription
-class EntitySubscriptionRegistration {
-public:
-    EntitySubscriptionRegistration(std::vector<ComponentAccess> componentAccesses, const std::vector<IComponentGroup*>& componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr, std::function<void(Entity)>onEntityRemoved = nullptr);
-    EntitySubscriptionRegistration(const std::vector<ComponentAccess>& componentAccesses, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr, std::function<void(Entity)>onEntityRemoved = nullptr);
-    EntitySubscriptionRegistration(const std::vector<IComponentGroup*>& componentGroups, IDVector* pSubscriber, std::function<void(Entity)>onEntityAdded = nullptr, std::function<void(Entity)>onEntityRemoved = nullptr);
-
-public:
-    std::vector<ComponentAccess> m_ComponentAccesses;
-    IDVector* m_pSubscriber;
-    // Optional: Called after an entity was added due to the subscription
-    std::function<void(Entity)> m_OnEntityAdded;
-    // Optional: Called before an entity was removed
-    std::function<void(Entity)> m_OnEntityRemoved;
+struct EntitySubscriptionRegistration {
+	IDVector* pSubscriber;
+	std::vector<ComponentAccess> ComponentAccesses;
+	std::vector<IComponentGroup*> ComponentGroups;
+	std::vector<const ComponentType*> ExcludedComponentTypes;
+	// Optional: Called after an entity is added due to the subscription
+	std::function<void(Entity)> OnEntityAdded;
+	// Optional: Called before an entity is removed
+	std::function<void(Entity)> OnEntityRemoval;
 };
 
 // EntitySubscriberRegistration is a complete set of data required to register a component subscriber
 struct EntitySubscriberRegistration {
-    std::vector<EntitySubscriptionRegistration> EntitySubscriptionRegistrations;
-    /*  AdditionalDependencies are components that the subscriber will process.
-        However, the subscriber will not store an array of the entities whose components it will process. */
-    std::vector<ComponentAccess> AdditionalDependencies;
+	std::vector<EntitySubscriptionRegistration> EntitySubscriptionRegistrations;
+	/*  AdditionalAccesses are components that the subscriber will process, but are not part of any subscriptions.
+		The subscriber will not store the entities whose components it will process. */
+	std::vector<ComponentAccess> AdditionalAccesses;
 };
 
 // EntitySubscriber deregisters its entity subscriptions at destruction
 class EntitySubscriber
 {
 public:
-    EntitySubscriber(ECSCore* pECS);
-    ~EntitySubscriber();
+	EntitySubscriber() = default;
+	~EntitySubscriber();
 
-    // subscribeToEntities enqueues entity subscriptions. initFn is called when all dependencies have been initialized.
-    void subscribeToEntities(const EntitySubscriberRegistration& subscriberRegistration, const std::function<bool()>& initFn);
+	// SubscribeToEntities enqueues entity subscriptions. initFn is called when all dependencies have been initialized.
+	void SubscribeToEntities(EntitySubscriberRegistration& subscriberRegistration);
 
 private:
-    ECSCore* m_pECS;
-    size_t m_SubscriptionID;
+	// ProcessComponentGroups removes duplicate component access registrations
+	static void ProcessComponentGroups(EntitySubscriptionRegistration& subscriptionRegistration);
+	// ProcessExcludedTypes asserts that the same component type isn't both included and excluded in a subscription
+	static void ProcessExcludedTypes(EntitySubscriptionRegistration& subscriptionRegistration);
+
+private:
+	uint32_t m_SubscriptionID = UINT32_MAX;
 };

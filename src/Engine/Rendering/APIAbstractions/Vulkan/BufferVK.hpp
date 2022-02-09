@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/IBuffer.hpp>
 
-#define NOMINMAX
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

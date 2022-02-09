@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/InputLayout.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 struct InputLayoutDX11 {

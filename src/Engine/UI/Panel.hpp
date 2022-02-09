@@ -1,8 +1,7 @@
 #pragma once
 
-#define NOMINMAX
-
-#include <Engine/ECS/ComponentHandler.hpp>
+#include <Engine/ECS/Component.hpp>
+#include <Engine/ECS/ComponentOwner.hpp>
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 #include <Engine/Utils/IDVector.hpp>
@@ -44,7 +43,8 @@ struct TextureAttachment {
     std::shared_ptr<Texture> texture;
 };
 
-struct UIPanel {
+struct UIPanelComponent {
+    DECL_COMPONENT(UIPanelComponent);
     // Position and size are specified in factors [0, 1]. The position describes the bottom left corner of the panel.
     // Note that the final size of the panel scales with the aspect ratio of the window.
     DirectX::XMFLOAT2 position, size;
@@ -56,16 +56,13 @@ struct UIPanel {
     Texture* texture;
 };
 
-const std::type_index tid_UIPanel = TID(UIPanel);
-
-struct UIButton {
+struct UIButtonComponent {
+    DECL_COMPONENT(UIButtonComponent);
     DirectX::XMFLOAT4 defaultHighlight, hoverHighlight, pressHighlight;
     // For now, buttons are handled after systems have been updated.
     // Perhaps later, this could be changed by specifying what component types the function affects, and with what permissions.
     std::function<void()> onPress;
 };
-
-const std::type_index tid_UIButton = TID(UIButton);
 
 class Device;
 
@@ -74,34 +71,30 @@ struct AttachmentRenderResources {
     IBuffer* pAttachmentBuffer;
 };
 
-class UIHandler : public ComponentHandler
+class UIHandler : ComponentOwner
 {
 public:
-    UIHandler(ECSCore* pECS, Device* pDevice);
+    UIHandler(Device* pDevice);
     ~UIHandler();
 
-    virtual bool initHandler() override;
+    bool Init();
 
-    void createPanel(Entity entity, DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, DirectX::XMFLOAT4 highlight, float highlightFactor);
-    void attachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, std::shared_ptr<Texture>* pTextureReferences, size_t textureCount);
-
-    // Requires that the entity has a UI panel already
-    void createButton(Entity entity, DirectX::XMFLOAT4 hoverHighlight, DirectX::XMFLOAT4 pressHighlight, std::function<void()> onPress);
-
-    IDDVector<UIPanel> panels;
-    IDDVector<UIButton> buttons;
+    UIPanelComponent CreatePanel(DirectX::XMFLOAT2 pos, DirectX::XMFLOAT2 size, const DirectX::XMFLOAT4& highlight, float highlightFactor);
+    void AttachTextures(Entity entity, const TextureAttachmentInfo* pAttachmentInfos, const std::shared_ptr<Texture>* pTextureReferences, size_t textureCount);
 
 private:
-    bool createRenderPass();
-    bool createDescriptorSetLayout();
-    bool createPipeline();
+    void PanelDestructor(UIPanelComponent& panel, Entity entity);
+
+    bool CreateRenderPass();
+    bool CreateDescriptorSetLayout();
+    bool CreatePipeline();
 
     // Creates a texture for a panel, which can be used as both a RTV and SRV
-    void createPanelTexture(UIPanel& panel);
-    void createTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, std::shared_ptr<Texture>& texture, const UIPanel& panel);
-    void renderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanel& panel);
-    bool createPanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments);
-    Framebuffer* createFramebuffer(UIPanel& panel);
+    void CreatePanelTexture(UIPanelComponent& panel);
+    void CreateTextureAttachment(TextureAttachment& attachment, const TextureAttachmentInfo& attachmentInfo, const std::shared_ptr<Texture>& texture, const UIPanelComponent& panel);
+    void RenderTexturesOntoPanel(std::vector<TextureAttachment>& attachments, UIPanelComponent& panel);
+    bool CreatePanelRenderResources(std::vector<AttachmentRenderResources>& renderResources, std::vector<TextureAttachment>& attachments);
+    Framebuffer* CreateFramebuffer(UIPanelComponent& panel);
 
 private:
     Device* m_pDevice;

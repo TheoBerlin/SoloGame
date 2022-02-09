@@ -1,169 +1,261 @@
 #include "ECSCore.hpp"
 
-ECSCore::ECSCore()
-    :m_EntityPublisher(&m_EntityRegistry),
-    m_ECSBooter(this),
-    m_DeltaTime(0.0f)
+ECSCore* ECSCore::s_pInstance = nullptr;
+
+ECSCore::ECSCore() :
+	m_EntityPublisher(&m_ComponentStorage, &m_EntityRegistry)
 {}
 
-void ECSCore::update(float dt)
+void ECSCore::Update(float deltaTime)
 {
-    m_DeltaTime = dt;
-
-    performEntityDeletions();
-    performRegistrations();
-
-    m_JobScheduler.update();
+	m_DeltaTime = deltaTime;
+	PerformComponentRegistrations();
+	PerformComponentDeletions();
+	PerformEntityDeletions();
+	m_JobScheduler.Update(deltaTime);
+	m_ComponentStorage.ResetDirtyFlags();
 }
 
-void ECSCore::scheduleJobASAP(const Job& job)
+IComponentArray* ECSCore::GetComponentArray(const ComponentType* pComponentType)
 {
-    m_JobScheduler.scheduleJob(job, CURRENT_PHASE);
+	return m_ComponentStorage.GetComponentArray(pComponentType);
 }
 
-void ECSCore::scheduleJobPostFrame(const Job& job)
+const IComponentArray* ECSCore::GetComponentArray(const ComponentType* pComponentType) const
 {
-    m_JobScheduler.scheduleJob(job, g_LastPhase + 1u);
+	return m_ComponentStorage.GetComponentArray(pComponentType);
 }
 
-void ECSCore::enqueueComponentHandlerRegistration(const ComponentHandlerRegistration& handlerRegistration)
+void ECSCore::RemoveEntity(Entity entity)
 {
-    m_ECSBooter.enqueueComponentHandlerRegistration(handlerRegistration);
+	std::scoped_lock<std::mutex> lock(m_LockRemoveEntity);
+	m_EntitiesToDelete.insert(entity);
 }
 
-void ECSCore::enqueueComponentSubscriberRegistration(const Subscriber& subscriber)
+void ECSCore::ScheduleJobASAP(const Job& job)
 {
-    m_ECSBooter.enqueueSubscriberInitialization(subscriber);
+	m_JobScheduler.ScheduleJobASAP(job);
 }
 
-void ECSCore::performRegistrations()
+void ECSCore::ScheduleJobPostFrame(const Job& job)
 {
-    // Initialize and register systems and component handlers
-    m_ECSBooter.performBootups();
+	m_JobScheduler.ScheduleJob(job, LAST_PHASE + 1u);
 }
 
-void ECSCore::enqueueEntityDeletion(Entity entity)
+void ECSCore::AddRegistryPage()
 {
-    m_EntitiesToDelete.push_back(entity);
+	m_EntityRegistry.AddPage();
 }
 
-void ECSCore::performEntityDeletions()
+void ECSCore::DeregisterTopRegistryPage()
 {
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_EntityPublisher.getComponentStorage();
-    const EntityRegistryPage& registryPage = m_EntityRegistry.getTopRegistryPage();
+	const EntityRegistryPage& page = m_EntityRegistry.GetTopRegistryPage();
 
-    for (Entity entity : m_EntitiesToDelete) {
-        // Delete every component belonging to the entity
-        const auto& componentTypes = registryPage.indexID(entity);
-        for (std::type_index componentType : componentTypes) {
-            // Delete the component
-            auto containerItr = componentStorage.find(componentType);
-            ComponentStorage& component = containerItr->second;
+	const auto& entityComponentSets = page.GetVec();
+	const std::vector<Entity>& entities = page.GetIDs();
 
-            if (component.m_ComponentDestructor != nullptr) {
-                component.m_ComponentDestructor(entity);
-            }
+	for (uint32_t entityIdx = 0; entityIdx < entities.size(); entityIdx++)
+	{
+		const std::unordered_set<const ComponentType*>& typeSet = entityComponentSets[entityIdx];
 
-            component.m_pContainer->pop(entity);
-
-            // Notify systems that the component has been removed
-            m_EntityPublisher.removedComponent(entity, componentType);
-        }
-
-        // Free the entity ID
-        m_EntityRegistry.deregisterEntity(entity);
-    }
-
-    m_EntitiesToDelete.clear();
+		for (const ComponentType* pComponentType : typeSet)
+		{
+			// Deregister entity's components from systems
+			m_EntityPublisher.UnpublishComponent(entities[entityIdx], pComponentType);
+		}
+	}
 }
 
-void ECSCore::addRegistryPage()
+void ECSCore::DeleteTopRegistryPage()
 {
-    m_EntityRegistry.addPage();
+	const EntityRegistryPage& page = m_EntityRegistry.GetTopRegistryPage();
+	const auto& entityComponentSets = page.GetVec();
+	const std::vector<Entity>& entities = page.GetIDs();
+	std::vector<const ComponentType*> componentTypes;
+
+	const uint32_t entityCount = (uint32_t)entities.size();
+	for (uint32_t entityNr = 0; entityNr < entityCount; entityNr++) {
+		const Entity entity = entities[entityNr];
+		const std::unordered_set<const ComponentType*>& typeSet = entityComponentSets[entityNr];
+		componentTypes.assign(typeSet.begin(), typeSet.end());
+
+		for (const ComponentType* pComponentType : componentTypes) {
+			m_EntityRegistry.DeregisterComponentType(entity, pComponentType);
+		}
+
+		for (const ComponentType* pComponentType : componentTypes) {
+			m_EntityPublisher.UnpublishComponent(entity, pComponentType);
+			m_ComponentStorage.DeleteComponent(entity, pComponentType);
+		}
+	}
+
+	m_EntityRegistry.RemovePage();
 }
 
-void ECSCore::deregisterTopRegistryPage()
+void ECSCore::ReinstateTopRegistryPage()
 {
-    const EntityRegistryPage& page = m_EntityRegistry.getTopRegistryPage();
+	const EntityRegistryPage& page = m_EntityRegistry.GetTopRegistryPage();
 
-    const auto& entityComponentSets = page.getVec();
-    const std::vector<Entity>& entities = page.getIDs();
+	const auto& entityComponentSets = page.GetVec();
+	const std::vector<Entity>& entities = page.GetIDs();
 
-    for (size_t i = 0; i < entities.size(); i++) {
-        const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
+	for (uint32_t entityIdx = 0; entityIdx < entities.size(); entityIdx++) {
+		const std::unordered_set<const ComponentType*>& typeSet = entityComponentSets[entityIdx];
 
-        for (std::type_index type : typeSet) {
-            // Deregister entity's components from systems
-            m_EntityPublisher.removedComponent(entities[i], type);
-        }
-    }
+		for (const ComponentType* pComponentType : typeSet) {
+			m_EntityPublisher.PublishComponent(entities[entityIdx], pComponentType);
+		}
+	}
 }
 
-void ECSCore::deleteTopRegistryPage()
+uint32_t ECSCore::SerializeEntity(Entity entity, const std::vector<const ComponentType*>& componentsFilter, uint8_t* pBuffer, uint32_t bufferSize) const
 {
-    const EntityRegistryPage& page = m_EntityRegistry.getTopRegistryPage();
-    const auto& entityComponentSets = page.getVec();
-    const std::vector<Entity>& entities = page.getIDs();
+	/*	EntitySerializationHeader is written to the beginning of the buffer. This is done last, when the size of
+		the serialization is known. */
+	uint8_t* pHeaderPosition = pBuffer;
 
-    std::unordered_map<std::type_index, ComponentStorage>& componentStorage = m_EntityPublisher.getComponentStorage();
+	uint32_t remainingSize = bufferSize;
+	constexpr const uint32_t headerSize = sizeof(EntitySerializationHeader);
+	const bool hasRoomForHeader = bufferSize >= headerSize;
+	if (hasRoomForHeader) {
+		pBuffer			+= headerSize;
+		remainingSize	-= headerSize;
+	}
 
-    for (size_t i = 0; i < entities.size(); i++) {
-        const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
+	// Serialize all components
+	uint32_t requiredTotalSize = headerSize;
+	uint32_t serializedComponentsCount = 0u;
+	for (const ComponentType* pComponentType : componentsFilter) {
+		const IComponentArray* pComponentArray = m_ComponentStorage.GetComponentArray(pComponentType);
+		if (pComponentArray && !pComponentArray->HasComponent(entity)) {
+			LOG_WARNINGF("Attempted to serialize a component type which entity %d does not have: %s", entity, pComponentType->Name());
+			continue;
+		}
 
-        for (std::type_index componentType : typeSet) {
-            // Deregister entity's component from systems
-            m_EntityPublisher.removedComponent(entities[i], componentType);
+		const uint32_t requiredComponentSize = m_ComponentStorage.SerializeComponent(entity, pComponentType, pBuffer, remainingSize);
+		requiredTotalSize += requiredComponentSize;
+		if (requiredComponentSize <= remainingSize) {
+			pBuffer += requiredComponentSize;
+			remainingSize -= requiredComponentSize;
+			++serializedComponentsCount;
+		}
+	}
 
-            // Delete the component
-            auto containerItr = componentStorage.find(componentType);
-            ComponentStorage& component = containerItr->second;
+	// Finalize the serialization by writing the header
+	if (hasRoomForHeader) {
+		const EntitySerializationHeader header = {
+			.TotalSerializationSize	= requiredTotalSize,
+			.Entity					= entity,
+			.ComponentCount			= serializedComponentsCount
+		};
 
-            if (component.m_ComponentDestructor != nullptr) {
-                component.m_ComponentDestructor(entities[i]);
-            }
+		memcpy(pHeaderPosition, &header, headerSize);
+	}
 
-            component.m_pContainer->pop(entities[i]);
-        }
-    }
-
-    m_EntityRegistry.removePage();
+	return requiredTotalSize;
 }
 
-void ECSCore::reinstateTopRegistryPage()
+bool ECSCore::DeserializeEntity(const uint8_t* pBuffer)
 {
-    const EntityRegistryPage& page = m_EntityRegistry.getTopRegistryPage();
+	constexpr const uint32_t entityHeaderSize = sizeof(EntitySerializationHeader);
+	EntitySerializationHeader entityHeader;
+	memcpy(&entityHeader, pBuffer, entityHeaderSize);
+	pBuffer += entityHeaderSize;
 
-    const auto& entityComponentSets = page.getVec();
-    const std::vector<Entity>& entities = page.getIDs();
+	ASSERT_MSG(m_EntityRegistry.GetTopRegistryPage().HasElement(entityHeader.Entity), "Attempted to deserialize unknown entity: %d", entityHeader.Entity);
 
-    for (size_t i = 0; i < entities.size(); i++) {
-        const std::unordered_set<std::type_index>& typeSet = entityComponentSets[i];
+	// Deserialize each component. If the entity already has the component, update its data. Otherwise, create it.
+	const uint32_t componentCount = entityHeader.ComponentCount;
+	bool success = true;
+	for (uint32_t componentIdx = 0u; componentIdx < componentCount; ++componentIdx) {
+		constexpr const uint32_t componentHeaderSize = sizeof(ComponentSerializationHeader);
+		ComponentSerializationHeader componentHeader;
+		memcpy(&componentHeader, pBuffer, componentHeaderSize);
+		pBuffer += componentHeaderSize;
 
-        for (std::type_index componentType : typeSet) {
-            m_EntityPublisher.newComponent(entities[i], componentType);
-        }
-    }
+		const ComponentType* pComponentType = m_ComponentStorage.GetComponentType(componentHeader.TypeHash);
+		if (!pComponentType) {
+			LOG_WARNINGF("Attempted to deserialize an unregistered component type, hash: %d", componentHeader.TypeHash);
+			success = false;
+			continue;
+		}
+
+		bool entityHadComponent = false;
+		const uint32_t componentDataSize = componentHeader.TotalSerializationSize - componentHeaderSize;
+		success = m_ComponentStorage.DeserializeComponent(entityHeader.Entity, pComponentType, componentDataSize, pBuffer, entityHadComponent) && success;
+
+		if (!entityHadComponent) {
+			m_ComponentsToRegister.push_back({entityHeader.Entity, pComponentType});
+		}
+	}
+
+	return success;
 }
 
-void ECSCore::componentAdded(Entity entity, std::type_index componentType)
+void ECSCore::PerformComponentRegistrations()
 {
-    m_EntityRegistry.registerComponentType(entity, componentType);
-    m_EntityPublisher.newComponent(entity, componentType);
+	// Register all components first, then publish them
+	for (const std::pair<Entity, const ComponentType*>& component : m_ComponentsToRegister) {
+		m_EntityRegistry.RegisterComponentType(component.first, component.second);
+	}
+
+	for (const std::pair<Entity, const ComponentType*>& component : m_ComponentsToRegister) {
+		m_EntityPublisher.PublishComponent(component.first, component.second);
+	}
+
+	m_ComponentsToRegister.shrink_to_fit();
+	m_ComponentsToRegister.clear();
 }
 
-void ECSCore::componentDeleted(Entity entity, std::type_index componentType)
+void ECSCore::PerformComponentDeletions()
 {
-    m_EntityRegistry.deregisterComponentType(entity, componentType);
-    m_EntityPublisher.removedComponent(entity, componentType);
+	for (const std::pair<Entity, const ComponentType*>& component : m_ComponentsToDelete) {
+		if (DeleteComponent(component.first, component.second)) {
+			// If the entity has no more components, delete it
+			const std::unordered_set<const ComponentType*>& componentTypes = m_EntityRegistry.GetTopRegistryPage().IndexID(component.first);
+			if (componentTypes.empty()) {
+				m_EntityRegistry.DeregisterEntity(component.first);
+			}
+		}
+	}
+
+	m_ComponentsToDelete.shrink_to_fit();
+	m_ComponentsToDelete.clear();
 }
 
-void ECSCore::enqueueEntitySubscriptions(const EntitySubscriberRegistration& subscriberRegistration, const std::function<bool()>& initFn, size_t* pSubscriberID)
+void ECSCore::PerformEntityDeletions()
 {
-    Subscriber subscriber = {
-        .ComponentSubscriptions = subscriberRegistration,
-        .InitFunction           = initFn,
-        .pSubscriberID          = pSubscriberID
-    };
+	const EntityRegistryPage& registryPage = m_EntityRegistry.GetTopRegistryPage();
+	/*	The component types to delete of each entity. It is a copy of the entity's set of component types in
+		the entity registry. Copying the set is necessary as the set is popped each time it is iterated. */
+	std::vector<const ComponentType*> componentTypes;
 
-    m_ECSBooter.enqueueSubscriberInitialization(subscriber);
+	for (Entity entity : m_EntitiesToDelete) {
+		if (registryPage.HasElement(entity)) {
+			// Delete every component belonging to the entity
+			const std::unordered_set<const ComponentType*>& componentTypesSet = registryPage.IndexID(entity);
+			componentTypes.assign(componentTypesSet.begin(), componentTypesSet.end());
+
+			for (const ComponentType* pComponentType : componentTypes) {
+				m_EntityRegistry.DeregisterComponentType(entity, pComponentType);
+			}
+
+			for (const ComponentType* pComponentType : componentTypes) {
+				m_EntityPublisher.UnpublishComponent(entity, pComponentType);
+				m_ComponentStorage.DeleteComponent(entity, pComponentType);
+			}
+
+			// Free the entity ID
+			m_EntityRegistry.DeregisterEntity(entity);
+		}
+	}
+
+	m_EntitiesToDelete.clear();
+}
+
+bool ECSCore::DeleteComponent(Entity entity, const ComponentType* pComponentType)
+{
+	m_EntityRegistry.DeregisterComponentType(entity, pComponentType);
+	m_EntityPublisher.UnpublishComponent(entity, pComponentType);
+	return m_ComponentStorage.DeleteComponent(entity, pComponentType);
 }

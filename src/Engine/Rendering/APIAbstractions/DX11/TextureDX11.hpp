@@ -2,7 +2,6 @@
 
 #include <Engine/Rendering/APIAbstractions/Texture.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <string>
 

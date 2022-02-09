@@ -3,26 +3,39 @@
 #include <Engine/ECS/EntitySubscriber.hpp>
 #include <Engine/ECS/Job.hpp>
 
-class ECSCore;
+struct RegularWorkInfo {
+	std::function<void(float deltaTime)> TickFunction;
+	EntitySubscriberRegistration EntitySubscriberRegistration;
+	uint32_t Phase;
+	float TickPeriod;
+};
 
 // RegularWorker schedules a regular job and deregisters it upon destruction
 class RegularWorker
 {
 public:
-    RegularWorker(ECSCore* pECS);
-    ~RegularWorker();
+	RegularWorker() = default;
+	~RegularWorker();
 
-    void scheduleRegularWork(const Job& job, uint32_t phase);
+	void Update();
+
+	void ScheduleRegularWork(const RegularWorkInfo& regularWorkInfo);
 
 protected:
-    // getUniqueComponentAccesses serializes all unique component accesses in an entity subscriber registration
-    std::vector<ComponentAccess> getUniqueComponentAccesses(const EntitySubscriberRegistration& subscriberRegistration);
+	uint32_t GetJobID() const { return m_JobID; }
+
+protected:
+	// GetUniqueComponentAccesses serializes all unique component accesses in an entity subscriber registration
+	static std::vector<ComponentAccess> GetUniqueComponentAccesses(const EntitySubscriberRegistration& subscriberRegistration);
 
 private:
-    static void mapComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::unordered_map<std::type_index, ComponentPermissions>& uniqueRegs);
+	static void MapComponentAccesses(const std::vector<ComponentAccess>& componentAccesses, std::unordered_map<const ComponentType*, ComponentPermissions>& uniqueRegs);
 
 private:
-    ECSCore* m_pECS;
-    uint32_t m_Phase;
-    size_t m_JobID;
+	uint32_t m_Phase = UINT32_MAX;
+	uint32_t m_JobID = UINT32_MAX;
+
+	float m_TickPeriod = -1.0f;
+
+	std::function<void(float deltaTime)> m_TickFunction = nullptr;
 };

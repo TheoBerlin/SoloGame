@@ -1,87 +1,121 @@
 #include "EntityRegistry.hpp"
 
-#include <Engine/Utils/Logger.hpp>
+#include <mutex>
 
 EntityRegistry::EntityRegistry()
 {
-    addPage();
+	AddPage();
 }
 
-EntityRegistry::~EntityRegistry()
-{}
-
-void EntityRegistry::registerComponentType(Entity entity, std::type_index componentType)
+void EntityRegistry::RegisterComponentType(Entity entity, const ComponentType* pComponentType)
 {
-    EntityRegistryPage& topPage = m_EntityPages.top();
+	std::scoped_lock<std::mutex> lock(m_Lock);
 
-    if (!topPage.hasElement(entity)) {
-        // Initialize a new set
-        topPage.push_back({componentType}, entity);
-    } else {
-        // Add the component type to the set
-        topPage.indexID(entity).insert(componentType);
-    }
+	EntityRegistryPage& topPage = m_EntityPages.top();
+	if (!topPage.HasElement(entity)) {
+		// Initialize a new set
+		topPage.push_back({ pComponentType }, entity);
+	} else {
+		// Add the component type to the set
+		topPage.IndexID(entity).insert(pComponentType);
+	}
 }
 
-void EntityRegistry::deregisterComponentType(Entity entity, std::type_index componentType)
+void EntityRegistry::DeregisterComponentType(Entity entity, const ComponentType* pComponentType)
 {
-    EntityRegistryPage& topPage = m_EntityPages.top();
-    if (!topPage.hasElement(entity)) {
-        LOG_WARNINGF("Attempted to deregister a component type (%s) from an unregistered entity: %ld", componentType.name(), entity);
-    } else {
-        topPage.indexID(entity).erase(componentType);
-    }
+	std::scoped_lock<std::mutex> lock(m_Lock);
+
+	EntityRegistryPage& topPage = m_EntityPages.top();
+	if (!topPage.HasElement(entity)) {
+		LOG_WARNINGF("Attempted to deregister a component type (%s) from an unregistered entity: %u",
+			pComponentType->Name(), entity);
+	} else {
+		topPage.IndexID(entity).erase(pComponentType);
+	}
 }
 
-bool EntityRegistry::entityHasTypes(Entity entity, const std::vector<std::type_index>& queryTypes) const
+bool EntityRegistry::EntityHasAllowedTypes(Entity entity, const std::vector<const ComponentType*>& allowedTypes, const std::vector<const ComponentType*>& disallowedTypes) const
 {
-    const EntityRegistryPage& topPage = m_EntityPages.top();
-    const std::unordered_set<std::type_index>& entityTypes = topPage.indexID(entity);
+	std::scoped_lock<std::mutex> lock(m_Lock);
 
-    for (const std::type_index& type : queryTypes) {
-        auto got = entityTypes.find(type);
-        if (got == entityTypes.end()) {
-            return false;
-        }
-    }
+	const EntityRegistryPage& topPage = m_EntityPages.top();
+	const std::unordered_set<const ComponentType*>& entityTypes = topPage.IndexID(entity);
 
-    return true;
+	const bool hasDisallowedType = std::any_of(disallowedTypes.begin(), disallowedTypes.end(), [entityTypes](const ComponentType* pType) {
+		return entityTypes.contains(pType);
+	});
+
+	if (hasDisallowedType) {
+		return false;
+	}
+
+	return std::none_of(allowedTypes.begin(), allowedTypes.end(), [entityTypes](const ComponentType* pType) {
+		return !entityTypes.contains(pType);
+	});
 }
 
-Entity EntityRegistry::createEntity()
+bool EntityRegistry::EntityHasAllTypes(Entity entity, const std::vector<const ComponentType*>& types) const
 {
-    Entity newEntity = m_EntityIDGen.genID();
+	std::scoped_lock<std::mutex> lock(m_Lock);
 
-    EntityRegistryPage& topPage = m_EntityPages.top();
-    topPage.push_back({}, newEntity);
+	const EntityRegistryPage& topPage = m_EntityPages.top();
+	const std::unordered_set<const ComponentType*>& entityTypes = topPage.IndexID(entity);
 
-    return newEntity;
+	// Check that none of the entity types are missing
+	return std::none_of(types.begin(), types.end(), [entityTypes](const ComponentType* pType) {
+		return !entityTypes.contains(pType);
+	});
 }
 
-void EntityRegistry::deregisterEntity(Entity entity)
+bool EntityRegistry::EntityHasAnyOfTypes(Entity entity, const std::vector<const ComponentType*>& types) const
 {
-    EntityRegistryPage& topPage = m_EntityPages.top();
-    if (!topPage.hasElement(entity)) {
-        LOG_WARNINGF("Attempted to deregister an unregistered entity: %ld", entity);
-        return;
-    }
+	std::scoped_lock<std::mutex> lock(m_Lock);
 
-    topPage.pop(entity);
-    m_EntityIDGen.popID(entity);
+	const EntityRegistryPage& topPage = m_EntityPages.top();
+	const std::unordered_set<const ComponentType*>& entityTypes = topPage.IndexID(entity);
+
+	return std::any_of(types.begin(), types.end(), [entityTypes](const ComponentType* pType) {
+		return entityTypes.contains(pType);
+	});
 }
 
-void EntityRegistry::addPage()
+Entity EntityRegistry::CreateEntity()
 {
-    m_EntityPages.push(EntityRegistryPage());
+	std::scoped_lock<std::mutex> lock(m_Lock);
+
+	const Entity newEntity = m_EntityIDGen.GenID();
+
+	EntityRegistryPage& topPage = m_EntityPages.top();
+	topPage.push_back({}, newEntity);
+
+	return newEntity;
 }
 
-void EntityRegistry::removePage()
+void EntityRegistry::DeregisterEntity(Entity entity)
 {
-    EntityRegistryPage& topPage = m_EntityPages.top();
-    const std::vector<Entity> entities = topPage.getIDs();
-    for (Entity entity : entities) {
-        m_EntityIDGen.popID(entity);
-    }
+	std::scoped_lock<std::mutex> lock(m_Lock);
 
-    m_EntityPages.pop();
+	EntityRegistryPage& topPage = m_EntityPages.top();
+	if (!topPage.HasElement(entity)) {
+		return;
+	}
+
+	topPage.Pop(entity);
+	m_EntityIDGen.PopID(entity);
+}
+
+void EntityRegistry::AddPage()
+{
+	m_EntityPages.push({});
+}
+
+void EntityRegistry::RemovePage()
+{
+	EntityRegistryPage& topPage = m_EntityPages.top();
+	const std::vector<Entity> entities = topPage.GetIDs();
+	for (Entity entity : entities) {
+		m_EntityIDGen.PopID(entity);
+	}
+
+	m_EntityPages.pop();
 }

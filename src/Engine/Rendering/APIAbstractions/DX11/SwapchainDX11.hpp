@@ -4,7 +4,6 @@
 #include <Engine/Rendering/APIAbstractions/DX11/TextureDX11.hpp>
 #include <Engine/Rendering/APIAbstractions/Swapchain.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 
 class TextureDX11;

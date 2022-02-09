@@ -1,52 +1,47 @@
 #include "Camera.hpp"
 
 #include <Engine/Physics/Velocity.hpp>
-#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/InputHandler.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
 
-CameraSystem::CameraSystem(ECSCore* pECS, InputHandler* pInputHandler)
-    :System(pECS),
-    m_pTransformHandler(nullptr),
-    m_pVelocityHandler(nullptr),
-    m_pVPHandler(nullptr),
-    m_pInputHandler(pInputHandler)
+CameraSystem::CameraSystem(InputHandler* pInputHandler)
+    : m_pInputHandler(pInputHandler)
 {
-    CameraComponents cameraComponents;
-    cameraComponents.m_Position.Permissions                 = R;
-    cameraComponents.m_Rotation.Permissions                 = RW;
-    cameraComponents.m_ViewProjectionMatrices.Permissions   = RW;
-    cameraComponents.m_Velocity.Permissions                 = RW;
-
     SystemRegistration sysReg = {};
     sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
-        {{&cameraComponents}, &m_Cameras},
+        {
+            .pSubscriber = &m_Cameras,
+            .ComponentAccesses =
+            {
+                { NDA, CameraTagComponent::Type() }, { R, PositionComponent::Type() },
+                { RW, RotationComponent::Type() }, { RW, ViewProjectionMatricesComponent::Type()},
+                { RW, VelocityComponent::Type() }
+            }
+        }
     };
+
     sysReg.Phase = 0u;
 
-    enqueueRegistration(sysReg);
+    RegisterSystem(TYPE_NAME(CameraSystem), sysReg);
 }
 
-bool CameraSystem::initSystem()
+void CameraSystem::Update(float dt)
 {
-    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVelocityHandler  = reinterpret_cast<VelocityHandler*>(getComponentHandler(TID(VelocityHandler)));
-    m_pVPHandler        = reinterpret_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
+    ECSCore* pECS = ECSCore::GetInstance();
+    const ComponentArray<PositionComponent>* pPositionComponents = pECS->GetComponentArray<PositionComponent>();
+    ComponentArray<VelocityComponent>* pVelocityComponents = pECS->GetComponentArray<VelocityComponent>();
+    ComponentArray<RotationComponent>* pRotationComponents = pECS->GetComponentArray<RotationComponent>();
+    ComponentArray<ViewProjectionMatricesComponent>* pVPComponents = pECS->GetComponentArray<ViewProjectionMatricesComponent>();
 
-    return m_pTransformHandler && m_pVelocityHandler && m_pVPHandler;
-}
-
-void CameraSystem::update(float dt)
-{
     const glm::dvec2& mouseMove = m_pInputHandler->getMouseMove();
 
-    for (Entity entity : m_Cameras.getIDs()) {
-        DirectX::XMFLOAT4& rotationQuaternion   = m_pTransformHandler->getRotation(entity);
-        ViewProjectionMatrices& vpMatrices = m_pVPHandler->getViewProjectionMatrices(entity);
+    for (Entity cameraEntity : m_Cameras.GetIDs()) {
+        DirectX::XMFLOAT4& rotationQuaternion = pRotationComponents->GetData(cameraEntity).Quaternion;
+        ViewProjectionMatricesComponent& vpMatrices = pVPComponents->GetData(cameraEntity);
 
-        DirectX::XMVECTOR lookDir = m_pTransformHandler->getForward(rotationQuaternion);
+        DirectX::XMVECTOR lookDir = GetForward(rotationQuaternion);
         DirectX::XMVECTOR pitchAxis = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(g_DefaultUp, lookDir));
 
         // React to mouse input
@@ -54,26 +49,26 @@ void CameraSystem::update(float dt)
             DirectX::XMVECTOR rotation = DirectX::XMLoadFloat4(&rotationQuaternion);
 
             // Limit pitch
-            float pitch = m_pTransformHandler->getPitch(lookDir);
+            const float pitch = GetPitch(lookDir);
             float addedPitch = (float)mouseMove.y * dt;
-            float newPitch = pitch + addedPitch;
+            const float newPitch = pitch + addedPitch;
 
-            if (std::abs(newPitch) > maxPitch) {
-                addedPitch = newPitch > 0.0f ? maxPitch - pitch : -maxPitch - pitch;
+            if (std::abs(newPitch) > g_MaxPitch) {
+                addedPitch = newPitch > 0.0f ? g_MaxPitch - pitch : -g_MaxPitch - pitch;
             }
 
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(pitchAxis, addedPitch));
             rotation = DirectX::XMQuaternionMultiply(rotation, DirectX::XMQuaternionRotationAxis(g_DefaultUp, (float)mouseMove.x * dt));
             DirectX::XMStoreFloat4(&rotationQuaternion, rotation);
-            lookDir = m_pTransformHandler->getForward(rotationQuaternion);
+            lookDir = GetForward(rotationQuaternion);
         }
 
         // React to keyboard input
-        DirectX::XMVECTOR camMove = {0.0f, 0.0f, 0.0f, 0.0f};
+        DirectX::XMVECTOR camMove = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        int forwardMove = m_pInputHandler->keyState(GLFW_KEY_W) - m_pInputHandler->keyState(GLFW_KEY_S);
-        int strafeMove  = m_pInputHandler->keyState(GLFW_KEY_D) - m_pInputHandler->keyState(GLFW_KEY_A);
-        int upMove      = m_pInputHandler->keyState(GLFW_KEY_LEFT_SHIFT) - m_pInputHandler->keyState(GLFW_KEY_LEFT_CONTROL);
+        const int forwardMove = m_pInputHandler->KeyState(GLFW_KEY_W) - m_pInputHandler->KeyState(GLFW_KEY_S);
+        const int strafeMove  = m_pInputHandler->KeyState(GLFW_KEY_D) - m_pInputHandler->KeyState(GLFW_KEY_A);
+        const int upMove      = m_pInputHandler->KeyState(GLFW_KEY_LEFT_SHIFT) - m_pInputHandler->KeyState(GLFW_KEY_LEFT_CONTROL);
 
         if (forwardMove || strafeMove || upMove) {
             camMove = DirectX::XMVectorAdd(camMove, DirectX::XMVectorScale(lookDir, (float)forwardMove));
@@ -83,12 +78,12 @@ void CameraSystem::update(float dt)
             camMove = DirectX::XMVectorScale(DirectX::XMVector3Normalize(camMove), dt * g_CameraSpeed);
         }
 
-        DirectX::XMFLOAT3& cameraVelocity = m_pVelocityHandler->getVelocity(entity);
+        DirectX::XMFLOAT3& cameraVelocity = pVelocityComponents->GetData(cameraEntity).Velocity;
         DirectX::XMStoreFloat3(&cameraVelocity, camMove);
 
-        DirectX::XMFLOAT3& position = m_pTransformHandler->getPosition(entity);
+        const DirectX::XMFLOAT3& position = pPositionComponents->GetConstData(cameraEntity).Position;
         DirectX::XMVECTOR camPos = DirectX::XMLoadFloat3(&position);
-        DirectX::XMVECTOR upDir = TransformHandler::getUp(rotationQuaternion);
+        DirectX::XMVECTOR upDir = GetUp(rotationQuaternion);
 
         DirectX::XMStoreFloat4x4(&vpMatrices.View, DirectX::XMMatrixLookAtLH(camPos, DirectX::XMVectorAdd(camPos, lookDir), upDir));
     }

@@ -5,9 +5,9 @@
 class IDContainer
 {
 public:
-    virtual bool hasElement(size_t ID) const = 0;
+    virtual bool HasElement(uint32_t ID) const = 0;
 
-    virtual size_t size() const = 0;
-    virtual const std::vector<size_t>& getIDs() const = 0;
-    virtual void pop(size_t ID) = 0;
+    virtual uint32_t Size() const = 0;
+    virtual const std::vector<uint32_t>& GetIDs() const = 0;
+    virtual void Pop(uint32_t ID) = 0;
 };

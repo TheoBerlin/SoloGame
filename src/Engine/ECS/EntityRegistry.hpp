@@ -1,36 +1,44 @@
 #pragma once
 
-#include <Engine/ECS/Entity.hpp>
-#include <Engine/Utils/IDGenerator.hpp>
-#include <Engine/Utils/IDVector.hpp>
+#include "Engine/ECS/Entity.hpp"
+#include "Engine/Utils/IDGenerator.hpp"
+#include "Engine/Utils/IDVector.hpp"
 
-#include <typeindex>
+#include <mutex>
 #include <stack>
+#include <typeindex>
 #include <unordered_set>
 
+class ComponentType;
+
 // Map Entities to the set of component types they are registered to
-typedef IDDVector<std::unordered_set<std::type_index>> EntityRegistryPage;
+typedef IDDVector<std::unordered_set<const ComponentType*>> EntityRegistryPage;
 
 class EntityRegistry
 {
 public:
     EntityRegistry();
-    ~EntityRegistry();
+    ~EntityRegistry() = default;
 
-    void registerComponentType(Entity entity, std::type_index componentType);
-    void deregisterComponentType(Entity entity, std::type_index componentType);
+    void RegisterComponentType(Entity entity, const ComponentType* pComponentType);
+    void DeregisterComponentType(Entity entity, const ComponentType* pComponentType);
 
-    // Queries whether or not the entity has all the specified types
-    bool entityHasTypes(Entity entity, const std::vector<std::type_index>& queryTypes) const;
+    // EntityHasAllTypes returns true if the entity has all of the allowed types and none of the disallowed types
+    bool EntityHasAllowedTypes(Entity entity, const std::vector<const ComponentType*>& allowedTypes, const std::vector<const ComponentType*>& disallowedTypes) const;
+    // EntityHasAllTypes returns true if the entity has all of the specified types
+    bool EntityHasAllTypes(Entity entity, const std::vector<const ComponentType*>& types) const;
+    // EntityHasAnyOfTypes returns true if the entity has at least one of the specified types
+    bool EntityHasAnyOfTypes(Entity entity, const std::vector<const ComponentType*>& types) const;
 
-    Entity createEntity();
-    void deregisterEntity(Entity entity);
+    Entity CreateEntity();
+    void DeregisterEntity(Entity entity);
 
-    void addPage();
-    void removePage();
-    const EntityRegistryPage& getTopRegistryPage() const { return m_EntityPages.top(); }
+    void AddPage();
+    void RemovePage();
+    const EntityRegistryPage& GetTopRegistryPage() const { return m_EntityPages.top(); }
 
 private:
     std::stack<EntityRegistryPage> m_EntityPages;
     IDGenerator m_EntityIDGen;
+    mutable std::mutex m_Lock;
 };

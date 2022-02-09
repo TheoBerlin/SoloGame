@@ -1,5 +1,3 @@
-#define NOMINMAX
-
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/Logger.hpp>
 #include <Engine/Utils/ThreadPool.hpp>
@@ -7,28 +5,24 @@
 
 #include <argh/argh.h>
 
-#ifdef TOUCAN_CONFIG_DEBUG
-    #include <crtdbg.h>
-#endif
-
 int main(int argc, char** argv)
 {
     // Check for memory leaks. Disabled when not debugging
-    #ifdef TOUCAN_CONFIG_DEBUG
+    #ifdef CONFIG_DEBUG
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     #endif
 
     Logger::init();
     argh::parser flagParser(argc, argv);
 
-    ThreadPool::getInstance().initialize();
+    ThreadPool::GetInstance().Init();
 
     Game game;
-    if (!game.init() || !game.finalize(flagParser)) {
+    if (!game.Init() || !game.Finalize(flagParser)) {
         return 1;
     }
 
-    game.run();
+    game.Run();
 
     return 0;
 }

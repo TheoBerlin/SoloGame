@@ -18,7 +18,7 @@ public:
     void show();
 
     static void pollEvents();
-    void close();
+    void Close();
     bool shouldClose() const { return glfwWindowShouldClose(m_pWindow); }
 
     HWND getHWND() const;
@@ -28,7 +28,7 @@ public:
     uint32_t getWidth() const   { return m_Width; }
     uint32_t getHeight() const  { return m_Height; }
 
-    InputHandler* getInputHandler() { return &m_InputHandler; }
+    InputHandler* GetInputHandler() { return &m_InputHandler; }
 
 private:
     static void glfwErrorCallback(int error, const char* pDescription);

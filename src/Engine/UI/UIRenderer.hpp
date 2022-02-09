@@ -4,7 +4,6 @@
 #include <Engine/Rendering/APIAbstractions/Viewport.hpp>
 #include <Engine/Utils/IDVector.hpp>
 
-class Texture;
 class UIHandler;
 
 struct PanelRenderResources {
@@ -15,32 +14,30 @@ struct PanelRenderResources {
 class UIRenderer : public Renderer
 {
 public:
-    UIRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler);
+    UIRenderer(Device* pDevice, RenderingHandler* pRenderingHandler);
     ~UIRenderer();
 
-    bool init() override final;
+    bool Init() override final;
 
-    void updateBuffers() override final;
-    void recordCommands() override final;
-    void executeCommands(ICommandList* pPrimaryCommandList) override final;
+    void UpdateBuffers() override final;
+    void RecordCommands() override final;
+    void ExecuteCommands(ICommandList* pPrimaryCommandList) override final;
 
-    inline IRenderPass* getRenderPass()                     { return m_pRenderPass; }
-    inline Framebuffer* getFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
+    inline IRenderPass* GetRenderPass()                     { return m_pRenderPass; }
+    inline Framebuffer* GetFramebuffer(uint32_t frameIndex) { return m_ppFramebuffers[frameIndex]; }
 
 private:
-    bool createDescriptorSetLayouts();
-    bool createRenderPass();
-    bool createFramebuffers();
-    bool createPipeline();
+    bool CreateDescriptorSetLayouts();
+    bool CreateRenderPass();
+    bool CreateFramebuffers();
+    bool CreatePipeline();
 
-    void onPanelAdded(Entity entity);
-    void onPanelRemoved(Entity entity);
+    void OnPanelAdded(Entity entity);
+    void OnPanelRemoved(Entity entity);
 
 private:
     IDVector m_Panels;
     IDDVector<PanelRenderResources> m_PanelRenderResources;
-
-    UIHandler* m_pUIHandler;
 
     ICommandPool* m_ppCommandPools[MAX_FRAMES_IN_FLIGHT];
     ICommandList* m_ppCommandLists[MAX_FRAMES_IN_FLIGHT];

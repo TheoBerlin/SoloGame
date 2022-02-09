@@ -3,54 +3,41 @@
 #include <Engine/ECS/Job.hpp>
 #include <Engine/Transform.hpp>
 
-VelocityHandler::VelocityHandler(ECSCore* pECS)
-    :ComponentHandler(pECS, TID(VelocityHandler)),
-    System(pECS),
-    m_pTransformHandler(nullptr)
+VelocityHandler::VelocityHandler()
 {
-    ComponentHandlerRegistration handlerReg = {};
-    handlerReg.pComponentHandler = this;
-    handlerReg.ComponentRegistrations = {
-        {g_TIDVelocity,     &m_Velocities}
-    };
-
-    this->registerHandler(handlerReg);
-
     SystemRegistration sysReg = {};
-    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations = {
-        {{{RW, g_TIDVelocity}, {RW, g_TIDPosition}}, &m_MovingObjects}
+    sysReg.SubscriberRegistration.EntitySubscriptionRegistrations =
+    {
+        {
+            .pSubscriber = &m_MovingObjects,
+            .ComponentAccesses =
+            {
+                { R, VelocityComponent::Type() }, { RW, PositionComponent::Type() }
+            }
+        }
     };
-    sysReg.Phase = g_LastPhase;
+    sysReg.Phase = LAST_PHASE;
 
-    enqueueRegistration(sysReg);
+    RegisterSystem(TYPE_NAME(VelocityHandler), sysReg);
 }
 
-bool VelocityHandler::initSystem()
-{
-    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-
-    return m_pTransformHandler;
-}
-
-void VelocityHandler::update(float dt)
+void VelocityHandler::Update(float dt)
 {
     UNREFERENCED_VARIABLE(dt);
 
     DirectX::XMVECTOR velocity, position;
 
-    for (Entity entity : m_MovingObjects.getIDs()) {
-        velocity = DirectX::XMLoadFloat3(&m_Velocities.indexID(entity).Velocity);
+    ECSCore* pECS = ECSCore::GetInstance();
+    const ComponentArray<VelocityComponent>* pVelocityComponents = pECS->GetComponentArray<VelocityComponent>();
+    ComponentArray<PositionComponent>* pPositionComponents = pECS->GetComponentArray<PositionComponent>();
 
-        DirectX::XMFLOAT3& positionRef = m_pTransformHandler->getPosition(entity);
+    for (Entity entity : m_MovingObjects) {
+        velocity = DirectX::XMLoadFloat3(&pVelocityComponents->GetConstData(entity).Velocity);
+
+        DirectX::XMFLOAT3& positionRef = pPositionComponents->GetData(entity).Position;
         position = DirectX::XMLoadFloat3(&positionRef);
 
         position = DirectX::XMVectorAdd(position, velocity);
         DirectX::XMStoreFloat3(&positionRef, position);
     }
-}
-
-void VelocityHandler::createVelocityComponent(Entity entity, const DirectX::XMFLOAT3& velocity)
-{
-    m_Velocities.push_back({velocity}, entity);
-    registerComponent(entity, g_TIDVelocity);
 }

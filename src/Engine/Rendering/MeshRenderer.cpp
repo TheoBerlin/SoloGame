@@ -2,8 +2,6 @@
 
 #include <Engine/Rendering/AssetContainers/Material.hpp>
 #include <Engine/Rendering/AssetContainers/Model.hpp>
-#include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
-#include <Engine/Rendering/Components/ComponentGroups.hpp>
 #include <Engine/Rendering/Components/VPMatrices.hpp>
 #include <Engine/Rendering/RenderingHandler.hpp>
 #include <Engine/Rendering/ShaderBindings.hpp>
@@ -12,14 +10,10 @@
 
 #include <algorithm>
 
-MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRenderingHandler)
-    :Renderer(pECS, pDevice, pRenderingHandler),
+MeshRenderer::MeshRenderer(Device* pDevice, RenderingHandler* pRenderingHandler)
+    :Renderer(pDevice, pRenderingHandler),
     m_pDevice(pDevice),
     m_CommandListsToReset(MAX_FRAMES_IN_FLIGHT),
-    m_pModelLoader(nullptr),
-    m_pTransformHandler(nullptr),
-    m_pVPHandler(nullptr),
-    m_pLightHandler(nullptr),
     m_pDescriptorSetLayoutCommon(nullptr),
     m_pDescriptorSetLayoutModel(nullptr),
     m_pDescriptorSetLayoutMesh(nullptr),
@@ -33,25 +27,42 @@ MeshRenderer::MeshRenderer(ECSCore* pECS, Device* pDevice, RenderingHandler* pRe
     std::fill_n(m_ppCommandLists, MAX_FRAMES_IN_FLIGHT, nullptr);
     std::fill_n(m_ppFramebuffers, MAX_FRAMES_IN_FLIGHT, nullptr);
 
-    CameraComponents camSub;
-    PointLightComponents pointLightSub;
-
     EntitySubscriberRegistration entitySubscriberRegistration = {
         {
-            {{{R, g_TIDModel}, {R, g_TIDWorldMatrix}}, &m_Renderables, [this](Entity entity){ onMeshAdded(entity); }, [this](Entity entity){ onMeshRemoved(entity); }},
-            {{{R, g_TIDViewProjectionMatrices}}, {&camSub}, &m_Camera},
-            {{&pointLightSub}, &m_PointLights}
+            {
+                .pSubscriber = &m_Renderables,
+                .ComponentAccesses =
+                {
+                    { R, ModelComponent::Type() }, { R, WorldMatrixComponent::Type() }
+                },
+                .OnEntityAdded = std::bind_front(&MeshRenderer::OnMeshAdded, this),
+                .OnEntityRemoval = std::bind_front(&MeshRenderer::OnMeshRemoved, this)
+            },
+            {
+                .pSubscriber = &m_Camera,
+                .ComponentAccesses =
+                {
+                    { R, PositionComponent::Type() }, { R, ViewProjectionMatricesComponent::Type() }
+                },
+            },
+            {
+                .pSubscriber = &m_PointLights,
+                .ComponentAccesses =
+                {
+                    { R, PositionComponent::Type() }, { R, PointLightComponent::Type() }
+                }
+            }
         }
     };
 
-    registerRenderer(entitySubscriberRegistration);
+    RegisterRenderer(entitySubscriberRegistration);
 }
 
 MeshRenderer::~MeshRenderer()
 {
     // Delete all model rendering resources
-    for (Entity entity : m_ModelRenderResources.getIDs()) {
-        onMeshRemoved(entity);
+    for (Entity entity : m_ModelRenderResources.GetIDs()) {
+        OnMeshRemoved(entity);
     }
 
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
@@ -70,7 +81,7 @@ MeshRenderer::~MeshRenderer()
     delete m_pPipeline;
 }
 
-bool MeshRenderer::init()
+bool MeshRenderer::Init()
 {
     for (uint32_t frameIndex = 0u; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex += 1u) {
         m_ppCommandPools[frameIndex] = m_pDevice->createCommandPool(COMMAND_POOL_FLAG::RESETTABLE_COMMAND_LISTS, m_pDevice->getQueueFamilyIndices().Graphics);
@@ -84,19 +95,7 @@ bool MeshRenderer::init()
         }
     }
 
-    m_pModelLoader      = reinterpret_cast<ModelLoader*>(getComponentHandler(TID(ModelLoader)));
-    m_pTransformHandler = reinterpret_cast<TransformHandler*>(getComponentHandler(TID(TransformHandler)));
-    m_pVPHandler        = reinterpret_cast<VPHandler*>(getComponentHandler(TID(VPHandler)));
-    m_pLightHandler     = reinterpret_cast<LightHandler*>(getComponentHandler(TID(LightHandler)));
-
-    if (!m_pModelLoader || !m_pTransformHandler || !m_pVPHandler || !m_pLightHandler) {
-        return false;
-    }
-
-    // Retrieve anisotropic sampler
-    ShaderResourceHandler* pShaderResourceHandler = reinterpret_cast<ShaderResourceHandler*>(getComponentHandler(TID(ShaderResourceHandler)));
-
-    m_pAniSampler = pShaderResourceHandler->getAniSampler();
+    m_pAniSampler = ShaderResourceHandler::GetInstance()->GetAniSampler();
 
     if (!createBuffers()) {
         return false;
@@ -121,21 +120,24 @@ bool MeshRenderer::init()
     return createPipeline();
 }
 
-void MeshRenderer::updateBuffers()
+void MeshRenderer::UpdateBuffers()
 {
-    if (m_Renderables.size() == 0 || m_Camera.size() == 0) {
+    if (m_Renderables.Empty() || m_Camera.Empty()) {
        return;
     }
 
+    ECSCore* pECS = ECSCore::GetInstance();
+    const ComponentArray<PointLightComponent>* pPointLightComponents = pECS->GetComponentArray<PointLightComponent>();
+    const ComponentArray<PositionComponent>* pPositionComponents = pECS->GetComponentArray<PositionComponent>();
+
     // Update point light uniform buffer
     PerFrameBuffer perFrame;
-    uint32_t numLights = std::min(MAX_POINTLIGHTS, (uint32_t)m_PointLights.size());
+    const uint32_t numLights = std::min(MAX_POINTLIGHTS, m_PointLights.Size());
     for (uint32_t i = 0; i < numLights; i += 1) {
         const Entity pointLightEntity = m_PointLights[i];
 
-        const PointLight& pointLight = m_pLightHandler->getPointLight(pointLightEntity);
-
-        const DirectX::XMFLOAT3& pointLightPos = m_pTransformHandler->getPosition(pointLightEntity);
+        const PointLightComponent& pointLight = pPointLightComponents->GetConstData(pointLightEntity);
+        const DirectX::XMFLOAT3& pointLightPos = pPositionComponents->GetConstData(pointLightEntity).Position;
 
         perFrame.PointLights[i] = {
             .Position = pointLightPos,
@@ -144,7 +146,8 @@ void MeshRenderer::updateBuffers()
         };
     }
 
-    perFrame.CameraPosition = m_pTransformHandler->getPosition(m_Camera[0]);
+    const Entity cameraEntity = m_Camera[0];
+    perFrame.CameraPosition = pPositionComponents->GetConstData(cameraEntity).Position;
     perFrame.NumLights = numLights;
 
     void* pMappedMemory = nullptr;
@@ -152,17 +155,20 @@ void MeshRenderer::updateBuffers()
     memcpy(pMappedMemory, &perFrame, sizeof(PerFrameBuffer));
     m_pDevice->unmap(m_pPointLightBuffer);
 
-    for (Entity renderableID : m_Renderables.getIDs()) {
-        ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
+    const ComponentArray<ViewProjectionMatricesComponent>* pVPMatricesComponents = pECS->GetComponentArray<ViewProjectionMatricesComponent>();
+    const ComponentArray<WorldMatrixComponent>* pWorldMatrixComponents = pECS->GetComponentArray<WorldMatrixComponent>();
+
+    for (Entity renderableEntity : m_Renderables) {
+        ModelRenderResources& modelRenderResources = m_ModelRenderResources.IndexID(renderableEntity);
 
         // Prepare camera's view*proj matrix
-        const ViewProjectionMatrices& vpMatrices = m_pVPHandler->getViewProjectionMatrices(m_Camera[0]);
+        const ViewProjectionMatricesComponent& vpMatrices = pVPMatricesComponents->GetConstData(cameraEntity);
 
         DirectX::XMMATRIX camVP = DirectX::XMLoadFloat4x4(&vpMatrices.View) * DirectX::XMLoadFloat4x4(&vpMatrices.Projection);
 
         // Update per-object matrices uniform buffer
         PerObjectMatrices matrices;
-        matrices.World = m_pTransformHandler->getWorldMatrix(renderableID).worldMatrix;
+        matrices.World = pWorldMatrixComponents->GetConstData(renderableEntity).WorldMatrix;
         DirectX::XMStoreFloat4x4(&matrices.WVP, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World) * camVP));
         DirectX::XMStoreFloat4x4(&matrices.World, DirectX::XMMatrixTranspose(DirectX::XMLoadFloat4x4(&matrices.World)));
 
@@ -173,7 +179,7 @@ void MeshRenderer::updateBuffers()
     }
 }
 
-void MeshRenderer::recordCommands()
+void MeshRenderer::RecordCommands()
 {
     if (m_CommandListsToReset == 0u) {
         return;
@@ -190,7 +196,7 @@ void MeshRenderer::recordCommands()
     beginInfo.pFramebuffer  = m_ppFramebuffers[frameIndex];
     pCommandList->begin(COMMAND_LIST_USAGE::WITHIN_RENDER_PASS, &beginInfo);
 
-    if (m_Renderables.empty() || m_Camera.empty()) {
+    if (m_Renderables.Empty() || m_Camera.Empty()) {
         pCommandList->end();
         return;
     }
@@ -198,15 +204,22 @@ void MeshRenderer::recordCommands()
     pCommandList->bindPipeline(m_pPipeline);
     pCommandList->bindDescriptorSet(m_pDescriptorSetCommon, m_pPipelineLayout, 0u);
 
-    for (Entity renderableID : m_Renderables.getIDs()) {
-        Model* pModel = m_pModelLoader->getModel(renderableID);
-        const ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(renderableID);
+    ECSCore* pECS = ECSCore::GetInstance();
+    const ComponentArray<ModelComponent>* pModelComponents = pECS->GetComponentArray<ModelComponent>();
+
+    for (Entity renderableEntity : m_Renderables) {
+        const ModelComponent& modelComp         = pModelComponents->GetConstData(renderableEntity);
+        const Model* pModel                     = modelComp.ModelPtr.get();
+        const std::vector<Mesh>& meshes         = pModel->Meshes;
+        const std::vector<Material>& materials  = pModel->Materials;
+
+        const ModelRenderResources& modelRenderResources = m_ModelRenderResources.IndexID(renderableEntity);
 
         pCommandList->bindDescriptorSet(modelRenderResources.pDescriptorSet, m_pPipelineLayout, 1u);
 
         size_t meshIdx = 0;
-        for (const Mesh& mesh : pModel->Meshes) {
-            if (pModel->Materials[mesh.materialIndex].textures.empty()) {
+        for (const Mesh& mesh : meshes) {
+            if (materials[mesh.materialIndex].textures.empty()) {
                 // Will not render the mesh if it does not have a texture
                 continue;
             }
@@ -225,7 +238,7 @@ void MeshRenderer::recordCommands()
     pCommandList->end();
 }
 
-void MeshRenderer::executeCommands(ICommandList* pPrimaryCommandList)
+void MeshRenderer::ExecuteCommands(ICommandList* pPrimaryCommandList)
 {
     pPrimaryCommandList->executeSecondaryCommandList(m_ppCommandLists[m_pDevice->getFrameIndex()]);
 }
@@ -426,21 +439,26 @@ bool MeshRenderer::createPipeline()
     return m_pPipeline;
 }
 
-void MeshRenderer::onMeshAdded(Entity entity)
+void MeshRenderer::OnMeshAdded(Entity entity)
 {
+    LOG_INFO("hello there");
     m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
 
-    Model* pModel = m_pModelLoader->getModel(entity);
+    ModelComponent& modelComp           = ECSCore::GetInstance()->GetComponent<ModelComponent>(entity);
+    Model* pModel                       = modelComp.ModelPtr.get();
+    std::vector<Mesh>& meshes           = pModel->Meshes;
+    std::vector<Material>& materials    = pModel->Materials;
 
     // Create buffers and descriptor sets for the model and its meshes
     ModelRenderResources modelRenderResources = {};
-    modelRenderResources.MeshRenderResources.reserve(pModel->Meshes.size());
+    modelRenderResources.MeshRenderResources.reserve(meshes.size());
 
-    BufferInfo bufferInfo   = {};
-    bufferInfo.ByteSize     = sizeof(PerObjectMatrices);
-    bufferInfo.GPUAccess    = BUFFER_DATA_ACCESS::READ;
-    bufferInfo.CPUAccess    = BUFFER_DATA_ACCESS::WRITE;
-    bufferInfo.Usage        = BUFFER_USAGE::UNIFORM_BUFFER;
+    BufferInfo bufferInfo   = {
+        .ByteSize     = sizeof(PerObjectMatrices),
+        .CPUAccess    = BUFFER_DATA_ACCESS::WRITE,
+        .GPUAccess    = BUFFER_DATA_ACCESS::READ,
+        .Usage        = BUFFER_USAGE::UNIFORM_BUFFER
+    };
 
     modelRenderResources.pWVPBuffer = m_pDevice->createBuffer(bufferInfo);
     if (!modelRenderResources.pWVPBuffer) {
@@ -453,11 +471,11 @@ void MeshRenderer::onMeshAdded(Entity entity)
     modelRenderResources.pDescriptorSet->updateUniformBufferDescriptor(SHADER_BINDING::PER_OBJECT, modelRenderResources.pWVPBuffer);
 
     // Per-mesh resources
-    for (const Mesh& mesh : pModel->Meshes) {
+    for (const Mesh& mesh : meshes) {
         MeshRenderResources meshRenderResources = {};
 
         // Create material attributes uniform buffer
-        const Material& material = pModel->Materials[mesh.materialIndex];
+        const Material& material = materials[mesh.materialIndex];
         bufferInfo.ByteSize = sizeof(MaterialAttributes);
         bufferInfo.pData    = &material.attributes;
 
@@ -478,11 +496,11 @@ void MeshRenderer::onMeshAdded(Entity entity)
     m_ModelRenderResources.push_back(modelRenderResources, entity);
 }
 
-void MeshRenderer::onMeshRemoved(Entity entity)
+void MeshRenderer::OnMeshRemoved(Entity entity)
 {
     m_CommandListsToReset = MAX_FRAMES_IN_FLIGHT;
 
-    ModelRenderResources& modelRenderResources = m_ModelRenderResources.indexID(entity);
+    ModelRenderResources& modelRenderResources = m_ModelRenderResources.IndexID(entity);
     delete modelRenderResources.pDescriptorSet;
     delete modelRenderResources.pWVPBuffer;
 
@@ -491,5 +509,5 @@ void MeshRenderer::onMeshRemoved(Entity entity)
         delete meshRenderResources.pMaterialBuffer;
     }
 
-    m_ModelRenderResources.pop(entity);
+    m_ModelRenderResources.Pop(entity);
 }

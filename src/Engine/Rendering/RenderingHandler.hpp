@@ -3,13 +3,15 @@
 #include <Engine/Rendering/MeshRenderer.hpp>
 #include <Engine/UI/UIRenderer.hpp>
 
+class RenderingCore;
+
 class RenderingHandler
 {
 public:
-    RenderingHandler(ECSCore* pECS, Device* pDevice);
+    RenderingHandler(RenderingCore* pRenderingCore);
     ~RenderingHandler();
 
-    bool init();
+    bool Init();
 
     void render();
 
@@ -27,7 +29,6 @@ private:
     void recordPrimaryCommandBuffer();
 
 private:
-    ECSCore* m_pECS;
     Device* m_pDevice;
 
     std::vector<Renderer*> m_Renderers;

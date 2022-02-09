@@ -3,7 +3,6 @@
 #include <Engine/Rendering/APIAbstractions/DescriptorSet.hpp>
 #include <Engine/Rendering/APIAbstractions/Shader.hpp>
 
-#define NOMINMAX
 #include <d3d11.h>
 #include <vector>
 

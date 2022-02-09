@@ -2,34 +2,28 @@
 
 #include <Engine/ECS/ECSCore.hpp>
 #include <Engine/Rendering/APIAbstractions/Device.hpp>
-#include <Engine/Rendering/AssetLoaders/ModelLoader.hpp>
 #include <Engine/Rendering/AssetLoaders/TextureCache.hpp>
 #include <Engine/Transform.hpp>
 #include <Engine/Utils/Debug.hpp>
 #include <Engine/Utils/DirectXUtils.hpp>
 #include <Engine/Utils/ECSUtils.hpp>
-#include <Engine/Utils/Logger.hpp>
 
 // The amount of points to add to each tube section
-const unsigned addedPointsPerSection = 3;
-const float maxPointDistance = 3.0f;
+constexpr const unsigned g_AddedPointsPerSection = 3;
+constexpr const float g_MaxPointDistance = 3.0f;
 // Used to create a second point when a point's forward is calculated
-const float deltaT = -0.0001f;
-const float textureLengthReciprocal = 1/4.0f;
+constexpr const float g_DeltaT = -0.0001f;
+constexpr const float g_TextureLengthReciprocal = 1 / 4.0f;
 
-TubeHandler::TubeHandler(ECSCore* pECS, Device* pDevice)
-    :m_pTextureCache(nullptr),
-    m_pDevice(pDevice),
-    m_TubeRadius(0.0f)
-{
-    m_pTextureCache = reinterpret_cast<TextureCache*>(pECS->getEntityPublisher()->getComponentHandler(TID(TextureCache)));
-}
+TubeHandler::TubeHandler()
+    :m_TubeRadius(0.0f)
+{}
 
-Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, const float radius, const unsigned faces)
+ModelComponent TubeHandler::CreateTube(const std::vector<DirectX::XMFLOAT3>& sectionPoints, float radius, unsigned faces)
 {
     if (faces < 3) {
         LOG_WARNINGF("Tube must have at least 3 faces, attempted to create one with: %d", faces);
-        return nullptr;
+        return { };
     }
 
     m_TubeRadius = radius;
@@ -38,7 +32,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     m_TubeSections = sectionPoints;
 
     std::vector<TubePoint> tubePoints;
-    createSections(sectionPoints, tubePoints, radius);
+    CreateSections(sectionPoints, tubePoints, radius);
 
     std::vector<Vertex> vertices;
     vertices.resize(tubePoints.size() * faces * 2);
@@ -62,7 +56,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
         TubePoint& previousPoint = tubePoints[std::max(0, (int)pointIdx - 1)];
         DirectX::XMVECTOR previousPos = DirectX::XMLoadFloat3(&previousPoint.position);
         float pointDist = DirectX::XMVectorGetX(DirectX::XMVector3Length(DirectX::XMVectorSubtract(pointPosition, previousPos)));
-        texCoordV += pointDist * textureLengthReciprocal;
+        texCoordV += pointDist * g_TextureLengthReciprocal;
 
         // Place two vertices in each face in the ring
         for (size_t faceIdx = 0; faceIdx < faces; faceIdx += 1) {
@@ -82,7 +76,7 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
 
             // Compute vertex 2
             vertexIdx += 1;
-            TransformHandler::rotateAroundPoint(pointPosition, vertexPosition, pointForward, angleBetweenFaces);
+            RotateAroundPoint(pointPosition, vertexPosition, pointForward, angleBetweenFaces);
 
             DirectX::XMStoreFloat3(&vertices[vertexIdx].position, vertexPosition);
             DirectX::XMStoreFloat3(&vertices[vertexIdx].normal, vertexNormal);
@@ -99,18 +93,22 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     for (unsigned i = 0; i <= (unsigned)indices.size() - 6; i += 6) {
         // Triangle 1
         indices[i]      = startVertexIndex;
-        indices[i+1]    = startVertexIndex + faces * 2;
-        indices[i+2]    = startVertexIndex + 1;
+        indices[i + 1]  = startVertexIndex + faces * 2;
+        indices[i + 2]  = startVertexIndex + 1;
 
         // Triangle 2
-        indices[i+3] = startVertexIndex + 1;
-        indices[i+4] = startVertexIndex + faces * 2;
-        indices[i+5] = startVertexIndex + faces * 2 + 1;
+        indices[i + 3] = startVertexIndex + 1;
+        indices[i + 4] = startVertexIndex + faces * 2;
+        indices[i + 5] = startVertexIndex + faces * 2 + 1;
 
 		startVertexIndex += 2;
     }
 
-    Model* pModel = DBG_NEW Model();
+    ModelComponent modelComponent = {
+        .ModelPtr = std::shared_ptr<Model>(DBG_NEW Model(), ReleaseModel)
+    };
+
+    Model* pModel = modelComponent.ModelPtr.get();
     pModel->Meshes.resize(1);
 
     Mesh& mesh          = pModel->Meshes.front();
@@ -118,14 +116,16 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     mesh.vertexCount    = vertices.size();
     mesh.indexCount     = indices.size();
 
-    mesh.pVertexBuffer = m_pDevice->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
+    EngineCore* pEngineCore = EngineCore::GetInstance();
+    Device* pDevice = pEngineCore->GetRenderingCore()->GetDevice();
+    mesh.pVertexBuffer = pDevice->createVertexBuffer(vertices.data(), sizeof(Vertex), vertices.size());
     if (!mesh.pVertexBuffer) {
-        return nullptr;
+        return { };
     }
 
-    mesh.pIndexBuffer = m_pDevice->createIndexBuffer(indices.data(), indices.size());
+    mesh.pIndexBuffer = pDevice->createIndexBuffer(indices.data(), indices.size());
     if (!mesh.pIndexBuffer) {
-        return nullptr;
+        return { };
     }
 
     // Create material
@@ -133,46 +133,36 @@ Model* TubeHandler::createTube(const std::vector<DirectX::XMFLOAT3>& sectionPoin
     Material& material = pModel->Materials.front();
     material.attributes.specular = {0.5f, 0.5f, 0.0f, 0.0f};
 
-    material.textures.push_back(m_pTextureCache->loadTexture("./assets/Models/Cube.png"));
+    material.textures.push_back(pEngineCore->GetAssetLoadersCore()->GetTextureCache()->LoadTexture("./assets/Models/Cube.png"));
 
-    return pModel;
+    return modelComponent;
 }
 
-const std::vector<DirectX::XMFLOAT3>& TubeHandler::getTubeSections() const
-{
-    return m_TubeSections;
-}
-
-float TubeHandler::getTubeRadius() const
-{
-    return m_TubeRadius;
-}
-
-void TubeHandler::createSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, const float radius)
+void TubeHandler::CreateSections(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, float radius)
 {
     UNREFERENCED_VARIABLE(radius);
 
     // Rough estimate of the amount of points in the tube
-    tubePoints.reserve((sectionPoints.size()-1) * addedPointsPerSection + sectionPoints.size());
+    tubePoints.reserve((sectionPoints.size() - 1) * g_AddedPointsPerSection + sectionPoints.size());
 
-    float tStepPerPoint = 1.0f/(addedPointsPerSection + 1);
+    constexpr const float tStepPerPoint = 1.0f / (g_AddedPointsPerSection + 1);
 
     // Every two successive points make up a tube section
     for (size_t section = 0; section < sectionPoints.size() - 1; section += 1) {
-        createSectionPoint(sectionPoints, tubePoints, section, 0.0f);
+        CreateSectionPoint(sectionPoints, tubePoints, section, 0.0f);
 
-        for (size_t i = 0; i < addedPointsPerSection; i += 1) {
+        for (size_t i = 0; i < g_AddedPointsPerSection; i += 1) {
             float T = tStepPerPoint * (i+1);
 
-            createSectionPoint(sectionPoints, tubePoints, section, T);
+            CreateSectionPoint(sectionPoints, tubePoints, section, T);
         }
     }
 
     // .. and the last point
-    createSectionPoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
+    CreateSectionPoint(sectionPoints, tubePoints, sectionPoints.size()-1, 1.0f);
 }
 
-void TubeHandler::createSectionPoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t sectionIdx, float T)
+void TubeHandler::CreateSectionPoint(const std::vector<DirectX::XMFLOAT3>& sectionPoints, std::vector<TubePoint>& tubePoints, size_t sectionIdx, float T)
 {
     // Get four control points for catmull-rom
     size_t idx0, idx1, idx2, idx3;
@@ -190,7 +180,7 @@ void TubeHandler::createSectionPoint(const std::vector<DirectX::XMFLOAT3>& secti
     TubePoint newPoint;
     DirectX::XMStoreFloat3(&newPoint.position, DirectX::XMVectorCatmullRom(P[0], P[1], P[2], P[3], T));
     DirectX::XMStoreFloat4(&newPoint.rotationQuat, DirectX::XMQuaternionIdentity());
-    TransformHandler::setForward(newPoint.rotationQuat, DirectX::XMVector3Normalize(catmullRomDerivative(P[0], P[1], P[2], P[3], T)));
+    SetForward(newPoint.rotationQuat, DirectX::XMVector3Normalize(CatmullRomDerivative(P[0], P[1], P[2], P[3], T)));
 
     tubePoints.push_back(newPoint);
 }

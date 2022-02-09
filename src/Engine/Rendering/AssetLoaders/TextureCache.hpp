@@ -1,21 +1,17 @@
 #pragma once
 
-#include <Engine/ECS/ComponentHandler.hpp>
-
 #include <unordered_map>
 
 class Device;
 class Texture;
 
-class TextureCache : public ComponentHandler
+class TextureCache
 {
 public:
-    TextureCache(ECSCore* pECS, Device* pDevice);
+    TextureCache(Device* pDevice);
     ~TextureCache() = default;
 
-    virtual bool initHandler() override;
-
-    std::shared_ptr<Texture> loadTexture(const std::string& filePath);
+    std::shared_ptr<Texture> LoadTexture(const std::string& filePath);
 
 private:
     std::unordered_map<std::string, std::weak_ptr<Texture>> m_Textures;

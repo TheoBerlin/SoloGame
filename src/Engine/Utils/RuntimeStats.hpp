@@ -3,8 +3,6 @@
 #include <chrono>
 #include <stdint.h>
 
-class Window;
-
 class RuntimeStats
 {
 public:

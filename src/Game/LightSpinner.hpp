@@ -2,19 +2,14 @@
 
 #include <Engine/ECS/System.hpp>
 
-class TransformHandler;
-
-class LightSpinner : public System
+class LightSpinner : System
 {
 public:
-    LightSpinner(ECSCore* pECS);
-    ~LightSpinner();
+    LightSpinner();
+    ~LightSpinner() = default;
 
-    virtual bool initSystem() override;
-
-    void update(float dt);
+    void Update(float dt);
 
 private:
-    TransformHandler* m_pTransformHandler;
     IDVector m_Lights;
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#define NOMINMAX
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
